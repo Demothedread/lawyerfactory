@@ -1,0 +1,41 @@
+{
+  "entities": {
+    "Lawsuit": {
+      "features": [
+        "statement_of_facts",
+        "description_of_parties",
+        "cover_sheet"
+      ]
+    },
+    "Workflow": {
+      "stages": [
+        "Preproduction Planning",
+        "Research and Development",
+        "Organization / Database Building",
+        "1st Pass All Parts",
+        "Combining",
+        "Editing",
+        "2nd Pass",
+        "Human Feedback",
+        "Final Draft"
+      ]
+    },
+    "Agent": {
+      "features": [
+        "name",
+        "role"
+      ]
+    }
+  },
+  "relationships": {},
+  "observations": [
+    "Initial graph created.",
+    "Application run",
+    "Application run",
+    "Task 1 added at Preproduction Planning",
+    "Task 2 added at Preproduction Planning",
+    "Task 1 assigned to ResearchAgent",
+    "Task 2 assigned to DraftingAgent",
+    "Task 1 moved to Research and Development"
+  ]
+}
