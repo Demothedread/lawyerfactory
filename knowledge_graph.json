@@ -1,0 +1,50 @@
+{
+  "entities": {
+    "maestro": {
+      "description": "agentic chain orchestrator"
+    },
+    "research_bot": {
+      "description": "performs legal research"
+    },
+    "legal_editor": {
+      "description": "reviews and provides feedback"
+    },
+    "writer": {
+      "description": "writes content"
+    },
+    "database": {
+      "description": "stores research results"
+    }
+  },
+  "relationships": [
+    {
+      "from": "maestro",
+      "to": "research_bot",
+      "relation": "directs"
+    },
+    {
+      "from": "research_bot",
+      "to": "database",
+      "relation": "writes"
+    },
+    {
+      "from": "maestro",
+      "to": "legal_editor",
+      "relation": "receives_feedback"
+    },
+    {
+      "from": "maestro",
+      "to": "writer",
+      "relation": "passes_research"
+    },
+    {
+      "from": "legal_editor",
+      "to": "research_bot",
+      "relation": "requests_more_research"
+    }
+  ],
+  "observations": [
+    "Initial setup. Maestro code pending implementation.",
+    "Implemented asynchronous maestro with research, editor, and writer bots"
+  ]
+}
