@@ -1,3 +1,4 @@
+
 # lawyerfactory
 
 This repository contains a simple document intake system.
@@ -22,4 +23,27 @@ Install dependencies and run tests with `pytest`:
 pip install -r requirements.txt  # or `pip install flake8 pytest nltk`
 flake8 .
 pytest -q
+=======
+# LawyerFactory
+
+This project provides a simple workflow manager for building legal documents. It
+features sequential stages with human feedback loops and a basic Kanban board
+interface.
+Tasks can be assigned to agents and progressed through defined stages.
+Each action is logged to `knowledge_graph.json` for traceability.
+
+## Running
+
+```
+python app.py
+```
+
+## Tests and Linting
+
+Install dependencies and run:
+
+```
+pip install -r requirements.txt
+flake8
+pytest
 ```
