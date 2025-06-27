@@ -1,0 +1,53 @@
+{
+  "entities": [
+    {
+      "id": "Maestro",
+      "type": "agent",
+      "features": ["orchestration", "coordination"]
+    },
+    {
+      "id": "Reader",
+      "type": "agent",
+      "features": ["document intake", "fact extraction"]
+    },
+    {
+      "id": "Outliner",
+      "type": "agent",
+      "features": ["outline creation", "gap identification"]
+    },
+    {
+      "id": "Writer",
+      "type": "agent",
+      "features": ["drafting", "Law of Threes"]
+    },
+    {
+      "id": "Editor",
+      "type": "agent",
+      "features": ["style", "coherence"]
+    },
+    {
+      "id": "Paralegal",
+      "type": "agent",
+      "features": ["jurisdiction", "evidence tagging"]
+    },
+    {
+      "id": "Legal Researcher",
+      "type": "agent",
+      "features": ["caselaw search"]
+    },
+    {
+      "id": "Legal Formatter",
+      "type": "agent",
+      "features": ["legal citation", "IRAC formatting"]
+    },
+    {
+      "id": "Legal Procedure Agent",
+      "type": "agent",
+      "features": ["procedure compliance", "form retrieval"]
+    }
+  ],
+  "relationships": [],
+  "observations": [
+    "Initial setup of agents for assembly-line legal drafting project"
+  ]
+}
