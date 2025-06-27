@@ -1,6 +1,13 @@
 
 # lawyerfactory
 
+This project contains a simple agentic chain with several bots orchestrated by the `Maestro` class. The maestro directs output from one bot to another and stores research results in a small in-memory database.
+
+Run the demo to see a basic flow:
+
+```bash
+python -m maestro.maestro
+=======
 This repository contains a simple document intake system.
 
 ## Assessor
@@ -34,16 +41,5 @@ Each action is logged to `knowledge_graph.json` for traceability.
 
 ## Running
 
-```
-python app.py
-```
-
-## Tests and Linting
-
-Install dependencies and run:
-
-```
-pip install -r requirements.txt
-flake8
-pytest
+]
 ```
