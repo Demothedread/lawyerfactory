@@ -1,21 +1,99 @@
 {
-  "entities": {
-    "maestro": {
-      "description": "agentic chain orchestrator"
+  "entities": [
+    {
+      "id": "Maestro",
+      "type": "agent",
+      "features": ["orchestration", "coordination"]
     },
-    "research_bot": {
-      "description": "performs legal research"
+    {
+      "id": "Reader",
+      "type": "agent",
+      "features": ["document intake", "fact extraction"]
     },
-    "legal_editor": {
-      "description": "reviews and provides feedback"
+    {
+      "id": "Outliner",
+      "type": "agent",
+      "features": ["outline creation", "gap identification"]
     },
-    "writer": {
-      "description": "writes content"
+    {
+      "id": "Writer",
+      "type": "agent",
+      "features": ["drafting", "Law of Threes"]
     },
-    "database": {
-      "description": "stores research results"
+    {
+      "id": "Editor",
+      "type": "agent",
+      "features": ["style", "coherence"]
+    },
+    {
+      "id": "Paralegal",
+      "type": "agent",
+      "features": ["jurisdiction", "evidence tagging"]
+    },
+    {
+      "id": "Legal Formatter",
+      "type": "agent",
+      "features": ["legal citation", "IRAC formatting"]
+    },
+    {
+      "id": "Legal Procedure Agent",
+      "type": "agent",
+      "features": ["procedure compliance", "form retrieval"]
+    },
+    {  
+     "id": "Assessor",
+      "type": "Agent",
+      "features": [
+        "intake documents",
+        "organize list",
+        "AI summarization",
+        "categorization",
+        "hashtags"
+      ],
+      "relationships": {"Repository": "adds documents"}
+    },
+    {
+      "id": "Repository",
+      "type": "Database",
+      "features": [
+        "metadata fields (author, title, publication date, summary, category, hashtags)",
+        "CSV storage"
+      ],
+      "relationships": {"Legal Researcher": "source of documents"}
+    },
+    {
+      "id": "Legal Researcher",
+      "type": "Agent",
+      "features": ["research using repository"],
+      "relationships": {"Repository": "uses"}
+    },
+    {
+      "id": "Lawsuit",
+      "type": "Document".
+      "features": [
+            "statement_of_facts",
+            "description_of_parties",
+            "cover_sheet"
+          ]
+    },
+    {
+      "id": "workflow"
+      "type": "meta"
+      "features":[
+          "stages": [
+            "Preproduction Planning",
+            "Research and Development",
+            "Organization / Database Building",
+            "1st Pass All Parts",
+            "Combining",
+            "Editing",
+            "2nd Pass",
+            "Human Feedback",
+            "Final Draft"
+           ],
+        ]
     }
-  },
+  ],
   "relationships": [
     {
       "from": "maestro",
@@ -41,73 +119,8 @@
       "from": "legal_editor",
       "to": "research_bot",
       "relation": "requests_more_research"
-    }
+    },
   ],
-  "observations": [
-    "Initial setup. Maestro code pending implementation.",
-    "Implemented asynchronous maestro with research, editor, and writer bots"
-  ]
-}
-=======
-  "entities": [
-    {
-      "id": "Assessor",
-      "type": "Agent",
-      "features": [
-        "intake documents",
-        "organize list",
-        "AI summarization",
-        "categorization",
-        "hashtags"
-      ],
-      "relationships": {"Repository": "adds documents"}
-    },
-    {
-      "id": "Repository",
-      "type": "Database",
-      "features": [
-        "metadata fields (author, title, publication date, summary, category, hashtags)",
-        "CSV storage"
-      ],
-      "relationships": {"Legal Researcher": "source of documents"}
-    },
-    {
-      "id": "Legal Researcher",
-      "type": "Agent",
-      "features": ["research using repository"],
-      "relationships": {"Repository": "uses"}
-    }
-  ],
-  "observations": "Added assessor and repository modules with tests and documentation"
-  "entities": {
-    "Lawsuit": {
-      "features": [
-        "statement_of_facts",
-        "description_of_parties",
-        "cover_sheet"
-      ]
-    },
-    "Workflow": {
-      "stages": [
-        "Preproduction Planning",
-        "Research and Development",
-        "Organization / Database Building",
-        "1st Pass All Parts",
-        "Combining",
-        "Editing",
-        "2nd Pass",
-        "Human Feedback",
-        "Final Draft"
-      ]
-    },
-    "Agent": {
-      "features": [
-        "name",
-        "role"
-      ]
-    }
-  },
-  "relationships": {},
   "observations": [
     "Initial graph created.",
     "Application run",
@@ -119,4 +132,7 @@
     "Task 1 moved to Research and Development"
   ]
 }}
+
+ 
+
 
