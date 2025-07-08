@@ -5,6 +5,8 @@ from typing import Optional
 import nltk
 
 from repository import add_entry
+from lawyerfactory.knowledge_graph import load_graph, save_graph, add_observation
+from legal_factory import run_factory as launch_factory
 
 # Ensure NLTK sentence tokenizer data is available
 try:
@@ -40,6 +42,8 @@ def intake_document(
     title: str,
     publication_date: Optional[str],
     text: str,
+    *,
+    trigger_factory: bool = True,
 ) -> None:
     """Process and store a new document in the repository."""
     if publication_date is None:
@@ -56,6 +60,16 @@ def intake_document(
         'hashtags': hashtags,
     }
     add_entry(entry)
+
+    graph = load_graph()
+    add_observation(graph, f"Document '{title}' categorized as {category}")
+    save_graph(graph)
+
+    if trigger_factory and category in {"contract", "litigation"}:
+        result = launch_factory(summary)
+        graph = load_graph()
+        add_observation(graph, f"Legal factory produced output for '{title}'")
+        save_graph(graph)
 
 
 if __name__ == '__main__':
