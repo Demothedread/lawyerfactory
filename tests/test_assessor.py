@@ -9,7 +9,7 @@ def test_intake_document(tmp_path):
     repository.init_repo()
 
     text = 'This is a contract between parties. It outlines terms.'
-    intake_document('Alice', 'Contract A', '2023-01-01', text)
+    intake_document('Alice', 'Contract A', '2023-01-01', text, trigger_factory=False)
 
     entries = repository.list_entries()
     assert len(entries) == 1
