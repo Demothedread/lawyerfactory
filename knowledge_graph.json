@@ -1,0 +1,18 @@
+{
+  "entities": {
+    "README": {"description": "Project introduction and setup"},
+    "requirements.txt": {"description": "Python dependencies"},
+    "flake8 config": {"description": "Linter configuration"},
+    "Agent": {"description": "Agent with a knowledge graph"},
+    "KnowledgeGraph": {"description": "In-memory graph for entities"},
+    "Tests": {"description": "Pytest suite"}
+  },
+  "relationships": [
+    {"from": "Agent", "to": "KnowledgeGraph", "relation": "uses"},
+    {"from": "Tests", "to": "Agent", "relation": "validate"}
+  ],
+  "observations": [
+    "Initial codebase now has simple agent and knowledge graph modules",
+    "Linting via flake8 and tests via pytest are configured"
+  ]
+}
