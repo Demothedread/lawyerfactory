@@ -1,6 +1,22 @@
 
 # lawyerfactory
 
+## Setup
+
+Install dependencies::
+
+    pip install -r requirements.txt
+
+## Running checks
+
+* Lint the code with flake8::
+
+    flake8
+
+* Run the tests with pytest::
+
+    python -m pytest
+=======
 This repository contains an experimental agent-based workflow for generating long-form legal content. The approach relies on a team of specialized GPT-4.1-mini agents managed in an assembly-line fashion.
 
 See [docs/team_chart.md](docs/team_chart.md) for an overview of the agents and phases.

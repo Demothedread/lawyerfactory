@@ -1,6 +1,27 @@
 {
   "entities": [
     {
+     "id": "README"
+      "description": "Project introduction and setup"
+    },
+    {
+     "id": "requirements.txt"
+      "description": "Python dependencies"
+    },
+    {
+      "id": "flake8 config"
+      "description": "Linter configuration"
+    },
+    {
+      "id":  "Agent"
+      "description": "Agent with a knowledge graph"
+      "relations: "
+    },
+    {
+     "id": "Tests"
+     "description": "Pytest suite"
+      },
+    {
       "id": "Maestro",
       "type": "agent",
       "features": ["orchestration", "coordination"]
@@ -132,7 +153,3 @@
     "Task 1 moved to Research and Development"
   ]
 }}
-
- 
-
-
