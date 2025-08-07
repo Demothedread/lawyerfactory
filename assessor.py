@@ -40,9 +40,12 @@ def _llm_summarize(text: str) -> str:
 def summarize(text: str, max_words: int = 250) -> str:
     """Summarize using the first and last ``max_words`` tokens."""
     tokens = nltk.word_tokenize(text)
-    head = tokens[:max_words]
-    tail = tokens[-max_words:] if len(tokens) > max_words else []
-    snippet = ' '.join(head + tail)
+    if len(tokens) <= max_words:
+        snippet = ' '.join(tokens)
+    else:
+        head = tokens[:max_words]
+        tail = tokens[-max_words:]
+        snippet = ' '.join(head + tail)
     return _llm_summarize(snippet)
 
 
