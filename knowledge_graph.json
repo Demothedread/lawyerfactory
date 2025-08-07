@@ -1,0 +1,19 @@
+{
+  "entities": [
+    {
+      "id": "LawyerFactory",
+      "features": ["repository", "agent tasks"]
+    },
+    {
+      "id": "knowledge_graph",
+      "features": ["stores context", "updated per task"]
+    }
+  ],
+  "relationships": [
+    {"source": "LawyerFactory", "target": "knowledge_graph", "type": "contains"},
+    {"source": "knowledge_graph", "target": "LawyerFactory", "type": "context-for"}
+  ],
+  "observations": [
+    "Initialized knowledge graph module with load and save capabilities."
+  ]
+}
