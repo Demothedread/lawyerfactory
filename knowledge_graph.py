@@ -35,6 +35,6 @@ def add_relationship(
     graph.setdefault("relationships", []).append(relationship)
 
 
-def add_observation(graph: Dict[str, Any], observation: str) -> None:
-    """Append an observation to the knowledge graph."""
+def add_observation(graph: Dict[str, Any], observation: Dict[str, Any]) -> None:
+    """Append an observation (as a dictionary) to the knowledge graph."""
     graph.setdefault("observations", []).append(observation)
