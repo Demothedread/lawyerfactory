@@ -1,4 +1,7 @@
-import sys, pathlib; sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent))
 import repository
 from assessor import intake_document
 
@@ -18,4 +21,11 @@ def test_intake_document(tmp_path):
     assert entry['title'] == 'Contract A'
     assert entry['category'] == 'contract'
     assert entry['hashtags'] == '#contract'
+
+    # Log output to /logs
+    log_dir = Path(__file__).parent.parent / 'logs'
+    log_dir.mkdir(exist_ok=True)
+    log_file = log_dir / 'test_assessor.log'
+    with open(log_file, 'w') as f:
+        f.write('Assessor test completed.\n')
 

@@ -1,0 +1,234 @@
+# Enhanced LawyerFactory Deployment Configuration
+# This file contains deployment settings and environment configuration
+
+version: "1.0"
+project: "Enhanced LawyerFactory Platform"
+
+# Environment Settings
+environments:
+  development:
+    flask_host: "127.0.0.1"
+    flask_port: 5000
+    flask_debug: true
+    log_level: "DEBUG"
+    
+  production:
+    flask_host: "0.0.0.0"
+    flask_port: 80
+    flask_debug: false
+    log_level: "INFO"
+    
+  testing:
+    flask_host: "127.0.0.1"
+    flask_port: 5001
+    flask_debug: true
+    log_level: "DEBUG"
+
+# Directory Structure
+directories:
+  uploads: "uploads"
+  knowledge_graphs: "knowledge_graphs"
+  workflow_storage: "workflow_storage"
+  templates: "templates"
+  static: "static"
+  logs: "logs"
+
+# Security Settings
+security:
+  max_upload_size: "50MB"
+  allowed_file_types: [".pdf", ".docx", ".doc", ".txt", ".md"]
+  session_timeout: 3600  # 1 hour
+  csrf_protection: true
+
+# Database Settings
+database:
+  knowledge_graph:
+    path: "knowledge_graphs/main.db"
+    encryption: false  # Set to true and provide key for encryption
+    backup_enabled: true
+    backup_interval: "24h"
+
+# Workflow Settings
+workflow:
+  default_timeout: 7200  # 2 hours
+  max_concurrent_workflows: 10
+  checkpoint_interval: 300  # 5 minutes
+  
+  phases:
+    - name: "INTAKE"
+      estimated_duration: 300
+      requires_approval: false
+      parallel_execution: true
+      
+    - name: "OUTLINE"
+      estimated_duration: 600
+      requires_approval: true
+      parallel_execution: false
+      
+    - name: "RESEARCH"
+      estimated_duration: 1800
+      requires_approval: false
+      parallel_execution: true
+      
+    - name: "DRAFTING"
+      estimated_duration: 2400
+      requires_approval: true
+      parallel_execution: true
+      
+    - name: "LEGAL_REVIEW"
+      estimated_duration: 900
+      requires_approval: true
+      parallel_execution: false
+      
+    - name: "EDITING"
+      estimated_duration: 600
+      requires_approval: false
+      parallel_execution: false
+      
+    - name: "ORCHESTRATION"
+      estimated_duration: 300
+      requires_approval: true
+      parallel_execution: false
+
+# API Settings
+api:
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 100
+    burst_limit: 20
+    
+  cors:
+    enabled: true
+    allowed_origins: ["http://localhost:3000", "http://localhost:5000"]
+    allowed_methods: ["GET", "POST", "PUT", "DELETE"]
+    
+  authentication:
+    enabled: false  # Set to true for production
+    method: "session"  # or "jwt"
+
+# WebSocket Settings
+websocket:
+  ping_timeout: 60
+  ping_interval: 25
+  max_connections: 1000
+
+# Logging Configuration
+logging:
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_rotation:
+    enabled: true
+    max_size: "10MB"
+    backup_count: 5
+  
+  loggers:
+    app: "INFO"
+    knowledge_graph: "INFO"
+    workflow: "INFO"
+    websocket: "WARNING"
+
+# Performance Settings
+performance:
+  async_processing: true
+  background_tasks: true
+  caching:
+    enabled: true
+    ttl: 300  # 5 minutes
+    max_entries: 1000
+
+# Integration Settings
+integrations:
+  courtlistener:
+    enabled: false
+    api_token: ""  # Set in environment variable
+    rate_limit: 100
+    
+  google_scholar:
+    enabled: false
+    
+  document_processors:
+    pdf_parser: "PyMuPDF"
+    ocr_enabled: true
+    ocr_language: "eng"
+
+# Monitoring and Health Checks
+monitoring:
+  health_check_endpoint: "/health"
+  metrics_enabled: true
+  error_tracking: true
+  
+  alerts:
+    workflow_failures: true
+    high_error_rate: true
+    resource_usage: true
+
+# Backup and Recovery
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention_days: 30
+  
+  include:
+    - knowledge_graphs
+    - workflow_storage
+    - logs
+    
+  exclude:
+    - uploads  # Large files, can be re-uploaded
+    - static
+    - templates
+
+# Development Settings
+development:
+  auto_reload: true
+  debug_toolbar: true
+  profiling: false
+  test_data_generation: true
+
+# Docker Configuration (if using containers)
+docker:
+  image: "lawyerfactory-enhanced"
+  tag: "latest"
+  ports:
+    - "5000:5000"
+  volumes:
+    - "./uploads:/app/uploads"
+    - "./knowledge_graphs:/app/knowledge_graphs"
+    - "./workflow_storage:/app/workflow_storage"
+    - "./logs:/app/logs"
+  environment:
+    - "FLASK_ENV=production"
+    - "PYTHONPATH=/app"
+
+# Nginx Configuration (if using reverse proxy)
+nginx:
+  enabled: false
+  config_path: "/etc/nginx/sites-available/lawyerfactory"
+  ssl_enabled: false
+  max_body_size: "50M"
+  
+  locations:
+    - path: "/"
+      proxy_pass: "http://127.0.0.1:5000"
+      
+    - path: "/socket.io/"
+      proxy_pass: "http://127.0.0.1:5000"
+      websocket: true
+
+# Deployment Commands
+commands:
+  install_dependencies: "pip install -r requirements.txt"
+  setup_directories: "python -c \"from start_enhanced_factory import setup_directories; setup_directories()\""
+  run_tests: "python test_enhanced_integration.py"
+  start_development: "python start_enhanced_factory.py"
+  start_production: "gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:5000 app:app"
+
+# Feature Flags
+features:
+  knowledge_graph_visualization: true
+  real_time_updates: true
+  document_preview: true
+  research_integration: true
+  human_approval_workflow: true
+  multi_user_support: false  # Future feature
+  api_versioning: false  # Future feature
+  advanced_analytics: false  # Future feature
