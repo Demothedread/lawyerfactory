@@ -1,0 +1,16 @@
+**V. CAUSES OF ACTION**
+
+{% for cause in causes_of_action %}
+**COUNT {{ loop.index }}: {{ cause.name|upper }}**
+
+    {% for element in cause.elements %}
+        **{{ element.name }}:**
+        {% for fact in element.fact_text %}
+            {{ fact }}
+        {% endfor %}
+        {% for citation in research.citations %}
+            {# Basic citation integration; can be refined #}
+            See, e.g., {{ citation.cite }}.
+        {% endfor %}
+    {% endfor %}
+{% endfor %}

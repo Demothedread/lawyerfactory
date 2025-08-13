@@ -1,0 +1,5 @@
+.env.production
+lawenv/*
+*.log
+*.json
+Tesla/

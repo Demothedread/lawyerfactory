@@ -1,3 +1,27 @@
-flake8
-pytest
-nltk
+# Core Flask dependencies
+Flask==2.3.3
+Flask-SocketIO==5.3.6
+eventlet==0.33.3
+werkzeug==2.3.7
+
+# Backend integrations
+asyncio
+
+# Optional dependencies for enhanced features
+sentence-transformers==2.2.2
+numpy==1.24.3
+spacy==3.7.2
+
+# File processing
+PyPDF2==3.0.1
+PyMuPDF==1.23.8
+python-docx==0.8.11
+pytesseract==0.3.10
+Pillow==10.0.1
+
+# Encryption support (optional)
+pysqlcipher3==1.2.0
+
+# Development and testing
+pytest==7.4.2
+pytest-asyncio==0.21.1
