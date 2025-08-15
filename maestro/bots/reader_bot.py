@@ -33,6 +33,47 @@ except Exception as e:
     logger.warning(f"Could not import assessor module: {e}")
     ASSESSOR_AVAILABLE = False
 
+# Import the enhanced evidence table functionality
+try:
+    from maestro.evidence_table import (
+        EnhancedEvidenceTable, EvidenceEntry, EvidenceType,
+        RelevanceLevel, PrivilegeMarker
+    )
+    ENHANCED_EVIDENCE_AVAILABLE = True
+    logger.info("Enhanced Evidence Table module imported successfully")
+except Exception as e:
+    logger.warning(f"Enhanced Evidence Table not available: {e}")
+    ENHANCED_EVIDENCE_AVAILABLE = False
+
+    # Fallback implementations so names are always defined for static analysis
+    def summarize(text: str, max_sentences: int = 2) -> str:
+        if not text:
+            return ""
+        # naive sentence split fallback
+        sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', text) if s.strip()]
+        return " ".join(sentences[:max_sentences]) if sentences else text[:200]
+
+    def categorize(text: str) -> str:
+        txt = (text or "").lower()
+        if any(k in txt for k in ("contract", "agreement", "terms")):
+            return "contract"
+        if any(k in txt for k in ("litigation", "lawsuit", "complaint", "motion")):
+            return "litigation"
+        if any(k in txt for k in ("invoice", "receipt", "payment", "bill")):
+            return "financial"
+        if any(k in txt for k in ("email", "correspondence", "message")):
+            return "correspondence"
+        return "general"
+
+    def hashtags_from_category(category: str) -> str:
+        cat = (category or "general").strip().lower()
+        return f"#{cat.replace(' ', '_')}"
+
+    def intake_document(*args, **kwargs):
+        # best-effort no-op fallback: real assessor isn't available
+        logger.info("intake_document called but assessor not available; no-op")
+        return None
+
 logger = logging.getLogger(__name__)
 
 
@@ -133,8 +174,8 @@ class ReaderBot(Bot, AgentInterface):
             logger.exception("Error extracting text from %s: %s", document_path, exc)
             return None
 
-    async def process(self, task: WorkflowTask) -> dict:
-        """Legacy Bot interface implementation for document processing"""
+    async def process_task(self, task: WorkflowTask) -> dict:
+        """Legacy Bot interface implementation for document processing (renamed to avoid overriding wrapper)"""
         try:
             if ASSESSOR_AVAILABLE:
                 # Use assessor module for categorization and summarization
@@ -236,7 +277,20 @@ class ReaderBot(Bot, AgentInterface):
                 'author': author,
                 'extraction_method': 'assessor_enhanced' if ASSESSOR_AVAILABLE else 'basic'
             }
-            
+            try:
+                et_path = Path(__file__).parent.parent.parent / "evidence_table.json"
+                if et_path.exists():
+                    tbl = json.loads(et_path.read_text(encoding="utf-8"))
+                    for row in tbl.get("rows", []):
+                        if row.get("source_file") == document_name:
+                            result.setdefault("summary", row.get("summary", ""))
+                            result.setdefault("category", row.get("group", "general"))
+                            result.setdefault("hashtags", " ".join(row.get("tags", [])))
+                            break
+            except Exception:
+                # ignore evidence table read errors
+                pass
+        
             if ASSESSOR_AVAILABLE and content:
                 try:
                     # Use assessor functions for analysis
@@ -245,16 +299,32 @@ class ReaderBot(Bot, AgentInterface):
                     result['hashtags'] = hashtags_from_category(result['category'])
                     
                     logger.info(f"Assessor analysis completed - Category: {result['category']}")
+                    
+                    # Create enhanced evidence entry if available
+                    if ENHANCED_EVIDENCE_AVAILABLE:
+                        try:
+                            self._create_enhanced_evidence_entry(document_name, content, result)
+                        except Exception as e:
+                            logger.warning(f"Failed to create enhanced evidence entry: {e}")
+                            
                 except Exception as e:
                     logger.error(f"Assessor analysis failed: {e}")
                     result['summary'] = content[:200] + "..." if len(content) > 200 else content
                     result['category'] = 'unknown'
                     result['hashtags'] = '#general'
+           
             else:
                 # Fallback analysis
                 result['summary'] = content[:200] + "..." if len(content) > 200 else content
                 result['category'] = self._basic_categorize(content)
                 result['hashtags'] = f"#{result['category']}"
+                
+                # Create enhanced evidence entry even with basic analysis
+                if ENHANCED_EVIDENCE_AVAILABLE:
+                    try:
+                        self._create_enhanced_evidence_entry(document_name, content, result)
+                    except Exception as e:
+                        logger.warning(f"Failed to create enhanced evidence entry: {e}")
                 
             return result
                 
@@ -283,6 +353,101 @@ class ReaderBot(Bot, AgentInterface):
             return 'financial'
         else:
             return 'general'
+
+    def _create_enhanced_evidence_entry(self, document_name: str, content: str, analysis_result: dict) -> None:
+        """Create an enhanced evidence entry from document analysis results"""
+        try:
+            # Initialize the enhanced evidence table
+            evidence_table = EnhancedEvidenceTable()
+            
+            # Map analysis result to evidence entry fields
+            evidence_type = self._map_category_to_evidence_type(analysis_result.get('category', 'general'))
+            relevance = self._determine_relevance(content, analysis_result)
+            
+            # Extract supporting facts from content (basic extraction)
+            supporting_facts = self._extract_supporting_facts(content, analysis_result)
+            
+            # Create the evidence entry
+            evidence_entry = EvidenceEntry(
+                source_document=document_name,
+                page_section="Full Document",  # Could be enhanced to detect sections
+                evidence_type=evidence_type,
+                relevance_level=relevance,
+                content=analysis_result.get('summary', content[:500]),
+                supporting_facts=supporting_facts,
+                notes=f"Extracted by: {analysis_result.get('extraction_method', 'unknown')} | " +
+                      f"Category: {analysis_result.get('category', 'general')} | " +
+                      f"Hashtags: {analysis_result.get('hashtags', '')} | " +
+                      f"Author: {analysis_result.get('author', 'Unknown')} | " +
+                      f"Content length: {len(content)}",
+                created_by="reader_bot"
+            )
+            
+            # Add the evidence entry
+            evidence_table.add_evidence(evidence_entry)
+            logger.info(f"Created enhanced evidence entry for {document_name} (ID: {evidence_entry.evidence_id})")
+            
+        except Exception as e:
+            logger.error(f"Failed to create enhanced evidence entry for {document_name}: {e}")
+            raise
+    
+    def _map_category_to_evidence_type(self, category: str) -> EvidenceType:
+        """Map assessor category to evidence type"""
+        category_mapping = {
+            'contract': EvidenceType.DOCUMENTARY,
+            'litigation': EvidenceType.DOCUMENTARY,
+            'correspondence': EvidenceType.DOCUMENTARY,
+            'financial': EvidenceType.DOCUMENTARY,
+            'testimony': EvidenceType.TESTIMONIAL,
+            'expert': EvidenceType.EXPERT,
+            'general': EvidenceType.DOCUMENTARY
+        }
+        return category_mapping.get(category.lower(), EvidenceType.DOCUMENTARY)
+    
+    def _determine_relevance(self, content: str, analysis_result: dict) -> RelevanceLevel:
+        """Determine evidence relevance based on content and analysis"""
+        category = analysis_result.get('category', '').lower()
+        content_lower = content.lower()
+        
+        # High relevance indicators
+        high_relevance_terms = [
+            'lawsuit', 'complaint', 'defendant', 'plaintiff', 'claim', 'damages',
+            'breach', 'violation', 'contract', 'agreement', 'liable', 'liability'
+        ]
+        
+        # Medium relevance indicators
+        medium_relevance_terms = [
+            'correspondence', 'email', 'letter', 'communication', 'meeting',
+            'discussion', 'negotiation', 'proposal'
+        ]
+        
+        if category in ['litigation', 'contract'] or any(term in content_lower for term in high_relevance_terms):
+            return RelevanceLevel.HIGH
+        elif category in ['correspondence', 'financial'] or any(term in content_lower for term in medium_relevance_terms):
+            return RelevanceLevel.MEDIUM
+        else:
+            return RelevanceLevel.LOW
+    
+    def _extract_supporting_facts(self, content: str, analysis_result: dict) -> list:
+        """Extract basic supporting facts from content"""
+        facts = []
+        
+        # Simple fact extraction - look for declarative sentences
+        sentences = [s.strip() for s in content.split('.') if s.strip() and len(s.strip()) > 20]
+        
+        # Take up to 3 most relevant sentences as facts
+        for sentence in sentences[:3]:
+            if any(indicator in sentence.lower() for indicator in [
+                'states that', 'indicates', 'shows', 'demonstrates', 'proves',
+                'confirms', 'establishes', 'reveals', 'discloses'
+            ]):
+                facts.append(sentence.strip())
+        
+        # If no indicator-based facts found, use first few sentences
+        if not facts and sentences:
+            facts = sentences[:2]
+        
+        return facts
 
     async def health_check(self) -> bool:
         """Check if the agent is healthy and ready to process tasks"""

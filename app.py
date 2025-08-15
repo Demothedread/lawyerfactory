@@ -626,6 +626,230 @@ def process_uploaded_document(upload_session_id, file_path):
             'error': str(e)
         })
 
+# =====================================================
+# CLAIMS MATRIX API ENDPOINTS
+# =====================================================
+
+# Initialize Claims Matrix integration
+try:
+    from comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
+    from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+    
+    # Initialize enhanced knowledge graph for Claims Matrix
+    claims_matrix_kg = None
+    claims_matrix_integration = None
+    
+    def initialize_claims_matrix():
+        """Initialize Claims Matrix components"""
+        global claims_matrix_kg, claims_matrix_integration
+        try:
+            claims_matrix_kg = EnhancedKnowledgeGraph('knowledge_graphs/main.db')
+            claims_matrix_integration = ComprehensiveClaimsMatrixIntegration(
+                enhanced_kg=claims_matrix_kg,
+                courtlistener_token=os.environ.get('COURTLISTENER_TOKEN'),
+                scholar_contact_email=os.environ.get('SCHOLAR_CONTACT_EMAIL')
+            )
+            logger.info("Claims Matrix integration initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize Claims Matrix: {e}")
+    
+except ImportError as e:
+    logger.warning(f"Claims Matrix components not available: {e}")
+    claims_matrix_kg = None
+    claims_matrix_integration = None
+
+@app.route('/api/claims-matrix/analysis/start', methods=['POST'])
+def start_claims_matrix_analysis():
+    """Start interactive Claims Matrix analysis session"""
+    try:
+        if not claims_matrix_integration:
+            return jsonify({'success': False, 'error': 'Claims Matrix not initialized'}), 503
+        
+        data = request.get_json()
+        jurisdiction = data.get('jurisdiction')
+        cause_of_action = data.get('cause_of_action')
+        case_facts = data.get('case_facts', [])
+        
+        if not jurisdiction or not cause_of_action:
+            return jsonify({'success': False, 'error': 'Jurisdiction and cause of action required'}), 400
+        
+        session_id = claims_matrix_integration.start_interactive_analysis(
+            jurisdiction=jurisdiction,
+            cause_of_action=cause_of_action,
+            case_facts=case_facts
+        )
+        
+        return jsonify({
+            'success': True,
+            'session_id': session_id,
+            'message': 'Claims Matrix analysis started'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error starting Claims Matrix analysis: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/claims-matrix/definition/<session_id>', methods=['GET'])
+def get_claims_matrix_definition(session_id):
+    """Get comprehensive legal definition for Claims Matrix session"""
+    try:
+        if not claims_matrix_integration:
+            return jsonify({'success': False, 'error': 'Claims Matrix not initialized'}), 503
+        
+        definition = claims_matrix_integration.get_comprehensive_definition(session_id)
+        
+        if not definition:
+            return jsonify({'success': False, 'error': 'Session not found'}), 404
+        
+        # Convert definition to frontend format
+        definition_data = {
+            'cause_of_action': definition.cause_of_action,
+            'jurisdiction': definition.jurisdiction,
+            'primary_definition': definition.primary_definition,
+            'authority_citations': definition.authority_citations,
+            'clickable_terms': definition.clickable_terms,
+            'elements': []
+        }
+        
+        # Get real elements from the definition engine
+        for element_name, element_data in definition.elements.items():
+            definition_data['elements'].append({
+                'name': element_name,
+                'definition': element_data.get('definition', ''),
+                'importance': element_data.get('importance', 0.8),
+                'questions': element_data.get('questions', []),
+                'keywords': element_data.get('keywords', [])
+            })
+        
+        return jsonify({
+            'success': True,
+            'data': definition_data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting Claims Matrix definition: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/claims-matrix/decision-tree/<session_id>/<element_id>', methods=['GET'])
+def get_element_decision_tree(session_id, element_id):
+    """Get decision tree for specific legal element"""
+    try:
+        if not claims_matrix_integration:
+            return jsonify({'success': False, 'error': 'Claims Matrix not initialized'}), 503
+        
+        # Get decision tree from the cascading decision tree engine
+        decision_tree = claims_matrix_integration.get_element_decision_tree(session_id, element_id)
+        
+        if not decision_tree:
+            return jsonify({'success': False, 'error': 'Decision tree not found'}), 404
+        
+        # Convert to frontend format
+        tree_data = {
+            'element_name': decision_tree.get('element_name', element_id),
+            'questions': []
+        }
+        
+        # Get questions from the decision tree engine
+        questions = decision_tree.get('questions', [])
+        for question in questions:
+            tree_data['questions'].append({
+                'text': question.get('question_text', ''),
+                'type': question.get('question_type', 'factual'),
+                'evidence_types': question.get('evidence_types', []),
+                'legal_standards': question.get('legal_standards', []),
+                'burden_of_proof': question.get('burden_of_proof', 'preponderance'),
+                'follow_up_questions': question.get('follow_up_questions', [])
+            })
+        
+        return jsonify({
+            'success': True,
+            'data': tree_data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting decision tree: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/claims-matrix/term/<term_text>', methods=['GET'])
+def expand_clickable_term(term_text):
+    """Expand clickable legal term with definition"""
+    try:
+        if not claims_matrix_integration:
+            return jsonify({'success': False, 'error': 'Claims Matrix not initialized'}), 503
+        
+        context = request.args.get('context', '')
+        
+        # Mock term expansion (would use real backend)
+        term_data = {
+            'term_text': term_text,
+            'primary_definition': f'Legal definition of {term_text}',
+            'authority_citations': ['Sample Citation 1', 'Sample Citation 2'],
+            'related_terms': ['related_term_1', 'related_term_2'],
+            'case_examples': ['Sample Case 1', 'Sample Case 2'],
+            'practice_notes': ['Practice tip 1', 'Practice tip 2']
+        }
+        
+        return jsonify({
+            'success': True,
+            'data': term_data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error expanding term: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/knowledge-graph/facts', methods=['GET'])
+def get_knowledge_graph_facts():
+    """Get available facts from knowledge graph for Claims Matrix"""
+    try:
+        # Mock facts data (would be fetched from knowledge graph)
+        facts = [
+            {
+                'id': 'fact_001',
+                'text': 'Defendant operated motor vehicle on public road',
+                'confidence': 0.9,
+                'source': 'Police Report',
+                'category': 'factual'
+            },
+            {
+                'id': 'fact_002',
+                'text': 'Plaintiff suffered injuries in collision',
+                'confidence': 0.85,
+                'source': 'Medical Records',
+                'category': 'damages'
+            },
+            {
+                'id': 'fact_003',
+                'text': 'Defendant was texting while driving',
+                'confidence': 0.75,
+                'source': 'Witness Statement',
+                'category': 'breach'
+            }
+        ]
+        
+        return jsonify({
+            'success': True,
+            'facts': facts
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting facts: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 if __name__ == '__main__':
     initialize_components()
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    
+    # Initialize Claims Matrix if components are available
+    try:
+        if claims_matrix_kg is not None:
+            initialize_claims_matrix()
+        else:
+            logger.warning("Claims Matrix components not available - continuing without Claims Matrix")
+    except Exception as e:
+        logger.error(f"Failed to initialize Claims Matrix at startup: {e}")
+    
+    port = int(os.environ.get('PORT', 5000))
+    host = '0.0.0.0' if os.getenv('FLASK_ENV') == 'production' else '0.0.0.0'
+    
+    logger.info(f"Starting LawyerFactory Enhanced Platform on {host}:{port}")
+    socketio.run(app, host=host, port=port, debug=True, allow_unsafe_werkzeug=True)

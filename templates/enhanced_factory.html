@@ -32,6 +32,29 @@
             background-color: rgba(59, 130, 246, 0.1);
         }
         
+        /* Draft upload zone specific styling */
+        .upload-zone.border-purple-600 {
+            border-color: #9333ea;
+        }
+        .upload-zone.border-blue-500 {
+            border-color: #3b82f6;
+        }
+        .upload-zone.border-green-500 {
+            border-color: #10b981;
+        }
+        .upload-zone.border-purple-600.dragover {
+            border-color: #a855f7;
+            background-color: rgba(147, 51, 234, 0.1);
+        }
+        .upload-zone.border-blue-500.dragover {
+            border-color: #60a5fa;
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        .upload-zone.border-green-500.dragover {
+            border-color: #34d399;
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+        
         .progress-bar {
             background-color: #4e514c;
             transition: width 0.5s ease-in-out;
@@ -146,6 +169,223 @@
             cursor: pointer;
             transform: scale(1.05);
             transition: all 0.2s ease;
+        }
+        
+        /* Claims Matrix Mindmap Styles */
+        .mindmap-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        .mindmap-node:hover {
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+            transform: scale(1.05);
+        }
+        
+        .mindmap-node.expanded {
+            stroke: #3b82f6;
+            stroke-width: 3px;
+        }
+        
+        .mindmap-node.central-hub {
+            stroke: #f59e0b;
+            stroke-width: 4px;
+        }
+        
+        .mindmap-link {
+            stroke: #4b5563;
+            stroke-width: 2px;
+            fill: none;
+            transition: all 0.3s ease;
+        }
+        
+        .mindmap-link:hover {
+            stroke: #3b82f6;
+            stroke-width: 3px;
+        }
+        
+        .mindmap-label {
+            fill: #e5e7eb;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+        
+        .mindmap-label.central {
+            font-size: 16px;
+            font-weight: 600;
+            fill: #f59e0b;
+        }
+        
+        .mindmap-label.element {
+            font-size: 14px;
+            font-weight: 500;
+            fill: #60a5fa;
+        }
+        
+        .clickable-term {
+            fill: #10b981;
+            text-decoration: underline;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .clickable-term:hover {
+            fill: #34d399;
+            font-weight: 600;
+        }
+        
+        /* Decision Tree Styles */
+        .decision-node {
+            background: #1f2937;
+            border: 2px solid #4b5563;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .decision-node:hover {
+            border-color: #3b82f6;
+            background: #374151;
+        }
+        
+        .decision-node.active {
+            border-color: #10b981;
+            background: #065f46;
+        }
+        
+        .decision-question {
+            color: #e5e7eb;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .decision-options {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .decision-option {
+            background: #4b5563;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s ease;
+        }
+        
+        .decision-option:hover {
+            background: #3b82f6;
+        }
+        
+        .decision-option.selected {
+            background: #10b981;
+        }
+        
+        /* Fact Attachment Styles */
+        .fact-item {
+            background: #1f2937;
+            border: 1px solid #4b5563;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: move;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .fact-item:hover {
+            border-color: #3b82f6;
+            background: #374151;
+        }
+        
+        .fact-item.dragging {
+            opacity: 0.6;
+            transform: rotate(2deg);
+        }
+        
+        .element-dropzone {
+            border: 2px dashed #4b5563;
+            border-radius: 6px;
+            padding: 12px;
+            min-height: 60px;
+            transition: all 0.2s ease;
+        }
+        
+        .element-dropzone.dragover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .attached-fact {
+            background: #065f46;
+            border: 1px solid #10b981;
+            border-radius: 4px;
+            padding: 6px 10px;
+            margin: 4px 0;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .fact-confidence {
+            background: #1f2937;
+            color: #d1d5db;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+        
+        /* Legal Research Integration Styles */
+        .research-popup {
+            position: absolute;
+            background: #1f2937;
+            border: 1px solid #4b5563;
+            border-radius: 8px;
+            padding: 12px;
+            max-width: 300px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            z-index: 1000;
+            animation: slideInUp 0.2s ease-out;
+        }
+        
+        .research-loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+        
+        .research-result {
+            border-bottom: 1px solid #4b5563;
+            padding: 8px 0;
+        }
+        
+        .research-result:last-child {
+            border-bottom: none;
+        }
+        
+        .case-law-citation {
+            color: #60a5fa;
+            font-weight: 500;
+            font-size: 12px;
+        }
+        
+        .authority-level {
+            background: #065f46;
+            color: #d1fae5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            margin-left: 8px;
         }
         
         /* Conveyor Belt UI Metaphor */
@@ -333,13 +573,19 @@
                 
                 <!-- Tab Headers -->
                 <div class="flex border-b border-gray-700">
-                    <button class="tab-button active flex-1 p-3 text-sm font-medium transition-colors" data-tab="case-setup">
+                    <button class="tab-button active flex-1 p-2 text-xs font-medium transition-colors" data-tab="case-setup">
                         Case Setup
                     </button>
-                    <button class="tab-button flex-1 p-3 text-sm font-medium transition-colors" data-tab="workflow-monitor">
+                    <button class="tab-button flex-1 p-2 text-xs font-medium transition-colors" data-tab="evidence-workflow">
+                        Evidence
+                    </button>
+                    <button class="tab-button flex-1 p-2 text-xs font-medium transition-colors" data-tab="workflow-monitor">
                         Workflow
                     </button>
-                    <button class="tab-button flex-1 p-3 text-sm font-medium transition-colors" data-tab="knowledge-graph">
+                    <button class="tab-button flex-1 p-2 text-xs font-medium transition-colors" data-tab="claims-matrix">
+                        Claims Matrix
+                    </button>
+                    <button class="tab-button flex-1 p-2 text-xs font-medium transition-colors" data-tab="knowledge-graph">
                         Knowledge
                     </button>
                 </div>
@@ -382,22 +628,88 @@
                         </div>
                         
                         <!-- File Upload Section -->
-                        <div id="uploadSection" class="space-y-4">
-                            <div id="uploadZone" class="upload-zone p-8 text-center cursor-pointer">
-                                <div class="space-y-2">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                    <p class="text-gray-400">Drop files here or click to upload</p>
-                                    <p class="text-xs text-gray-500">PDF, DOCX, DOC, TXT, MD files</p>
+                        <div id="uploadSection" class="space-y-6">
+                            <!-- General Documents Upload -->
+                            <div class="space-y-3">
+                                <h4 class="text-sm font-medium text-gray-300">General Case Documents</h4>
+                                <div id="uploadZone" class="upload-zone p-6 text-center cursor-pointer border-purple-600">
+                                    <div class="space-y-2">
+                                        <svg class="mx-auto h-10 w-10 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <p class="text-gray-400 text-sm">Drop general case files here or click to upload</p>
+                                        <p class="text-xs text-gray-500">Evidence, contracts, correspondence, etc.</p>
+                                    </div>
+                                    <input type="file" id="fileInput" multiple accept=".pdf,.docx,.doc,.txt,.md" class="hidden">
                                 </div>
-                                <input type="file" id="fileInput" multiple accept=".pdf,.docx,.doc,.txt,.md" class="hidden">
+                                <!-- Uploaded Files List -->
+                                <div id="uploadedFiles" class="space-y-2"></div>
                             </div>
-                            
-                            <!-- Uploaded Files List -->
-                            <div id="uploadedFiles" class="space-y-2"></div>
+
+                            <!-- Draft Documents Upload Zones -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Fact Statement Drafts -->
+                                <div class="space-y-3">
+                                    <h4 class="text-sm font-medium text-gray-300 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6.5a1.5 1.5 0 01-3 0V7h-3v8a2 2 0 11-4 0V7H4v4.5a1.5 1.5 0 01-3 0V5z" clip-rule="evenodd"/>
+                                        </svg>
+                                        Fact Statement Drafts
+                                    </h4>
+                                    <div id="factDraftUploadZone" class="upload-zone p-4 text-center cursor-pointer border-blue-500 bg-blue-900/10">
+                                        <div class="space-y-2">
+                                            <svg class="mx-auto h-8 w-8 text-blue-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                            <p class="text-blue-300 text-sm">Drop fact drafts here</p>
+                                            <p class="text-xs text-blue-400">Preliminary statement of facts</p>
+                                        </div>
+                                        <input type="file" id="factDraftInput" multiple accept=".pdf,.docx,.doc,.txt,.md" class="hidden">
+                                    </div>
+                                    <div id="factDraftFiles" class="space-y-2"></div>
+                                </div>
+
+                                <!-- Case/Complaint Drafts -->
+                                <div class="space-y-3">
+                                    <h4 class="text-sm font-medium text-gray-300 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+                                        </svg>
+                                        Case/Complaint Drafts
+                                    </h4>
+                                    <div id="caseDraftUploadZone" class="upload-zone p-4 text-center cursor-pointer border-green-500 bg-green-900/10">
+                                        <div class="space-y-2">
+                                            <svg class="mx-auto h-8 w-8 text-green-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                            <p class="text-green-300 text-sm">Drop case drafts here</p>
+                                            <p class="text-xs text-green-400">Complaint drafts, legal briefs</p>
+                                        </div>
+                                        <input type="file" id="caseDraftInput" multiple accept=".pdf,.docx,.doc,.txt,.md" class="hidden">
+                                    </div>
+                                    <div id="caseDraftFiles" class="space-y-2"></div>
+                                </div>
+                            </div>
                         </div>
-                        
+                        <!-- Legacy Evidence Table (auto-built) - Hidden by default -->
+                        <div class="mt-6 hidden" id="legacyEvidenceTable">
+                            <h3 class="text-lg font-semibold text-white mb-2">Evidence Table (auto-built)</h3>
+                            <div class="overflow-x-auto bg-gray-900/60 border border-gray-700 rounded">
+                                <table class="min-w-full text-sm">
+                                <thead class="bg-gray-800 text-gray-300">
+                                    <tr>
+                                    <th class="px-3 py-2 text-left">Source File</th>
+                                    <th class="px-3 py-2 text-left">Summary</th>
+                                    <th class="px-3 py-2 text-left">Group</th>
+                                    <th class="px-3 py-2 text-left">Tags</th>
+                                    <th class="px-3 py-2 text-left">Token Chunks</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="evidenceTableBody" class="divide-y divide-gray-800 text-gray-200"></tbody>
+                                </table>
+                            </div>
+                        </div>
                         <!-- Case Folder Section -->
                         <div id="folderSection" class="space-y-4 hidden">
                             <div>
@@ -414,6 +726,217 @@
                             Start Lawsuit Generation
                         </button>
                     </form>
+                </div>
+                
+                <!-- Enhanced Evidence Workflow Tab -->
+                <div id="evidence-workflow" class="tab-content flex-grow p-6 overflow-y-auto">
+                    <h2 class="text-xl font-semibold mb-4 text-white">Evidence Workflow Dashboard</h2>
+                    
+                    <!-- Evidence Workflow Controls -->
+                    <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Quick Actions -->
+                        <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+                            <h3 class="text-sm font-semibold text-gray-300 mb-3">Quick Actions</h3>
+                            <div class="space-y-2">
+                                <button id="addEvidenceBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-3 rounded-md transition-colors">
+                                    + Add Evidence
+                                </button>
+                                <button id="bulkImportBtn" class="w-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-3 rounded-md transition-colors">
+                                    📄 Bulk Import
+                                </button>
+                                <button id="exportEvidenceBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-2 px-3 rounded-md transition-colors">
+                                    📊 Export Data
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Workflow Progress -->
+                        <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+                            <h3 class="text-sm font-semibold text-gray-300 mb-3">Workflow Progress</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-gray-400">Evidence Entries</span>
+                                    <span id="evidenceCount" class="text-blue-400 font-medium">0</span>
+                                </div>
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-gray-400">Fact Assertions</span>
+                                    <span id="factsCount" class="text-green-400 font-medium">0</span>
+                                </div>
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-gray-400">Claims Generated</span>
+                                    <span id="claimsCount" class="text-yellow-400 font-medium">0</span>
+                                </div>
+                                <div class="w-full bg-gray-700 rounded-full h-2 mt-2">
+                                    <div id="workflowProgressBar" class="bg-blue-600 h-2 rounded-full transition-all" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Filter & Search -->
+                        <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+                            <h3 class="text-sm font-semibold text-gray-300 mb-3">Filter & Search</h3>
+                            <div class="space-y-2">
+                                <input type="text" id="evidenceSearchInput" placeholder="Search evidence..."
+                                       class="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-sm text-gray-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+                                <select id="evidenceTypeFilter" class="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-sm text-gray-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+                                    <option value="">All Types</option>
+                                    <option value="testimony">Testimony</option>
+                                    <option value="document">Document</option>
+                                    <option value="physical">Physical</option>
+                                    <option value="expert">Expert Opinion</option>
+                                    <option value="other">Other</option>
+                                </select>
+                                <select id="relevanceFilter" class="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-sm text-gray-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+                                    <option value="">All Relevance</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Evidence Table Container -->
+                    <div class="bg-gray-900/50 border border-gray-700 rounded-lg overflow-hidden">
+                        <!-- Table Header with Controls -->
+                        <div class="bg-gray-800 px-4 py-3 border-b border-gray-700 flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-white">Evidence Entries</h3>
+                            <div class="flex items-center space-x-3">
+                                <button id="toggleViewMode" class="bg-gray-700 hover:bg-gray-600 text-white text-sm px-3 py-1 rounded-md transition-colors">
+                                    📋 Table View
+                                </button>
+                                <button id="refreshEvidenceBtn" class="bg-gray-700 hover:bg-gray-600 text-white text-sm px-3 py-1 rounded-md transition-colors">
+                                    🔄 Refresh
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Enhanced Evidence Table -->
+                        <div class="overflow-x-auto max-h-96 overflow-y-auto">
+                            <table id="evidenceTable" class="min-w-full text-sm">
+                                <thead class="bg-gray-800 text-gray-300 sticky top-0">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left cursor-pointer hover:bg-gray-700" data-sort="id">
+                                            ID <span class="sort-indicator">↕</span>
+                                        </th>
+                                        <th class="px-3 py-2 text-left cursor-pointer hover:bg-gray-700" data-sort="source">
+                                            Source <span class="sort-indicator">↕</span>
+                                        </th>
+                                        <th class="px-3 py-2 text-left cursor-pointer hover:bg-gray-700" data-sort="page_section">
+                                            Page/Section <span class="sort-indicator">↕</span>
+                                        </th>
+                                        <th class="px-3 py-2 text-left cursor-pointer hover:bg-gray-700" data-sort="evidence_type">
+                                            Type <span class="sort-indicator">↕</span>
+                                        </th>
+                                        <th class="px-3 py-2 text-left cursor-pointer hover:bg-gray-700" data-sort="relevance">
+                                            Relevance <span class="sort-indicator">↕</span>
+                                        </th>
+                                        <th class="px-3 py-2 text-left cursor-pointer hover:bg-gray-700" data-sort="supporting_facts_count">
+                                            Facts <span class="sort-indicator">↕</span>
+                                        </th>
+                                        <th class="px-3 py-2 text-left">Citation</th>
+                                        <th class="px-3 py-2 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="evidenceTableBody" class="divide-y divide-gray-700 text-gray-200">
+                                    <!-- Dynamic content will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="evidenceEmptyState" class="text-center py-12 hidden">
+                            <div class="text-gray-400 mb-4">
+                                <svg class="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-300 mb-2">No Evidence Entries</h3>
+                            <p class="text-gray-400 mb-4">Start by adding evidence from uploaded documents or manually entering entries.</p>
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors" onclick="document.getElementById('addEvidenceBtn').click()">
+                                Add First Evidence Entry
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Evidence Entry Modal -->
+                    <div id="evidenceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+                        <div class="bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                            <div class="px-6 py-4 border-b border-gray-700">
+                                <h3 id="evidenceModalTitle" class="text-lg font-semibold text-white">Add Evidence Entry</h3>
+                                <button id="closeEvidenceModal" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <form id="evidenceForm" class="px-6 py-4 space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="evidenceSource" class="block text-sm font-medium text-gray-300 mb-1">Source *</label>
+                                        <input type="text" id="evidenceSource" required
+                                               class="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-gray-200 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                               placeholder="Document name or source">
+                                    </div>
+                                    <div>
+                                        <label for="evidencePageSection" class="block text-sm font-medium text-gray-300 mb-1">Page/Section</label>
+                                        <input type="text" id="evidencePageSection"
+                                               class="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-gray-200 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                               placeholder="Page 5, Section 2.1, etc.">
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="evidenceType" class="block text-sm font-medium text-gray-300 mb-1">Evidence Type *</label>
+                                        <select id="evidenceType" required
+                                                class="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-gray-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+                                            <option value="">Select type...</option>
+                                            <option value="testimony">Testimony</option>
+                                            <option value="document">Document</option>
+                                            <option value="physical">Physical Evidence</option>
+                                            <option value="expert">Expert Opinion</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="evidenceRelevance" class="block text-sm font-medium text-gray-300 mb-1">Relevance *</label>
+                                        <select id="evidenceRelevance" required
+                                                class="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-gray-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+                                            <option value="">Select relevance...</option>
+                                            <option value="high">High</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="low">Low</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label for="evidenceContent" class="block text-sm font-medium text-gray-300 mb-1">Content/Description *</label>
+                                    <textarea id="evidenceContent" required rows="4"
+                                              class="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-gray-200 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                              placeholder="Detailed description of the evidence..."></textarea>
+                                </div>
+                                
+                                <div>
+                                    <label for="evidenceSupportingFacts" class="block text-sm font-medium text-gray-300 mb-1">Supporting Facts</label>
+                                    <textarea id="evidenceSupportingFacts" rows="3"
+                                              class="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-gray-200 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                                              placeholder="Key facts supported by this evidence (one per line)..."></textarea>
+                                </div>
+                                
+                                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-700">
+                                    <button type="button" id="cancelEvidenceBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" id="saveEvidenceBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
+                                        Save Evidence
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Workflow Monitor Tab -->
@@ -550,6 +1073,122 @@
                     <!-- No Active Workflow Message -->
                     <div id="noWorkflow" class="text-center text-gray-400 py-8">
                         <p>No active workflow. Start a new case to begin.</p>
+                    </div>
+                </div>
+                
+                <!-- Claims Matrix Tab -->
+                <div id="claims-matrix" class="tab-content flex-grow p-6 overflow-y-auto">
+                    <h2 class="text-xl font-semibold mb-4 text-white">Interactive Claims Matrix</h2>
+                    
+                    <!-- Claims Matrix Controls -->
+                    <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Jurisdiction Selector -->
+                        <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+                            <h3 class="text-sm font-medium text-gray-300 mb-3">Jurisdiction</h3>
+                            <select id="claimsMatrixJurisdiction" class="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-sm text-gray-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+                                <option value="">Select Jurisdiction</option>
+                                <option value="ca_state">California State</option>
+                                <option value="ca_federal">California Federal</option>
+                                <option value="ca_local">California Local</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Cause of Action Selector -->
+                        <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+                            <h3 class="text-sm font-medium text-gray-300 mb-3">Cause of Action</h3>
+                            <select id="claimsMatrixCause" class="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-sm text-gray-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
+                                <option value="">Select Cause</option>
+                                <option value="negligence">Negligence</option>
+                                <option value="breach_of_contract">Breach of Contract</option>
+                                <option value="fraud">Fraud</option>
+                                <option value="iied">Intentional Infliction of Emotional Distress</option>
+                                <option value="defamation">Defamation</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Analysis Controls -->
+                        <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+                            <h3 class="text-sm font-medium text-gray-300 mb-3">Analysis</h3>
+                            <div class="space-y-2">
+                                <button id="startAnalysisBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors">
+                                    Start Analysis
+                                </button>
+                                <button id="resetAnalysisBtn" class="w-full bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium py-2 px-4 rounded-md transition-colors">
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Claims Matrix Mindmap Container -->
+                    <div class="bg-gray-900/50 border border-gray-700 rounded-lg overflow-hidden">
+                        <div class="bg-gray-800 px-4 py-3 border-b border-gray-700 flex justify-between items-center">
+                            <h3 class="text-lg font-medium text-white">Interactive Legal Mindmap</h3>
+                            <div class="flex items-center space-x-3">
+                                <div class="text-xs text-gray-400">
+                                    <span>Elements: </span><span id="elementCount">0</span>
+                                </div>
+                                <div class="text-xs text-gray-400">
+                                    <span>Facts Attached: </span><span id="attachedFactsCount">0</span>
+                                </div>
+                                <button id="fullscreenMindmapBtn" class="text-gray-400 hover:text-white">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="claimsMatrixMindmap" class="w-full h-96 bg-gray-900 relative">
+                            <!-- D3.js mindmap will be rendered here -->
+                            <div id="mindmapPlaceholder" class="flex items-center justify-center h-full text-gray-400">
+                                <div class="text-center">
+                                    <svg class="w-12 h-12 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                    </svg>
+                                    <p class="text-lg font-medium">Select jurisdiction and cause of action to begin</p>
+                                    <p class="text-sm text-gray-500 mt-2">Interactive legal mindmap will appear here</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Decision Tree Panel -->
+                    <div id="decisionTreePanel" class="mt-6 bg-gray-900/50 border border-gray-700 rounded-lg overflow-hidden hidden">
+                        <div class="bg-gray-800 px-4 py-3 border-b border-gray-700">
+                            <h3 class="text-lg font-medium text-white">Cascading Decision Tree</h3>
+                            <div class="text-sm text-gray-400 mt-1">
+                                <span id="currentElementName">Click an element to explore decision paths</span>
+                            </div>
+                        </div>
+                        <div id="decisionTreeContent" class="p-4 max-h-96 overflow-y-auto">
+                            <!-- Decision tree content will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Facts Attachment Panel -->
+                    <div id="factsAttachmentPanel" class="mt-6 bg-gray-900/50 border border-gray-700 rounded-lg overflow-hidden hidden">
+                        <div class="bg-gray-800 px-4 py-3 border-b border-gray-700 flex justify-between items-center">
+                            <h3 class="text-lg font-medium text-white">Fact-Element Attachments</h3>
+                            <button id="toggleFactsPanel" class="text-blue-400 hover:text-blue-300 text-sm">
+                                Toggle Panel
+                            </button>
+                        </div>
+                        <div id="factsAttachmentContent" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Left: Available Facts -->
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-300 mb-3">Available Facts</h4>
+                                <div id="availableFacts" class="space-y-2 max-h-64 overflow-y-auto">
+                                    <!-- Facts will be populated here -->
+                                </div>
+                            </div>
+                            <!-- Right: Element-Fact Connections -->
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-300 mb-3">Element Attachments</h4>
+                                <div id="elementFactConnections" class="space-y-3 max-h-64 overflow-y-auto">
+                                    <!-- Connections will be populated here -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -695,6 +1334,8 @@
             workflowData: null,
             knowledgeGraph: { nodes: [], links: [] },
             uploadedFiles: [],
+            factDraftFiles: [],
+            caseDraftFiles: [],
             activeTab: 'case-setup'
         };
         
@@ -738,7 +1379,7 @@
             // Case form submission
             document.getElementById('caseForm').addEventListener('submit', handleCaseSubmission);
             
-            // File upload
+            // File upload - General documents
             const uploadZone = document.getElementById('uploadZone');
             const fileInput = document.getElementById('fileInput');
             
@@ -747,6 +1388,26 @@
             uploadZone.addEventListener('dragleave', handleDragLeave);
             uploadZone.addEventListener('drop', handleFileDrop);
             fileInput.addEventListener('change', handleFileSelect);
+
+            // Draft document uploads
+            const factDraftUploadZone = document.getElementById('factDraftUploadZone');
+            const factDraftInput = document.getElementById('factDraftInput');
+            const caseDraftUploadZone = document.getElementById('caseDraftUploadZone');
+            const caseDraftInput = document.getElementById('caseDraftInput');
+
+            // Fact draft upload handlers
+            factDraftUploadZone.addEventListener('click', () => factDraftInput.click());
+            factDraftUploadZone.addEventListener('dragover', handleDragOver);
+            factDraftUploadZone.addEventListener('dragleave', handleDragLeave);
+            factDraftUploadZone.addEventListener('drop', (e) => handleDraftFileDrop(e, 'fact'));
+            factDraftInput.addEventListener('change', (e) => handleDraftFileSelect(e, 'fact'));
+
+            // Case draft upload handlers
+            caseDraftUploadZone.addEventListener('click', () => caseDraftInput.click());
+            caseDraftUploadZone.addEventListener('dragover', handleDragOver);
+            caseDraftUploadZone.addEventListener('dragleave', handleDragLeave);
+            caseDraftUploadZone.addEventListener('drop', (e) => handleDraftFileDrop(e, 'case'));
+            caseDraftInput.addEventListener('change', (e) => handleDraftFileSelect(e, 'case'));
             
             // Document source selection
             document.querySelectorAll('input[name="documentSource"]').forEach(radio => {
@@ -812,6 +1473,13 @@
                     return;
                 }
                 payload.uploaded_files = appState.uploadedFiles.map(f => f.filename);
+                // Include draft files if any are uploaded
+                if (appState.factDraftFiles.length > 0) {
+                    payload.fact_draft_files = appState.factDraftFiles.map(f => f.filename);
+                }
+                if (appState.caseDraftFiles.length > 0) {
+                    payload.case_draft_files = appState.caseDraftFiles.map(f => f.filename);
+                }
             }
             
             try {
@@ -1058,6 +1726,92 @@
             container.innerHTML = '';
             appState.uploadedFiles.forEach(addFileToList);
         }
+
+        // Draft file handling functions
+        function handleDraftFileDrop(e, draftType) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = Array.from(e.dataTransfer.files);
+            uploadDraftFiles(files, draftType);
+        }
+
+        function handleDraftFileSelect(e, draftType) {
+            const files = Array.from(e.target.files);
+            uploadDraftFiles(files, draftType);
+        }
+
+        async function uploadDraftFiles(files, draftType) {
+            for (const file of files) {
+                await uploadSingleDraftFile(file, draftType);
+            }
+        }
+
+        async function uploadSingleDraftFile(file, draftType) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('draft_type', draftType);
+            
+            const endpoint = draftType === 'fact' ? '/api/upload-fact-draft' : '/api/upload-case-draft';
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (draftType === 'fact') {
+                        appState.factDraftFiles.push(result);
+                        addDraftFileToList(result, 'fact');
+                    } else {
+                        appState.caseDraftFiles.push(result);
+                        addDraftFileToList(result, 'case');
+                    }
+                    showNotification(`Uploaded ${draftType} draft: ${result.original_filename}`, 'success');
+                } else {
+                    showNotification(result.error || 'Draft upload failed', 'error');
+                }
+            } catch (error) {
+                console.error('Draft upload error:', error);
+                showNotification('Draft upload failed', 'error');
+            }
+        }
+
+        function addDraftFileToList(fileData, draftType) {
+            const containerId = draftType === 'fact' ? 'factDraftFiles' : 'caseDraftFiles';
+            const container = document.getElementById(containerId);
+            const fileDiv = document.createElement('div');
+            const typeLabel = draftType === 'fact' ? 'Fact Draft' : 'Case Draft';
+            
+            fileDiv.className = 'bg-gray-900 p-3 rounded border border-gray-700 flex justify-between items-center';
+            fileDiv.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs px-2 py-1 rounded ${draftType === 'fact' ? 'bg-blue-600' : 'bg-green-600'} text-white">
+                        ${typeLabel}
+                    </span>
+                    <span class="text-sm text-gray-300">${fileData.original_filename}</span>
+                </div>
+                <button onclick="removeDraftFile('${fileData.upload_session_id}', '${draftType}')"
+                        class="text-red-400 hover:text-red-300 text-sm">Remove</button>
+            `;
+            container.appendChild(fileDiv);
+        }
+
+        function removeDraftFile(uploadSessionId, draftType) {
+            if (draftType === 'fact') {
+                appState.factDraftFiles = appState.factDraftFiles.filter(f => f.upload_session_id !== uploadSessionId);
+                const container = document.getElementById('factDraftFiles');
+                container.innerHTML = '';
+                appState.factDraftFiles.forEach(file => addDraftFileToList(file, 'fact'));
+            } else {
+                appState.caseDraftFiles = appState.caseDraftFiles.filter(f => f.upload_session_id !== uploadSessionId);
+                const container = document.getElementById('caseDraftFiles');
+                container.innerHTML = '';
+                appState.caseDraftFiles.forEach(file => addDraftFileToList(file, 'case'));
+            }
+        }
         
         // Tab management
         function switchTab(tabId) {
@@ -1090,6 +1844,8 @@
                 loadKnowledgeGraphData();
             } else if (tabId === 'knowledge-viz') {
                 initializeKnowledgeGraphVisualization();
+            } else if (tabId === 'claims-matrix') {
+                initializeClaimsMatrix();
             }
         }
         
@@ -1462,7 +2218,8 @@
                     
                     ${entity.source_text ? `
                     <div>
-                        <label class="block text-sm font-medium text-gray-300">Source Text</label>
+                        <label class="block text-sm font-medium 
+                        text-gray-300">Source Text</label>
                         <p class="text-gray-200 bg-gray-900 p-2 rounded text-sm">${entity.source_text}</p>
                     </div>
                     ` : ''}
@@ -1683,6 +2440,511 @@
             };
         }
         
+        // =====================================================
+        // CLAIMS MATRIX INTERACTIVE FUNCTIONALITY
+        // =====================================================
+        
+        // Claims Matrix state
+        const claimsMatrixState = {
+            currentAnalysis: null,
+            mindmapSvg: null,
+            mindmapSimulation: null,
+            currentNodes: [],
+            currentLinks: [],
+            selectedElement: null,
+            expandedTerms: new Set(),
+            factsAttached: new Map(),
+            decisionTreeState: {},
+            researchCache: new Map()
+        };
+        
+        // Initialize Claims Matrix when tab is loaded
+        function initializeClaimsMatrix() {
+            console.log('Initializing Claims Matrix');
+            
+            // Bind event handlers
+            document.getElementById('startAnalysisBtn').addEventListener('click', startClaimsAnalysis);
+            document.getElementById('resetAnalysisBtn').addEventListener('click', resetClaimsAnalysis);
+            document.getElementById('fullscreenMindmapBtn').addEventListener('click', toggleFullscreenMindmap);
+            document.getElementById('toggleFactsPanel').addEventListener('click', toggleFactsPanel);
+            
+            // Bind dropdown change handlers
+            document.getElementById('claimsMatrixJurisdiction').addEventListener('change', onJurisdictionChange);
+            document.getElementById('claimsMatrixCause').addEventListener('change', onCauseOfActionChange);
+            
+            initializeMindmapVisualization();
+        }
+        
+        function initializeMindmapVisualization() {
+            const container = document.getElementById('claimsMatrixMindmap');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            // Clear any existing visualization
+            d3.select('#claimsMatrixMindmap svg').remove();
+            
+            // Create SVG canvas
+            const svg = d3.select('#claimsMatrixMindmap')
+                .append('svg')
+                .attr('width', '100%')
+                .attr('height', '100%')
+                .attr('viewBox', `0 0 ${width} ${height}`);
+            
+            // Create zoom behavior
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 3])
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                });
+            
+            svg.call(zoom);
+            
+            // Create main group
+            const g = svg.append('g');
+            
+            // Store references
+            claimsMatrixState.mindmapSvg = svg;
+            claimsMatrixState.mindmapGroup = g;
+            claimsMatrixState.width = width;
+            claimsMatrixState.height = height;
+        }
+        
+        async function startClaimsAnalysis() {
+            const jurisdiction = document.getElementById('claimsMatrixJurisdiction').value;
+            const causeOfAction = document.getElementById('claimsMatrixCause').value;
+            
+            if (!jurisdiction || !causeOfAction) {
+                showNotification('Please select both jurisdiction and cause of action', 'warning');
+                return;
+            }
+            
+            showNotification('Starting Claims Matrix analysis...', 'info');
+            
+            try {
+                // Start analysis session with backend
+                const response = await fetch('/api/claims-matrix/analysis/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jurisdiction: jurisdiction,
+                        cause_of_action: causeOfAction,
+                        case_facts: [] // Will be populated from existing case facts
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    claimsMatrixState.currentAnalysis = result.session_id;
+                    
+                    // Get comprehensive definition and element breakdown
+                    await loadClaimsMatrixData(result.session_id);
+                    
+                    // Show panels
+                    document.getElementById('decisionTreePanel').classList.remove('hidden');
+                    document.getElementById('factsAttachmentPanel').classList.remove('hidden');
+                    
+                    showNotification('Claims Matrix analysis started successfully', 'success');
+                } else {
+                    showNotification(result.error || 'Failed to start analysis', 'error');
+                }
+            } catch (error) {
+                console.error('Error starting claims analysis:', error);
+                showNotification('Failed to start claims analysis', 'error');
+            }
+        }
+        
+        async function loadClaimsMatrixData(sessionId) {
+            try {
+                // Load comprehensive definition
+                const definitionResponse = await fetch(`/api/claims-matrix/definition/${sessionId}`);
+                const definition = await definitionResponse.json();
+                
+                if (definition.success) {
+                    // Create mindmap visualization
+                    createInteractiveMindmap(definition.data);
+                }
+                
+                // Load available facts from knowledge graph
+                await loadAvailableFacts();
+                
+            } catch (error) {
+                console.error('Error loading claims matrix data:', error);
+                showNotification('Error loading analysis data', 'error');
+            }
+        }
+        
+        function createInteractiveMindmap(definitionData) {
+            // Hide placeholder
+            document.getElementById('mindmapPlaceholder').style.display = 'none';
+            
+            // Create node data structure
+            const nodes = [
+                {
+                    id: 'central',
+                    type: 'cause',
+                    label: definitionData.cause_of_action,
+                    definition: definitionData.primary_definition,
+                    x: claimsMatrixState.width / 2,
+                    y: claimsMatrixState.height / 2,
+                    fixed: true,
+                    importance: 1.0
+                }
+            ];
+            
+            // Add element nodes
+            if (definitionData.elements) {
+                definitionData.elements.forEach((element, index) => {
+                    const angle = (index * 2 * Math.PI) / definitionData.elements.length;
+                    const radius = 120;
+                    
+                    nodes.push({
+                        id: `element_${element.name}`,
+                        type: 'element',
+                        label: element.name,
+                        definition: element.definition,
+                        questions: element.questions || [],
+                        importance: element.importance || 0.8,
+                        x: claimsMatrixState.width / 2 + Math.cos(angle) * radius,
+                        y: claimsMatrixState.height / 2 + Math.sin(angle) * radius
+                    });
+                });
+            }
+            
+            // Create links
+            const links = [];
+            definitionData.elements?.forEach(element => {
+                links.push({
+                    source: 'central',
+                    target: `element_${element.name}`,
+                    type: 'element-link'
+                });
+            });
+            
+            // Store in state
+            claimsMatrixState.currentNodes = nodes;
+            claimsMatrixState.currentLinks = links;
+            
+            // Render the mindmap
+            renderMindmap();
+        }
+        
+        function renderMindmap() {
+            const { mindmapGroup: g, currentNodes: nodes, currentLinks: links } = claimsMatrixState;
+            
+            // Clear previous content
+            g.selectAll('*').remove();
+            
+            // Create links
+            const link = g.append('g')
+                .attr('class', 'links')
+                .selectAll('line')
+                .data(links)
+                .enter().append('line')
+                .attr('class', 'mindmap-link')
+                .attr('x1', d => d.source.x || nodes.find(n => n.id === d.source).x)
+                .attr('y1', d => d.source.y || nodes.find(n => n.id === d.source).y)
+                .attr('x2', d => d.target.x || nodes.find(n => n.id === d.target).x)
+                .attr('y2', d => d.target.y || nodes.find(n => n.id === d.target).y);
+            
+            // Create node groups
+            const node = g.append('g')
+                .attr('class', 'nodes')
+                .selectAll('g')
+                .data(nodes)
+                .enter().append('g')
+                .attr('class', 'mindmap-node')
+                .attr('transform', d => `translate(${d.x},${d.y})`)
+                .on('click', handleNodeClick)
+                .on('mouseover', handleNodeHover)
+                .on('mouseout', handleNodeHoverOut);
+            
+            // Add circles to nodes
+            node.append('circle')
+                .attr('r', d => {
+                    if (d.type === 'cause') return 40;
+                    return 20 + (d.importance * 20);
+                })
+                .attr('fill', d => {
+                    if (d.type === 'cause') return '#f59e0b';
+                    if (d.type === 'element') return '#3b82f6';
+                    return '#6b7280';
+                })
+                .attr('stroke', d => d.type === 'cause' ? '#f59e0b' : '#4b5563')
+                .attr('stroke-width', d => d.type === 'cause' ? 3 : 2);
+            
+            // Add labels to nodes
+            node.append('text')
+                .attr('class', d => `mindmap-label ${d.type}`)
+                .attr('dy', d => d.type === 'cause' ? '.35em' : '.35em')
+                .style('font-size', d => d.type === 'cause' ? '14px' : '12px')
+                .text(d => d.label);
+            
+            // Update counts
+            document.getElementById('elementCount').textContent = nodes.filter(n => n.type === 'element').length;
+        }
+        
+        function handleNodeClick(event, d) {
+            console.log('Node clicked:', d);
+            
+            if (d.type === 'element') {
+                claimsMatrixState.selectedElement = d;
+                loadElementDecisionTree(d);
+                highlightSelectedNode(d);
+            } else if (d.type === 'cause') {
+                // Show cause of action details
+                showCauseDefinitionPopup(event, d);
+            }
+        }
+        
+        function handleNodeHover(event, d) {
+            // Show tooltip with definition
+            showDefinitionTooltip(event, d);
+            
+            // Highlight node
+            d3.select(event.currentTarget).select('circle')
+                .transition().duration(200)
+                .attr('stroke-width', d => d.type === 'cause' ? 4 : 3);
+        }
+        
+        function handleNodeHoverOut(event, d) {
+            // Hide tooltip
+            hideDefinitionTooltip();
+            
+            // Restore node appearance
+            d3.select(event.currentTarget).select('circle')
+                .transition().duration(200)
+                .attr('stroke-width', d => d.type === 'cause' ? 3 : 2);
+        }
+        
+        function showDefinitionTooltip(event, d) {
+            // Remove existing tooltip
+            d3.select('.definition-tooltip').remove();
+            
+            const tooltip = d3.select('body').append('div')
+                .attr('class', 'definition-tooltip research-popup')
+                .style('opacity', 0)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px');
+            
+            tooltip.html(`
+                <div class="text-sm font-medium text-white mb-2">${d.label}</div>
+                <div class="text-xs text-gray-300">${d.definition || 'Click to expand'}</div>
+                ${d.type === 'element' && d.questions ? `
+                    <div class="text-xs text-blue-300 mt-2">${d.questions.length} provable questions</div>
+                ` : ''}
+            `);
+            
+            tooltip.transition()
+                .duration(200)
+                .style('opacity', 1);
+        }
+        
+        function hideDefinitionTooltip() {
+            d3.select('.definition-tooltip').remove();
+        }
+        
+        async function loadElementDecisionTree(element) {
+            if (!claimsMatrixState.currentAnalysis) return;
+            
+            document.getElementById('currentElementName').textContent = element.label;
+            
+            try {
+                const response = await fetch(`/api/claims-matrix/decision-tree/${claimsMatrixState.currentAnalysis}/${element.id}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    renderDecisionTree(result.data);
+                }
+            } catch (error) {
+                console.error('Error loading decision tree:', error);
+                showNotification('Error loading decision tree', 'error');
+            }
+        }
+        
+        function renderDecisionTree(treeData) {
+            const container = document.getElementById('decisionTreeContent');
+            container.innerHTML = '';
+            
+            if (!treeData.questions || treeData.questions.length === 0) {
+                container.innerHTML = '<div class="text-gray-400 text-center py-4">No decision tree available for this element</div>';
+                return;
+            }
+            
+            treeData.questions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'decision-node';
+                questionDiv.innerHTML = `
+                    <div class="decision-question">${question.text}</div>
+                    <div class="text-xs text-gray-400 mb-2">${question.type} | Evidence needed: ${question.evidence_types.join(', ')}</div>
+                    <div class="decision-options">
+                        <button class="decision-option" data-answer="yes" data-question="${index}">Yes</button>
+                        <button class="decision-option" data-answer="no" data-question="${index}">No</button>
+                        <button class="decision-option" data-answer="unclear" data-question="${index}">Unclear</button>
+                    </div>
+                `;
+                
+                // Bind decision handlers
+                questionDiv.querySelectorAll('.decision-option').forEach(btn => {
+                    btn.addEventListener('click', handleDecisionChoice);
+                });
+                
+                container.appendChild(questionDiv);
+            });
+        }
+        
+        function handleDecisionChoice(event) {
+            const answer = event.target.dataset.answer;
+            const questionIndex = event.target.dataset.question;
+            
+            // Update UI
+            event.target.parentElement.querySelectorAll('.decision-option').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            event.target.classList.add('selected');
+            
+            // Store decision in state
+            const elementId = claimsMatrixState.selectedElement?.id;
+            if (elementId) {
+                if (!claimsMatrixState.decisionTreeState[elementId]) {
+                    claimsMatrixState.decisionTreeState[elementId] = {};
+                }
+                claimsMatrixState.decisionTreeState[elementId][questionIndex] = {
+                    answer: answer,
+                    timestamp: new Date()
+                };
+            }
+            
+            console.log('Decision recorded:', { elementId, questionIndex, answer });
+        }
+        
+        async function loadAvailableFacts() {
+            try {
+                const response = await fetch('/api/knowledge-graph/facts');
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayAvailableFacts(result.facts);
+                }
+            } catch (error) {
+                console.error('Error loading facts:', error);
+            }
+        }
+        
+        function displayAvailableFacts(facts) {
+            const container = document.getElementById('availableFacts');
+            container.innerHTML = '';
+            
+            facts.forEach(fact => {
+                const factDiv = document.createElement('div');
+                factDiv.className = 'fact-item';
+                factDiv.draggable = true;
+                factDiv.dataset.factId = fact.id;
+                factDiv.innerHTML = `
+                    <div class="text-sm text-gray-200">${fact.text}</div>
+                    <div class="text-xs text-gray-400 mt-1">
+                        Confidence: <span class="fact-confidence">${Math.round(fact.confidence * 100)}%</span>
+                    </div>
+                `;
+                
+                // Add drag handlers
+                factDiv.addEventListener('dragstart', handleFactDragStart);
+                factDiv.addEventListener('dragend', handleFactDragEnd);
+                
+                container.appendChild(factDiv);
+            });
+        }
+        
+        function handleFactDragStart(event) {
+            event.dataTransfer.setData('text/plain', event.target.dataset.factId);
+            event.target.classList.add('dragging');
+        }
+        
+        function handleFactDragEnd(event) {
+            event.target.classList.remove('dragging');
+        }
+        
+        function resetClaimsAnalysis() {
+            // Clear state
+            claimsMatrixState.currentAnalysis = null;
+            claimsMatrixState.currentNodes = [];
+            claimsMatrixState.currentLinks = [];
+            claimsMatrixState.selectedElement = null;
+            claimsMatrixState.expandedTerms.clear();
+            claimsMatrixState.factsAttached.clear();
+            claimsMatrixState.decisionTreeState = {};
+            
+            // Clear UI
+            if (claimsMatrixState.mindmapGroup) {
+                claimsMatrixState.mindmapGroup.selectAll('*').remove();
+            }
+            
+            document.getElementById('mindmapPlaceholder').style.display = 'flex';
+            document.getElementById('decisionTreePanel').classList.add('hidden');
+            document.getElementById('factsAttachmentPanel').classList.add('hidden');
+            
+            // Reset dropdowns
+            document.getElementById('claimsMatrixJurisdiction').value = '';
+            document.getElementById('claimsMatrixCause').value = '';
+            
+            // Reset counters
+            document.getElementById('elementCount').textContent = '0';
+            document.getElementById('attachedFactsCount').textContent = '0';
+            
+            showNotification('Claims Matrix reset', 'info');
+        }
+        
+        function toggleFullscreenMindmap() {
+            const container = document.getElementById('claimsMatrixMindmap');
+            
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => {
+                    console.log('Error attempting to enable fullscreen:', err.message);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        function toggleFactsPanel() {
+            const panel = document.getElementById('factsAttachmentPanel');
+            const content = document.getElementById('factsAttachmentContent');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'grid';
+            } else {
+                content.style.display = 'none';
+            }
+        }
+        
+        function onJurisdictionChange() {
+            // Update available causes of action based on jurisdiction
+            const jurisdiction = document.getElementById('claimsMatrixJurisdiction').value;
+            // This would typically fetch jurisdiction-specific causes from the backend
+            console.log('Jurisdiction changed to:', jurisdiction);
+        }
+        
+        function onCauseOfActionChange() {
+            // Update UI based on selected cause of action
+            const cause = document.getElementById('claimsMatrixCause').value;
+            console.log('Cause of action changed to:', cause);
+        }
+        
+        function highlightSelectedNode(selectedNode) {
+            // Remove previous highlights
+            claimsMatrixState.mindmapGroup.selectAll('.mindmap-node circle')
+                .classed('selected', false)
+                .attr('stroke-width', d => d.type === 'cause' ? 3 : 2);
+            
+            // Highlight selected node
+            claimsMatrixState.mindmapGroup.selectAll('.mindmap-node')
+                .filter(d => d.id === selectedNode.id)
+                .select('circle')
+                .classed('selected', true)
+                .attr('stroke-width', 4)
+                .attr('stroke', '#10b981');
+        }
+        
         // Initialize application
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Initializing LawyerFactory Enhanced Platform');
@@ -1691,11 +2953,90 @@
             initializeEventHandlers();
             initializeFactoryFloorVisualization();
             
+            // Initialize Claims Matrix if module is loaded
+            if (typeof window.initializeClaimsMatrix === 'function') {
+                window.initializeClaimsMatrix();
+                console.log('Claims Matrix initialized');
+            }
+            
             // Load initial data
             loadKnowledgeGraphData();
             
             console.log('Application initialized successfully');
         });
+        
+        (function(){
+            const uploadZone = document.getElementById('uploadZone');
+            const fileInput = document.getElementById('fileInput');
+            const filesList = document.getElementById('uploadedFiles');
+            const tbody = document.getElementById('evidenceTableBody');
+
+        function addRow(row){
+            if(!tbody) return;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+            <td class="px-3 py-2">${row.source_file || row.title}</td>
+            <td class="px-3 py-2 max-w-xl overflow-hidden text-ellipsis">${row.summary || ''}</td>
+            <td class="px-3 py-2">${row.group || ''}</td>
+            <td class="px-3 py-2">${(row.tags || []).join(' ')}</td>
+            <td class="px-3 py-2">${row.token_chunks ?? ''}</td>
+            `;
+            tbody.prepend(tr);
+        }
+
+        async function refreshEvidence(){
+            try{
+            const r = await fetch('/api/evidence');
+            const data = await r.json();
+            tbody.innerHTML = '';
+            (data.rows || []).slice(-100).forEach(addRow);
+            }catch(e){ console.warn('evidence refresh failed', e); }
+        }
+
+        async function uploadFiles(files){
+            for(const f of files){
+            const fd = new FormData();
+            fd.append('file', f);
+            const r = await fetch('/api/upload', { method: 'POST', body: fd });
+            const j = await r.json();
+            if(j.success){
+                const item = document.createElement('div');
+                item.className = 'text-xs text-gray-300';
+                item.textContent = `Uploaded ${j.original_filename} (${j.token_chunks || 0} chunks)`;
+                filesList.prepend(item);
+                if (j.evidence_row) addRow(j.evidence_row);
+            } else {
+                console.warn('upload failed', j);
+            }
+            }
+        }
+
+        if(uploadZone){
+            uploadZone.addEventListener('click', ()=> fileInput.click());
+            uploadZone.addEventListener('dragover', (e)=>{ e.preventDefault(); uploadZone.classList.add('dragover'); });
+            uploadZone.addEventListener('dragleave', ()=> uploadZone.classList.remove('dragover'));
+            uploadZone.addEventListener('drop', (e)=>{
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            if(e.dataTransfer.files?.length) uploadFiles(e.dataTransfer.files);
+            });
+        }
+        if(fileInput){
+            fileInput.addEventListener('change', (e)=>{
+            uploadFiles(e.target.files);
+            fileInput.value = '';
+            });
+        }
+
+        refreshEvidence();
+        })();
+
     </script>
+    
+    <!-- Enhanced Evidence Table JavaScript -->
+    <script src="/static/js/evidence-table.js"></script>
+    
+    <!-- Claims Matrix Interactive Module -->
+    <script src="/static/js/claims-matrix.js"></script>
 </body>
 </html>

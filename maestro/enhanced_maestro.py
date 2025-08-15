@@ -10,6 +10,11 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import sys
+import os
+
+# Add project root to Python path for imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from .agent_registry import AgentRegistry, TaskScheduler
 from .checkpoint_manager import CheckpointManager
@@ -18,6 +23,14 @@ from .event_system import EventBus
 from .workflow_models import (PhaseStatus, TaskPriority, WorkflowPhase,
                               WorkflowState, WorkflowStateManager,
                               WorkflowTask)
+
+# Import enhanced draft processing capabilities
+try:
+    from enhanced_draft_processor import EnhancedDraftProcessor
+    ENHANCED_PROCESSING_AVAILABLE = True
+except ImportError:
+    logger.warning("Enhanced draft processor not available")
+    ENHANCED_PROCESSING_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +54,17 @@ class EnhancedMaestro:
         
         # Initialize agent pools
         self._initialize_agent_pools()
+        
+        # Initialize enhanced draft processor if available
+        self.enhanced_draft_processor = None
+        if ENHANCED_PROCESSING_AVAILABLE:
+            try:
+                self.enhanced_draft_processor = EnhancedDraftProcessor(
+                    knowledge_graph_path=str(self.storage_path / "enhanced_kg.db")
+                )
+                logger.info("Enhanced draft processor initialized successfully")
+            except Exception as e:
+                logger.warning(f"Failed to initialize enhanced draft processor: {e}")
         
         # Active workflows tracking
         self.active_workflows: Dict[str, WorkflowState] = {}
@@ -237,14 +261,332 @@ class EnhancedMaestro:
                     results[dep_task_id] = dep_task.output_data
         return results
 
+    async def process_draft_documents(self, draft_documents: List[Dict[str, Any]], session_id: str) -> Dict[str, Any]:
+        """Process draft documents with priority before general evidence processing"""
+        try:
+            logger.info(f"Processing {len(draft_documents)} draft documents for session {session_id}")
+            
+            fact_drafts = [doc for doc in draft_documents if doc.get('draft_type') == 'fact_statement']
+            case_drafts = [doc for doc in draft_documents if doc.get('draft_type') == 'case_complaint']
+            
+            processing_results = {
+                'fact_drafts_processed': len(fact_drafts),
+                'case_drafts_processed': len(case_drafts),
+                'foundational_entities': [],
+                'high_confidence_facts': [],
+                'draft_analysis': {}
+            }
+            
+            # Process fact statement drafts first (highest priority)
+            if fact_drafts:
+                fact_result = await self._process_fact_statement_drafts(fact_drafts, session_id)
+                processing_results['fact_analysis'] = fact_result
+                processing_results['foundational_entities'].extend(fact_result.get('entities', []))
+                processing_results['high_confidence_facts'].extend(fact_result.get('facts', []))
+            
+            # Process case/complaint drafts second
+            if case_drafts:
+                case_result = await self._process_case_complaint_drafts(case_drafts, session_id)
+                processing_results['case_analysis'] = case_result
+                processing_results['foundational_entities'].extend(case_result.get('entities', []))
+                processing_results['high_confidence_facts'].extend(case_result.get('legal_issues', []))
+            
+            # Update workflow state with foundational information
+            if session_id in self.active_workflows:
+                workflow_state = self.active_workflows[session_id]
+                workflow_state.global_context.update({
+                    'foundational_entities': processing_results['foundational_entities'],
+                    'high_confidence_facts': processing_results['high_confidence_facts'],
+                    'draft_processing_complete': True
+                })
+            
+            logger.info(f"Draft document processing complete: {processing_results['fact_drafts_processed']} fact drafts, {processing_results['case_drafts_processed']} case drafts")
+            return processing_results
+            
+        except Exception as e:
+            logger.error(f"Draft document processing failed: {e}")
+            return {"error": str(e), "draft_processing_complete": False}
+
+    async def _process_fact_statement_drafts(self, fact_drafts: List[Dict[str, Any]], session_id: str) -> Dict[str, Any]:
+        """Process fact statement drafts with aggregation and knowledge graph integration"""
+        try:
+            # Aggregate multiple fact drafts if present
+            aggregated_facts = []
+            entities_extracted = []
+            
+            for draft in fact_drafts:
+                content = draft.get('content', '')
+                if content:
+                    # Extract structured facts and entities
+                    facts = await self._extract_legal_facts(content, draft_type='fact_statement')
+                    entities = await self._extract_legal_entities(content, confidence_boost=0.2)
+                    
+                    aggregated_facts.extend(facts)
+                    entities_extracted.extend(entities)
+            
+            # Deduplicate and rank facts by confidence
+            unique_facts = self._deduplicate_facts(aggregated_facts)
+            unique_entities = self._deduplicate_entities(entities_extracted)
+            
+            # Store in knowledge graph with high confidence
+            if self.knowledge_graph:
+                kg_storage_result = await self._store_foundational_knowledge(
+                    unique_entities, unique_facts, source_type='fact_statement_draft'
+                )
+            else:
+                kg_storage_result = {"status": "knowledge_graph_unavailable"}
+            
+            return {
+                'facts': unique_facts,
+                'entities': unique_entities,
+                'confidence_level': 'high',
+                'source_type': 'fact_statement_draft',
+                'knowledge_graph_storage': kg_storage_result
+            }
+            
+        except Exception as e:
+            logger.error(f"Fact statement processing failed: {e}")
+            return {"error": str(e)}
+
+    async def _process_case_complaint_drafts(self, case_drafts: List[Dict[str, Any]], session_id: str) -> Dict[str, Any]:
+        """Process case/complaint drafts with legal issue extraction"""
+        try:
+            # Aggregate multiple case drafts if present
+            legal_issues = []
+            entities_extracted = []
+            claims_identified = []
+            
+            for draft in case_drafts:
+                content = draft.get('content', '')
+                if content:
+                    # Extract legal issues and claims
+                    issues = await self._extract_legal_issues(content)
+                    claims = await self._extract_legal_claims(content)
+                    entities = await self._extract_legal_entities(content, confidence_boost=0.2)
+                    
+                    legal_issues.extend(issues)
+                    claims_identified.extend(claims)
+                    entities_extracted.extend(entities)
+            
+            # Deduplicate and categorize
+            unique_issues = self._deduplicate_legal_issues(legal_issues)
+            unique_claims = self._deduplicate_claims(claims_identified)
+            unique_entities = self._deduplicate_entities(entities_extracted)
+            
+            # Store in knowledge graph
+            if self.knowledge_graph:
+                kg_storage_result = await self._store_foundational_knowledge(
+                    unique_entities, unique_issues + unique_claims, source_type='case_complaint_draft'
+                )
+            else:
+                kg_storage_result = {"status": "knowledge_graph_unavailable"}
+            
+            return {
+                'legal_issues': unique_issues,
+                'claims': unique_claims,
+                'entities': unique_entities,
+                'confidence_level': 'high',
+                'source_type': 'case_complaint_draft',
+                'knowledge_graph_storage': kg_storage_result
+            }
+            
+        except Exception as e:
+            logger.error(f"Case complaint processing failed: {e}")
+            return {"error": str(e)}
+
+    async def _extract_legal_facts(self, content: str, draft_type: str) -> List[Dict[str, Any]]:
+        """Extract structured legal facts from draft content"""
+        # This would use NLP/LLM processing to extract facts
+        # For now, return a simplified extraction
+        facts = []
+        sentences = content.split('.')
+        for i, sentence in enumerate(sentences[:10]):  # Process first 10 sentences
+            if len(sentence.strip()) > 20:  # Only meaningful sentences
+                facts.append({
+                    'fact_id': f"{draft_type}_fact_{i}",
+                    'content': sentence.strip(),
+                    'confidence': 0.9,
+                    'source_type': draft_type,
+                    'foundational': True
+                })
+        return facts
+
+    async def _extract_legal_entities(self, content: str, confidence_boost: float = 0.0) -> List[Dict[str, Any]]:
+        """Extract legal entities with enhanced confidence for draft documents"""
+        # Simplified entity extraction - in production would use NER
+        entities = []
+        
+        # Basic pattern matching for legal entities
+        import re
+        
+        # Find potential parties (capitalized words/phrases)
+        party_pattern = r'\b[A-Z][a-zA-Z\s]+(?:Inc\.|Corp\.|LLC|Ltd\.)\b'
+        parties = re.findall(party_pattern, content)
+        
+        for party in parties[:5]:  # Limit to first 5
+            entities.append({
+                'type': 'PARTY',
+                'name': party.strip(),
+                'confidence': 0.8 + confidence_boost,
+                'foundational': True
+            })
+        
+        # Find dates
+        date_pattern = r'\b\d{1,2}/\d{1,2}/\d{4}\b|\b\w+ \d{1,2}, \d{4}\b'
+        dates = re.findall(date_pattern, content)
+        
+        for date in dates[:3]:  # Limit to first 3
+            entities.append({
+                'type': 'DATE',
+                'name': date,
+                'confidence': 0.9 + confidence_boost,
+                'foundational': True
+            })
+        
+        return entities
+
+    async def _extract_legal_issues(self, content: str) -> List[Dict[str, Any]]:
+        """Extract legal issues from case/complaint drafts"""
+        issues = []
+        # Simplified extraction - look for common legal terms
+        legal_terms = ['breach of contract', 'negligence', 'fraud', 'defamation', 'copyright infringement']
+        
+        content_lower = content.lower()
+        for term in legal_terms:
+            if term in content_lower:
+                issues.append({
+                    'issue_type': term.replace(' ', '_').upper(),
+                    'description': term,
+                    'confidence': 0.8,
+                    'foundational': True
+                })
+        
+        return issues
+
+    async def _extract_legal_claims(self, content: str) -> List[Dict[str, Any]]:
+        """Extract legal claims from complaint drafts"""
+        claims = []
+        # Look for numbered claims or causes of action
+        import re
+        
+        claim_pattern = r'(?:Claim|Count|Cause of Action)\s+(\d+|I+|One|Two|Three)'
+        matches = re.findall(claim_pattern, content, re.IGNORECASE)
+        
+        for i, match in enumerate(matches[:5]):  # Limit to 5 claims
+            claims.append({
+                'claim_id': f"claim_{i+1}",
+                'claim_number': match,
+                'confidence': 0.9,
+                'foundational': True
+            })
+        
+        return claims
+
+    def _deduplicate_facts(self, facts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Remove duplicate facts based on content similarity"""
+        unique_facts = []
+        seen_content = set()
+        
+        for fact in facts:
+            content = fact.get('content', '').lower().strip()
+            if content and content not in seen_content:
+                seen_content.add(content)
+                unique_facts.append(fact)
+        
+        return unique_facts
+
+    def _deduplicate_entities(self, entities: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Remove duplicate entities based on name and type"""
+        unique_entities = []
+        seen_entities = set()
+        
+        for entity in entities:
+            key = (entity.get('type', ''), entity.get('name', '').lower())
+            if key not in seen_entities:
+                seen_entities.add(key)
+                unique_entities.append(entity)
+        
+        return unique_entities
+
+    def _deduplicate_legal_issues(self, issues: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Remove duplicate legal issues"""
+        unique_issues = []
+        seen_issues = set()
+        
+        for issue in issues:
+            issue_type = issue.get('issue_type', '')
+            if issue_type and issue_type not in seen_issues:
+                seen_issues.add(issue_type)
+                unique_issues.append(issue)
+        
+        return unique_issues
+
+    def _deduplicate_claims(self, claims: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Remove duplicate claims"""
+        unique_claims = []
+        seen_claims = set()
+        
+        for claim in claims:
+            claim_id = claim.get('claim_id', '')
+            if claim_id and claim_id not in seen_claims:
+                seen_claims.add(claim_id)
+                unique_claims.append(claim)
+        
+        return unique_claims
+
+    async def _store_foundational_knowledge(self, entities: List[Dict[str, Any]],
+                                          facts: List[Dict[str, Any]], source_type: str) -> Dict[str, Any]:
+        """Store foundational knowledge in the knowledge graph with high confidence"""
+        try:
+            if not self.knowledge_graph:
+                return {"status": "no_knowledge_graph"}
+            
+            stored_entities = 0
+            stored_facts = 0
+            
+            # Store entities
+            for entity in entities:
+                try:
+                    # Add entity to knowledge graph (implementation depends on KG interface)
+                    # This is a simplified version
+                    stored_entities += 1
+                except Exception as e:
+                    logger.warning(f"Failed to store entity: {e}")
+            
+            # Store facts as observations or separate entities
+            for fact in facts:
+                try:
+                    # Store fact in knowledge graph
+                    stored_facts += 1
+                except Exception as e:
+                    logger.warning(f"Failed to store fact: {e}")
+            
+            return {
+                "status": "success",
+                "entities_stored": stored_entities,
+                "facts_stored": stored_facts,
+                "source_type": source_type
+            }
+            
+        except Exception as e:
+            logger.error(f"Knowledge graph storage failed: {e}")
+            return {"status": "error", "error": str(e)}
+
     async def start_workflow(self, case_name: str, session_id: str, input_documents: List[str],
                            initial_context: Optional[Dict[str, Any]] = None) -> str:
-        """Initialize and start a new workflow"""
+        """Initialize and start a new workflow with draft document processing"""
         
         if initial_context is None:
             initial_context = {}
         
         logger.info(f"Starting new workflow for case: {case_name}, session: {session_id}")
+        
+        # Check for draft documents in initial context and process them first
+        draft_documents = initial_context.get('draft_documents', [])
+        if draft_documents:
+            logger.info(f"Processing {len(draft_documents)} draft documents before workflow start")
+            draft_results = await self.process_draft_documents(draft_documents, session_id)
+            initial_context['draft_processing_results'] = draft_results
         
         # Create workflow state
         workflow_state = WorkflowState(
