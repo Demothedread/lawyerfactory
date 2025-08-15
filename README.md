@@ -1,8 +1,6 @@
 
 # lawyerfactory
 
-This repository provides a small knowledge graph utility.
-
 ## Knowledge Graph Module
 
 The `knowledge_graph.py` module loads and saves `knowledge_graph.json`, which
@@ -52,11 +50,15 @@ python assessor.py sample.txt --author "Author" --title "Doc" --date 2024-01-01
 ```
 
 ## Testing and Linting
-Run static analysis and tests:
-```
-flake8
-pytest -q
-```
+
+* Lint the code with flake8::
+
+    flake8
+
+* Run the tests with pytest::
+
+    python -m pytest
+=======
 
 ## Use Cases
 This prototype illustrates how a network of specialized agents can assemble structured legal content. The approach can be expanded with additional agents or a persistent vector database for larger projects.

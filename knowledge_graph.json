@@ -1,4 +1,119 @@
 {
+  "entities": [
+    {
+     "id": "README"
+      "description": "Project introduction and setup"
+    },
+    {
+     "id": "requirements.txt"
+      "description": "Python dependencies"
+    },
+    {
+      "id": "flake8 config"
+      "description": "Linter configuration"
+    },
+    {
+      "id":  "Agent"
+      "description": "Agent with a knowledge graph"
+      "relations: "
+    },
+    {
+     "id": "Tests"
+     "description": "Pytest suite"
+      },
+    {
+      "id": "Maestro",
+      "type": "agent",
+      "features": ["orchestration", "coordination"]
+    },
+    {
+      "id": "Reader",
+      "type": "agent",
+      "features": ["document intake", "fact extraction"]
+    },
+    {
+      "id": "Outliner",
+      "type": "agent",
+      "features": ["outline creation", "gap identification"]
+    },
+    {
+      "id": "Writer",
+      "type": "agent",
+      "features": ["drafting", "Law of Threes"]
+    },
+    {
+      "id": "Editor",
+      "type": "agent",
+      "features": ["style", "coherence"]
+    },
+    {
+      "id": "Paralegal",
+      "type": "agent",
+      "features": ["jurisdiction", "evidence tagging"]
+    },
+    {
+      "id": "Legal Formatter",
+      "type": "agent",
+      "features": ["legal citation", "IRAC formatting"]
+    },
+    {
+      "id": "Legal Procedure Agent",
+      "type": "agent",
+      "features": ["procedure compliance", "form retrieval"]
+    },
+    {  
+     "id": "Assessor",
+      "type": "Agent",
+      "features": [
+        "intake documents",
+        "organize list",
+        "AI summarization",
+        "categorization",
+        "hashtags"
+      ],
+      "relationships": {"Repository": "adds documents"}
+    },
+    {
+      "id": "Repository",
+      "type": "Database",
+      "features": [
+        "metadata fields (author, title, publication date, summary, category, hashtags)",
+        "CSV storage"
+      ],
+      "relationships": {"Legal Researcher": "source of documents"}
+    },
+    {
+      "id": "Legal Researcher",
+      "type": "Agent",
+      "features": ["research using repository"],
+      "relationships": {"Repository": "uses"}
+    },
+    {
+      "id": "Lawsuit",
+      "type": "Document".
+      "features": [
+            "statement_of_facts",
+            "description_of_parties",
+            "cover_sheet"
+          ]
+    },
+    {
+      "id": "workflow"
+      "type": "meta"
+      "features":[
+          "stages": [
+            "Preproduction Planning",
+            "Research and Development",
+            "Organization / Database Building",
+            "1st Pass All Parts",
+            "Combining",
+            "Editing",
+            "2nd Pass",
+            "Human Feedback",
+            "Final Draft"
+           ],
+        ]
+=======
   "entities": [ 
     {"name": "project", "description": "LawyerFactory codebase"},
     {"name": "README.md", "description": "Project documentation"},
@@ -41,4 +156,7 @@
     "Added agents package with lexomnia module and knowledge graph"
     "Added summarizer and categorizer modules"
   ]
+
+}}
+=======
 }
