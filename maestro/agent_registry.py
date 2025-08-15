@@ -6,11 +6,11 @@ Manages specialized bots and their lifecycle.
 import asyncio
 import logging
 from abc import ABC, abstractmethod
-from typing import Dict, List, Any, Optional, Type
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Dict, List, Optional, Type
 
-from .workflow_models import WorkflowTask, WorkflowPhase, PhaseStatus
+from .workflow_models import PhaseStatus, WorkflowPhase, WorkflowTask
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,11 @@ class AgentCapability(Enum):
     DOCUMENT_REVIEW = "document_review"
     FORMATTING = "formatting"
     ORCHESTRATION = "orchestration"
+    # AI-specific capabilities for document generation
+    AI_CASE_CLASSIFICATION = "ai_case_classification"
+    PDF_FORM_PROCESSING = "pdf_form_processing"
+    AUTOMATED_FIELD_MAPPING = "automated_field_mapping"
+    COURT_FORM_GENERATION = "court_form_generation"
 
 
 @dataclass
@@ -92,6 +97,21 @@ class AgentInterface(ABC):
             WorkflowPhase.EDITING: AgentCapability.DOCUMENT_REVIEW,
             WorkflowPhase.ORCHESTRATION: AgentCapability.ORCHESTRATION,
         }
+        
+        # Check for AI-specific task types
+        task_description = task.description.lower() if hasattr(task, 'description') else ""
+        task_input_data = getattr(task, 'input_data', {})
+        task_type = task_input_data.get('task_type', '')
+        
+        # Map AI-specific tasks to capabilities
+        if 'ai_case_classification' in task_description or task_type == 'ai_case_classification':
+            return AgentCapability.AI_CASE_CLASSIFICATION
+        elif 'pdf_form_processing' in task_description or task_type == 'pdf_form_processing':
+            return AgentCapability.PDF_FORM_PROCESSING
+        elif 'automated_field_mapping' in task_description or task_type == 'automated_field_mapping':
+            return AgentCapability.AUTOMATED_FIELD_MAPPING
+        elif 'court_form_generation' in task_description or task_type == 'court_form_generation':
+            return AgentCapability.COURT_FORM_GENERATION
         return capability_map.get(task.phase, AgentCapability.ORCHESTRATION)
 
 
@@ -102,48 +122,98 @@ class MockAgentInterface(AgentInterface):
         """Mock task execution - returns a simulated result"""
         logger.info(f"Mock {self.agent_type} executing task {task.id}: {task.description}")
         
-        # Simulate processing time
-        await asyncio.sleep(1)
-        
-        # Return mock result based on task phase
-        mock_results = {
-            WorkflowPhase.INTAKE: {
-                'entities_extracted': ['Tesla Inc.', 'SEC', 'Q3 2023'],
-                'documents_processed': len(context.get('input_documents', [])),
-                'knowledge_graph_updated': True
-            },
-            WorkflowPhase.OUTLINE: {
-                'case_theory': 'Securities fraud based on misleading statements',
-                'legal_claims': ['Securities Act violations', 'Rule 10b-5 violations'],
-                'jurisdiction': 'Federal District Court'
-            },
-            WorkflowPhase.RESEARCH: {
-                'cases_found': ['SEC v. Tesla (2018)', 'In re Tesla Securities Litigation'],
-                'statutes_applicable': ['Securities Act of 1933', 'Securities Exchange Act of 1934'],
-                'research_gaps': []
-            },
-            WorkflowPhase.DRAFTING: {
-                'sections_completed': ['Introduction', 'Factual Background', 'Legal Claims'],
-                'word_count': 2500,
-                'citations_added': 15
-            },
-            WorkflowPhase.LEGAL_REVIEW: {
-                'compliance_issues': [],
-                'formatting_applied': True,
-                'citations_verified': True
-            },
-            WorkflowPhase.EDITING: {
-                'revisions_made': 8,
-                'style_score': 85,
-                'readability_score': 'Professional'
-            },
-            WorkflowPhase.ORCHESTRATION: {
-                'workflow_status': 'progressing',
-                'next_actions': ['Await human review']
-            }
-        }
-        
-        return mock_results.get(task.phase, {'status': 'completed'})
+        # Simulate variable processing time depending on priority
+        try:
+            base_delay = 0.5
+            if getattr(task, "priority", None) is not None:
+                # map priority enum/int to delays conservatively
+                base_delay += 0.2 * (getattr(task, "priority").value if hasattr(task.priority, "value") else 1)
+        except Exception:
+            base_delay = 1.0
+
+        await asyncio.sleep(min(base_delay, 5))
+
+        # Provide mock outputs tailored to task type / phase
+        try:
+            input_data = getattr(task, "input_data", {}) or {}
+            task_type = input_data.get("task_type", "")
+            description = (getattr(task, "description", "") or "").lower()
+
+            # AI-specific behaviors
+            if task_type == "ai_case_classification" or "ai case classification" in description:
+                result = {
+                    "classification": "contract_dispute",
+                    "confidence": 0.87,
+                    "context_updates": {"case_type": "contract_dispute"},
+                    "entities": [{"id": "e1", "type": "LEGAL_ISSUE", "name": "Breach of Contract", "confidence": 0.92}]
+                }
+                return result
+
+            if task_type == "pdf_form_processing" or "pdf form" in description:
+                result = {
+                    "forms_found": ["civil_complaint_form.pdf"],
+                    "pages_processed": 3,
+                    "context_updates": {"forms_detected": True},
+                    "entities": []
+                }
+                return result
+
+            if task_type == "automated_field_mapping" or "field mapping" in description:
+                result = {
+                    "field_mappings": {"plaintiff_name": "John Doe", "defendant_name": "Acme LLC"},
+                    "confidence": 0.78,
+                    "context_updates": {"field_mapping_complete": True}
+                }
+                return result
+
+            if task_type == "court_form_generation" or "court form generation" in description:
+                result = {
+                    "generated_forms": [{"filename": "filled_complaint.pdf", "size_bytes": 123456}],
+                    "requires_human_review": True,
+                    "context_updates": {"forms_ready_for_review": True}
+                }
+                return result
+
+            # Phase-based mock outputs
+            if task.phase == WorkflowPhase.INTAKE:
+                return {
+                    "entities": [
+                        {"id": "p1", "type": "PERSON", "name": "Jane Plaintiff", "confidence": 0.95},
+                        {"id": "o1", "type": "ORGANIZATION", "name": "Doe & Co", "confidence": 0.88}
+                    ],
+                    "relationships": [],
+                    "stats": {"pages": 10, "entities_extracted": 2},
+                    "context_updates": {"intake_processed": True}
+                }
+
+            if task.phase == WorkflowPhase.RESEARCH:
+                return {
+                    "research_results": [
+                        {"source": "CaseLawDB", "snippet": "Relevant ruling ...", "score": 0.82}
+                    ],
+                    "context_updates": {"research_collected": True}
+                }
+
+            if task.phase == WorkflowPhase.DRAFTING:
+                return {
+                    "document_text": "DRAFT: Plaintiff alleges ...",
+                    "tokens_used": 512,
+                    "context_updates": {"draft_ready": True}
+                }
+
+            if task.phase in (WorkflowPhase.LEGAL_REVIEW, WorkflowPhase.EDITING):
+                return {
+                    "issues_found": [],
+                    "suggestions": ["Minor citation fix"],
+                    "context_updates": {"review_passed": True}
+                }
+
+            # Default fallback
+            return {"result": f"Mock execution completed for {task.id}", "context_updates": {}}
+
+        except Exception as e:
+            logger.error(f"MockAgent execution error for task {task.id}: {e}")
+            raise
 
     async def health_check(self) -> bool:
         """Mock health check - always returns True"""
@@ -245,10 +315,74 @@ class AgentRegistry:
                 capabilities=[AgentCapability.ORCHESTRATION],
                 max_concurrent=1
             ),
+            AgentConfig(
+                agent_type="AIDocumentAgent",
+                capabilities=[
+                    AgentCapability.AI_CASE_CLASSIFICATION,
+                    AgentCapability.PDF_FORM_PROCESSING,
+                    AgentCapability.AUTOMATED_FIELD_MAPPING,
+                    AgentCapability.COURT_FORM_GENERATION,
+                    AgentCapability.LEGAL_WRITING
+                ],
+                max_concurrent=2,
+                timeout_seconds=600,
+                config={
+                    'forms_directory': 'docs/Court_files',
+                    'output_directory': 'output',
+                    'max_retries': 3,
+                    'processing_timeout': 300
+                }
+            ),
         ]
 
+        # Register real agents when available, fallback to mock agents
         for config in default_agents:
-            self.register_agent(config.agent_type, MockAgentInterface, config)
+            real_agent_class = None
+            
+            # Try to import and use real agents
+            try:
+                if config.agent_type == "AIDocumentAgent":
+                    from .bots.ai_document_agent import AIDocumentAgent
+                    real_agent_class = AIDocumentAgent
+                    logger.info(f"✓ AIDocumentAgent properly inherits from AgentInterface: {issubclass(AIDocumentAgent, AgentInterface)}")
+                elif config.agent_type == "ResearchBot":
+                    from .bots.research_bot import ResearchBot
+                    real_agent_class = ResearchBot
+                    logger.info(f"✓ ResearchBot properly inherits from AgentInterface: {issubclass(ResearchBot, AgentInterface)}")
+                elif config.agent_type == "WriterBot":
+                    from .bots.writer_bot import WriterBot
+                    real_agent_class = WriterBot
+                    logger.warning(f"⚠ WriterBot inheritance check - inherits from AgentInterface: {issubclass(WriterBot, AgentInterface)}")
+                    logger.warning(f"⚠ WriterBot MRO: {WriterBot.__mro__}")
+                elif config.agent_type == "EditorBot" or config.agent_type == "LegalFormatterBot":
+                    from .bots.legal_editor import LegalEditorBot
+                    real_agent_class = LegalEditorBot
+                    logger.warning(f"⚠ LegalEditorBot inheritance check - inherits from AgentInterface: {issubclass(LegalEditorBot, AgentInterface)}")
+                    logger.warning(f"⚠ LegalEditorBot MRO: {LegalEditorBot.__mro__}")
+                elif config.agent_type == "LegalProcedureBot":
+                    from .bots.legal_procedure_bot import LegalProcedureBot
+                    real_agent_class = LegalProcedureBot
+                    logger.info(f"✓ LegalProcedureBot properly inherits from AgentInterface: {issubclass(LegalProcedureBot, AgentInterface)}")
+                elif config.agent_type == "MaestroBot":
+                    from .bots.maestro_bot import MaestroBot
+                    real_agent_class = MaestroBot
+                    logger.info(f"✓ MaestroBot properly inherits from AgentInterface: {issubclass(MaestroBot, AgentInterface)}")
+                elif config.agent_type == "ReaderBot":
+                    from .bots.reader_bot import ReaderBot
+                    real_agent_class = ReaderBot
+                    logger.info(f"✓ ReaderBot properly inherits from AgentInterface: {issubclass(ReaderBot, AgentInterface)}")
+                
+                if real_agent_class and issubclass(real_agent_class, AgentInterface):
+                    self.register_agent(config.agent_type, real_agent_class, config)
+                    logger.info(f"✅ Registered real {config.agent_type} agent (proper AgentInterface)")
+                else:
+                    # Use mock agent for agent types without real implementations or improper inheritance
+                    self.register_agent(config.agent_type, MockAgentInterface, config)
+                    logger.error(f"❌ Using mock agent for {config.agent_type} - does not inherit from AgentInterface properly")
+                    
+            except ImportError as e:
+                logger.warning(f"{config.agent_type} not available ({e}), using mock agent")
+                self.register_agent(config.agent_type, MockAgentInterface, config)
 
     def register_agent(self, agent_type: str, agent_class: Type[AgentInterface], config: AgentConfig):
         """Register a new agent type"""
@@ -314,10 +448,10 @@ class AgentRegistry:
         """Get list of agent types suitable for a specific phase"""
         # Agent assignment rules as defined in the specification
         phase_assignments = {
-            WorkflowPhase.INTAKE: ['ReaderBot', 'ParalegalBot'],
+            WorkflowPhase.INTAKE: ['ReaderBot', 'ParalegalBot', 'AIDocumentAgent'],
             WorkflowPhase.OUTLINE: ['OutlinerBot', 'ParalegalBot'],
             WorkflowPhase.RESEARCH: ['ResearchBot', 'LegalResearcherBot'],
-            WorkflowPhase.DRAFTING: ['WriterBot', 'ParalegalBot'],
+            WorkflowPhase.DRAFTING: ['WriterBot', 'ParalegalBot', 'AIDocumentAgent'],
             WorkflowPhase.LEGAL_REVIEW: ['LegalFormatterBot', 'LegalProcedureBot'],
             WorkflowPhase.EDITING: ['EditorBot'],
             WorkflowPhase.ORCHESTRATION: ['MaestroBot']
@@ -333,7 +467,8 @@ class TaskScheduler:
 
     def get_ready_tasks(self, workflow_state) -> List:
         """Get tasks that are ready to execute"""
-        from .workflow_models import WorkflowState, WorkflowTask  # Import here to avoid circular imports
+        from .workflow_models import (  # Import here to avoid circular imports
+            WorkflowState, WorkflowTask)
         
         ready_tasks = []
         

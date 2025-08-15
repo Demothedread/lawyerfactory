@@ -102,7 +102,7 @@ LawyerFactory consists of modular components:
    - `OPENAI_API_KEY`: Your OpenAI API key
    - `SECRET_KEY`: Flask secret key
    - See [Configuration](#configuration) for details
-
+-
 ---
 
 ## Quick Start Guide

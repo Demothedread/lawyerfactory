@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harvard Workflow Visualization - LawyerFactory</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- D3.js for visualizations -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Socket.IO for real-time updates -->
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    
+    <!-- Harvard Workflow CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/harvard-workflow.css') }}">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Custom Tailwind extensions for Harvard theme */
+        .bg-harvard-crimson { background-color: #A51C30; }
+        .bg-harvard-forest { background-color: #1A4B3A; }
+        .bg-harvard-gold { background-color: #F4C430; }
+        .text-harvard-crimson { color: #A51C30; }
+        .text-harvard-forest { color: #1A4B3A; }
+        .text-harvard-gold { color: #F4C430; }
+        .border-harvard-crimson { border-color: #A51C30; }
+        .border-harvard-forest { border-color: #1A4B3A; }
+        .border-harvard-gold { border-color: #F4C430; }
+    </style>
+</head>
+<body class="bg-charcoal text-cream min-h-screen wood-texture">
+    <!-- Header -->
+    <header class="harvard-panel border-b-2 border-gold px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="text-2xl font-bold text-gold harvard-font">
+                    ⚖️ LawyerFactory
+                </div>
+                <div class="text-sm text-cream opacity-75">
+                    Harvard Workflow Visualization
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Connection Status -->
+                <div id="connectionStatus" class="flex items-center space-x-2">
+                    <div id="connectionIndicator" class="w-3 h-3 rounded-full bg-gray-500"></div>
+                    <span id="connectionText" class="text-sm">Connecting...</span>
+                </div>
+                
+                <!-- Workflow Status -->
+                <div id="workflowStatus" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-700 text-gray-300">
+                    Ready
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Workflow Controls -->
+        <section class="mb-8">
+            <div class="harvard-panel p-6">
+                <h2 class="text-xl font-bold text-gold mb-4 harvard-font">Workflow Controls</h2>
+                
+                <div class="flex flex-wrap gap-4 items-center">
+                    <button class="start-workflow-btn harvard-btn-primary">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m5-9v16a1 1 0 01-1 1H6a1 1 0 01-1-1V5a1 1 0 011-1h14a1 1 0 011 1z"></path>
+                        </svg>
+                        Start Workflow
+                    </button>
+                    
+                    <button class="pause-workflow-btn harvard-btn-secondary" disabled>
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Pause
+                    </button>
+                    
+                    <button class="resume-workflow-btn harvard-btn-secondary" disabled>
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m5-9v16a1 1 0 01-1 1H6a1 1 0 01-1-1V5a1 1 0 011 1h14a1 1 0 011 1z"></path>
+                        </svg>
+                        Resume
+                    </button>
+                    
+                    <button class="stop-workflow-btn harvard-btn-danger" disabled>
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h6v4H9z"></path>
+                        </svg>
+                        Stop
+                    </button>
+                    
+                    <div class="ml-auto">
+                        <button data-modal="settingsModal" class="harvard-btn-outline">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Progress Overview -->
+        <section class="mb-8">
+            <div class="harvard-panel p-6">
+                <h2 class="text-xl font-bold text-gold mb-4 harvard-font">Progress Overview</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <!-- Overall Progress -->
+                    <div class="progress-card">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-cream">Overall Progress</span>
+                            <span id="overallProgressText" class="text-sm text-gold">0%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div id="overallProgress" class="progress-bar" style="width: 0%" 
+                                 role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Current Phase -->
+                    <div class="progress-card">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-cream">Current Phase</span>
+                            <span id="currentPhaseIcon" class="text-lg">📥</span>
+                        </div>
+                        <div id="currentPhaseName" class="text-lg font-semibold text-gold">
+                            Ready to Start
+                        </div>
+                    </div>
+                    
+                    <!-- Task Summary -->
+                    <div class="progress-card">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-cream">Tasks</span>
+                            <span class="text-sm text-gold">
+                                <span id="completedTasks">0</span>/<span id="totalTasks">0</span>
+                            </span>
+                        </div>
+                        <div class="text-lg font-semibold text-cream">
+                            <span id="pendingTasks">0</span> Pending
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Phase Progress Ring -->
+                <div class="flex justify-center">
+                    <div id="progressRing" class="progress-ring">
+                        <svg class="progress-ring-svg" width="200" height="200">
+                            <circle class="progress-ring-circle-bg" cx="100" cy="100" r="90"></circle>
+                            <circle id="progressRingCircle" class="progress-ring-circle" cx="100" cy="100" r="90"></circle>
+                        </svg>
+                        <div class="progress-ring-text">
+                            <div id="progressRingPercentage" class="text-3xl font-bold text-gold">0%</div>
+                            <div class="text-sm text-cream">Complete</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Workflow Visualizations -->
+        <section class="mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Workflow Graph -->
+                <div class="harvard-panel p-6">
+                    <h3 class="text-lg font-bold text-gold mb-4 harvard-font">Workflow Progress</h3>
+                    <div id="workflowGraphViz" class="workflow-viz h-64 bg-charcoal-light rounded-lg border border-gold-dark">
+                        <!-- D3.js workflow graph will be rendered here -->
+                    </div>
+                </div>
+                
+                <!-- Knowledge Graph -->
+                <div class="harvard-panel p-6">
+                    <h3 class="text-lg font-bold text-gold mb-4 harvard-font">Knowledge Graph</h3>
+                    <div id="knowledgeGraphViz" class="workflow-viz h-64 bg-charcoal-light rounded-lg border border-gold-dark">
+                        <!-- D3.js knowledge graph will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timeline and Phase Details -->
+        <section class="mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Timeline -->
+                <div class="harvard-panel p-6">
+                    <h3 class="text-lg font-bold text-gold mb-4 harvard-font">Timeline</h3>
+                    <div id="timelineContainer" class="relative">
+                        <div class="timeline-line absolute left-4 top-0 bottom-0 w-0.5 bg-gold-dark"></div>
+                        <div id="timelineEvents" class="space-y-4 max-h-64 overflow-y-auto">
+                            <!-- Timeline events will be added here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Phase Details -->
+                <div class="harvard-panel p-6">
+                    <h3 class="text-lg font-bold text-gold mb-4 harvard-font">Phase Details</h3>
+                    <div id="phaseDetails" class="space-y-4">
+                        <div class="text-center text-gray-400 py-8">
+                            Start a workflow to see phase details
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase Status Cards -->
+        <section class="mb-8">
+            <div class="harvard-panel p-6">
+                <h3 class="text-lg font-bold text-gold mb-4 harvard-font">Workflow Phases</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" id="phaseCards">
+                    <!-- Phase cards will be dynamically generated -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    
+    <!-- Settings Modal -->
+    <div id="settingsModal" style="display: none;">
+        <div class="bg-charcoal rounded-lg shadow-xl max-w-2xl mx-auto p-6 border-2 border-gold">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-gold harvard-font">Workflow Settings</h3>
+                <button class="modal-close text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form class="harvard-form" data-action="save-settings">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-cream mb-1">
+                            Update Interval (seconds)
+                        </label>
+                        <input type="number" name="updateInterval" value="5" min="1" max="60" 
+                               class="form-input" required>
+                        <p class="text-xs text-gray-400 mt-1">How often to refresh progress data</p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-cream mb-1">
+                            Auto-scroll Timeline
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="autoScrollTimeline" checked class="form-checkbox">
+                            <span class="ml-2 text-sm text-cream">Automatically scroll to latest events</span>
+                        </label>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-cream mb-1">
+                            Show Notifications
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="showNotifications" checked class="form-checkbox">
+                            <span class="ml-2 text-sm text-cream">Display progress notifications</span>
+                        </label>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-cream mb-1">
+                            Visualization Type
+                        </label>
+                        <select name="visualizationType" class="form-select">
+                            <option value="graph">Workflow Graph</option>
+                            <option value="timeline">Timeline View</option>
+                            <option value="both">Both</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-4 justify-end mt-6">
+                    <button type="button" class="modal-close harvard-btn-outline">
+                        Cancel
+                    </button>
+                    <button type="submit" class="harvard-btn-primary">
+                        Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Workflow Start Modal -->
+    <div id="workflowStartModal" style="display: none;">
+        <div class="bg-charcoal rounded-lg shadow-xl max-w-lg mx-auto p-6 border-2 border-gold">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-gold harvard-font">Start New Workflow</h3>
+                <button class="modal-close text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="workflowStartForm" class="harvard-form" data-action="start-workflow">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-cream mb-1">
+                            Case Description
+                        </label>
+                        <textarea name="caseDescription" rows="3" 
+                                  class="form-input" 
+                                  placeholder="Brief description of the legal case..."
+                                  required></textarea>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-cream mb-1">
+                            Priority Level
+                        </label>
+                        <select name="priority" class="form-select" required>
+                            <option value="">Select priority...</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-cream mb-1">
+                            Expected Duration (hours)
+                        </label>
+                        <input type="number" name="expectedDuration" min="1" max="168" 
+                               class="form-input" placeholder="24">
+                    </div>
+                </div>
+                
+                <div class="flex space-x-4 justify-end mt-6">
+                    <button type="button" class="modal-close harvard-btn-outline">
+                        Cancel
+                    </button>
+                    <button type="submit" class="harvard-btn-primary">
+                        Start Workflow
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="{{ url_for('static', filename='js/harvard-workflow-app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/harvard-progress-tracker.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/harvard-workflow-visualization.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/harvard-ui-manager.js') }}"></script>
+    
+    <!-- Initialize Application -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Initializing Harvard Workflow Visualization...');
+            
+            try {
+                // Initialize the main application
+                window.harvardApp = new HarvardWorkflowApp();
+                await window.harvardApp.initialize();
+                
+                console.log('✅ Harvard Workflow Visualization ready!');
+                
+                // Show ready notification
+                if (window.harvardApp.ui) {
+                    window.harvardApp.ui.showNotification(
+                        'Harvard Workflow Visualization is ready!', 
+                        'success', 
+                        3000
+                    );
+                }
+                
+            } catch (error) {
+                console.error('❌ Failed to initialize application:', error);
+                
+                // Show error notification
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg z-50';
+                notification.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span>❌</span>
+                        <span>Failed to initialize application</span>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 5000);
+            }
+        });
+        
+        // Handle page unload
+        window.addEventListener('beforeunload', function() {
+            if (window.harvardApp) {
+                window.harvardApp.cleanup();
+            }
+        });
+    </script>
+</body>
+</html>

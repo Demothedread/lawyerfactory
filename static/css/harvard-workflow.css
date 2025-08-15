@@ -1,0 +1,526 @@
+/* Harvard-Style Workflow Visualization CSS */
+
+:root {
+    /* Harvard Color Palette */
+    --harvard-crimson: #A51C30;
+    --harvard-crimson-light: #C5374D;
+    --harvard-crimson-dark: #8B1A2D;
+    --harvard-forest: #1A4B3A;
+    --harvard-forest-light: #2E6B54;
+    --harvard-forest-dark: #0F3326;
+    --harvard-gold: #F4C430;
+    --harvard-gold-light: #F6D055;
+    --harvard-gold-dark: #D1A928;
+    --harvard-parchment: #F8F5E8;
+    --harvard-charcoal: #1C1C1E;
+    --harvard-silver: #8E8E93;
+    
+    /* Wood Panel Colors */
+    --wood-mahogany: #6B4423;
+    --wood-oak: #8B7355;
+    --wood-cherry: #8B4513;
+    --wood-grain-light: #A0845C;
+    --wood-grain-dark: #5D4037;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, var(--harvard-charcoal) 0%, #2C2C2E 100%);
+    color: var(--harvard-parchment);
+}
+
+.harvard-font {
+    font-family: 'Crimson Text', serif;
+}
+
+/* Wood Paneling Effects */
+.wood-panel {
+    background: linear-gradient(
+        45deg,
+        var(--wood-mahogany) 0%,
+        var(--wood-oak) 25%,
+        var(--wood-cherry) 50%,
+        var(--wood-grain-light) 75%,
+        var(--wood-mahogany) 100%
+    );
+    background-size: 120px 120px;
+    position: relative;
+    border: 2px solid var(--wood-grain-dark);
+    box-shadow: 
+        inset 0 2px 4px rgba(0,0,0,0.3),
+        inset 0 -2px 4px rgba(255,255,255,0.1),
+        0 4px 12px rgba(0,0,0,0.4);
+}
+
+.wood-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        repeating-linear-gradient(
+            90deg,
+            transparent 0px,
+            rgba(0,0,0,0.1) 1px,
+            transparent 2px,
+            transparent 40px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            transparent 0px,
+            rgba(255,255,255,0.05) 1px,
+            transparent 2px,
+            transparent 20px
+        );
+    pointer-events: none;
+}
+
+/* Harvard-themed Progress Indicators */
+.harvard-progress-bar {
+    background: linear-gradient(90deg, var(--harvard-forest) 0%, var(--harvard-crimson) 50%, var(--harvard-gold) 100%);
+    border: 1px solid var(--harvard-gold-dark);
+    box-shadow: 
+        0 2px 8px rgba(165, 28, 48, 0.3),
+        inset 0 1px 2px rgba(255,255,255,0.2);
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.harvard-progress-container {
+    background: var(--harvard-charcoal);
+    border: 2px solid var(--wood-grain-dark);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* Phase Indicators */
+.phase-indicator {
+    background: linear-gradient(135deg, var(--harvard-charcoal) 0%, #2C2C2E 100%);
+    border: 2px solid var(--harvard-silver);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.phase-indicator.pending {
+    border-color: var(--harvard-silver);
+    color: var(--harvard-silver);
+}
+
+.phase-indicator.active {
+    background: linear-gradient(135deg, var(--harvard-crimson) 0%, var(--harvard-crimson-light) 100%);
+    border-color: var(--harvard-gold);
+    color: var(--harvard-parchment);
+    box-shadow: 
+        0 4px 12px rgba(165, 28, 48, 0.4),
+        0 0 20px rgba(244, 196, 48, 0.3);
+    animation: crimsonPulse 2s ease-in-out infinite alternate;
+}
+
+.phase-indicator.completed {
+    background: linear-gradient(135deg, var(--harvard-forest) 0%, var(--harvard-forest-light) 100%);
+    border-color: var(--harvard-gold);
+    color: var(--harvard-parchment);
+    box-shadow: 0 4px 12px rgba(26, 75, 58, 0.4);
+}
+
+.phase-indicator.failed {
+    background: linear-gradient(135deg, #8B1A2D 0%, #A51C30 100%);
+    border-color: #FF6B6B;
+    color: var(--harvard-parchment);
+    box-shadow: 0 4px 12px rgba(139, 26, 45, 0.4);
+}
+
+@keyframes crimsonPulse {
+    0% {
+        box-shadow: 
+            0 4px 12px rgba(165, 28, 48, 0.4),
+            0 0 20px rgba(244, 196, 48, 0.3);
+    }
+    100% {
+        box-shadow: 
+            0 6px 16px rgba(165, 28, 48, 0.6),
+            0 0 30px rgba(244, 196, 48, 0.5);
+    }
+}
+
+/* Task Cards */
+.task-card {
+    background: linear-gradient(135deg, var(--harvard-charcoal) 0%, #2C2C2E 100%);
+    border: 1px solid var(--harvard-silver);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.task-card:hover {
+    border-color: var(--harvard-gold);
+    box-shadow: 0 4px 12px rgba(244, 196, 48, 0.2);
+}
+
+.task-card.completed {
+    border-color: var(--harvard-forest-light);
+    background: linear-gradient(135deg, var(--harvard-forest-dark) 0%, var(--harvard-forest) 100%);
+}
+
+.task-card.active {
+    border-color: var(--harvard-crimson);
+    background: linear-gradient(135deg, var(--harvard-crimson-dark) 0%, var(--harvard-crimson) 100%);
+}
+
+.task-card.in_progress {
+    border-color: var(--harvard-gold);
+    background: linear-gradient(135deg, var(--harvard-gold-dark) 0%, var(--harvard-gold) 100%);
+    color: var(--harvard-charcoal);
+}
+
+/* Harvard Shield/Crest Styling */
+.harvard-crest {
+    background: linear-gradient(135deg, var(--harvard-crimson) 0%, var(--harvard-crimson-dark) 100%);
+    border: 3px solid var(--harvard-gold);
+    border-radius: 12px 12px 0 0;
+    position: relative;
+}
+
+.harvard-crest::after {
+    content: '⚖️';
+    font-size: 1.5rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Timeline */
+.timeline-container {
+    background: linear-gradient(to bottom, transparent 0%, rgba(26, 75, 58, 0.1) 50%, transparent 100%);
+    position: relative;
+}
+
+.timeline-line {
+    background: linear-gradient(to bottom, var(--harvard-silver) 0%, var(--harvard-gold) 50%, var(--harvard-crimson) 100%);
+    width: 3px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 2px;
+}
+
+.timeline-node {
+    background: var(--harvard-gold);
+    border: 3px solid var(--harvard-charcoal);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    position: relative;
+    z-index: 2;
+}
+
+.timeline-node.completed {
+    background: var(--harvard-forest-light);
+    box-shadow: 0 0 12px rgba(46, 107, 84, 0.6);
+}
+
+.timeline-node.active {
+    background: var(--harvard-crimson);
+    box-shadow: 0 0 12px rgba(165, 28, 48, 0.6);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+/* Notification System */
+.notification {
+    animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 4px solid var(--harvard-gold);
+    background: linear-gradient(135deg, var(--harvard-charcoal) 0%, #2C2C2E 100%);
+}
+
+.notification.success {
+    border-left-color: var(--harvard-forest-light);
+}
+
+.notification.error {
+    border-left-color: var(--harvard-crimson);
+}
+
+.notification.warning {
+    border-left-color: var(--harvard-gold);
+}
+
+.notification.info {
+    border-left-color: var(--harvard-silver);
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(100%); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Interactive Elements */
+.harvard-button {
+    background: linear-gradient(135deg, var(--harvard-crimson) 0%, var(--harvard-crimson-light) 100%);
+    border: 2px solid var(--harvard-gold);
+    color: var(--harvard-parchment);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.harvard-button:hover {
+    background: linear-gradient(135deg, var(--harvard-crimson-light) 0%, var(--harvard-gold) 100%);
+    box-shadow: 0 6px 16px rgba(165, 28, 48, 0.4);
+    transform: translateY(-2px);
+}
+
+.harvard-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%);
+    transition: left 0.5s ease;
+}
+
+.harvard-button:hover::before {
+    left: 100%;
+}
+
+.harvard-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.harvard-button:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Tab styling */
+.tab-content { 
+    display: none; 
+}
+
+.tab-content.active { 
+    display: block; 
+}
+
+.tab-button.active { 
+    background: linear-gradient(135deg, var(--harvard-crimson) 0%, var(--harvard-crimson-light) 100%);
+    color: var(--harvard-parchment);
+    border-bottom: 3px solid var(--harvard-gold);
+}
+
+.tab-button {
+    background: var(--harvard-charcoal);
+    color: var(--harvard-silver);
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+    color: var(--harvard-parchment);
+    border-bottom-color: var(--harvard-gold);
+}
+
+/* Progress Ring */
+.progress-ring {
+    transform: rotate(-90deg);
+}
+
+.progress-ring-circle {
+    fill: none;
+    stroke: var(--harvard-silver);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.6s ease-in-out;
+}
+
+.progress-ring-fill {
+    fill: none;
+    stroke: url(#gradientProgress);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dasharray 0.6s ease-in-out;
+}
+
+/* Agent Activity Indicators */
+.agent-activity {
+    background: linear-gradient(135deg, var(--harvard-forest) 0%, var(--harvard-forest-light) 100%);
+    border: 2px solid var(--harvard-gold);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.agent-activity::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(244, 196, 48, 0.3) 50%, transparent 100%);
+    animation: agentSweep 3s ease-in-out infinite;
+}
+
+@keyframes agentSweep {
+    0% { left: -100%; }
+    50% { left: 100%; }
+    100% { left: -100%; }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar { 
+    width: 12px; 
+}
+
+::-webkit-scrollbar-track { 
+    background: var(--harvard-charcoal);
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb { 
+    background: linear-gradient(to bottom, var(--harvard-crimson) 0%, var(--harvard-gold) 100%);
+    border-radius: 6px;
+    border: 2px solid var(--harvard-charcoal);
+}
+
+::-webkit-scrollbar-thumb:hover { 
+    background: linear-gradient(to bottom, var(--harvard-crimson-light) 0%, var(--harvard-gold-light) 100%);
+}
+
+/* Workflow Graph Styles */
+.workflow-node {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.workflow-node:hover {
+    filter: brightness(1.2);
+    transform: scale(1.1);
+}
+
+.workflow-link {
+    stroke: var(--harvard-silver);
+    stroke-opacity: 0.6;
+    stroke-width: 2;
+    fill: none;
+}
+
+.workflow-link.active {
+    stroke: var(--harvard-gold);
+    stroke-opacity: 1;
+    stroke-width: 3;
+    animation: flowAnimation 2s ease-in-out infinite;
+}
+
+@keyframes flowAnimation {
+    0%, 100% { stroke-dasharray: 5, 5; stroke-dashoffset: 0; }
+    50% { stroke-dasharray: 5, 5; stroke-dashoffset: 10; }
+}
+
+/* File Upload Styling */
+.upload-zone {
+    border: 2px dashed var(--harvard-silver);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.upload-zone.dragover {
+    border-color: var(--harvard-gold);
+    background-color: rgba(244, 196, 48, 0.1);
+}
+
+.upload-zone:hover {
+    border-color: var(--harvard-gold);
+    background-color: rgba(244, 196, 48, 0.05);
+}
+
+/* Form Styling */
+input[type="text"], 
+input[type="email"], 
+textarea, 
+select {
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--harvard-silver);
+    color: var(--harvard-parchment);
+    transition: all 0.3s ease;
+}
+
+input[type="text"]:focus, 
+input[type="email"]:focus, 
+textarea:focus, 
+select:focus {
+    border-color: var(--harvard-gold);
+    box-shadow: 0 0 0 3px rgba(244, 196, 48, 0.2);
+    outline: none;
+}
+
+input[type="radio"] {
+    accent-color: var(--harvard-crimson);
+}
+
+/* Modal Styling */
+.modal-backdrop {
+    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.8);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .wood-panel {
+        background-size: 60px 60px;
+    }
+    
+    .harvard-font {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .harvard-font {
+        font-size: 0.9rem;
+    }
+    
+    .wood-panel {
+        background-size: 40px 40px;
+    }
+    
+    .harvard-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .tab-button {
+        padding: 0.75rem 1rem;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .wood-panel::before {
+        background-size: 20px 20px;
+    }
+    
+    .progress-ring {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .harvard-crest {
+        width: 2rem;
+        height: 2rem;
+    }
+    
+    .harvard-crest::after {
+        font-size: 1rem;
+    }
+}

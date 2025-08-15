@@ -4,20 +4,19 @@ Coordinates the 7-phase workflow with state management, agent coordination, and 
 """
 
 import asyncio
-import uuid
 import logging
+import uuid
 from datetime import datetime, timedelta
-from typing import Dict, List, Any, Optional
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from .workflow_models import (
-    WorkflowPhase, PhaseStatus, TaskPriority, WorkflowTask, 
-    WorkflowState, WorkflowStateManager
-)
 from .agent_registry import AgentRegistry, TaskScheduler
-from .event_system import EventBus
 from .checkpoint_manager import CheckpointManager
 from .error_handling import WorkflowErrorHandler
+from .event_system import EventBus
+from .workflow_models import (PhaseStatus, TaskPriority, WorkflowPhase,
+                              WorkflowState, WorkflowStateManager,
+                              WorkflowTask)
 
 logger = logging.getLogger(__name__)
 
@@ -92,10 +91,9 @@ class EnhancedMaestro:
             }
         }
 
-    async def start_workflow(self, case_name: str, input_documents: List[str],
+    async def start_workflow(self, case_name: str, session_id: str, input_documents: List[str],
                            initial_context: Optional[Dict[str, Any]] = None) -> str:
         """Initialize and start a new workflow"""
-        session_id = self._generate_session_id()
         
         if initial_context is None:
             initial_context = {}
@@ -179,6 +177,18 @@ class EnhancedMaestro:
                     requires_human_approval=False
                 )
                 tasks.append(task)
+                
+            # AI Case Classification task - runs in parallel with traditional processing
+            ai_classification_task = WorkflowTask(
+                id=f"ai_case_classification_{uuid.uuid4().hex[:8]}",
+                phase=phase,
+                agent_type="AIDocumentAgent",
+                description="AI case classification and analysis",
+                priority=TaskPriority.NORMAL,
+                input_data={'task_type': 'ai_case_classification'},
+                requires_human_approval=False
+            )
+            tasks.append(ai_classification_task)
         
         elif phase == WorkflowPhase.OUTLINE:
             task = WorkflowTask(
@@ -206,39 +216,139 @@ class EnhancedMaestro:
                 tasks.append(task)
         
         elif phase == WorkflowPhase.DRAFTING:
-            # Document drafting tasks
-            sections = ["introduction", "factual_background", "legal_claims", "conclusion"]
-            for section in sections:
-                task = WorkflowTask(
-                    id=f"draft_{section}_{uuid.uuid4().hex[:8]}",
-                    phase=phase,
-                    agent_type="WriterBot",
-                    description=f"Draft {section.replace('_', ' ')} section",
-                    priority=TaskPriority.NORMAL,
-                    input_data={'section': section}
-                )
-                tasks.append(task)
+            # Professional complaint drafting using templates and AI modules
+            professional_complaint_task = WorkflowTask(
+                id=f"professional_complaint_{uuid.uuid4().hex[:8]}",
+                phase=phase,
+                agent_type="WriterBot",
+                description="Generate professional complaint using Jinja2 templates and AI modules",
+                priority=TaskPriority.HIGH,
+                input_data={
+                    'content_type': 'complaint',
+                    'use_professional_templates': True,
+                    'ai_synthesis': True
+                },
+                requires_human_approval=False
+            )
+            tasks.append(professional_complaint_task)
+            
+            # Professional motion drafting
+            professional_motion_task = WorkflowTask(
+                id=f"professional_motion_{uuid.uuid4().hex[:8]}",
+                phase=phase,
+                agent_type="WriterBot",
+                description="Generate professional motion using legal theory mapping",
+                priority=TaskPriority.NORMAL,
+                input_data={
+                    'content_type': 'motion',
+                    'motion_type': 'Motion for Summary Judgment',
+                    'use_professional_templates': True
+                },
+                depends_on=[professional_complaint_task.id],
+                requires_human_approval=False
+            )
+            tasks.append(professional_motion_task)
+            
+            # AI Document Generation tasks - PDF forms (parallel track)
+            ai_form_selection_task = WorkflowTask(
+                id=f"ai_form_selection_{uuid.uuid4().hex[:8]}",
+                phase=phase,
+                agent_type="AIDocumentAgent",
+                description="AI-powered PDF form processing and selection",
+                priority=TaskPriority.HIGH,
+                input_data={'task_type': 'pdf_form_processing'},
+                requires_human_approval=False
+            )
+            tasks.append(ai_form_selection_task)
+            
+            ai_field_mapping_task = WorkflowTask(
+                id=f"ai_field_mapping_{uuid.uuid4().hex[:8]}",
+                phase=phase,
+                agent_type="AIDocumentAgent",
+                description="Automated field mapping for court forms",
+                priority=TaskPriority.NORMAL,
+                input_data={'task_type': 'automated_field_mapping'},
+                depends_on=[ai_form_selection_task.id],
+                requires_human_approval=False
+            )
+            tasks.append(ai_field_mapping_task)
+            
+            ai_form_generation_task = WorkflowTask(
+                id=f"ai_form_generation_{uuid.uuid4().hex[:8]}",
+                phase=phase,
+                agent_type="AIDocumentAgent",
+                description="Generate filled court forms using AI",
+                priority=TaskPriority.HIGH,
+                input_data={'task_type': 'court_form_generation'},
+                depends_on=[ai_field_mapping_task.id],
+                requires_human_approval=True  # Forms should be reviewed before filing
+            )
+            tasks.append(ai_form_generation_task)
         
         elif phase == WorkflowPhase.LEGAL_REVIEW:
-            task = WorkflowTask(
-                id=f"legal_review_{uuid.uuid4().hex[:8]}",
+            # Professional compliance review using AI modules
+            compliance_review_task = WorkflowTask(
+                id=f"compliance_review_{uuid.uuid4().hex[:8]}",
                 phase=phase,
-                agent_type="LegalFormatterBot",
-                description="Legal compliance and formatting review",
-                priority=TaskPriority.HIGH,
+                agent_type="LegalEditorBot",
+                description="Rule 12(b)(6) compliance and citation validation",
+                priority=TaskPriority.CRITICAL,
+                input_data={
+                    'review_type': 'compliance',
+                    'check_rule_12b6': True,
+                    'validate_citations': True
+                },
                 requires_human_approval=True
             )
-            tasks.append(task)
+            tasks.append(compliance_review_task)
+            
+            # Professional brief structure review
+            brief_structure_task = WorkflowTask(
+                id=f"brief_structure_{uuid.uuid4().hex[:8]}",
+                phase=phase,
+                agent_type="LegalEditorBot",
+                description="Professional legal brief structure and formatting review",
+                priority=TaskPriority.HIGH,
+                input_data={
+                    'review_type': 'legal_brief',
+                    'check_professional_standards': True
+                },
+                depends_on=[compliance_review_task.id],
+                requires_human_approval=False
+            )
+            tasks.append(brief_structure_task)
         
         elif phase == WorkflowPhase.EDITING:
-            task = WorkflowTask(
-                id=f"editing_{uuid.uuid4().hex[:8]}",
+            # Comprehensive professional review combining all checks
+            comprehensive_review_task = WorkflowTask(
+                id=f"comprehensive_review_{uuid.uuid4().hex[:8]}",
                 phase=phase,
-                agent_type="EditorBot",
-                description="Final editing and style review",
-                priority=TaskPriority.NORMAL
+                agent_type="LegalEditorBot",
+                description="Comprehensive professional review and final formatting",
+                priority=TaskPriority.HIGH,
+                input_data={
+                    'review_type': 'comprehensive',
+                    'final_review': True
+                },
+                requires_human_approval=False
             )
-            tasks.append(task)
+            tasks.append(comprehensive_review_task)
+            
+            # Final formatting and citation review
+            final_format_task = WorkflowTask(
+                id=f"final_format_{uuid.uuid4().hex[:8]}",
+                phase=phase,
+                agent_type="LegalEditorBot",
+                description="Final formatting and citation review for court filing",
+                priority=TaskPriority.NORMAL,
+                input_data={
+                    'review_type': 'formatting',
+                    'prepare_for_filing': True
+                },
+                depends_on=[comprehensive_review_task.id],
+                requires_human_approval=False
+            )
+            tasks.append(final_format_task)
         
         elif phase == WorkflowPhase.ORCHESTRATION:
             task = WorkflowTask(
@@ -325,20 +435,12 @@ class EnhancedMaestro:
                 agent_groups[task.agent_type] = []
             agent_groups[task.agent_type].append(task)
         
-        # Execute each agent group
-        execution_coroutines = []
+        # Execute each agent group sequentially
         for agent_type, agent_tasks in agent_groups.items():
-            coroutine = self._execute_agent_tasks(agent_type, agent_tasks, workflow_state)
-            execution_coroutines.append(coroutine)
-        
-        # Wait for all agent executions to complete
-        results = await asyncio.gather(*execution_coroutines, return_exceptions=True)
-        
-        # Process results and update task statuses
-        for i, result in enumerate(results):
-            if isinstance(result, Exception):
-                agent_type = list(agent_groups.keys())[i]
-                await self.error_handler.handle_agent_error(agent_type, result, workflow_state)
+            try:
+                await self._execute_agent_tasks(agent_type, agent_tasks, workflow_state)
+            except Exception as e:
+                await self.error_handler.handle_agent_error(agent_type, e, workflow_state)
 
     async def _execute_agent_tasks(self, agent_type: str, tasks: List[WorkflowTask], 
                                  workflow_state: WorkflowState):
