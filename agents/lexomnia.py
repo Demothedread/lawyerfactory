@@ -9,19 +9,9 @@ class Agent:
         return f"{self.name} processed: {text}"
 
 
-class Runner:
-    """Runner that executes an agent's processing routine."""
-
-    def __init__(self, agent: Agent):
-        self.agent = agent
-
-    def run(self, text: str) -> str:
-        """Run the agent on the provided text."""
-        return self.agent.process(text)
 
 
 if __name__ == "__main__":
     agent = Agent("LexOmnia")
-    runner = Runner(agent)
-    output = runner.run("Hello world")
+    output = agent.process("Hello world")
     print(output)
