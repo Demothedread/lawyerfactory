@@ -1,37 +1,39 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LawyerFactory - Enhanced Case Initiation Platform</title>
+    <title>Briefcase - Automated Start-to-Finish Legal Pleadings</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/metropolis@latest/index.css">
     
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            color: #e5e7eb;
+            font-family: 'Metropolis', 'Inter', sans-serif;
+            color: #b6b04f;
         }
         .font-mono {
-            font-family: 'Roboto Mono', monospace;
+            font-family: 'courier new', 'Roboto Mono', monospace;
         }
         
         /* Enhanced styling for new components */
         .upload-zone {
-            border: 2px dashed #4b5563;
+            border: 2px dashed #77274a;
             border-radius: 8px;
             transition: all 0.3s ease;
         }
         .upload-zone.dragover {
-            border-color: #3b82f6;
+            border-color: #77274a;
             background-color: rgba(59, 130, 246, 0.1);
         }
         
         .progress-bar {
+            background-color: #4e514c;
             transition: width 0.5s ease-in-out;
         }
         
@@ -43,12 +45,12 @@
             color: white;
         }
         .phase-indicator.completed {
-            background-color: #16a34a;
+            background-color: #1e8845;
             color: white;
         }
         .phase-indicator.pending {
-            background-color: #4b5563;
-            color: #9ca3af;
+            background-color: #8adcb0;
+            color: #384b5f;
         }
         
         .knowledge-graph-node {
@@ -86,9 +88,209 @@
         /* Tab styling */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .tab-button.active { 
-            background-color: #3b82f6; 
-            color: white; 
+        .tab-button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        /* LLM Prompt Analysis Keyword Highlighting */
+        .factor-doc {
+            background-color: #1e40af;
+            color: #dbeafe;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+            border: 1px solid #3b82f6;
+        }
+        
+        .factor-key {
+            background-color: #059669;
+            color: #d1fae5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+            border: 1px solid #10b981;
+        }
+        
+        .factor-subkey {
+            background-color: #d97706;
+            color: #fef3c7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 400;
+            border: 1px solid #f59e0b;
+        }
+        
+        .factor-neutral {
+            background-color: #6b7280;
+            color: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 400;
+            border: 1px solid #9ca3af;
+        }
+        
+        /* Analysis display enhancements */
+        #analysisDisplay {
+            animation: slideInUp 0.3s ease-out;
+        }
+        
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Keyword hover effects */
+        .factor-doc:hover, .factor-key:hover, .factor-subkey:hover, .factor-neutral:hover {
+            opacity: 0.8;
+            cursor: pointer;
+            transform: scale(1.05);
+            transition: all 0.2s ease;
+        }
+        
+        /* Conveyor Belt UI Metaphor */
+        .conveyor-container {
+            background: linear-gradient(90deg, #1f2937 0%, #374151 50%, #1f2937 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .conveyor-belt {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            min-height: 120px;
+        }
+        
+        .conveyor-track {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: repeating-linear-gradient(
+                90deg,
+                #4b5563 0px,
+                #4b5563 20px,
+                #6b7280 20px,
+                #6b7280 40px
+            );
+            transform: translateY(-50%);
+            animation: conveyorMove 3s linear infinite;
+        }
+        
+        @keyframes conveyorMove {
+            0% { background-position: 0px 0; }
+            100% { background-position: 40px 0; }
+        }
+        
+        .production-stage {
+            position: relative;
+            z-index: 2;
+            background: #374151;
+            border: 2px solid #4b5563;
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 140px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .production-stage.active {
+            border-color: #3b82f6;
+            background: #1e3a8a;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .production-stage.completed {
+            border-color: #10b981;
+            background: #065f46;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+        }
+        
+        .production-stage.pending {
+            border-color: #6b7280;
+            background: #374151;
+            opacity: 0.6;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .stage-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .stage-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #e5e7eb;
+            margin-bottom: 4px;
+        }
+        
+        .stage-status {
+            font-size: 10px;
+            color: #9ca3af;
+        }
+        
+        .document-item {
+            position: absolute;
+            top: 50%;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            transform: translateY(-50%);
+            animation: documentFlow 5s ease-in-out infinite;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        @keyframes documentFlow {
+            0% { left: -100px; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { left: calc(100% + 100px); opacity: 0; }
+        }
+        
+        .production-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #4b5563;
+        }
+        
+        .metric-card {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #3b82f6;
+            display: block;
+        }
+        
+        .metric-label {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 4px;
         }
     </style>
 </head>
@@ -101,7 +303,7 @@
         <header class="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 p-4 z-20">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-4">
-                    <h1 class="text-2xl font-bold text-white tracking-wide">LawyerFactory</h1>
+                    <h1 class="text-2xl font-bold text-white tracking-wide">BRIEFCASE</h1>
                     <span class="text-sm text-gray-400 bg-gray-700 px-2 py-1 rounded">Enhanced Platform</span>
                 </div>
                 
@@ -234,7 +436,82 @@
                             </div>
                         </div>
                         
-                        <!-- Workflow Phases -->
+                        <!-- Conveyor Belt Production Pipeline -->
+                        <div class="conveyor-container">
+                            <div class="conveyor-belt">
+                                <div class="conveyor-track"></div>
+                                
+                                <!-- Production Stages -->
+                                <div class="production-stage pending" id="stage-intake">
+                                    <div class="stage-icon">📥</div>
+                                    <div class="stage-title">INTAKE</div>
+                                    <div class="stage-status">Pending</div>
+                                </div>
+                                
+                                <div class="production-stage pending" id="stage-outline">
+                                    <div class="stage-icon">📋</div>
+                                    <div class="stage-title">OUTLINE</div>
+                                    <div class="stage-status">Pending</div>
+                                </div>
+                                
+                                <div class="production-stage pending" id="stage-research">
+                                    <div class="stage-icon">🔍</div>
+                                    <div class="stage-title">RESEARCH</div>
+                                    <div class="stage-status">Pending</div>
+                                </div>
+                                
+                                <div class="production-stage pending" id="stage-drafting">
+                                    <div class="stage-icon">✍️</div>
+                                    <div class="stage-title">DRAFTING</div>
+                                    <div class="stage-status">Pending</div>
+                                </div>
+                                
+                                <div class="production-stage pending" id="stage-review">
+                                    <div class="stage-icon">⚖️</div>
+                                    <div class="stage-title">REVIEW</div>
+                                    <div class="stage-status">Pending</div>
+                                </div>
+                                
+                                <div class="production-stage pending" id="stage-editing">
+                                    <div class="stage-icon">📝</div>
+                                    <div class="stage-title">EDITING</div>
+                                    <div class="stage-status">Pending</div>
+                                </div>
+                                
+                                <div class="production-stage pending" id="stage-orchestration">
+                                    <div class="stage-icon">🎭</div>
+                                    <div class="stage-title">FINAL</div>
+                                    <div class="stage-status">Pending</div>
+                                </div>
+                                
+                                <!-- Animated Document Items -->
+                                <div class="document-item" id="document-flow" style="animation-delay: 2s;">
+                                    📄 Legal Document
+                                </div>
+                            </div>
+                            
+                            <!-- Production Metrics -->
+                            <div class="production-metrics">
+                                <div class="metric-card">
+                                    <span class="metric-value" id="stages-completed">0</span>
+                                    <div class="metric-label">Stages Completed</div>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-value" id="active-agents">0</span>
+                                    <div class="metric-label">Active Agents</div>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-value" id="documents-generated">0</span>
+                                    <div class="metric-label">Documents Generated</div>
+                                </div>
+                                <div class="metric-card">
+                                    <span class="metric-value" id="processing-time">0s</span>
+                                    <div class="metric-label">Processing Time</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Traditional Workflow Phases (for fallback) -->
                         <div class="space-y-3">
                             <h4 class="font-medium text-gray-300">Workflow Phases</h4>
                             <div id="workflowPhases" class="space-y-2">
@@ -507,6 +784,16 @@
                 return;
             }
             
+            // Step 1: Analyze case description with LLM if provided
+            if (caseDescription) {
+                showNotification('Analyzing case description...', 'info');
+                try {
+                    await analyzeCasePrompt(caseDescription, caseName);
+                } catch (error) {
+                    console.warn('Prompt analysis failed, continuing with workflow:', error);
+                }
+            }
+            
             const payload = {
                 case_name: caseName,
                 case_description: caseDescription
@@ -555,6 +842,147 @@
                 console.error('Error starting workflow:', error);
                 showNotification('Failed to start workflow', 'error');
             }
+        }
+        
+        // LLM-powered prompt analysis functions
+        async function analyzeCasePrompt(casePrompt, caseName) {
+            const sessionId = generateSessionId();
+            
+            return new Promise((resolve, reject) => {
+                // Set up event listeners for prompt analysis
+                const onAnalysisComplete = (data) => {
+                    if (data.session_id === sessionId) {
+                        appState.socket.off('prompt_analysis_completed', onAnalysisComplete);
+                        appState.socket.off('prompt_analysis_error', onAnalysisError);
+                        
+                        displayPromptAnalysis(data.analysis_result);
+                        showNotification('Case analysis completed', 'success');
+                        resolve(data.analysis_result);
+                    }
+                };
+                
+                const onAnalysisError = (data) => {
+                    if (data.session_id === sessionId) {
+                        appState.socket.off('prompt_analysis_completed', onAnalysisComplete);
+                        appState.socket.off('prompt_analysis_error', onAnalysisError);
+                        
+                        showNotification(`Analysis failed: ${data.error}`, 'error');
+                        reject(new Error(data.error));
+                    }
+                };
+                
+                const onAnalysisProgress = (data) => {
+                    if (data.session_id === sessionId) {
+                        updateAnalysisProgress(data);
+                    }
+                };
+                
+                appState.socket.on('prompt_analysis_completed', onAnalysisComplete);
+                appState.socket.on('prompt_analysis_error', onAnalysisError);
+                appState.socket.on('prompt_analysis_progress', onAnalysisProgress);
+                
+                // Start analysis
+                appState.socket.emit('analyze_case_prompt', {
+                    session_id: sessionId,
+                    case_prompt: casePrompt,
+                    document_type_hint: 'legal_claim'
+                });
+                
+                // Timeout after 30 seconds
+                setTimeout(() => {
+                    appState.socket.off('prompt_analysis_completed', onAnalysisComplete);
+                    appState.socket.off('prompt_analysis_error', onAnalysisError);
+                    appState.socket.off('prompt_analysis_progress', onAnalysisProgress);
+                    reject(new Error('Analysis timeout'));
+                }, 30000);
+            });
+        }
+        
+        function displayPromptAnalysis(analysisResult) {
+            // Display highlighted prompt
+            const highlightedPrompt = analysisResult.highlighted_prompt;
+            if (highlightedPrompt) {
+                updateCaseDescriptionDisplay(highlightedPrompt);
+            }
+            
+            // Show analysis summary
+            showAnalysisSummary(analysisResult);
+            
+            // Update UI with extracted information
+            updateCaseFormWithAnalysis(analysisResult);
+        }
+        
+        function updateCaseDescriptionDisplay(highlightedHtml) {
+            // Create or update analysis display area
+            let analysisDisplay = document.getElementById('analysisDisplay');
+            if (!analysisDisplay) {
+                analysisDisplay = document.createElement('div');
+                analysisDisplay.id = 'analysisDisplay';
+                analysisDisplay.className = 'bg-gray-800 border border-gray-600 rounded-md p-4 mt-4';
+                
+                const caseDescriptionContainer = document.getElementById('caseDescription').parentNode;
+                caseDescriptionContainer.appendChild(analysisDisplay);
+            }
+            
+            analysisDisplay.innerHTML = `
+                <h4 class="text-sm font-medium text-gray-300 mb-2">🤖 AI Analysis Results</h4>
+                <div class="bg-gray-900 rounded p-3 text-sm">
+                    ${highlightedHtml}
+                </div>
+                <div class="mt-2 text-xs text-gray-400">
+                    <span class="factor-doc inline-block px-2 py-1 rounded mr-2">Document Type</span>
+                    <span class="factor-key inline-block px-2 py-1 rounded mr-2">Key Factors</span>
+                    <span class="factor-subkey inline-block px-2 py-1 rounded mr-2">Sub-factors</span>
+                </div>
+            `;
+        }
+        
+        function showAnalysisSummary(analysisResult) {
+            const keywords = analysisResult.keywords || [];
+            const confidenceScore = (analysisResult.confidence_score * 100).toFixed(1);
+            
+            showNotification(
+                `Analysis: ${keywords.length} key elements found (${confidenceScore}% confidence)`,
+                'info',
+                5000
+            );
+        }
+        
+        function updateCaseFormWithAnalysis(analysisResult) {
+            // Extract parties and update form fields if available
+            const caseData = analysisResult.case_data;
+            if (caseData) {
+                // Update case name if not already set
+                const caseNameInput = document.getElementById('caseName');
+                if (!caseNameInput.value && caseData.case_name) {
+                    caseNameInput.value = caseData.case_name;
+                }
+                
+                // Store analysis data for later use in workflow
+                appState.promptAnalysis = analysisResult;
+            }
+        }
+        
+        function updateAnalysisProgress(progressData) {
+            const stage = progressData.stage;
+            const message = getProgressMessage(stage);
+            
+            // Show progress in notification
+            showNotification(message, 'info', 2000);
+        }
+        
+        function getProgressMessage(stage) {
+            const messages = {
+                'deconstruction': 'Analyzing case description...',
+                'keyword_extraction': 'Extracting key legal elements...',
+                'classification': 'Classifying document type...',
+                'completion': 'Finalizing analysis...'
+            };
+            return messages[stage] || 'Processing...';
+        }
+        
+        function generateSessionId() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         }
         
         // File handling functions
@@ -847,6 +1275,96 @@
                 console.error('Download error:', error);
                 showNotification('Download failed', 'error');
             }
+        
+        // Conveyor Belt Animation Functions
+        function updateConveyorBelt(phaseData) {
+            const stages = {
+                'INTAKE': 'stage-intake',
+                'OUTLINE': 'stage-outline', 
+                'RESEARCH': 'stage-research',
+                'DRAFTING': 'stage-drafting',
+                'LEGAL_REVIEW': 'stage-review',
+                'EDITING': 'stage-editing',
+                'ORCHESTRATION': 'stage-orchestration'
+            };
+            
+            // Update stage statuses
+            Object.keys(stages).forEach(phase => {
+                const stageElement = document.getElementById(stages[phase]);
+                if (stageElement) {
+                    const statusElement = stageElement.querySelector('.stage-status');
+                    
+                    // Remove all status classes
+                    stageElement.classList.remove('pending', 'active', 'completed');
+                    
+                    if (phaseData && phaseData[phase]) {
+                        const status = phaseData[phase].status;
+                        if (status === 'IN_PROGRESS') {
+                            stageElement.classList.add('active');
+                            statusElement.textContent = 'Active';
+                        } else if (status === 'COMPLETED') {
+                            stageElement.classList.add('completed');
+                            statusElement.textContent = 'Done';
+                        } else {
+                            stageElement.classList.add('pending');
+                            statusElement.textContent = 'Pending';
+                        }
+                    } else {
+                        stageElement.classList.add('pending');
+                        statusElement.textContent = 'Pending';
+                    }
+                }
+            });
+            
+            // Update production metrics
+            updateProductionMetrics(phaseData);
+        }
+        
+        function updateProductionMetrics(phaseData) {
+            let completedStages = 0;
+            let activeAgents = 0;
+            
+            if (phaseData) {
+                Object.values(phaseData).forEach(phase => {
+                    if (phase.status === 'COMPLETED') completedStages++;
+                    if (phase.active_tasks) activeAgents += phase.active_tasks.length;
+                });
+            }
+            
+            document.getElementById('stages-completed').textContent = completedStages;
+            document.getElementById('active-agents').textContent = activeAgents;
+            
+            // Update processing time
+            if (appState.workflowStartTime) {
+                const elapsed = Math.floor((Date.now() - appState.workflowStartTime) / 1000);
+                document.getElementById('processing-time').textContent = formatTime(elapsed);
+            }
+        }
+        
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return minutes > 0 ? `${minutes}m ${remainingSeconds}s` : `${remainingSeconds}s`;
+        }
+        
+        function animateDocumentFlow() {
+            const documentItem = document.getElementById('document-flow');
+            if (documentItem) {
+                // Reset animation
+                documentItem.style.animation = 'none';
+                documentItem.offsetHeight; // Trigger reflow
+                documentItem.style.animation = 'documentFlow 5s ease-in-out infinite';
+            }
+        }
+        
+        function incrementDocumentCount() {
+            const countElement = document.getElementById('documents-generated');
+            const currentCount = parseInt(countElement.textContent) || 0;
+            countElement.textContent = currentCount + 1;
+            
+            // Trigger document animation
+            setTimeout(animateDocumentFlow, 500);
+        }
         }
         
         // Knowledge graph functions

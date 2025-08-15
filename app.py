@@ -54,6 +54,15 @@ except ImportError as e:
     logger.error(f"Failed to import document generator: {e}")
     DocumentGenerator = None
 
+try:
+    from lawyerfactory.prompt_integration import create_prompt_processor
+    from lawyerfactory.mcp_memory_integration import MCPMemoryManager, PneumonicMemoryIntegration
+except ImportError as e:
+    logger.error(f"Failed to import prompt integration or MCP memory: {e}")
+    create_prompt_processor = None
+    MCPMemoryManager = None
+    PneumonicMemoryIntegration = None
+
 # Monkey patch only what's needed for Flask-SocketIO, completely excluding socket to avoid DNS issues
 eventlet.monkey_patch(socket=False, select=True, thread=True, time=True, os=False)
 
@@ -92,6 +101,29 @@ def initialize_components():
                 knowledge_graph_path='knowledge_graphs/main.db',
                 storage_path='workflow_storage'
             )
+        
+        # Initialize MCP memory integration
+        if MCPMemoryManager and PneumonicMemoryIntegration:
+            # Create MCP tools interface for memory operations
+            mcp_tools = {
+                'create_entities': lambda data: None,  # Will be replaced with actual MCP calls
+                'search_nodes': lambda data: [],
+                'open_nodes': lambda data: [],
+                'add_observations': lambda data: None
+            }
+            
+            app_state['mcp_memory_manager'] = MCPMemoryManager(mcp_tools)
+            app_state['pneumonic_integration'] = PneumonicMemoryIntegration(app_state['mcp_memory_manager'])
+            logger.info("MCP memory integration initialized")
+        
+        # Initialize prompt processor with MCP memory integration
+        if create_prompt_processor and app_state['workflow_manager']:
+            app_state['prompt_processor'] = create_prompt_processor(
+                maestro=app_state['workflow_manager'].maestro,
+                llm_service=None,  # Can be configured later with actual LLM service
+                mcp_memory_manager=app_state.get('mcp_memory_manager')
+            )
+            logger.info("Prompt processor initialized with MCP memory integration")
         
         logger.info("Backend components initialized successfully")
         
@@ -333,6 +365,179 @@ def handle_leave_session(data):
         logger.info(f"Client {request.sid} left session {session_id}")
         emit('session_left', {'session_id': session_id}, room=session_id)
 
+
+@socketio.on('analyze_case_prompt')
+def handle_analyze_case_prompt(data):
+    """Handle LLM-powered case prompt analysis"""
+    try:
+        case_prompt = data.get('case_prompt', '').strip()
+        session_id = data.get('session_id')
+        document_type_hint = data.get('document_type_hint')
+        
+        if not case_prompt:
+            emit('prompt_analysis_error', {
+                'session_id': session_id,
+                'error': 'No case prompt provided',
+                'timestamp': datetime.now().isoformat()
+            })
+            return
+        
+        if not session_id:
+            session_id = str(uuid.uuid4())
+        
+        logger.info(f"Analyzing case prompt for session {session_id}")
+        
+        if app_state['prompt_processor']:
+            # Process the prompt asynchronously
+            def process_prompt():
+                try:
+                    # Run the async prompt processing
+                    result = asyncio.run(
+                        app_state['prompt_processor'].process_case_prompt(
+                            session_id=session_id,
+                            case_prompt=case_prompt,
+                            document_type_hint=document_type_hint,
+                            socketio=socketio
+                        )
+                    )
+                    
+                    # Store result for later use
+                    if 'success' not in result or result['success'] is not False:
+                        app_state['active_sessions'][session_id] = {
+                            'type': 'prompt_analysis',
+                            'prompt_analysis': result,
+                            'created_at': datetime.now().isoformat(),
+                            'status': 'analysis_complete'
+                        }
+                        
+                        # Store in MCP memory for pneumonic compression
+                        if app_state.get('pneumonic_integration'):
+                            asyncio.run(
+                                app_state['pneumonic_integration'].capture_workflow_context(
+                                    session_id=session_id,
+                                    phase='prompt_analysis',
+                                    context_data=result
+                                )
+                            )
+                    
+                except Exception as e:
+                    logger.error(f"Prompt analysis failed for session {session_id}: {e}")
+                    socketio.emit('prompt_analysis_error', {
+                        'session_id': session_id,
+                        'error': str(e),
+                        'timestamp': datetime.now().isoformat()
+                    })
+            
+            # Start processing in background thread
+            socketio.start_background_task(process_prompt)
+            
+        else:
+            emit('prompt_analysis_error', {
+                'session_id': session_id,
+                'error': 'Prompt processor not available',
+                'timestamp': datetime.now().isoformat()
+            })
+        
+    except Exception as e:
+        logger.error(f"Error handling prompt analysis: {e}")
+        emit('prompt_analysis_error', {
+            'session_id': data.get('session_id'),
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        })
+
+@socketio.on('get_analysis_summary')
+def handle_get_analysis_summary(data):
+    """Get keyword summary for analyzed prompt"""
+    try:
+        session_id = data.get('session_id')
+        
+        if not session_id or session_id not in app_state['active_sessions']:
+            emit('analysis_summary_error', {
+                'session_id': session_id,
+                'error': 'No analysis found for session'
+            })
+            return
+        
+        if app_state['prompt_processor']:
+            summary = app_state['prompt_processor'].get_keyword_summary_for_ui(session_id)
+            
+            if summary:
+                emit('analysis_summary', {
+                    'session_id': session_id,
+                    'summary': summary
+                })
+            else:
+                emit('analysis_summary_error', {
+                    'session_id': session_id,
+                    'error': 'No summary available'
+                })
+        else:
+            emit('analysis_summary_error', {
+                'session_id': session_id,
+                'error': 'Prompt processor not available'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error getting analysis summary: {e}")
+        emit('analysis_summary_error', {
+            'session_id': data.get('session_id'),
+            'error': str(e)
+        })
+
+@socketio.on('update_analysis_feedback')
+def handle_update_analysis_feedback(data):
+    """Update analysis with human feedback"""
+    try:
+        session_id = data.get('session_id')
+        feedback = data.get('feedback', {})
+        
+        if not session_id:
+            emit('feedback_update_error', {
+                'error': 'No session ID provided'
+            })
+            return
+        
+        if app_state['prompt_processor']:
+            def update_with_feedback():
+                try:
+                    updated_analysis = asyncio.run(
+                        app_state['prompt_processor'].update_analysis_with_feedback(
+                            session_id, feedback
+                        )
+                    )
+                    
+                    # Update stored session data
+                    if session_id in app_state['active_sessions']:
+                        app_state['active_sessions'][session_id]['prompt_analysis'] = updated_analysis
+                        app_state['active_sessions'][session_id]['human_reviewed'] = True
+                    
+                    socketio.emit('analysis_updated', {
+                        'session_id': session_id,
+                        'analysis_result': updated_analysis
+                    })
+                    
+                except Exception as e:
+                    logger.error(f"Failed to update analysis with feedback: {e}")
+                    socketio.emit('feedback_update_error', {
+                        'session_id': session_id,
+                        'error': str(e)
+                    })
+            
+            # Process feedback in background
+            socketio.start_background_task(update_with_feedback)
+        else:
+            emit('feedback_update_error', {
+                'session_id': session_id,
+                'error': 'Prompt processor not available'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error updating analysis feedback: {e}")
+        emit('feedback_update_error', {
+            'session_id': data.get('session_id'),
+            'error': str(e)
+        })
 
 # Background Tasks
 
