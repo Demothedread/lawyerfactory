@@ -113,43 +113,50 @@
             "Final Draft"
            ],
         ]
+=======
+  "entities": [ 
+    {"name": "project", "description": "LawyerFactory codebase"},
+    {"name": "README.md", "description": "Project documentation"},
+    {"name": "agents", [
+     {"id": "Maestro", "type": "agent"},
+     {"id": "ResearchBot", "type": "agent"},
+     {"id": "WriterBot", "type": "agent"},
+     {"id": "LegalEditorBot", "type": "agent"},
+     {"id": "StepPlannerBot", "type": "agent"},
+     {"id": "Assessor", "type": "agent"},
+     {"id": "Summarizer", "type": "feature"},
+     {"id": "Categorizer", "type": "feature"}
+      ]
     }
+   {
+      "id": "knowledge_graph",
+      "features": ["stores context", "updated per task"]
+    }
+    {"name": "lexomnia", "description": "Basic agent module using Agent and Runner classes"},
+    {"name": "__init__.py", "description": "Marks the agents directory as a package"},
+    {"name": "knowledge_graph.json", "description": "Repository knowledge graph"}
   ],
   "relationships": [
-    {
-      "from": "maestro",
-      "to": "research_bot",
-      "relation": "directs"
-    },
-    {
-      "from": "research_bot",
-      "to": "database",
-      "relation": "writes"
-    },
-    {
-      "from": "maestro",
-      "to": "legal_editor",
-      "relation": "receives_feedback"
-    },
-    {
-      "from": "maestro",
-      "to": "writer",
-      "relation": "passes_research"
-    },
-    {
-      "from": "legal_editor",
-      "to": "research_bot",
-      "relation": "requests_more_research"
-    },
+    {"from": "project", "to": "README.md", "type": "documents"},
+    {"from": "project", "to": "agents", "type": "contains"},
+    {"from": "project", "to": "knowledge_graph.json", "type": "contains"},
+    {"from": "agents", "to": "__init__.py", "type": "contains"},
+    {"from": "agents", "to": "lexomnia", "type": "contains"}
+    {"source": "LawyerFactory", "target": "knowledge_graph", "type": "contains"},
+    {"source": "knowledge_graph", "target": "LawyerFactory", "type": "context-for"}
+    {"from": "Maestro", "to": "ResearchBot", "relation": "directs"},
+    {"from": "Maestro", "to": "WriterBot", "relation": "provides_research"},
+    {"from": "WriterBot", "to": "LegalEditorBot", "relation": "submits_draft"},
+    {"from": "Maestro", "to": "StepPlannerBot", "relation": "requests_plan"},
+    {"from": "Assessor", "to": "Summarizer", "relation": "uses"},
+    {"from": "Assessor", "to": "Categorizer", "relation": "uses"}
   ],
   "observations": [
-    "Initial graph created.",
-    "Application run",
-    "Application run",
-    "Task 1 added at Preproduction Planning",
-    "Task 2 added at Preproduction Planning",
-    "Task 1 assigned to ResearchAgent",
-    "Task 2 assigned to DraftingAgent",
-    "Task 1 moved to Research and Development"
+    "Repository initially contained only README",
+    "Added agents package with lexomnia module and knowledge graph"
+    "Added summarizer and categorizer modules"
   ]
+
 }}
+=======
+}

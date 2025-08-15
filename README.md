@@ -1,13 +1,55 @@
 
 # lawyerfactory
 
-## Setup
+## Knowledge Graph Module
 
-Install dependencies::
+The `knowledge_graph.py` module loads and saves `knowledge_graph.json`, which
+tracks entities, their features and relationships. You can use the helper
+functions to load the graph, add entities or relationships, append
+observations, and save the updated graph.
 
-    pip install -r requirements.txt
+Example usage:
 
-## Running checks
+```python
+from knowledge_graph import load_graph, save_graph, add_observation
+
+graph = load_graph()
+add_observation(graph, "Used the knowledge graph module.")
+save_graph(graph)
+```
+=======
+LawyerFactory is a lightweight demonstration of a swarm-based workflow for legal document creation. Agents collaborate through a simple planner, research bot, writer, and editor coordinated by the `Maestro` class. A small TF-IDF vector store provides retrieval augmented generation for reference material.
+
+## Synopsis
+- **Agents:** Step planner, research bot, writer bot, and legal editor
+- **Orchestrator:** `Maestro` coordinates asynchronous calls and stores research
+- **Vector Store:** In-memory TF-IDF vectors via `ai_vector.VectorStore`
+- **Knowledge Graph:** `knowledge_graph.json` tracks entities and relationships
+
+## Prerequisites
+```
+pip install -r requirements.txt
+```
+
+The requirements include `scikit-learn` for the TF-IDF vector store.
+
+## Running the Demo
+Execute the demo chain to see planning, research, and drafting in action:
+```
+python -m maestro.maestro
+```
+
+## Document Intake
+`assessor.py` ingests text files and stores metadata in `repository.csv`. The
+summary combines the first and last 250 tokens of each document for a concise
+LLM-ready context. Categorization distinguishes legal, business, and research
+topics with fine-grained labels such as `legal:caselaw` or `business:market-analysis`.
+Example usage:
+```
+python assessor.py sample.txt --author "Author" --title "Doc" --date 2024-01-01
+```
+
+## Testing and Linting
 
 * Lint the code with flake8::
 
@@ -17,53 +59,16 @@ Install dependencies::
 
     python -m pytest
 =======
-This repository contains an experimental agent-based workflow for generating long-form legal content. The approach relies on a team of specialized GPT-4.1-mini agents managed in an assembly-line fashion.
 
-See [docs/team_chart.md](docs/team_chart.md) for an overview of the agents and phases.
+## Use Cases
+This prototype illustrates how a network of specialized agents can assemble structured legal content. The approach can be expanded with additional agents or a persistent vector database for larger projects.
 
-The knowledge graph describing entities and relationships is stored in `knowledge_graph.json` and can be updated via `knowledge_graph.py`.
+## FAQ
+**Q:** Is this production ready?
+**A:** No. It is a minimal example intended for experimentation.
+
+**Q:** How do I update the knowledge graph?
+**A:** Modify `knowledge_graph.json` directly or use `knowledge_graph.py` to add observations.
 
 
-This project contains a simple agentic chain with several bots orchestrated by the `Maestro` class. The maestro directs output from one bot to another and stores research results in a small in-memory database.
-
-Run the demo to see a basic flow:
-
-```bash
-python -m maestro.maestro
-
-This repository contains a simple document intake system.
-
-## Assessor
-
-The `assessor.py` script ingests text documents and stores metadata
-in `repository.csv`. It automatically generates a short summary,
-assigns a category based on keywords, and adds a hashtag.
-
-Run the script from the command line:
-
-```bash
-python assessor.py path/to/document.txt --author "Author Name" --title "Doc Title" --date YYYY-MM-DD
-```
-
-## Tests
-
-Install dependencies and run tests with `pytest`:
-
-```bash
-pip install -r requirements.txt  # or `pip install flake8 pytest nltk`
-flake8 .
-pytest -q
-=======
-# LawyerFactory
-
-This project provides a simple workflow manager for building legal documents. It
-features sequential stages with human feedback loops and a basic Kanban board
-interface.
-Tasks can be assigned to agents and progressed through defined stages.
-Each action is logged to `knowledge_graph.json` for traceability.
-
-## Running
-
-]
-```
 
