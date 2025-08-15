@@ -10,9 +10,6 @@ def load_graph(file_path: Optional[Path] = None) -> Dict[str, Any]:
     path = file_path or KGRAPH_FILE
     if path.exists():
         with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {"entities": [], "relationships": [], "observations": []}
-
 
 def save_graph(
     graph: Dict[str, Any], file_path: Optional[Path] = None
@@ -38,3 +35,17 @@ def add_relationship(
 def add_observation(graph: Dict[str, Any], observation: Dict[str, Any]) -> None:
     """Append an observation (as a dictionary) to the knowledge graph."""
     graph.setdefault("observations", []).append(observation)
+
+def add_observation(text: str) -> None:
+    graph = load_graph()
+    graph.setdefault("observations", []).append(text)
+    save_graph(graph)
+
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 1:
+        add_observation(' '.join(sys.argv[1:]))
+    else:
+        print(json.dumps(load_graph(), indent=2))
+
