@@ -155,7 +155,7 @@ Web Interface ──► All Components
 
 1. **Create Virtual Environment**:
    ```bash
-   python -m venv lawEnv
+   python -m venv law_venv
    source lawEnv/bin/activate  # On Windows: lawEnv\Scripts\activate
    pip install -r requirements.txt
    ```

@@ -32,6 +32,53 @@ except ImportError as e:
     logger.error(f"Import error: {e}")
     logger.info("Running simple validation instead...")
 
+    # Provide lightweight stubs so static analysis and later references don't see these names as unbound.
+    # At runtime these stubs will raise informative errors when the real modules are missing.
+    class _MissingDependencyError(RuntimeError):
+        pass
+
+    class KnowledgeGraph:
+        def __init__(self, *args, **kwargs):
+            raise _MissingDependencyError(
+                "knowledge_graph module is not available. "
+                "Ensure the package is installed and PYTHONPATH includes the project root."
+            )
+
+    class EnhancedMaestro:
+        def __init__(self, *args, **kwargs):
+            raise _MissingDependencyError(
+                "maestro.enhanced_maestro is not available. Install/enable the maestro package."
+            )
+
+        async def start_workflow(self, *args, **kwargs):
+            raise _MissingDependencyError("maestro.enhanced_maestro is not available.")
+
+        async def get_workflow_status(self, *args, **kwargs):
+            raise _MissingDependencyError("maestro.enhanced_maestro is not available.")
+
+        async def list_workflows(self, *args, **kwargs):
+            raise _MissingDependencyError("maestro.enhanced_maestro is not available.")
+
+        async def shutdown(self, *args, **kwargs):
+            return
+
+    class EnhancedWorkflowManager:
+        def __init__(self, *args, **kwargs):
+            raise _MissingDependencyError(
+                "lawyerfactory.enhanced_workflow is not available. Ensure lawyerfactory package is importable."
+            )
+
+    # Minimal enums/constants to satisfy references in tests when real package isn't present.
+    class PhaseStatus:
+        PENDING = "PENDING"
+        COMPLETED = "COMPLETED"
+        FAILED = "FAILED"
+
+    class WorkflowPhase:
+        INTAKE = "INTAKE"
+        PROCESSING = "PROCESSING"
+        COMPLETED = "COMPLETED"
+
 
 async def test_workflow_models():
     """Test the workflow models and state management"""

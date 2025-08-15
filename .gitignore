@@ -1,5 +1,16 @@
-.env.production
+law_venv/
+env312/*
 lawenv/*
+/env312/bin
+env312/bin/*
+law_venv/
 *.log
 *.json
-Tesla/
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+# Ignore IDE specific files
+.env.production
+.env

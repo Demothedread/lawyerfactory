@@ -2,12 +2,13 @@
 Checkpoint management for workflow recovery and state persistence.
 """
 
+import asyncio
 import json
-import os
 import logging
+import os
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -109,13 +110,27 @@ class CheckpointManager:
             # Sort by modification time (newest first)
             checkpoint_files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
             
-            # Remove old files
-            for old_file in checkpoint_files[keep_count:]:
-                old_file.unlink()
-                logger.debug(f"Removed old checkpoint: {old_file}")
-                
+            # Remove old files beyond keep_count, run deletion in thread to avoid blocking event loop
+            old_files = checkpoint_files[keep_count:]
+            
+            async def _remove_files(files):
+                from pathlib import Path
+                for old_file in files:
+                    try:
+                        # ensure file is a Path and exists before removal
+                        ofp = Path(old_file)
+                        if ofp.exists():
+                            ofp.unlink()
+                            logger.info(f"Removed old checkpoint: {ofp.name}")
+                    except Exception as ex:
+                        logger.warning(f"Failed to remove checkpoint {old_file}: {ex}")
+            
+            await asyncio.to_thread(lambda: asyncio.get_event_loop().run_until_complete(_remove_files(old_files)))
+            
         except Exception as e:
-            logger.warning(f"Failed to cleanup old checkpoints: {e}")
+            logger.error(f"Error during checkpoint cleanup for session {session_id}: {e}")
+            # Do not raise here to avoid breaking workflow; just log
+            return
 
     def list_checkpoints(self, session_id: str) -> list:
         """List all available checkpoints for a session"""
