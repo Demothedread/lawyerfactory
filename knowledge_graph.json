@@ -2,7 +2,7 @@
   "entities": [ 
     {"name": "project", "description": "LawyerFactory codebase"},
     {"name": "README.md", "description": "Project documentation"},
-    {"name": "agents", "description": "Package to contain agent modules"[
+    {"name": "agents", [
      {"id": "Maestro", "type": "agent"},
      {"id": "ResearchBot", "type": "agent"},
      {"id": "WriterBot", "type": "agent"},
@@ -12,6 +12,10 @@
      {"id": "Summarizer", "type": "feature"},
      {"id": "Categorizer", "type": "feature"}
       ]
+    }
+   {
+      "id": "knowledge_graph",
+      "features": ["stores context", "updated per task"]
     }
     {"name": "lexomnia", "description": "Basic agent module using Agent and Runner classes"},
     {"name": "__init__.py", "description": "Marks the agents directory as a package"},
@@ -23,12 +27,8 @@
     {"from": "project", "to": "knowledge_graph.json", "type": "contains"},
     {"from": "agents", "to": "__init__.py", "type": "contains"},
     {"from": "agents", "to": "lexomnia", "type": "contains"}
-  ],
-  "observations": [
-    "Repository initially contained only README",
-    "Added agents package with lexomnia module and knowledge graph"
-  ],
-  "relationships": [
+    {"source": "LawyerFactory", "target": "knowledge_graph", "type": "contains"},
+    {"source": "knowledge_graph", "target": "LawyerFactory", "type": "context-for"}
     {"from": "Maestro", "to": "ResearchBot", "relation": "directs"},
     {"from": "Maestro", "to": "WriterBot", "relation": "provides_research"},
     {"from": "WriterBot", "to": "LegalEditorBot", "relation": "submits_draft"},
@@ -37,7 +37,8 @@
     {"from": "Assessor", "to": "Categorizer", "relation": "uses"}
   ],
   "observations": [
+    "Repository initially contained only README",
+    "Added agents package with lexomnia module and knowledge graph"
     "Added summarizer and categorizer modules"
-
   ]
 }

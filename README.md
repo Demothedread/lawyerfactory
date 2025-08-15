@@ -1,21 +1,24 @@
-# LawyerFactory
 
-LawyerFactory is a collection of simple agent modules used for automation and experimentation. Each agent implements a basic interface and can be executed with a small runner script.
+# lawyerfactory
 
-## Usage
+This repository provides a small knowledge graph utility.
 
-Run the example `lexomnia` agent:
+## Knowledge Graph Module
 
-```bash
-python -m agents.lexomnia
+The `knowledge_graph.py` module loads and saves `knowledge_graph.json`, which
+tracks entities, their features and relationships. You can use the helper
+functions to load the graph, add entities or relationships, append
+observations, and save the updated graph.
+
+Example usage:
+
+```python
+from knowledge_graph import load_graph, save_graph, add_observation
+
+graph = load_graph()
+add_observation(graph, "Used the knowledge graph module.")
+save_graph(graph)
 ```
-
-This will execute the agent's runner and print the processed output.
-
-## Project goals
-
-* Provide a minimal framework for experimenting with agent-based workflows.
-* Encourage modular design so new agents can be added easily under the `agents/` package.
 =======
 LawyerFactory is a lightweight demonstration of a swarm-based workflow for legal document creation. Agents collaborate through a simple planner, research bot, writer, and editor coordinated by the `Maestro` class. A small TF-IDF vector store provides retrieval augmented generation for reference material.
 
@@ -64,5 +67,6 @@ This prototype illustrates how a network of specialized agents can assemble stru
 
 **Q:** How do I update the knowledge graph?
 **A:** Modify `knowledge_graph.json` directly or use `knowledge_graph.py` to add observations.
+
 
 
