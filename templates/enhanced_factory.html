@@ -21,15 +21,166 @@
             font-family: 'courier new', 'Roboto Mono', monospace;
         }
         
-        /* Enhanced styling for new components */
+        /* Industrial Machine Aesthetic - Enhanced styling */
         .upload-zone {
             border: 2px dashed #77274a;
             border-radius: 8px;
             transition: all 0.3s ease;
+            background: linear-gradient(135deg, #2c2c2c 0%, #3a3a3a 50%, #2c2c2c 100%);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
         }
+        
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.02) 10px,
+                rgba(255,255,255,0.02) 20px
+            );
+            pointer-events: none;
+        }
+        
         .upload-zone.dragover {
             border-color: #77274a;
-            background-color: rgba(59, 130, 246, 0.1);
+            background: linear-gradient(135deg, #1a3a2e 0%, #2d5a4a 50%, #1a3a2e 100%);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 0 20px rgba(119, 39, 74, 0.4);
+        }
+        
+        /* Industrial Machine Components */
+        .machine-gauge {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #4a4a4a, #2a2a2a);
+            border: 4px solid #1a1a1a;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .machine-gauge::before {
+            content: '';
+            position: absolute;
+            width: 60%;
+            height: 60%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #6a6a6a, #3a3a3a);
+            border: 2px solid #555;
+        }
+        
+        .gauge-needle {
+            position: absolute;
+            width: 2px;
+            height: 35%;
+            background: #ff4444;
+            transform-origin: bottom center;
+            top: 15%;
+            left: 50%;
+            margin-left: -1px;
+            border-radius: 1px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 0 4px rgba(255, 68, 68, 0.6);
+        }
+        
+        .machine-pipe {
+            background: linear-gradient(90deg,
+                #8B4513 0%, #CD853F 15%, #8B4513 30%,
+                #A0522D 45%, #8B4513 60%, #CD853F 75%, #8B4513 100%);
+            border: 2px solid #654321;
+            border-radius: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        .machine-pipe::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+        
+        .machine-valve {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #666, #333);
+            border-radius: 50%;
+            border: 2px solid #222;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .machine-valve::after {
+            content: '⚙';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            color: #ccc;
+        }
+        
+        .machine-valve:hover {
+            background: radial-gradient(circle at 30% 30%, #777, #444);
+            box-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+        
+        .metal-texture {
+            background: linear-gradient(135deg,
+                #2c2c2c 0%, #3a3a3a 25%, #2c2c2c 50%,
+                #3a3a3a 75%, #2c2c2c 100%);
+            border: 1px solid #555;
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.1),
+                        inset 0 -1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .rivets::before {
+            content: '● ● ● ● ● ● ● ●';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            font-size: 8px;
+            color: #555;
+            letter-spacing: 8px;
+            opacity: 0.6;
+        }
+        
+        .warning-light {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #444;
+            border: 2px solid #222;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .warning-light.active {
+            background: radial-gradient(circle, #ff4444, #cc2222);
+            box-shadow: 0 0 10px rgba(255, 68, 68, 0.8), inset 0 1px 2px rgba(255,255,255,0.2);
+            animation: pulse-light 1s ease-in-out infinite alternate;
+        }
+        
+        .warning-light.success {
+            background: radial-gradient(circle, #44ff44, #22cc22);
+            box-shadow: 0 0 10px rgba(68, 255, 68, 0.8), inset 0 1px 2px rgba(255,255,255,0.2);
+        }
+        
+        @keyframes pulse-light {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
         }
         
         /* Draft upload zone specific styling */
@@ -388,14 +539,34 @@
             margin-left: 8px;
         }
         
-        /* Conveyor Belt UI Metaphor */
+        /* Enhanced Industrial Conveyor Belt System */
         .conveyor-container {
-            background: linear-gradient(90deg, #1f2937 0%, #374151 50%, #1f2937 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 25%, #1a1a1a 50%, #2a2a2a 75%, #1a1a1a 100%);
+            border: 3px solid #444;
             border-radius: 12px;
-            padding: 20px;
+            padding: 30px 20px;
             margin: 20px 0;
             position: relative;
             overflow: hidden;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3);
+        }
+        
+        .conveyor-container::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            height: 20px;
+            background: repeating-linear-gradient(
+                90deg,
+                #333 0px,
+                #333 5px,
+                #444 5px,
+                #444 10px
+            );
+            border-radius: 10px;
+            opacity: 0.6;
         }
         
         .conveyor-belt {
@@ -403,7 +574,8 @@
             align-items: center;
             justify-content: space-between;
             position: relative;
-            min-height: 120px;
+            min-height: 160px;
+            padding: 20px 0;
         }
         
         .conveyor-track {
@@ -411,57 +583,145 @@
             top: 50%;
             left: 0;
             right: 0;
-            height: 4px;
+            height: 8px;
             background: repeating-linear-gradient(
                 90deg,
-                #4b5563 0px,
-                #4b5563 20px,
-                #6b7280 20px,
-                #6b7280 40px
+                #8B4513 0px,
+                #CD853F 5px,
+                #8B4513 10px,
+                #A0522D 15px,
+                #8B4513 20px,
+                #CD853F 25px,
+                #8B4513 30px
             );
             transform: translateY(-50%);
-            animation: conveyorMove 3s linear infinite;
+            animation: conveyorMove 4s linear infinite;
+            border: 2px solid #654321;
+            border-radius: 4px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+        
+        .conveyor-track::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+        
+        .conveyor-track::after {
+            content: '⚙ ⚙ ⚙ ⚙ ⚙ ⚙ ⚙ ⚙ ⚙ ⚙';
+            position: absolute;
+            bottom: -25px;
+            left: 0;
+            right: 0;
+            font-size: 16px;
+            color: #555;
+            letter-spacing: 50px;
+            animation: gearRotate 2s linear infinite;
         }
         
         @keyframes conveyorMove {
             0% { background-position: 0px 0; }
-            100% { background-position: 40px 0; }
+            100% { background-position: 30px 0; }
+        }
+        
+        @keyframes gearRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         .production-stage {
             position: relative;
-            z-index: 2;
-            background: #374151;
-            border: 2px solid #4b5563;
-            border-radius: 8px;
-            padding: 15px;
-            min-width: 140px;
+            z-index: 3;
+            background: linear-gradient(135deg, #2c2c2c 0%, #3a3a3a 50%, #2c2c2c 100%);
+            border: 3px solid #555;
+            border-radius: 12px;
+            padding: 20px 15px;
+            min-width: 160px;
             text-align: center;
             transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.1), 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        .production-stage::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 2px,
+                rgba(255,255,255,0.02) 2px,
+                rgba(255,255,255,0.02) 4px
+            );
+            border-radius: 8px;
+            pointer-events: none;
         }
         
         .production-stage.active {
             border-color: #3b82f6;
-            background: #1e3a8a;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-            animation: pulse 2s ease-in-out infinite;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #1e3a8a 100%);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.5), inset 0 2px 4px rgba(255,255,255,0.2);
+            animation: pulse-stage 2s ease-in-out infinite;
         }
         
         .production-stage.completed {
             border-color: #10b981;
-            background: #065f46;
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+            background: linear-gradient(135deg, #065f46 0%, #059669 50%, #065f46 100%);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.4), inset 0 2px 4px rgba(255,255,255,0.2);
         }
         
         .production-stage.pending {
             border-color: #6b7280;
-            background: #374151;
-            opacity: 0.6;
+            background: linear-gradient(135deg, #374151 0%, #4b5563 50%, #374151 100%);
+            opacity: 0.7;
         }
         
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        @keyframes pulse-stage {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(59, 130, 246, 0.5), inset 0 2px 4px rgba(255,255,255,0.2);
+            }
+            50% {
+                transform: scale(1.08);
+                box-shadow: 0 0 40px rgba(59, 130, 246, 0.8), inset 0 2px 4px rgba(255,255,255,0.3);
+            }
+        }
+        
+        .stage-machine-element {
+            position: absolute;
+            top: -15px;
+            right: -10px;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #666, #333);
+            border-radius: 50%;
+            border: 2px solid #222;
+        }
+        
+        .stage-machine-element::after {
+            content: '⚡';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            color: #ff6;
+        }
+        
+        .production-stage.active .stage-machine-element::after {
+            animation: spark 0.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes spark {
+            0% { color: #ff6; text-shadow: 0 0 5px #ff6; }
+            100% { color: #ffa; text-shadow: 0 0 10px #ffa; }
         }
         
         .stage-icon {
@@ -964,47 +1224,75 @@
                             <div class="conveyor-belt">
                                 <div class="conveyor-track"></div>
                                 
-                                <!-- Production Stages -->
-                                <div class="production-stage pending" id="stage-intake">
+                                <!-- Production Stages with Industrial Elements -->
+                                <div class="production-stage pending metal-texture rivets" id="stage-intake">
                                     <div class="stage-icon">📥</div>
                                     <div class="stage-title">INTAKE</div>
                                     <div class="stage-status">Pending</div>
+                                    <div class="machine-gauge" style="position: absolute; top: 5px; right: 5px; transform: scale(0.4);">
+                                        <div class="gauge-needle" style="transform: rotate(0deg);"></div>
+                                    </div>
+                                    <div class="warning-light" style="position: absolute; bottom: 5px; left: 5px;"></div>
                                 </div>
                                 
-                                <div class="production-stage pending" id="stage-outline">
+                                <div class="production-stage pending metal-texture rivets" id="stage-outline">
                                     <div class="stage-icon">📋</div>
                                     <div class="stage-title">OUTLINE</div>
                                     <div class="stage-status">Pending</div>
+                                    <div class="machine-gauge" style="position: absolute; top: 5px; right: 5px; transform: scale(0.4);">
+                                        <div class="gauge-needle" style="transform: rotate(0deg);"></div>
+                                    </div>
+                                    <div class="warning-light" style="position: absolute; bottom: 5px; left: 5px;"></div>
                                 </div>
                                 
-                                <div class="production-stage pending" id="stage-research">
+                                <div class="production-stage pending metal-texture rivets" id="stage-research">
                                     <div class="stage-icon">🔍</div>
                                     <div class="stage-title">RESEARCH</div>
                                     <div class="stage-status">Pending</div>
+                                    <div class="machine-gauge" style="position: absolute; top: 5px; right: 5px; transform: scale(0.4);">
+                                        <div class="gauge-needle" style="transform: rotate(0deg);"></div>
+                                    </div>
+                                    <div class="warning-light" style="position: absolute; bottom: 5px; left: 5px;"></div>
                                 </div>
                                 
-                                <div class="production-stage pending" id="stage-drafting">
+                                <div class="production-stage pending metal-texture rivets" id="stage-drafting">
                                     <div class="stage-icon">✍️</div>
                                     <div class="stage-title">DRAFTING</div>
                                     <div class="stage-status">Pending</div>
+                                    <div class="machine-gauge" style="position: absolute; top: 5px; right: 5px; transform: scale(0.4);">
+                                        <div class="gauge-needle" style="transform: rotate(0deg);"></div>
+                                    </div>
+                                    <div class="warning-light" style="position: absolute; bottom: 5px; left: 5px;"></div>
                                 </div>
                                 
-                                <div class="production-stage pending" id="stage-review">
+                                <div class="production-stage pending metal-texture rivets" id="stage-review">
                                     <div class="stage-icon">⚖️</div>
                                     <div class="stage-title">REVIEW</div>
                                     <div class="stage-status">Pending</div>
+                                    <div class="machine-gauge" style="position: absolute; top: 5px; right: 5px; transform: scale(0.4);">
+                                        <div class="gauge-needle" style="transform: rotate(0deg);"></div>
+                                    </div>
+                                    <div class="warning-light" style="position: absolute; bottom: 5px; left: 5px;"></div>
                                 </div>
                                 
-                                <div class="production-stage pending" id="stage-editing">
+                                <div class="production-stage pending metal-texture rivets" id="stage-editing">
                                     <div class="stage-icon">📝</div>
                                     <div class="stage-title">EDITING</div>
                                     <div class="stage-status">Pending</div>
+                                    <div class="machine-gauge" style="position: absolute; top: 5px; right: 5px; transform: scale(0.4);">
+                                        <div class="gauge-needle" style="transform: rotate(0deg);"></div>
+                                    </div>
+                                    <div class="warning-light" style="position: absolute; bottom: 5px; left: 5px;"></div>
                                 </div>
                                 
-                                <div class="production-stage pending" id="stage-orchestration">
+                                <div class="production-stage pending metal-texture rivets" id="stage-orchestration">
                                     <div class="stage-icon">🎭</div>
                                     <div class="stage-title">FINAL</div>
                                     <div class="stage-status">Pending</div>
+                                    <div class="machine-gauge" style="position: absolute; top: 5px; right: 5px; transform: scale(0.4);">
+                                        <div class="gauge-needle" style="transform: rotate(0deg);"></div>
+                                    </div>
+                                    <div class="warning-light" style="position: absolute; bottom: 5px; left: 5px;"></div>
                                 </div>
                                 
                                 <!-- Animated Document Items -->
@@ -1070,6 +1358,96 @@
                         </div>
                     </div>
                     
+                    <!-- Factory Deliverables Output Bay -->
+                    <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-4 metal-texture rivets relative mb-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-medium text-gray-300">Factory Output Bay</h3>
+                            <div class="flex items-center space-x-2">
+                                <div class="warning-light" id="outputBayStatus"></div>
+                                <div class="machine-gauge" style="transform: scale(0.5);">
+                                    <div class="gauge-needle" id="outputProgress" style="transform: rotate(0deg);"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Conveyor Belt for Deliverables -->
+                        <div class="relative bg-gray-800 rounded-lg p-4 mb-4" style="background: linear-gradient(45deg, #374151 25%, transparent 25%), linear-gradient(-45deg, #374151 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #374151 75%), linear-gradient(-45deg, transparent 75%, #374151 75%); background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px;">
+                            <div class="conveyor-track" style="height: 4px; background: #4a5568; margin-bottom: 10px;"></div>
+                            
+                            <div id="deliverablesList" class="space-y-2">
+                                <!-- Deliverables will be added here dynamically -->
+                                <div class="deliverable-item bg-gray-700/50 border border-gray-600 rounded p-3 flex items-center justify-between opacity-50">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="machine-valve" style="transform: scale(0.7);"></div>
+                                        <span class="text-sm text-gray-400">Awaiting first deliverable...</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500">Ready</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Agent Bot Status Panel -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-gray-800/50 border border-gray-600 rounded p-3">
+                                <h4 class="text-sm font-medium text-gray-300 mb-2">Active Agent Bots</h4>
+                                <div id="agentBotsList" class="space-y-2">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="warning-light" style="width: 8px; height: 8px;"></div>
+                                            <span class="text-gray-400">Research Bot</span>
+                                        </div>
+                                        <span class="text-gray-500">Standby</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="warning-light" style="width: 8px; height: 8px;"></div>
+                                            <span class="text-gray-400">Draft Bot</span>
+                                        </div>
+                                        <span class="text-gray-500">Standby</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="warning-light" style="width: 8px; height: 8px;"></div>
+                                            <span class="text-gray-400">Review Bot</span>
+                                        </div>
+                                        <span class="text-gray-500">Standby</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-800/50 border border-gray-600 rounded p-3">
+                                <h4 class="text-sm font-medium text-gray-300 mb-2">Factory Metrics</h4>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-gray-400">Steam Pressure</span>
+                                        <div class="flex items-center space-x-1">
+                                            <div class="machine-gauge" style="transform: scale(0.3);">
+                                                <div class="gauge-needle" style="transform: rotate(45deg);"></div>
+                                            </div>
+                                            <span class="text-gray-500">Normal</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-gray-400">Output Rate</span>
+                                        <div class="flex items-center space-x-1">
+                                            <div class="machine-gauge" style="transform: scale(0.3);">
+                                                <div class="gauge-needle" style="transform: rotate(90deg);"></div>
+                                            </div>
+                                            <span class="text-gray-500">Optimal</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-gray-400">Quality Control</span>
+                                        <div class="flex items-center space-x-1">
+                                            <div class="warning-light" style="width: 8px; height: 8px; background: #10b981;"></div>
+                                            <span class="text-gray-500">Passed</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- No Active Workflow Message -->
                     <div id="noWorkflow" class="text-center text-gray-400 py-8">
                         <p>No active workflow. Start a new case to begin.</p>
@@ -1082,15 +1460,63 @@
                     
                     <!-- Claims Matrix Controls -->
                     <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <!-- Jurisdiction Selector -->
-                        <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
-                            <h3 class="text-sm font-medium text-gray-300 mb-3">Jurisdiction</h3>
-                            <select id="claimsMatrixJurisdiction" class="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-sm text-gray-200 focus:ring-1 focus:ring-blue-500 focus:outline-none">
-                                <option value="">Select Jurisdiction</option>
-                                <option value="ca_state">California State</option>
-                                <option value="ca_federal">California Federal</option>
-                                <option value="ca_local">California Local</option>
-                            </select>
+                        <!-- Enhanced Jurisdiction Selector with Machine Aesthetics -->
+                        <div class="bg-gray-900/50 border border-gray-700 rounded-lg p-4 metal-texture rivets relative">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-sm font-medium text-gray-300">Jurisdiction Control Panel</h3>
+                                <div class="warning-light" id="jurisdictionStatusLight"></div>
+                            </div>
+                            
+                            <!-- Court Type Selector with Machine Controls -->
+                            <div class="space-y-2 mb-4">
+                                <div class="flex items-center space-x-2">
+                                    <div class="machine-valve" data-court-type="state" title="State Courts"></div>
+                                    <label class="text-xs text-gray-400">State Courts</label>
+                                    <div class="machine-gauge" style="transform: scale(0.3); margin-left: auto;">
+                                        <div class="gauge-needle" style="transform: rotate(45deg);"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center space-x-2">
+                                    <div class="machine-valve" data-court-type="federal" title="Federal Courts"></div>
+                                    <label class="text-xs text-gray-400">Federal Courts</label>
+                                    <div class="machine-gauge" style="transform: scale(0.3); margin-left: auto;">
+                                        <div class="gauge-needle" style="transform: rotate(90deg);"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center space-x-2">
+                                    <div class="machine-valve" data-court-type="circuit" title="Circuit Courts"></div>
+                                    <label class="text-xs text-gray-400">Circuit Courts</label>
+                                    <div class="machine-gauge" style="transform: scale(0.3); margin-left: auto;">
+                                        <div class="gauge-needle" style="transform: rotate(135deg);"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Multi-Select Jurisdiction Dropdown -->
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-2">Select Jurisdictions</label>
+                                <div class="relative">
+                                    <select multiple id="claimsMatrixJurisdiction" class="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-sm text-gray-200 focus:ring-1 focus:ring-blue-500 focus:outline-none min-h-[100px] metal-texture">
+                                        <option value="" disabled class="text-gray-500">Loading jurisdictions from CourtListener...</option>
+                                    </select>
+                                    
+                                    <!-- Machine Control Overlay -->
+                                    <div class="absolute top-2 right-2">
+                                        <div class="warning-light" id="multiSelectIndicator"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- CourtListener API Status -->
+                                <div class="mt-2 flex items-center justify-between text-xs">
+                                    <span class="text-gray-500">CourtListener API</span>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="warning-light" id="apiStatusLight"></div>
+                                        <span id="apiStatus" class="text-gray-400">Ready</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- Cause of Action Selector -->
@@ -3030,6 +3456,538 @@
 
         refreshEvidence();
         })();
+
+        // Industrial Factory Machine Control Functions
+        class FactoryMachineController {
+            constructor() {
+                this.gauges = new Map();
+                this.lights = new Map();
+                this.agentBots = new Map();
+                this.deliverables = [];
+                this.initializeFactoryElements();
+            }
+            
+            initializeFactoryElements() {
+                // Initialize all machine gauges
+                document.querySelectorAll('.machine-gauge .gauge-needle').forEach((needle, index) => {
+                    const gaugeId = `gauge-${index}`;
+                    this.gauges.set(gaugeId, {
+                        element: needle,
+                        value: 0,
+                        max: 100
+                    });
+                });
+                
+                // Initialize all warning lights
+                document.querySelectorAll('.warning-light').forEach((light, index) => {
+                    const lightId = `light-${index}`;
+                    this.lights.set(lightId, {
+                        element: light,
+                        status: 'off' // off, warning, active, success
+                    });
+                });
+                
+                // Initialize agent bot status
+                this.initializeAgentBots();
+                
+                // Start machine animation cycles
+                this.startMachineAnimations();
+            }
+            
+            initializeAgentBots() {
+                const botTypes = ['Research Bot', 'Draft Bot', 'Review Bot'];
+                botTypes.forEach((botType, index) => {
+                    this.agentBots.set(botType, {
+                        status: 'Standby',
+                        element: document.querySelector(`#agentBotsList .text-gray-400:nth-child(${index + 1})`),
+                        light: document.querySelector(`#agentBotsList .warning-light:nth-child(${index + 1})`)
+                    });
+                });
+            }
+            
+            startMachineAnimations() {
+                // Animate gauges with subtle movement
+                setInterval(() => {
+                    this.gauges.forEach((gauge, id) => {
+                        if (gauge.value > 0) {
+                            const wobble = Math.sin(Date.now() * 0.001) * 2;
+                            const rotation = (gauge.value / gauge.max) * 180 + wobble;
+                            gauge.element.style.transform = `rotate(${rotation}deg)`;
+                        }
+                    });
+                }, 100);
+                
+                // Animate warning lights with breathing effect
+                setInterval(() => {
+                    this.lights.forEach((light, id) => {
+                        if (light.status === 'active') {
+                            const opacity = 0.7 + Math.sin(Date.now() * 0.003) * 0.3;
+                            light.element.style.opacity = opacity;
+                        }
+                    });
+                }, 50);
+                
+                // Steam effects and industrial sounds simulation
+                this.simulateFactoryAmbience();
+            }
+            
+            simulateFactoryAmbience() {
+                // Add subtle visual effects to simulate factory operation
+                setInterval(() => {
+                    // Randomly flicker some lights
+                    if (Math.random() < 0.1) {
+                        const randomLight = Array.from(this.lights.values())[
+                            Math.floor(Math.random() * this.lights.size)
+                        ];
+                        if (randomLight.status === 'off') {
+                            this.setLightStatus(randomLight, 'warning', 500);
+                        }
+                    }
+                }, 2000);
+            }
+            
+            updateGauge(gaugeId, value, animated = true) {
+                const gauge = this.gauges.get(gaugeId);
+                if (gauge) {
+                    gauge.value = Math.min(Math.max(value, 0), gauge.max);
+                    const rotation = (gauge.value / gauge.max) * 180;
+                    
+                    if (animated) {
+                        gauge.element.style.transition = 'transform 0.3s ease-in-out';
+                    }
+                    gauge.element.style.transform = `rotate(${rotation}deg)`;
+                }
+            }
+            
+            setLightStatus(lightId, status, duration = null) {
+                const light = this.lights.get(lightId);
+                if (light) {
+                    light.status = status;
+                    light.element.className = `warning-light ${status}`;
+                    
+                    // Set background color based on status
+                    switch (status) {
+                        case 'warning':
+                            light.element.style.backgroundColor = '#f59e0b';
+                            break;
+                        case 'active':
+                            light.element.style.backgroundColor = '#3b82f6';
+                            break;
+                        case 'success':
+                            light.element.style.backgroundColor = '#10b981';
+                            break;
+                        case 'error':
+                            light.element.style.backgroundColor = '#ef4444';
+                            break;
+                        default:
+                            light.element.style.backgroundColor = '#6b7280';
+                    }
+                    
+                    if (duration) {
+                        setTimeout(() => {
+                            this.setLightStatus(lightId, 'off');
+                        }, duration);
+                    }
+                }
+            }
+            
+            activateAgentBot(botName, task = null) {
+                const bot = this.agentBots.get(botName);
+                if (bot) {
+                    bot.status = 'Active';
+                    if (bot.element) {
+                        bot.element.textContent = `${botName} - ${task || 'Working'}`;
+                        bot.element.style.color = '#3b82f6';
+                    }
+                    if (bot.light) {
+                        this.setLightStatus(bot.light, 'active');
+                    }
+                }
+            }
+            
+            deactivateAgentBot(botName) {
+                const bot = this.agentBots.get(botName);
+                if (bot) {
+                    bot.status = 'Standby';
+                    if (bot.element) {
+                        bot.element.textContent = botName;
+                        bot.element.style.color = '#9ca3af';
+                    }
+                    if (bot.light) {
+                        this.setLightStatus(bot.light, 'off');
+                    }
+                }
+            }
+            
+            addDeliverable(item) {
+                const deliverablesList = document.getElementById('deliverablesList');
+                const deliverableDiv = document.createElement('div');
+                deliverableDiv.className = 'deliverable-item bg-gray-700/50 border border-gray-600 rounded p-3 flex items-center justify-between animate-pulse';
+                
+                deliverableDiv.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="machine-valve active" style="transform: scale(0.7);"></div>
+                        <span class="text-sm text-green-400">${item.name}</span>
+                    </div>
+                    <div class="text-xs text-green-500">${item.status}</div>
+                `;
+                
+                // Remove placeholder if it exists
+                const placeholder = deliverablesList.querySelector('.opacity-50');
+                if (placeholder) {
+                    placeholder.remove();
+                }
+                
+                deliverablesList.appendChild(deliverableDiv);
+                this.deliverables.push(item);
+                
+                // Update output progress gauge
+                const outputGauge = document.getElementById('outputProgress');
+                if (outputGauge) {
+                    const progress = (this.deliverables.length / 7) * 100; // 7 phases
+                    outputGauge.style.transform = `rotate(${progress * 1.8}deg)`;
+                }
+                
+                // Set output bay status light
+                this.setLightStatus('outputBayStatus', 'success', 2000);
+            }
+            
+            updateFactoryMetrics(metrics) {
+                // Update steam pressure gauge
+                if (metrics.steamPressure !== undefined) {
+                    this.updateGauge('steamPressure', metrics.steamPressure);
+                }
+                
+                // Update output rate gauge
+                if (metrics.outputRate !== undefined) {
+                    this.updateGauge('outputRate', metrics.outputRate);
+                }
+                
+                // Update quality control light
+                if (metrics.qualityControl !== undefined) {
+                    const status = metrics.qualityControl ? 'success' : 'error';
+                    this.setLightStatus('qualityControl', status);
+                }
+            }
+            
+            simulateWorkflowProgress(phase) {
+                // Animate production stage for current phase
+                const stageElement = document.getElementById(`stage-${phase.toLowerCase()}`);
+                if (stageElement) {
+                    stageElement.classList.remove('pending');
+                    stageElement.classList.add('active');
+                    
+                    // Update stage gauge
+                    const gauge = stageElement.querySelector('.gauge-needle');
+                    if (gauge) {
+                        gauge.style.transform = 'rotate(135deg)';
+                    }
+                    
+                    // Update stage light
+                    const light = stageElement.querySelector('.warning-light');
+                    if (light) {
+                        this.setLightStatus(light, 'active');
+                    }
+                }
+                
+                // Activate appropriate agent bot
+                switch (phase.toLowerCase()) {
+                    case 'research':
+                        this.activateAgentBot('Research Bot', 'Legal Research');
+                        break;
+                    case 'drafting':
+                        this.activateAgentBot('Draft Bot', 'Document Drafting');
+                        break;
+                    case 'review':
+                        this.activateAgentBot('Review Bot', 'Quality Review');
+                        break;
+                }
+            }
+            
+            completeWorkflowPhase(phase) {
+                const stageElement = document.getElementById(`stage-${phase.toLowerCase()}`);
+                if (stageElement) {
+                    stageElement.classList.remove('active', 'pending');
+                    stageElement.classList.add('completed');
+                    
+                    // Set gauge to full
+                    const gauge = stageElement.querySelector('.gauge-needle');
+                    if (gauge) {
+                        gauge.style.transform = 'rotate(180deg)';
+                    }
+                    
+                    // Set light to success
+                    const light = stageElement.querySelector('.warning-light');
+                    if (light) {
+                        this.setLightStatus(light, 'success');
+                    }
+                }
+                
+                // Add deliverable based on phase
+                const deliverableNames = {
+                    'intake': 'Case Intake Report',
+                    'outline': 'Legal Outline',
+                    'research': 'Research Memo',
+                    'drafting': 'Initial Draft',
+                    'review': 'Reviewed Document',
+                    'editing': 'Final Edit',
+                    'orchestration': 'Completed Filing'
+                };
+                
+                if (deliverableNames[phase.toLowerCase()]) {
+                    this.addDeliverable({
+                        name: deliverableNames[phase.toLowerCase()],
+                        status: 'Complete',
+                        timestamp: new Date()
+                    });
+                }
+            }
+        }
+        
+        // Initialize factory machine controller
+        let factoryMachine;
+        
+        // Enhanced phase change handler with factory machine integration
+        const originalHandlePhaseChange = handlePhaseChange;
+        handlePhaseChange = function(data) {
+            // Call original handler
+            originalHandlePhaseChange(data);
+            
+            // Update factory machine
+            if (factoryMachine) {
+                if (data.from_phase) {
+                    factoryMachine.completeWorkflowPhase(data.from_phase);
+                }
+                if (data.to_phase) {
+                    factoryMachine.simulateWorkflowProgress(data.to_phase);
+                }
+            }
+        };
+        
+        // Jurisdiction Loader for CourtListener API Integration
+        class JurisdictionLoader {
+            constructor() {
+                this.jurisdictions = null;
+                this.isLoading = false;
+            }
+            
+            async loadJurisdictions() {
+                if (this.isLoading) return;
+                this.isLoading = true;
+                
+                const select = document.getElementById('claimsMatrixJurisdiction');
+                const apiStatusLight = document.getElementById('apiStatusLight');
+                const apiStatus = document.getElementById('apiStatus');
+                
+                try {
+                    // Update status indicators
+                    if (apiStatusLight) {
+                        apiStatusLight.style.backgroundColor = '#f59e0b'; // warning/loading
+                    }
+                    if (apiStatus) {
+                        apiStatus.textContent = 'Loading...';
+                    }
+                    
+                    const response = await fetch('/api/jurisdictions');
+                    const data = await response.json();
+                    
+                    if (data.success && data.jurisdictions) {
+                        this.jurisdictions = data.jurisdictions;
+                        this.populateJurisdictionSelect(select, data.jurisdictions);
+                        
+                        // Update status to success
+                        if (apiStatusLight) {
+                            apiStatusLight.style.backgroundColor = '#10b981'; // success
+                        }
+                        if (apiStatus) {
+                            apiStatus.textContent = `Loaded ${data.total_courts} courts`;
+                        }
+                        
+                        console.log('Jurisdictions loaded successfully:', data.total_courts, 'courts');
+                    } else {
+                        throw new Error(data.error || 'Failed to load jurisdictions');
+                    }
+                } catch (error) {
+                    console.error('Error loading jurisdictions:', error);
+                    
+                    // Update status to error
+                    if (apiStatusLight) {
+                        apiStatusLight.style.backgroundColor = '#ef4444'; // error
+                    }
+                    if (apiStatus) {
+                        apiStatus.textContent = 'Error';
+                    }
+                    
+                    // Load fallback static data
+                    this.loadFallbackJurisdictions(select);
+                } finally {
+                    this.isLoading = false;
+                }
+            }
+            
+            populateJurisdictionSelect(select, jurisdictions) {
+                // Clear existing options
+                select.innerHTML = '';
+                
+                // Add federal courts
+                if (jurisdictions.federal) {
+                    const federalGroup = document.createElement('optgroup');
+                    federalGroup.label = '🏛️ ' + jurisdictions.federal.name;
+                    
+                    jurisdictions.federal.courts.forEach(court => {
+                        const option = document.createElement('option');
+                        option.value = court.id;
+                        option.textContent = court.name;
+                        option.setAttribute('data-level', court.level);
+                        federalGroup.appendChild(option);
+                    });
+                    
+                    select.appendChild(federalGroup);
+                }
+                
+                // Add state courts
+                if (jurisdictions.state) {
+                    const stateGroup = document.createElement('optgroup');
+                    stateGroup.label = '🏛️ ' + jurisdictions.state.name;
+                    
+                    jurisdictions.state.courts.forEach(court => {
+                        const option = document.createElement('option');
+                        option.value = court.id;
+                        option.textContent = court.name;
+                        option.setAttribute('data-level', court.level);
+                        if (court.state) {
+                            option.setAttribute('data-state', court.state);
+                        }
+                        stateGroup.appendChild(option);
+                    });
+                    
+                    select.appendChild(stateGroup);
+                }
+                
+                // Add event listener for selection changes
+                select.addEventListener('change', this.onJurisdictionChange.bind(this));
+            }
+            
+            loadFallbackJurisdictions(select) {
+                // Fallback static data if API fails
+                select.innerHTML = `
+                    <optgroup label="🏛️ Federal Courts (Fallback)">
+                        <option value="scotus">Supreme Court of the United States</option>
+                        <option value="ca9">U.S. Court of Appeals for the Ninth Circuit</option>
+                        <option value="ca2">U.S. Court of Appeals for the Second Circuit</option>
+                        <option value="cadc">U.S. Court of Appeals for the D.C. Circuit</option>
+                    </optgroup>
+                    <optgroup label="🏛️ State Courts (Fallback)">
+                        <option value="cal">California Supreme Court</option>
+                        <option value="ny">New York Court of Appeals</option>
+                        <option value="tex">Texas Supreme Court</option>
+                        <option value="fl">Florida Supreme Court</option>
+                    </optgroup>
+                `;
+                
+                select.addEventListener('change', this.onJurisdictionChange.bind(this));
+            }
+            
+            onJurisdictionChange(event) {
+                const selectedOptions = Array.from(event.target.selectedOptions);
+                const jurisdictionStatusLight = document.getElementById('jurisdictionStatusLight');
+                const multiSelectIndicator = document.getElementById('multiSelectIndicator');
+                
+                // Update machine indicators based on selection
+                if (selectedOptions.length > 0) {
+                    if (jurisdictionStatusLight) {
+                        jurisdictionStatusLight.style.backgroundColor = '#3b82f6'; // active blue
+                    }
+                    if (multiSelectIndicator) {
+                        multiSelectIndicator.style.backgroundColor = '#10b981'; // success green
+                    }
+                    
+                    // Update valve states based on court types
+                    this.updateValveStates(selectedOptions);
+                    
+                    console.log('Selected jurisdictions:', selectedOptions.map(opt => ({
+                        id: opt.value,
+                        name: opt.textContent,
+                        level: opt.getAttribute('data-level'),
+                        state: opt.getAttribute('data-state')
+                    })));
+                } else {
+                    if (jurisdictionStatusLight) {
+                        jurisdictionStatusLight.style.backgroundColor = '#6b7280'; // gray/off
+                    }
+                    if (multiSelectIndicator) {
+                        multiSelectIndicator.style.backgroundColor = '#6b7280'; // gray/off
+                    }
+                    
+                    this.resetValveStates();
+                }
+                
+                // Trigger factory machine update if available
+                if (window.factoryMachine) {
+                    window.factoryMachine.updateFactoryMetrics({
+                        steamPressure: selectedOptions.length * 20, // More selections = more pressure
+                        outputRate: Math.min(selectedOptions.length * 15, 100)
+                    });
+                }
+            }
+            
+            updateValveStates(selectedOptions) {
+                // Update valve colors based on selected court types
+                const federalValve = document.querySelector('[data-court-type="federal"]');
+                const stateValve = document.querySelector('[data-court-type="state"]');
+                const circuitValve = document.querySelector('[data-court-type="circuit"]');
+                
+                const hasFederal = selectedOptions.some(opt => opt.value.includes('ca') || opt.value === 'scotus');
+                const hasState = selectedOptions.some(opt => opt.getAttribute('data-state'));
+                const hasCircuit = selectedOptions.some(opt => opt.getAttribute('data-level') === 'Appellate');
+                
+                if (federalValve) {
+                    federalValve.style.backgroundColor = hasFederal ? '#3b82f6' : '#6b7280';
+                }
+                if (stateValve) {
+                    stateValve.style.backgroundColor = hasState ? '#10b981' : '#6b7280';
+                }
+                if (circuitValve) {
+                    circuitValve.style.backgroundColor = hasCircuit ? '#f59e0b' : '#6b7280';
+                }
+            }
+            
+            resetValveStates() {
+                const valves = document.querySelectorAll('[data-court-type]');
+                valves.forEach(valve => {
+                    valve.style.backgroundColor = '#6b7280'; // gray/off
+                });
+            }
+            
+            getSelectedJurisdictions() {
+                const select = document.getElementById('claimsMatrixJurisdiction');
+                if (!select) return [];
+                
+                return Array.from(select.selectedOptions).map(option => ({
+                    id: option.value,
+                    name: option.textContent,
+                    level: option.getAttribute('data-level'),
+                    state: option.getAttribute('data-state')
+                }));
+            }
+        }
+        
+        // Initialize jurisdiction loader
+        let jurisdictionLoader;
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait a bit for all elements to be rendered
+            setTimeout(() => {
+                factoryMachine = new FactoryMachineController();
+                console.log('Factory Machine Controller initialized');
+                
+                // Initialize jurisdiction loader
+                jurisdictionLoader = new JurisdictionLoader();
+                jurisdictionLoader.loadJurisdictions();
+                console.log('Jurisdiction Loader initialized');
+            }, 500);
+        });
 
     </script>
     

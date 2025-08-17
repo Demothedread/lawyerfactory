@@ -1,265 +1,64 @@
-# LawyerFactory Automated Lawsuit Generation System
+# LawyerFactory - Clean, Maintainable Legal Automation Platform
 
-![Status](https://img.shields.io/badge/status-active-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Python](https://img.shields.io/badge/python-3.9%2B-blue)
-![Flask](https://img.shields.io/badge/framework-Flask-orange)
-![OpenAI](https://img.shields.io/badge/AI-OpenAI-yellow)
+A Python-based platform for automated lawsuit generation and legal document workflows. It centers on shared domain entities (knowledge graph, memory, and orchestration) and a lean, modular architecture that is easy to troubleshoot and extend.
 
----
+Why this cleanup
 
-## Table of Contents
+Root-level documentation has accumulated clutter from multiple readme files and notes that duplicate or overlap with the project structure. This pass moves obsolete artifacts to a dedicated /trash folder and replaces the root with a single authoritative overview. No runtime logic or imports are changed in this pass.
 
-- [Project Overview](#project-overview)
-- [Features](#features)
-- [Architecture Overview](#architecture-overview)
-- [System Requirements](#system-requirements)
-- [Installation](#installation)
-- [Quick Start Guide](#quick-start-guide)
-- [Usage](#usage)
-- [Configuration](#configuration)
-- [Project Structure](#project-structure)
-- [API Documentation](#api-documentation)
-- [Testing](#testing)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License & Legal Disclaimer](#license--legal-disclaimer)
-- [References & Documentation](#references--documentation)
+Moved artifacts (for historical review)
+- [`trash/LEGAL_RESEARCH_INTEGRATION_README.md`](trash/LEGAL_RESEARCH_INTEGRATION_README.md:1)
+- [`trash/KNOWLEDGE_GRAPH_INTEGRATION_README.md`](trash/KNOWLEDGE_GRAPH_INTEGRATION_README.md:1)
+- [`trash/KNOWLEDGE_GRAPH_SCHEMA.md`](trash/KNOWLEDGE_GRAPH_SCHEMA.md:1)
+- [`trash/SYSTEM_DOCUMENTATION.md`](trash/SYSTEM_DOCUMENTATION.md:1)
+- [`trash/CLAIMS_MATRIX_IMPLEMENTATION_README.md`](trash/CLAIMS_MATRIX_IMPLEMENTATION_README.md:1)
+- [`trash/STATEMENT_OF_FACTS_GENERATOR_README.md`](trash/STATEMENT_OF_FACTS_GENERATOR_README.md:1)
 
----
+Core components (high level)
 
-## Project Overview
+- Knowledge Graph core and extensions: [`knowledge_graph.py`](knowledge_graph.py:1) and [`enhanced_knowledge_graph.py`](enhanced_knowledge_graph.py:1)
 
-LawyerFactory is a comprehensive, automated lawsuit generation platform designed to streamline legal document creation, research, and orchestration. It integrates advanced AI, knowledge graphs, and workflow automation to produce professional-grade legal filings with minimal manual intervention.
+- Memory and persistence: [`mcp_memory_integration.py`](mcp_memory_integration.py:1)
 
----
+- Maestro orchestration and agents: [`maestro/enhanced_maestro.py`](maestro/enhanced_maestro.py:1), [`maestro/evidence_api.py`](maestro/evidence_api.py:1)
 
-## Features
+- Orchestration and UI glue: [`lawyerfactory/workflow.py`](lawyerfactory/workflow.py:1), [`lawyerfactory/kanban_cli.py`](lawyerfactory/kanban_cli.py:1)
 
-- **Automated Document Processing**: Ingests PDF, DOCX, TXT, EML, and CSV files.
-- **7-Phase Workflow**: INTAKE → OUTLINE → RESEARCH → DRAFTING → LEGAL_REVIEW → EDITING → ORCHESTRATION.
-- **Legal Research Bot**: Integrates with OpenAI and spaCy for advanced research.
-- **Knowledge Graph**: Centralized legal data management and reasoning.
-- **Document Generator**: Produces lawsuits in multiple formats using Jinja2 templates.
-- **Web Interface**: Intuitive Flask-based UI with WebSocket support.
-- **Orchestration Engine**: Coordinates bots, workflow, and document generation.
-- **API Access**: RESTful endpoints for integration and automation.
-- **Validation & Testing**: Includes Tesla case study for system validation.
+- Document generation and templates: `lawyerfactory/document_generator/`
 
----
+- Web UI: `factory.html`
 
-## Architecture Overview
+Quick start
 
-LawyerFactory consists of modular components:
+- Ensure Python 3.8+ is installed.
+- Create a virtual environment and install dependencies.
+- Run the application (for example: python app.py).
+- Access the interface in your browser (port defined by deployment config).
 
-- **Flask Web App** ([`app.py`](app.py)): Main entry point, handles UI and WebSockets.
-- **Orchestration Engine** ([`maestro/`](maestro/)): Manages workflow, bots, and event system.
-- **Knowledge Graph** ([`knowledge_graph.py`](knowledge_graph.py)): Stores and queries legal entities.
-- **Document Generator** ([`lawyerfactory/document_generator/`](lawyerfactory/document_generator/)): Creates legal documents from templates.
-- **Research Bot** ([`maestro/bots/research_bot.py`](maestro/bots/research_bot.py)): Automates legal research.
-- **Database**: SQLite for persistent storage.
-- **Integration Points**: See [`SYSTEM_DOCUMENTATION.md`](SYSTEM_DOCUMENTATION.md) and [`docs/system_architecture.md`](docs/system_architecture.md).
+Roadmap and navigation
 
----
+- This root README provides a concise overview and links to the main components. For deeper dives, navigate to the root of each component or to the /trash catalog for historical artifacts.
 
-## System Requirements
+Extending LawyerFactory
 
-- **Hardware**: 4GB+ RAM, 2+ CPU cores recommended
-- **Software**:
-  - Python 3.9+
-  - pip (Python package manager)
-  - SQLite (default, no setup required)
-  - Internet access for AI features (OpenAI API)
-- **Optional**: spaCy models, Docker (for containerized deployment)
+- Add new document types, templates, or agents by following the interface contracts used by the components in lawyerfactory/
+- See the component references above for quick access.
 
----
+Refactor rationale
 
-## Installation
+- Reduced root-level noise, centralized documentation, and preserved legacy notes in /trash.
+- No runtime code changes were made in this pass; this is a documentation/organization change only.
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/your-org/lawyerfactory.git
-   cd lawyerfactory
-   ```
+Changelog
 
-2. **Create Virtual Environment**
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+- 2025-08-16: Initial consolidation pass; root README created and legacy READMEs moved to /trash.
+- 2025-08-16: /trash/index.md catalog updated to reflect moved artifacts.
 
-3. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+Next steps
 
-4. **Download spaCy Models (Optional)**
-   ```bash
-   python -m spacy download en_core_web_sm
-   ```
+- See [`trash/index.md`](trash/index.md) catalog for moved artifacts with rationales and dates.
+- Upon confirmation, I will plan and execute deeper refactors around shared entities (knowledge graph, memory, orchestration) with minimal runtime impact, and provide a lightweight migration plan.
 
-5. **Set Environment Variables**
-   - `OPENAI_API_KEY`: Your OpenAI API key
-   - `SECRET_KEY`: Flask secret key
-   - See [Configuration](#configuration) for details
--
----
+Contact and references
 
-## Quick Start Guide
-
-1. **Start the System**
-   ```bash
-   python start_enhanced_factory.py
-   ```
-
-2. **Access the Web Interface**
-   - Open [http://localhost:5000](http://localhost:5000) in your browser
-
-3. **Upload Documents & Generate Lawsuits**
-   - Use the UI to upload supported files and follow the workflow
-
----
-
-## Usage
-
-### Web Interface
-
-- **Upload Documents**: PDF, DOCX, TXT, EML, CSV
-- **Workflow Navigation**: Progress through the 7-phase workflow
-- **Document Generation**: Download professional lawsuit documents
-
-### Command Line
-
-- **Start System**
-  ```bash
-  python start_enhanced_factory.py
-  ```
-- **Validate Integration**
-  ```bash
-  python validate_system_integration.py
-  ```
-
-### API Usage
-
-- **Example: Generate Lawsuit via API**
-  ```bash
-  curl -X POST http://localhost:5000/api/generate \
-    -H "Authorization: Bearer <OPENAI_API_KEY>" \
-    -F "file=@sample.pdf"
-  ```
-
-- **Python Example**
-  ```python
-  import requests
-  files = {'file': open('sample.pdf', 'rb')}
-  headers = {'Authorization': 'Bearer <OPENAI_API_KEY>'}
-  r = requests.post('http://localhost:5000/api/generate', files=files, headers=headers)
-  print(r.json())
-  ```
-
----
-
-## Configuration
-
-- **Environment Variables**
-  - `OPENAI_API_KEY`: Required for AI features
-  - `SECRET_KEY`: Flask session security
-  - `DATABASE_URL`: (Optional) SQLite path or external DB
-  - `UPLOAD_FOLDER`: Directory for uploads
-- **System Settings**
-  - See [`SYSTEM_DOCUMENTATION.md`](SYSTEM_DOCUMENTATION.md) for advanced options
-
----
-
-## Project Structure
-
-```
-lawyerfactory/
-├── app.py
-├── start_enhanced_factory.py
-├── requirements.txt
-├── SYSTEM_DOCUMENTATION.md
-├── docs/
-│   ├── system_architecture.md
-│   ├── research_bot_implementation.md
-│   └── ...
-├── lawyerfactory/
-│   ├── enhanced_workflow.py
-│   ├── knowledge_graph.py
-│   ├── document_generator/
-│   └── ...
-├── maestro/
-│   ├── enhanced_maestro.py
-│   ├── bots/
-│   └── ...
-├── tests/
-│   └── test_*.py
-└── uploads/
-```
-
----
-
-## API Documentation
-
-- **POST `/api/generate`**: Generate lawsuit from uploaded document
-- **GET `/api/status`**: System health/status
-- **GET `/api/workflow`**: Current workflow phase/status
-- See [`SYSTEM_DOCUMENTATION.md`](SYSTEM_DOCUMENTATION.md) and [`docs/system_architecture.md`](docs/system_architecture.md) for full API specs
-
----
-
-## Testing
-
-- **Run All Tests**
-  ```bash
-  pytest tests/
-  ```
-- **Validate Tesla Case Example**
-  ```bash
-  python tesla_case_validation.py
-  ```
-- **Integration Tests**
-  ```bash
-  python tests/test_comprehensive_integration.py
-  ```
-
----
-
-## Troubleshooting
-
-- **Common Issues**
-  - Missing API key: Set `OPENAI_API_KEY`
-  - Dependency errors: Run `pip install -r requirements.txt`
-  - Database issues: Ensure SQLite file permissions
-  - WebSocket errors: Check browser compatibility
-
-- **Solutions**
-  - See [`SYSTEM_DOCUMENTATION.md`](SYSTEM_DOCUMENTATION.md) for detailed troubleshooting
-
----
-
-## Contributing
-
-- Fork the repository and create a feature branch
-- Follow PEP8 and project coding standards
-- Add tests for new features
-- Submit pull requests with clear descriptions
-- See [`docs/implementation_roadmap.md`](docs/implementation_roadmap.md) for roadmap and guidelines
-
----
-
-## License & Legal Disclaimer
-
-- **License**: MIT License (see [LICENSE](LICENSE))
-- **Disclaimer**: LawyerFactory is for educational and research purposes only. It does not provide legal advice. Use at your own risk. Generated documents should be reviewed by a qualified attorney before filing.
-
----
-
-## References & Documentation
-
-- [SYSTEM_DOCUMENTATION.md](SYSTEM_DOCUMENTATION.md): Comprehensive system documentation
-- [docs/system_architecture.md](docs/system_architecture.md): Architecture details
-- [docs/](docs/): Component documentation
-- [Tesla Case Study](tesla_case_validation.py): Example validation
-
----
+- For questions or contributions, please follow the standard contribution guidelines in this repository.

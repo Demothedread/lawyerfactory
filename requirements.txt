@@ -13,6 +13,8 @@ numpy>=1.26.0
 spacy
 
 # File processing
+python-docx
+pypdf
 PyPDF2==3.0.1
 reportlab==4.0.4
 pycryptodome==3.23.0
@@ -24,6 +26,8 @@ pymupdf==1.26.3
 
 
 # Encryption support (optional)
+sqlcipher-wheels
+
 
 
 # Development and testing
@@ -35,3 +39,7 @@ fastmcp
 uvicorn
 fastapi
 aiohttp
+
+#aws-fileservice
+boto3
+python-dotenv
