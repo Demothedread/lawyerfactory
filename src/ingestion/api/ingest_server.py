@@ -16,7 +16,14 @@ from datetime import date, datetime
 from importlib import metadata
 from pathlib import Path
 from typing import Any, Dict, List
+from qdrant_client import QdrantClient
 
+qdrant_client = QdrantClient(
+    url="https://4ce95fca-f9f6-4152-ad39-b059a7f4dfdd.us-west-1-0.aws.cloud.qdrant.io:6333", 
+    api_key=os.environ.get("QDRANT_API_KEY"),
+)
+
+print(qdrant_client.get_collections())
 # Try to import optional SDKs; fall back gracefully
 try:
     from fastmcp import FastMCP  # optional; not required for fallback

@@ -35,10 +35,9 @@ except Exception as e:
 
 # Import the enhanced evidence table functionality
 try:
-    from maestro.evidence_table import (
-        EnhancedEvidenceTable, EvidenceEntry, EvidenceType,
-        RelevanceLevel, PrivilegeMarker
-    )
+    from maestro.evidence_table import (EnhancedEvidenceTable, EvidenceEntry,
+                                        EvidenceType, PrivilegeMarker,
+                                        RelevanceLevel)
     ENHANCED_EVIDENCE_AVAILABLE = True
     logger.info("Enhanced Evidence Table module imported successfully")
 except Exception as e:
@@ -199,9 +198,18 @@ class ReaderBot(Bot, AgentInterface):
             logger.info(f"ReaderBot executing document processing task: {task.description}")
             
             # Get input data
-            document_path = input_data.get('document_path', '')
-            document_name = input_data.get('document_name', 'Unknown Document')
-            
+            raw_path = input_data.get('document_path', '')
+            # Normalize path: strip whitespace and file:// scheme if present
+            if isinstance(raw_path, str):
+                document_path = raw_path.strip()
+                if document_path.startswith('file://'):
+                    document_path = document_path[len('file://'):]
+            else:
+                document_path = ''
+
+            # Derive document name from provided input or from the path
+            document_name = input_data.get('document_name') or (Path(document_path).name if document_path else 'Unknown Document')
+
             # Process the document using assessor functionality
             extraction_result = await self._extract_and_assess_document(document_path, document_name)
             
@@ -251,32 +259,87 @@ class ReaderBot(Bot, AgentInterface):
             self.current_task_id = None
 
     async def _extract_and_assess_document(self, document_path: str, document_name: str) -> Dict[str, Any]:
-        """Extract and assess document content using assessor module"""
+        """Extract and assess document content using assessor module.
+
+        This improved implementation will:
+        - Try to resolve the provided document_path against several candidate locations
+          (absolute path, project-relative path, and the `uploads/` directory).
+        - Use the async `_extract_text_from_path` helper for real extraction (PDF, DOCX, TXT, etc.).
+        - Only fall back to simulated content when real extraction fails.
+        """
         try:
             content = ""
             author = "Unknown"
-            
-            # Extract content from file
-            if document_path and Path(document_path).exists():
-                file_path = Path(document_path)
-                if file_path.suffix.lower() in ['.txt', '.md']:
-                    content = file_path.read_text(encoding='utf-8')
-                    logger.info(f"Extracted {len(content)} characters from {document_name}")
+
+            # Resolve candidate path(s)
+            candidate_path: Path | None = None
+            if document_path:
+                p = Path(document_path)
+                if p.exists() and p.is_file():
+                    candidate_path = p
                 else:
-                    # For other file types, simulate content extraction
-                    content = f"[Content extracted from {document_name}]\n\nDocument contains legal information relevant to the case."
-                    logger.info(f"Simulated content extraction for {document_name}")
+                    # Try project-root relative
+                    project_root = Path(__file__).parent.parent.parent
+                    rel = project_root / document_path
+                    if rel.exists() and rel.is_file():
+                        candidate_path = rel
+                    else:
+                        # Try uploads folder
+                        uploads_dir = project_root / "uploads"
+                        up = uploads_dir / document_path
+                        if up.exists() and up.is_file():
+                            candidate_path = up
+                        else:
+                            # Attempt to find a matching filename inside uploads
+                            if uploads_dir.exists():
+                                for f in uploads_dir.rglob("*"):
+                                    if f.is_file() and f.name == Path(document_path).name:
+                                        candidate_path = f
+                                        break
+
+            # If we still don't have a candidate but document_name provided, try to find by name in uploads
+            if not candidate_path and document_name:
+                project_root = Path(__file__).parent.parent.parent
+                uploads_dir = project_root / "uploads"
+                if uploads_dir.exists():
+                    for f in uploads_dir.rglob("*"):
+                        if f.is_file() and f.name == document_name:
+                            candidate_path = f
+                            break
+
+            # If we found a candidate file, try real extraction first
+            if candidate_path and candidate_path.exists() and candidate_path.is_file():
+                try:
+                    extracted = await self._extract_text_from_path(str(candidate_path))
+                    if extracted:
+                        content = extracted
+                        logger.info(f"Extracted {len(content)} characters from {document_name} using real extractor")
+                    else:
+                        # As a last resort, read raw text for simple types
+                        suffix = candidate_path.suffix.lower()
+                        if suffix in ['.txt', '.md']:
+                            content = candidate_path.read_text(encoding='utf-8', errors='replace')
+                            logger.info(f"Read raw text {len(content)} characters from {document_name}")
+                        else:
+                            # fallback simulated message but note that file exists
+                            content = f"[Content (simulated fallback) for {document_name}]\n\nDocument exists but could not be fully extracted by available extractors." 
+                            logger.warning(f"Fallback simulated extraction used for existing file {candidate_path}")
+                except Exception as e:
+                    logger.exception(f"Error extracting from candidate path {candidate_path}: {e}")
+                    content = f"[Simulated content for {document_name}]\n\nExtraction error occurred: {e}"
             else:
-                # Simulate document content for missing files
+                # No file found — simulate content and warn
                 content = f"[Simulated content for {document_name}]\n\nThis document contains legal information relevant to the case. Key facts and evidence have been identified for further processing."
-                logger.warning(f"Document not found: {document_path}, using simulated content")
-            
-            # Use assessor module for enhanced processing
+                logger.warning(f"Document not found: {document_path} (tried uploads and workspace); using simulated content")
+
+            # Build base result
             result = {
                 'content': content,
                 'author': author,
-                'extraction_method': 'assessor_enhanced' if ASSESSOR_AVAILABLE else 'basic'
+                'extraction_method': 'real' if candidate_path and content and not content.startswith('[Simulated') else ('assessor_enhanced' if ASSESSOR_AVAILABLE else 'basic')
             }
+
+            # Try to enrich from evidence_table.json if present
             try:
                 et_path = Path(__file__).parent.parent.parent / "evidence_table.json"
                 if et_path.exists():
@@ -290,44 +353,41 @@ class ReaderBot(Bot, AgentInterface):
             except Exception:
                 # ignore evidence table read errors
                 pass
-        
+
+            # Assessor analysis if available
             if ASSESSOR_AVAILABLE and content:
                 try:
-                    # Use assessor functions for analysis
                     result['summary'] = summarize(content, max_sentences=2)
                     result['category'] = categorize(content)
                     result['hashtags'] = hashtags_from_category(result['category'])
-                    
+
                     logger.info(f"Assessor analysis completed - Category: {result['category']}")
-                    
-                    # Create enhanced evidence entry if available
+
                     if ENHANCED_EVIDENCE_AVAILABLE:
                         try:
                             self._create_enhanced_evidence_entry(document_name, content, result)
                         except Exception as e:
                             logger.warning(f"Failed to create enhanced evidence entry: {e}")
-                            
+
                 except Exception as e:
                     logger.error(f"Assessor analysis failed: {e}")
                     result['summary'] = content[:200] + "..." if len(content) > 200 else content
                     result['category'] = 'unknown'
                     result['hashtags'] = '#general'
-           
             else:
                 # Fallback analysis
                 result['summary'] = content[:200] + "..." if len(content) > 200 else content
                 result['category'] = self._basic_categorize(content)
                 result['hashtags'] = f"#{result['category']}"
-                
-                # Create enhanced evidence entry even with basic analysis
+
                 if ENHANCED_EVIDENCE_AVAILABLE:
                     try:
                         self._create_enhanced_evidence_entry(document_name, content, result)
                     except Exception as e:
                         logger.warning(f"Failed to create enhanced evidence entry: {e}")
-                
+
             return result
-                
+
         except Exception as e:
             logger.error(f"Content extraction and assessment failed for {document_path}: {e}")
             return {

@@ -5,34 +5,37 @@ Coordinates the 7-phase workflow with state management, agent coordination, and 
 
 import asyncio
 import logging
-import uuid
+import os
+import sys
 import time
+import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import sys
-import os
 
 # Add project root to Python path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from .agent_registry import AgentRegistry, TaskScheduler
 from .checkpoint_manager import CheckpointManager
+# new compat wrappers
+from .compat_wrappers import (AgentPoolManagerWrapper,
+                              CheckpointManagerWrapper, StateManagerWrapper)
 from .error_handling import WorkflowErrorHandler
 from .event_system import EventBus
 from .workflow_models import (PhaseStatus, TaskPriority, WorkflowPhase,
                               WorkflowState, WorkflowStateManager,
                               WorkflowTask)
 
+logger = logging.getLogger(__name__)
+
 # Import enhanced draft processing capabilities
 try:
-    from enhanced_draft_processor import EnhancedDraftProcessor
+    from .enhanced_draft_processor import EnhancedDraftProcessor
     ENHANCED_PROCESSING_AVAILABLE = True
 except ImportError:
     logger.warning("Enhanced draft processor not available")
     ENHANCED_PROCESSING_AVAILABLE = False
-
-logger = logging.getLogger(__name__)
 
 
 class EnhancedMaestro:
@@ -44,12 +47,14 @@ class EnhancedMaestro:
         self.storage_path = Path(storage_path)
         self.storage_path.mkdir(exist_ok=True)
         
-        # Core components
-        self.state_manager = WorkflowStateManager(str(self.storage_path / "workflow_states.db"))
+        # Core components (wrap raw managers with compatibility shims)
+        raw_state_mgr = WorkflowStateManager(str(self.storage_path / "workflow_states.db"))
+        self.state_manager = StateManagerWrapper(raw_state_mgr)
         self.agent_registry = AgentRegistry()
         self.scheduler = TaskScheduler(self.agent_registry)
         self.event_bus = EventBus()
-        self.checkpoint_manager = CheckpointManager(str(self.storage_path))
+        raw_checkpoint = CheckpointManager(str(self.storage_path))
+        self.checkpoint_manager = CheckpointManagerWrapper(raw_checkpoint)
         self.error_handler = WorkflowErrorHandler(self.event_bus)
         
         # Initialize agent pools
@@ -59,6 +64,7 @@ class EnhancedMaestro:
         self.enhanced_draft_processor = None
         if ENHANCED_PROCESSING_AVAILABLE:
             try:
+                # ensure import resolved and variable is bound
                 self.enhanced_draft_processor = EnhancedDraftProcessor(
                     knowledge_graph_path=str(self.storage_path / "enhanced_kg.db")
                 )
@@ -75,11 +81,14 @@ class EnhancedMaestro:
     def _initialize_agent_pools(self):
         """Initialize specialist and general agent pools"""
         try:
-            from lawyerfactory.agent_config_system import AgentConfigManager, AgentPoolManager
-            
+            from lawyerfactory.agent_config_system import (AgentConfigManager,
+                                                           AgentPoolManager)
+
             # Initialize agent configuration system
             self.agent_config_manager = AgentConfigManager()
-            self.agent_pool_manager = AgentPoolManager(self.agent_config_manager)
+            raw_pool_mgr = AgentPoolManager(self.agent_config_manager)
+            # wrap to provide select_best_agent/select_agent consistently
+            self.agent_pool_manager = AgentPoolManagerWrapper(raw_pool_mgr)
             
             logger.info("Agent pools initialized successfully")
             
@@ -141,9 +150,23 @@ class EnhancedMaestro:
         try:
             # Use agent pool manager if available
             if self.agent_pool_manager:
-                agent = await self.agent_pool_manager.select_best_agent(
-                    task_type, requirements
-                )
+                # use getattr to support multiple AgentPoolManager APIs
+                select_best = getattr(self.agent_pool_manager, "select_best_agent", None)
+                if callable(select_best):
+                    agent = await select_best(
+                        task_type, requirements
+                    )
+                else:
+                    # fallback to other common name
+                    select_fn = getattr(self.agent_pool_manager, "select_agent", None)
+                    if callable(select_fn):
+                        agent = await select_fn(
+                            task_type, requirements
+                        )
+                    else:
+                        # last resort: raise a clear error
+                        raise RuntimeError("AgentPoolManager has no select_best_agent/select_agent method")
+                
                 if agent:
                     logger.info(f"Assigned specialist agent {agent.name} for task {task_type}")
                     return await self._execute_task_with_agent(
@@ -151,9 +174,16 @@ class EnhancedMaestro:
                     )
             
             # Fallback to original agent registry
-            agent_class = self.agent_registry.get(task_type)
-            if not agent_class:
-                raise ValueError(f"No agent available for task type: {task_type}")
+            # support registries exposing get(...) or dict-like access
+            get_fn = getattr(self.agent_registry, "get", None)
+            if callable(get_fn):
+                agent_class = get_fn(task_type)
+            else:
+                # try mapping protocol
+                try:
+                    agent_class = self.agent_registry[task_type]  # type: ignore
+                except Exception:
+                    raise RuntimeError("AgentRegistry does not expose get() or mapping access for task_type")
             
             agent = agent_class()
             task_id = f"{task_type}_{int(time.time())}"
@@ -164,8 +194,15 @@ class EnhancedMaestro:
             result = await agent.execute(requirements)
             
             # Update workflow state
-            if hasattr(self, 'workflow_manager'):
-                await self.workflow_manager.update_state(session_id)
+            # tolerant call to update workflow state if workflow_manager exists
+            wf = getattr(self, "workflow_manager", None)
+            if wf is not None:
+                update_fn = getattr(wf, "update_state", None) or getattr(wf, "update", None)
+                if callable(update_fn):
+                    await update_fn(session_id)
+                else:
+                    # no-op if manager doesn't expose update API
+                    pass
             
             return {
                 'task_id': task_id,
@@ -418,7 +455,7 @@ class EnhancedMaestro:
         
         # Basic pattern matching for legal entities
         import re
-        
+
         # Find potential parties (capitalized words/phrases)
         party_pattern = r'\b[A-Z][a-zA-Z\s]+(?:Inc\.|Corp\.|LLC|Ltd\.)\b'
         parties = re.findall(party_pattern, content)
@@ -848,6 +885,50 @@ class EnhancedMaestro:
             'total_tasks': total_tasks
         })
 
+    async def list_workflows(self) -> List[Dict[str, Any]]:
+        """List all active workflows"""
+        try:
+            workflows = []
+            
+            # Get workflows from memory
+            for session_id, workflow_state in self.active_workflows.items():
+                workflows.append({
+                    'session_id': session_id,
+                    'case_name': workflow_state.case_name,
+                    'current_phase': workflow_state.current_phase.value,
+                    'overall_status': workflow_state.overall_status.value,
+                    'progress': len(workflow_state.completed_tasks) / len(workflow_state.tasks) * 100 if workflow_state.tasks else 0,
+                    'created_at': workflow_state.created_at.isoformat(),
+                    'updated_at': workflow_state.updated_at.isoformat()
+                })
+            
+            # Also try to load any persisted workflows from state manager
+            try:
+                # tolerant discovery of saved states across manager implementations
+                list_all = getattr(self.state_manager, "list_all_states", None)
+                if callable(list_all):
+                    persisted_workflows = await list_all()
+                else:
+                    # fallback to alternate method name
+                    list_fn = getattr(self.state_manager, "list_states", None)
+                    if callable(list_fn):
+                        persisted_workflows = await list_fn()
+                    else:
+                        persisted_workflows = []  # nothing available
+                
+                for workflow_data in persisted_workflows:
+                    # Avoid duplicates from active workflows
+                    if workflow_data['session_id'] not in self.active_workflows:
+                        workflows.append(workflow_data)
+            except Exception as e:
+                logger.warning(f"Failed to load persisted workflows: {e}")
+            
+            return workflows
+            
+        except Exception as e:
+            logger.error(f"Failed to list workflows: {e}")
+            return []
+
     async def get_workflow_status(self, session_id: str) -> Dict[str, Any]:
         """Get current status of a workflow"""
         workflow_state = self.active_workflows.get(session_id)
@@ -872,5 +953,11 @@ class EnhancedMaestro:
     async def shutdown(self):
         """Gracefully shutdown the maestro"""
         logger.info("Shutting down Enhanced Maestro")
-        await self.state_manager.close()
-        await self.checkpoint_manager.close()
+        # gracefully close managers if they expose close/shutdown APIs
+        async_close = getattr(self.state_manager, "close", None) or getattr(self.state_manager, "shutdown", None)
+        if callable(async_close):
+            await async_close()
+        # checkpoint manager
+        cp_close = getattr(self.checkpoint_manager, "close", None) or getattr(self.checkpoint_manager, "shutdown", None)
+        if callable(cp_close):
+            await cp_close()

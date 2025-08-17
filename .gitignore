@@ -1,9 +1,10 @@
-law_venv/
+
 env312/*
 lawenv/*
 /env312/bin
 env312/bin/*
-law_venv/
+.env.production
+law_venv
 *.log
 *.json
 # Ignore Python cache files
@@ -12,5 +13,4 @@ __pycache__/
 *.pyo
 *.pyd
 # Ignore IDE specific files
-.env.production
 .env

@@ -9,16 +9,17 @@ import json
 import logging
 import os
 import shutil
+import signal
 import subprocess
 import sys
 import time
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Union
-import yaml
-import signal
+from typing import Any, Dict, List, Optional, Union
+
 import psutil
+import yaml
 
 # Configure logging
 logging.basicConfig(
@@ -252,7 +253,8 @@ class LawyerFactoryDeployment:
         try:
             # Initialize knowledge graph
             from knowledge_graph import KnowledgeGraph
-            from knowledge_graph_extensions import extend_knowledge_graph
+            from src.knowledge_graph.api.knowledge_graph_extensions import (
+                KnowledgeGraphExtensions, extend_knowledge_graph)
             
             kg_config = self.config.get('database', {}).get('knowledge_graph', {})
             kg_path = kg_config.get('path', 'knowledge_graphs/main.db')

@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 # Import LawyerFactory components
 try:
     from knowledge_graph import KnowledgeGraph, DocumentIngestionPipeline
-    from knowledge_graph_extensions import extend_knowledge_graph
+    from knowledge_graph_extension import extend_knowledge_graph
 except ImportError as e:
     logger.error(f"Failed to import knowledge graph: {e}")
     KnowledgeGraph = None
@@ -836,6 +836,75 @@ def get_knowledge_graph_facts():
         logger.error(f"Error getting facts: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/jurisdictions', methods=['GET'])
+def get_jurisdictions():
+    """Get available jurisdictions from CourtListener API"""
+    try:
+        # Import here to avoid circular imports
+        from maestro.bots.research_bot import CourtListenerClient
+        
+        # Create client instance
+        client = CourtListenerClient()
+        
+        # Return static jurisdiction data that matches CourtListener's structure
+        # This could be enhanced to fetch live data from CourtListener's courts endpoint
+        jurisdictions = {
+            "federal": {
+                "name": "Federal Courts",
+                "courts": [
+                    {"id": "scotus", "name": "Supreme Court of the United States", "level": "Supreme"},
+                    {"id": "ca1", "name": "U.S. Court of Appeals for the First Circuit", "level": "Appellate"},
+                    {"id": "ca2", "name": "U.S. Court of Appeals for the Second Circuit", "level": "Appellate"},
+                    {"id": "ca3", "name": "U.S. Court of Appeals for the Third Circuit", "level": "Appellate"},
+                    {"id": "ca4", "name": "U.S. Court of Appeals for the Fourth Circuit", "level": "Appellate"},
+                    {"id": "ca5", "name": "U.S. Court of Appeals for the Fifth Circuit", "level": "Appellate"},
+                    {"id": "ca6", "name": "U.S. Court of Appeals for the Sixth Circuit", "level": "Appellate"},
+                    {"id": "ca7", "name": "U.S. Court of Appeals for the Seventh Circuit", "level": "Appellate"},
+                    {"id": "ca8", "name": "U.S. Court of Appeals for the Eighth Circuit", "level": "Appellate"},
+                    {"id": "ca9", "name": "U.S. Court of Appeals for the Ninth Circuit", "level": "Appellate"},
+                    {"id": "ca10", "name": "U.S. Court of Appeals for the Tenth Circuit", "level": "Appellate"},
+                    {"id": "ca11", "name": "U.S. Court of Appeals for the Eleventh Circuit", "level": "Appellate"},
+                    {"id": "cadc", "name": "U.S. Court of Appeals for the D.C. Circuit", "level": "Appellate"},
+                    {"id": "cafc", "name": "U.S. Court of Appeals for the Federal Circuit", "level": "Appellate"}
+                ]
+            },
+            "state": {
+                "name": "State Courts",
+                "courts": [
+                    {"id": "cal", "name": "California Supreme Court", "level": "Supreme", "state": "CA"},
+                    {"id": "ny", "name": "New York Court of Appeals", "level": "Supreme", "state": "NY"},
+                    {"id": "tex", "name": "Texas Supreme Court", "level": "Supreme", "state": "TX"},
+                    {"id": "fl", "name": "Florida Supreme Court", "level": "Supreme", "state": "FL"},
+                    {"id": "il", "name": "Illinois Supreme Court", "level": "Supreme", "state": "IL"},
+                    {"id": "pa", "name": "Pennsylvania Supreme Court", "level": "Supreme", "state": "PA"},
+                    {"id": "oh", "name": "Ohio Supreme Court", "level": "Supreme", "state": "OH"},
+                    {"id": "ga", "name": "Georgia Supreme Court", "level": "Supreme", "state": "GA"},
+                    {"id": "nc", "name": "North Carolina Supreme Court", "level": "Supreme", "state": "NC"},
+                    {"id": "mi", "name": "Michigan Supreme Court", "level": "Supreme", "state": "MI"},
+                    {"id": "nj", "name": "New Jersey Supreme Court", "level": "Supreme", "state": "NJ"},
+                    {"id": "va", "name": "Virginia Supreme Court", "level": "Supreme", "state": "VA"},
+                    {"id": "wa", "name": "Washington Supreme Court", "level": "Supreme", "state": "WA"},
+                    {"id": "az", "name": "Arizona Supreme Court", "level": "Supreme", "state": "AZ"},
+                    {"id": "ma", "name": "Massachusetts Supreme Judicial Court", "level": "Supreme", "state": "MA"}
+                ]
+            }
+        }
+        
+        return jsonify({
+            "success": True,
+            "jurisdictions": jurisdictions,
+            "total_courts": sum(len(j["courts"]) for j in jurisdictions.values())
+        })
+        
+    except Exception as e:
+        logger.error(f"Error fetching jurisdictions: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Failed to fetch jurisdictions",
+            "jurisdictions": {},
+            "total_courts": 0
+        }), 500
+
 if __name__ == '__main__':
     initialize_components()
     
@@ -853,3 +922,20 @@ if __name__ == '__main__':
     
     logger.info(f"Starting LawyerFactory Enhanced Platform on {host}:{port}")
     socketio.run(app, host=host, port=port, debug=True, allow_unsafe_werkzeug=True)
+
+
+# Lightweight API to expose evidence table for UI integration
+# This endpoint returns the current rows in evidence_table.json
+# If the file doesn't exist, it will be created on demand with an empty list.
+@app.route('/api/evidence', methods=['GET'])
+def get_evidence():
+    try:
+        evidence_path = Path('evidence_table.json')
+        if not evidence_path.exists():
+            evidence_path.write_text(json.dumps({"rows": []}, ensure_ascii=False, indent=2), encoding='utf-8')
+        data = json.loads(evidence_path.read_text(encoding='utf-8'))
+        rows = data.get('rows', [])
+        return jsonify({"success": True, "rows": rows})
+    except Exception as e:
+        logger.exception("Error reading evidence table: %s", e)
+        return jsonify({"success": False, "error": str(e)}), 500
