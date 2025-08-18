@@ -8,6 +8,7 @@ import json
 import logging
 import mimetypes
 import os
+import sys
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -18,6 +19,18 @@ from flask import Flask, jsonify, render_template, request, send_file, session
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from werkzeug.utils import secure_filename
 
+# Ensure project root and src are on sys.path so compatibility wrappers import correctly
+try:
+    project_root = Path(__file__).resolve().parents[0]
+    src_path = project_root / 'src'
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+    if src_path.exists() and str(src_path) not in sys.path:
+        sys.path.insert(0, str(src_path))
+    logger.debug(f"Added project_root and src to sys.path: {project_root}, {src_path}")
+except Exception as e:
+    logger.warning(f"Failed to adjust sys.path for imports: {e}")
+
 # Disable Eventlet's green DNS to prevent DNS resolution timeouts
 os.environ['EVENTLET_NO_GREENDNS'] = 'yes'
 
@@ -26,13 +39,64 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Import LawyerFactory components
+# Resolve KnowledgeGraph and DocumentIngestionPipeline from known locations (compatibility wrappers or refactored src)
+KnowledgeGraph = None
+DocumentIngestionPipeline = None
+extend_knowledge_graph = None
+
+def _resolve_knowledge_graph_classes():
+    """Try several import locations and export KnowledgeGraph and DocumentIngestionPipeline into module globals."""
+    import importlib
+    locations = [
+        ('knowledge_graph', ['KnowledgeGraph', 'DocumentIngestionPipeline']),
+        ('lawyerfactory.knowledge_graph', ['KnowledgeGraph', 'DocumentIngestionPipeline']),
+        ('src.knowledge_graph.api.knowledge_graph', ['KnowledgeGraph', 'DocumentIngestionPipeline'])
+    ]
+
+    for mod_name, attrs in locations:
+        try:
+            mod = importlib.import_module(mod_name)
+            kg_cls = getattr(mod, attrs[0], None)
+            dip_cls = getattr(mod, attrs[1], None)
+            if kg_cls:
+                globals()['KnowledgeGraph'] = kg_cls
+                if dip_cls:
+                    globals()['DocumentIngestionPipeline'] = dip_cls
+                logger.info(f"Loaded KnowledgeGraph (and DocumentIngestionPipeline) from {mod_name}")
+                return True
+        except Exception as e:
+            logger.debug(f"Import attempt from {mod_name} failed: {e}")
+            continue
+
+    # As a last resort, try loading the combined src path extension module for extend_knowledge_graph
+    try:
+        kg_ext_mod = importlib.import_module('src.knowledge_graph.api.knowledge_graph_extensions')
+        extend_fn = getattr(kg_ext_mod, 'extend_knowledge_graph', None)
+        if extend_fn:
+            globals()['extend_knowledge_graph'] = extend_fn
+            logger.info('Loaded extend_knowledge_graph from src.knowledge_graph.api.knowledge_graph_extensions')
+    except Exception:
+        pass
+
+    return False
+
+# Run resolver at import time so module-level names are populated before handlers run
+_resolve_knowledge_graph_classes()
+
+# Load knowledge-graph extension helpers - attempt both plural and singular module names
 try:
-    from knowledge_graph import KnowledgeGraph, DocumentIngestionPipeline
-    from knowledge_graph_extension import extend_knowledge_graph
-except ImportError as e:
-    logger.error(f"Failed to import knowledge graph: {e}")
-    KnowledgeGraph = None
-    DocumentIngestionPipeline = None
+    # preferred module name after refactor
+    from knowledge_graph_extensions import extend_knowledge_graph as _kg_ext
+    extend_knowledge_graph = _kg_ext
+except Exception as first_err:
+    try:
+        # some codepaths reference the singular name; support that too
+        from knowledge_graph_extension import \
+            extend_knowledge_graph as _kg_ext2
+        extend_knowledge_graph = _kg_ext2
+    except Exception as second_err:
+        logger.warning(f"Knowledge graph extension not available: {first_err}; {second_err}")
+        extend_knowledge_graph = None
 
 try:
     from lawyerfactory.enhanced_workflow import EnhancedWorkflowManager
@@ -55,8 +119,9 @@ except ImportError as e:
     DocumentGenerator = None
 
 try:
+    from lawyerfactory.mcp_memory_integration import (
+        MCPMemoryManager, PneumonicMemoryIntegration)
     from lawyerfactory.prompt_integration import create_prompt_processor
-    from lawyerfactory.mcp_memory_integration import MCPMemoryManager, PneumonicMemoryIntegration
 except ImportError as e:
     logger.error(f"Failed to import prompt integration or MCP memory: {e}")
     create_prompt_processor = None
@@ -93,8 +158,36 @@ def initialize_components():
         
         # Initialize knowledge graph
         if KnowledgeGraph:
-            app_state['knowledge_graph'] = KnowledgeGraph('knowledge_graphs/main.db')
-        
+            try:
+                app_state['knowledge_graph'] = KnowledgeGraph('knowledge_graphs/main.db')
+            except Exception as e:
+                logger.error(f"Failed to initialize KnowledgeGraph from compatibility wrapper: {e}")
+                app_state['knowledge_graph'] = None
+        else:
+            # Fallback: try to import directly from refactored src package
+            try:
+                import importlib
+                kg_mod = importlib.import_module('src.knowledge_graph.api.knowledge_graph')
+                KG = getattr(kg_mod, 'KnowledgeGraph', None)
+                DIP = getattr(kg_mod, 'DocumentIngestionPipeline', None)
+                if KG:
+                    try:
+                        app_state['knowledge_graph'] = KG('knowledge_graphs/main.db')
+                        # Always export these into module globals so code elsewhere (e.g. process_uploaded_document)
+                        # that checks the module-level names will see them even if the top-level compatibility import failed.
+                        globals()['KnowledgeGraph'] = KG
+                        if DIP:
+                            globals()['DocumentIngestionPipeline'] = DIP
+                        logger.info('Loaded KnowledgeGraph from src.knowledge_graph.api')
+                    except Exception as e:
+                        logger.error(f"Failed to instantiate KnowledgeGraph from src module: {e}")
+                        app_state['knowledge_graph'] = None
+                else:
+                    app_state['knowledge_graph'] = None
+            except Exception as e:
+                logger.warning(f"Fallback import for KnowledgeGraph failed: {e}")
+                app_state['knowledge_graph'] = None
+
         # Initialize workflow manager
         if EnhancedWorkflowManager:
             app_state['workflow_manager'] = EnhancedWorkflowManager(
@@ -588,13 +681,39 @@ def process_uploaded_document(upload_session_id, file_path):
         })
         
         # Process document through knowledge graph ingestion
+        # Runtime-resolve DocumentIngestionPipeline if top-level import failed
+        if DocumentIngestionPipeline is None:
+            try:
+                import importlib
+                candidates = [
+                    'src.knowledge_graph.api.knowledge_graph',
+                    'knowledge_graph',
+                    'lawyerfactory.knowledge_graph'
+                ]
+                resolved = False
+                for modname in candidates:
+                    try:
+                        mod = importlib.import_module(modname)
+                        DIP = getattr(mod, 'DocumentIngestionPipeline', None)
+                        if DIP:
+                            globals()['DocumentIngestionPipeline'] = DIP
+                            resolved = True
+                            logger.info(f"Resolved DocumentIngestionPipeline from {modname}")
+                            break
+                    except Exception as _:
+                        continue
+                if not resolved:
+                    logger.warning("DocumentIngestionPipeline not found in candidate modules at runtime")
+            except Exception as e:
+                logger.debug(f"Runtime attempt to resolve DocumentIngestionPipeline failed: {e}")
+
         if DocumentIngestionPipeline:
             pipeline = DocumentIngestionPipeline(app_state['knowledge_graph'])
             document_id = pipeline.ingest(file_path)
-            
+
             # Get extracted entities
             facts = app_state['knowledge_graph'].get_case_facts(document_id)
-            
+
             # Update status
             app_state['upload_sessions'][upload_session_id].update({
                 'status': 'completed',
@@ -602,7 +721,7 @@ def process_uploaded_document(upload_session_id, file_path):
                 'entities_extracted': len(facts.get('entities', [])),
                 'relationships_found': len(facts.get('relationships', []))
             })
-            
+
             socketio.emit('document_processing_complete', {
                 'upload_session_id': upload_session_id,
                 'document_id': document_id,
@@ -632,9 +751,11 @@ def process_uploaded_document(upload_session_id, file_path):
 
 # Initialize Claims Matrix integration
 try:
-    from comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
     from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-    
+
+    from src.claims_matrix.comprehensive_claims_matrix_integration import \
+        ComprehensiveClaimsMatrixIntegration
+
     # Initialize enhanced knowledge graph for Claims Matrix
     claims_matrix_kg = None
     claims_matrix_integration = None
@@ -842,7 +963,7 @@ def get_jurisdictions():
     try:
         # Import here to avoid circular imports
         from maestro.bots.research_bot import CourtListenerClient
-        
+
         # Create client instance
         client = CourtListenerClient()
         

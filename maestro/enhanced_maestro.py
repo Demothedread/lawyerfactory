@@ -4,6 +4,9 @@ Coordinates the 7-phase workflow with state management, agent coordination, and 
 """
 
 import asyncio
+import importlib
+import importlib.util
+import inspect
 import logging
 import os
 import sys
@@ -13,8 +16,35 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# Add project root to Python path for imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+logger = logging.getLogger(__name__)
+
+# Ensure project root and src directory are on sys.path so imports like `from src...` and `from storage...` work
+project_root = Path(__file__).resolve().parents[1]
+src_path = project_root / 'src'
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+if src_path.exists() and str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
+# Safe import of file storage compatibility layer: prefer explicit src package, fall back to legacy compatibility module.
+file_storage_manager = None
+try:
+    # Prefer the refactored src package location
+    from src.storage.api import \
+        file_storage as file_storage_mod  # type: ignore
+    file_storage_manager = file_storage_mod
+except ModuleNotFoundError as e:
+    logger.warning("File storage manager not available from src.storage.api: %s", e)
+    try:
+        import importlib
+        file_storage_mod = importlib.import_module("lawyerfactory.file_storage")
+        file_storage_manager = file_storage_mod
+    except ModuleNotFoundError:
+        logger.warning("Legacy lawyerfactory.file_storage not found; continuing without file storage manager")
+    except Exception as e2:
+        logger.exception("Unexpected error importing legacy lawyerfactory.file_storage: %s", e2)
+except Exception as e:
+    logger.exception("Unexpected error importing src.storage.api.file_storage: %s", e)
 
 from .agent_registry import AgentRegistry, TaskScheduler
 from .checkpoint_manager import CheckpointManager
@@ -27,25 +57,71 @@ from .workflow_models import (PhaseStatus, TaskPriority, WorkflowPhase,
                               WorkflowState, WorkflowStateManager,
                               WorkflowTask)
 
-logger = logging.getLogger(__name__)
-
 # Import enhanced draft processing capabilities
 try:
-    from .enhanced_draft_processor import EnhancedDraftProcessor
+    from src.document_generator.api.enhanced_draft_processor import \
+        EnhancedDraftProcessor
     ENHANCED_PROCESSING_AVAILABLE = True
 except ImportError:
     logger.warning("Enhanced draft processor not available")
     ENHANCED_PROCESSING_AVAILABLE = False
+    
+# Replace previous broken file-storage import check with robust loader
+FILE_STORAGE_AVAILABLE = False
+FileStorageManager = None
+try:
+    # Prefer canonical module name if available
+    mod = importlib.import_module("lawyerfactory.file_storage")
+    FileStorageManager = getattr(mod, "FileStorageManager", None)
+    if FileStorageManager:
+        FILE_STORAGE_AVAILABLE = True
+except Exception:
+    # Fallback: try to load the compatibility file by path (supports hyphenated filename)
+    try:
+        compat_path = Path(__file__).resolve().parents[1] / "lawyerfactory" / "file-storage.py"
+        if compat_path.exists():
+            spec = importlib.util.spec_from_file_location("lawyerfactory._file_storage_compat", str(compat_path))
+            if spec is not None and spec.loader is not None:
+                compat_mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(compat_mod)  # type: ignore
+                FileStorageManager = getattr(compat_mod, "FileStorageManager", None)
+                if FileStorageManager:
+                    FILE_STORAGE_AVAILABLE = True
+            else:
+                logger.warning("spec or spec.loader is None for file-storage compat module")
+    except Exception:
+        logger.warning("File storage manager not available (compat path load failed)")
 
+# Do not override EnhancedDraftProcessor if imported; if import failed it was set in except above
+
+# Try to import optional ingestion server helpers so Maestro can reuse them
+_ingest_server = None
+try:
+    from src.ingestion.api import \
+        ingest_server as _ingest_server  # type: ignore
+except Exception:
+    _ingest_server = None
 
 class EnhancedMaestro:
     """Advanced orchestration engine with state management and recovery"""
 
     def __init__(self, knowledge_graph, llm_service=None, storage_path: str = "workflow_storage"):
+        # Ensure storage_path exists before any FileStorage instantiation
+        self.storage_path = Path(storage_path)
+        self.storage_path.mkdir(exist_ok=True, parents=True)
+
+        # Instantiate file storage manager if available (tolerant)
+        if FILE_STORAGE_AVAILABLE and FileStorageManager is not None:
+            try:
+                self.file_storage_manager = FileStorageManager(str(self.storage_path / "file_storage"))
+            except Exception as e:
+                logger.warning(f"Failed to initialize FileStorageManager: {e}")
+                self.file_storage_manager = None
+        else:
+            self.file_storage_manager = None
         self.knowledge_graph = knowledge_graph
         self.llm_service = llm_service
-        self.storage_path = Path(storage_path)
-        self.storage_path.mkdir(exist_ok=True)
+            
         
         # Core components (wrap raw managers with compatibility shims)
         raw_state_mgr = WorkflowStateManager(str(self.storage_path / "workflow_states.db"))
@@ -63,14 +139,19 @@ class EnhancedMaestro:
         # Initialize enhanced draft processor if available
         self.enhanced_draft_processor = None
         if ENHANCED_PROCESSING_AVAILABLE:
-            try:
-                # ensure import resolved and variable is bound
-                self.enhanced_draft_processor = EnhancedDraftProcessor(
-                    knowledge_graph_path=str(self.storage_path / "enhanced_kg.db")
-                )
-                logger.info("Enhanced draft processor initialized successfully")
-            except Exception as e:
-                logger.warning(f"Failed to initialize enhanced draft processor: {e}")
+            enhanced_cls = globals().get("EnhancedDraftProcessor")
+            if callable(enhanced_cls):
+                try:
+                    self.enhanced_draft_processor = enhanced_cls(
+                        knowledge_graph_path=str(self.storage_path / "enhanced_kg.db")
+                    )
+                    logger.info("Enhanced draft processor initialized successfully")
+                except Exception as e:
+                    logger.warning(f"Failed to initialize enhanced draft processor: {e}")
+            else:
+                self.enhanced_draft_processor = None
+        else:
+            self.enhanced_draft_processor = None
         
         # Active workflows tracking
         self.active_workflows: Dict[str, WorkflowState] = {}
@@ -144,6 +225,57 @@ class EnhancedMaestro:
             }
         }
 
+    # Utility: robust invoker for callables that may be sync or async
+    async def _invoke(self, fn_or_value, *args, **kwargs):
+        """
+        Call fn_or_value if callable; if the result is awaitable, await it.
+        If fn_or_value itself is awaitable, await and return it.
+        Otherwise return value directly.
+        """
+        try:
+            if fn_or_value is None:
+                return None
+            if callable(fn_or_value):
+                res = fn_or_value(*args, **kwargs)
+            else:
+                res = fn_or_value
+
+            if inspect.isawaitable(res):
+                return await res
+            return res
+        except Exception:
+            # re-raise to preserve original behavior but keep stack
+            raise
+
+    # Utility: create a WorkflowTask instance without calling unknown constructor signatures
+    def _make_workflow_task(self, **attrs):
+        """
+        Construct a WorkflowTask without relying on constructor signature.
+        Set reasonable defaults for commonly used attributes.
+        """
+        task = WorkflowTask.__new__(WorkflowTask)
+        # conservative defaults
+        defaults = {
+            "id": attrs.get("id", f"task_{int(time.time())}"),
+            "phase": attrs.get("phase", WorkflowPhase.INTAKE),
+            "agent_type": attrs.get("agent_type", "GenericAgent"),
+            "description": attrs.get("description", ""),
+            "priority": attrs.get("priority", TaskPriority.NORMAL),
+            "input_data": attrs.get("input_data", {}),
+            "requires_human_approval": attrs.get("requires_human_approval", False),
+            "depends_on": attrs.get("depends_on", []),
+            "status": attrs.get("status", PhaseStatus.PENDING),
+            "assigned_agent": attrs.get("assigned_agent", None),
+            "started_at": attrs.get("started_at", None),
+            "completed_at": attrs.get("completed_at", None),
+            "actual_duration": attrs.get("actual_duration", 0),
+            "output_data": attrs.get("output_data", None),
+        }
+        # assign attributes
+        for k, v in defaults.items():
+            setattr(task, k, v)
+        return task
+
     async def schedule_task(self, task_type: str, requirements: Dict[str, Any], 
                           session_id: str) -> Dict[str, Any]:
         """Schedule a task with intelligent agent assignment"""
@@ -153,22 +285,18 @@ class EnhancedMaestro:
                 # use getattr to support multiple AgentPoolManager APIs
                 select_best = getattr(self.agent_pool_manager, "select_best_agent", None)
                 if callable(select_best):
-                    agent = await select_best(
-                        task_type, requirements
-                    )
+                    agent = await self._invoke(select_best, task_type, requirements)
                 else:
                     # fallback to other common name
                     select_fn = getattr(self.agent_pool_manager, "select_agent", None)
                     if callable(select_fn):
-                        agent = await select_fn(
-                            task_type, requirements
-                        )
+                        agent = await self._invoke(select_fn, task_type, requirements)
                     else:
                         # last resort: raise a clear error
                         raise RuntimeError("AgentPoolManager has no select_best_agent/select_agent method")
                 
                 if agent:
-                    logger.info(f"Assigned specialist agent {agent.name} for task {task_type}")
+                    logger.info(f"Assigned specialist agent {getattr(agent, 'name', str(agent))} for task {task_type}")
                     return await self._execute_task_with_agent(
                         task_type, requirements, agent, session_id
                     )
@@ -177,29 +305,47 @@ class EnhancedMaestro:
             # support registries exposing get(...) or dict-like access
             get_fn = getattr(self.agent_registry, "get", None)
             if callable(get_fn):
-                agent_class = get_fn(task_type)
+                agent_maybe = await self._invoke(get_fn, task_type)
             else:
                 # try mapping protocol
                 try:
-                    agent_class = self.agent_registry[task_type]  # type: ignore
+                    agent_maybe = self.agent_registry[task_type]  # type: ignore
                 except Exception:
                     raise RuntimeError("AgentRegistry does not expose get() or mapping access for task_type")
             
-            agent = agent_class()
+            if agent_maybe is None:
+                raise RuntimeError("No agent found for task_type")
+
+            # agent_maybe might be a class, factory, or instance; try to instantiate if possible
+            agent = None
+            try:
+                if isinstance(agent_maybe, type) or callable(agent_maybe):
+                    try:
+                        candidate = agent_maybe()  # factory or class
+                        agent = candidate
+                    except Exception:
+                        # not instantiable, assume it's already the instance or callable to execute
+                        agent = agent_maybe
+                else:
+                    agent = agent_maybe
+            except Exception:
+                agent = agent_maybe
+
+            # generate a simple task id
             task_id = f"{task_type}_{int(time.time())}"
             
-            logger.info(f"Scheduling task {task_id} with agent {agent.__class__.__name__}")
+            logger.info(f"Scheduling task {task_id} with agent {getattr(agent, '__class__', type(agent)).__name__}")
             
-            # Execute task
-            result = await agent.execute(requirements)
+            # Execute task - agent.execute may be sync or async or agent might itself be a callable
+            exec_fn = getattr(agent, "execute", agent)
+            result = await self._invoke(exec_fn, requirements)
             
-            # Update workflow state
-            # tolerant call to update workflow state if workflow_manager exists
+            # Update workflow state (safe invoke)
             wf = getattr(self, "workflow_manager", None)
             if wf is not None:
                 update_fn = getattr(wf, "update_state", None) or getattr(wf, "update", None)
                 if callable(update_fn):
-                    await update_fn(session_id)
+                    await self._invoke(update_fn, session_id)
                 else:
                     # no-op if manager doesn't expose update API
                     pass
@@ -208,7 +354,7 @@ class EnhancedMaestro:
                 'task_id': task_id,
                 'status': 'completed',
                 'result': result,
-                'agent': agent.__class__.__name__
+                'agent': getattr(agent, "__class__", type(agent)).__name__
             }
             
         except Exception as e:
@@ -223,11 +369,11 @@ class EnhancedMaestro:
                                      agent, session_id: str) -> Dict[str, Any]:
         """Execute a task with a specific agent from the agent pool"""
         try:
-            # Create a workflow task for the agent
-            task = WorkflowTask(
+            # Create a workflow task for the agent using safe factory
+            task = self._make_workflow_task(
                 id=f"{task_type}_{int(datetime.now().timestamp())}",
-                phase=WorkflowPhase.INTAKE,  # Default phase
-                agent_type=agent.agent_type,
+                phase=WorkflowPhase.INTAKE,
+                agent_type=getattr(agent, "agent_type", getattr(agent, "__class__", type(agent)).__name__),
                 description=f"Execute {task_type} task",
                 priority=TaskPriority.NORMAL,
                 input_data=requirements,
@@ -249,25 +395,26 @@ class EnhancedMaestro:
             # Prepare task context
             task_context = self._prepare_task_context(task, workflow_state)
             
-            # Execute the task using the agent
-            result = await agent.execute_task(task, task_context)
+            # Execute the task using the agent (could be sync or async)
+            exec_fn = getattr(agent, "execute_task", getattr(agent, "execute", agent))
+            result = await self._invoke(exec_fn, task, task_context) if callable(exec_fn) else await self._invoke(exec_fn)
             
             # Process and return result
             return {
                 'task_id': task.id,
                 'status': 'completed',
                 'result': result,
-                'agent': agent.name,
-                'fitness_score': agent.fitness_score
+                'agent': getattr(agent, "name", getattr(agent, "__class__", type(agent)).__name__),
+                'fitness_score': getattr(agent, "fitness_score", None)
             }
             
         except Exception as e:
-            logger.error(f"Task execution failed with agent {agent.name}: {e}")
+            logger.error(f"Task execution failed with agent {getattr(agent, 'name', str(agent))}: {e}")
             return {
                 'task_id': f"failed_{int(datetime.now().timestamp())}",
                 'status': 'failed',
                 'error': str(e),
-                'agent': agent.name
+                'agent': getattr(agent, "name", str(agent))
             }
 
     def _prepare_task_context(self, task: WorkflowTask, workflow_state: WorkflowState) -> Dict[str, Any]:
@@ -354,9 +501,17 @@ class EnhancedMaestro:
             for draft in fact_drafts:
                 content = draft.get('content', '')
                 if content:
-                    # Extract structured facts and entities
-                    facts = await self._extract_legal_facts(content, draft_type='fact_statement')
-                    entities = await self._extract_legal_entities(content, confidence_boost=0.2)
+                    # Prefer ingest_server's draft processing when available
+                    if _ingest_server and hasattr(_ingest_server, "_process_draft_document"):
+                        analysis = await self._invoke(_ingest_server._process_draft_document, content, draft, "fact_statement")
+                        if not isinstance(analysis, dict):
+                            analysis = {}
+                        # ingest_server returns a dict -> map to expected pieces
+                        facts = analysis.get("key_facts") or analysis.get("facts") or []
+                        entities = analysis.get("legal_entities") or analysis.get("entities") or []
+                    else:
+                        facts = await self._extract_legal_facts(content, draft_type='fact_statement')
+                        entities = await self._extract_legal_entities(content, confidence_boost=0.2)
                     
                     aggregated_facts.extend(facts)
                     entities_extracted.extend(entities)
@@ -365,11 +520,12 @@ class EnhancedMaestro:
             unique_facts = self._deduplicate_facts(aggregated_facts)
             unique_entities = self._deduplicate_entities(entities_extracted)
             
-            # Store in knowledge graph with high confidence
+            # Store in knowledge graph with high confidence; prefer ingest_server ingestion if available
             if self.knowledge_graph:
-                kg_storage_result = await self._store_foundational_knowledge(
-                    unique_entities, unique_facts, source_type='fact_statement_draft'
-                )
+                if _ingest_server and hasattr(_ingest_server, "_ingest_to_knowledge_graph"):
+                    kg_storage_result = await self._invoke(_ingest_server._ingest_to_knowledge_graph, unique_entities, {"draft_type": "fact_statement"})
+                else:
+                    kg_storage_result = await self._invoke(self._store_foundational_knowledge, unique_entities, unique_facts, 'fact_statement_draft')
             else:
                 kg_storage_result = {"status": "knowledge_graph_unavailable"}
             
@@ -396,10 +552,18 @@ class EnhancedMaestro:
             for draft in case_drafts:
                 content = draft.get('content', '')
                 if content:
-                    # Extract legal issues and claims
-                    issues = await self._extract_legal_issues(content)
-                    claims = await self._extract_legal_claims(content)
-                    entities = await self._extract_legal_entities(content, confidence_boost=0.2)
+                    # Prefer ingest_server's draft processing when available
+                    if _ingest_server and hasattr(_ingest_server, "_process_draft_document"):
+                        analysis = await self._invoke(_ingest_server._process_draft_document, content, draft, "case_complaint")
+                        if not isinstance(analysis, dict):
+                            analysis = {}
+                        issues = analysis.get("legal_issues") or []
+                        claims = analysis.get("claims") or []
+                        entities = analysis.get("legal_entities") or []
+                    else:
+                        issues = await self._extract_legal_issues(content)
+                        claims = await self._extract_legal_claims(content)
+                        entities = await self._extract_legal_entities(content, confidence_boost=0.2)
                     
                     legal_issues.extend(issues)
                     claims_identified.extend(claims)
@@ -410,11 +574,12 @@ class EnhancedMaestro:
             unique_claims = self._deduplicate_claims(claims_identified)
             unique_entities = self._deduplicate_entities(entities_extracted)
             
-            # Store in knowledge graph
+            # Store in knowledge graph (use ingest_server ingestion if available)
             if self.knowledge_graph:
-                kg_storage_result = await self._store_foundational_knowledge(
-                    unique_entities, unique_issues + unique_claims, source_type='case_complaint_draft'
-                )
+                if _ingest_server and hasattr(_ingest_server, "_ingest_to_knowledge_graph"):
+                    kg_storage_result = await self._invoke(_ingest_server._ingest_to_knowledge_graph, unique_entities, {"draft_type": "case_complaint"})
+                else:
+                    kg_storage_result = await self._invoke(self._store_foundational_knowledge, unique_entities, unique_issues + unique_claims, 'case_complaint_draft')
             else:
                 kg_storage_result = {"status": "knowledge_graph_unavailable"}
             
@@ -892,34 +1057,69 @@ class EnhancedMaestro:
             
             # Get workflows from memory
             for session_id, workflow_state in self.active_workflows.items():
-                workflows.append({
-                    'session_id': session_id,
-                    'case_name': workflow_state.case_name,
-                    'current_phase': workflow_state.current_phase.value,
-                    'overall_status': workflow_state.overall_status.value,
-                    'progress': len(workflow_state.completed_tasks) / len(workflow_state.tasks) * 100 if workflow_state.tasks else 0,
-                    'created_at': workflow_state.created_at.isoformat(),
-                    'updated_at': workflow_state.updated_at.isoformat()
-                })
+                # Defensive attribute access: workflow_state may be a dict-like or object
+                try:
+                    case_name = getattr(workflow_state, 'case_name', None) or (workflow_state.get('case_name') if isinstance(workflow_state, dict) else None)
+                    current_phase = (getattr(workflow_state, 'current_phase', None).value
+                                     if getattr(workflow_state, 'current_phase', None) is not None else (workflow_state.get('current_phase') if isinstance(workflow_state, dict) else None))
+                    overall_status = (getattr(workflow_state, 'overall_status', None).value
+                                      if getattr(workflow_state, 'overall_status', None) is not None else (workflow_state.get('overall_status') if isinstance(workflow_state, dict) else None))
+                    tasks_len = len(getattr(workflow_state, 'tasks', workflow_state.get('tasks') if isinstance(workflow_state, dict) else [])) if (getattr(workflow_state, 'tasks', None) is not None or (isinstance(workflow_state, dict) and workflow_state.get('tasks') is not None)) else 0
+                    completed_len = len(getattr(workflow_state, 'completed_tasks', workflow_state.get('completed_tasks') if isinstance(workflow_state, dict) else [])) if (getattr(workflow_state, 'completed_tasks', None) is not None or (isinstance(workflow_state, dict) and workflow_state.get('completed_tasks') is not None)) else 0
+                    progress = (completed_len / tasks_len * 100) if tasks_len else 0
+
+                    created_at = None
+                    updated_at = None
+                    created = getattr(workflow_state, 'created_at', None)
+                    updated = getattr(workflow_state, 'updated_at', None)
+                    if created and hasattr(created, 'isoformat'):
+                        created_at = created.isoformat()
+                    elif isinstance(workflow_state, dict):
+                        created_at = workflow_state.get('created_at')
+                    if updated and hasattr(updated, 'isoformat'):
+                        updated_at = updated.isoformat()
+                    elif isinstance(workflow_state, dict):
+                        updated_at = workflow_state.get('updated_at')
+
+                    workflows.append({
+                        'session_id': session_id,
+                        'case_name': case_name,
+                        'current_phase': current_phase,
+                        'overall_status': overall_status,
+                        'progress': progress,
+                        'created_at': created_at,
+                        'updated_at': updated_at
+                    })
+                except Exception:
+                    # skip malformed workflow entries
+                    continue
             
             # Also try to load any persisted workflows from state manager
             try:
                 # tolerant discovery of saved states across manager implementations
                 list_all = getattr(self.state_manager, "list_all_states", None)
                 if callable(list_all):
-                    persisted_workflows = await list_all()
+                    persisted_workflows = await self._invoke(list_all)
                 else:
                     # fallback to alternate method name
                     list_fn = getattr(self.state_manager, "list_states", None)
                     if callable(list_fn):
-                        persisted_workflows = await list_fn()
+                        persisted_workflows = await self._invoke(list_fn)
                     else:
                         persisted_workflows = []  # nothing available
                 
+                if not isinstance(persisted_workflows, list):
+                    persisted_workflows = []
+                
                 for workflow_data in persisted_workflows:
                     # Avoid duplicates from active workflows
-                    if workflow_data['session_id'] not in self.active_workflows:
-                        workflows.append(workflow_data)
+                    try:
+                        sid = workflow_data.get('session_id') if isinstance(workflow_data, dict) else None
+                        if sid and sid not in self.active_workflows:
+                            workflows.append(workflow_data)
+                    except Exception:
+                        # skip malformed entries
+                        continue
             except Exception as e:
                 logger.warning(f"Failed to load persisted workflows: {e}")
             
@@ -933,22 +1133,59 @@ class EnhancedMaestro:
         """Get current status of a workflow"""
         workflow_state = self.active_workflows.get(session_id)
         if not workflow_state:
-            # Try to load from persistent storage
-            workflow_state = await self.state_manager.load_state(session_id)
+            # Try to load from persistent storage (safe invocation)
+            workflow_state = await self._invoke(getattr(self.state_manager, "load_state", None), session_id)
         
         if not workflow_state:
             raise ValueError(f"Workflow not found: {session_id}")
         
-        return {
-            'session_id': session_id,
-            'case_name': workflow_state.case_name,
-            'current_phase': workflow_state.current_phase.value,
-            'overall_status': workflow_state.overall_status.value,
-            'progress': len(workflow_state.completed_tasks) / len(workflow_state.tasks) * 100 if workflow_state.tasks else 0,
-            'phases': {phase.value: status.value for phase, status in workflow_state.phases.items()},
-            'created_at': workflow_state.created_at.isoformat(),
-            'updated_at': workflow_state.updated_at.isoformat()
-        }
+        # Defensive construction of status dict
+        try:
+            case_name = getattr(workflow_state, 'case_name', None) or (workflow_state.get('case_name') if isinstance(workflow_state, dict) else None)
+            current_phase = (getattr(workflow_state, 'current_phase', None).value
+                             if getattr(workflow_state, 'current_phase', None) is not None else (workflow_state.get('current_phase') if isinstance(workflow_state, dict) else None))
+            overall_status = (getattr(workflow_state, 'overall_status', None).value
+                              if getattr(workflow_state, 'overall_status', None) is not None else (workflow_state.get('overall_status') if isinstance(workflow_state, dict) else None))
+
+            tasks = getattr(workflow_state, 'tasks', workflow_state.get('tasks') if isinstance(workflow_state, dict) else {}) or {}
+            completed_tasks = getattr(workflow_state, 'completed_tasks', workflow_state.get('completed_tasks') if isinstance(workflow_state, dict) else []) or []
+            progress = (len(completed_tasks) / len(tasks) * 100) if tasks else 0
+
+            phases = {}
+            phases_attr = getattr(workflow_state, 'phases', workflow_state.get('phases') if isinstance(workflow_state, dict) else {}) or {}
+            if isinstance(phases_attr, dict):
+                for phase_k, status_v in phases_attr.items():
+                    try:
+                        phases[phase_k if isinstance(phase_k, str) else getattr(phase_k, 'value', str(phase_k))] = (status_v.value if hasattr(status_v, 'value') else status_v)
+                    except Exception:
+                        phases[str(phase_k)] = str(status_v)
+
+            created_at = None
+            updated_at = None
+            created = getattr(workflow_state, 'created_at', None)
+            updated = getattr(workflow_state, 'updated_at', None)
+            if created and hasattr(created, 'isoformat'):
+                created_at = created.isoformat()
+            elif isinstance(workflow_state, dict):
+                created_at = workflow_state.get('created_at')
+            if updated and hasattr(updated, 'isoformat'):
+                updated_at = updated.isoformat()
+            elif isinstance(workflow_state, dict):
+                updated_at = workflow_state.get('updated_at')
+
+            return {
+                'session_id': session_id,
+                'case_name': case_name,
+                'current_phase': current_phase,
+                'overall_status': overall_status,
+                'progress': progress,
+                'phases': phases,
+                'created_at': created_at,
+                'updated_at': updated_at
+            }
+        except Exception as exc:
+            logger.error(f"Failed to assemble workflow status for {session_id}: {exc}")
+            raise
 
     async def shutdown(self):
         """Gracefully shutdown the maestro"""
@@ -956,8 +1193,8 @@ class EnhancedMaestro:
         # gracefully close managers if they expose close/shutdown APIs
         async_close = getattr(self.state_manager, "close", None) or getattr(self.state_manager, "shutdown", None)
         if callable(async_close):
-            await async_close()
+            await self._invoke(async_close)
         # checkpoint manager
         cp_close = getattr(self.checkpoint_manager, "close", None) or getattr(self.checkpoint_manager, "shutdown", None)
         if callable(cp_close):
-            await cp_close()
+            await self._invoke(cp_close)

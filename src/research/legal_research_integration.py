@@ -17,7 +17,7 @@ from dataclasses import dataclass, asdict, field
 from enum import Enum
 
 from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-from jurisdiction_manager import JurisdictionManager
+from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
 from cause_of_action_detector import CauseOfActionDetector, CauseDetectionResult
 from maestro.bots.research_bot import (
     ResearchQuery, LegalCitation, ResearchResult,

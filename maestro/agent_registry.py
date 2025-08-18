@@ -53,6 +53,31 @@ class AgentInterface(ABC):
     """Base interface for all specialized agents"""
 
     def __init__(self, config: AgentConfig):
+        # Accept plain dicts for convenience in tests and backwards compatibility
+        if isinstance(config, dict):
+            try:
+                # Try direct construction first (preferred)
+                try:
+                    config = AgentConfig(**config)
+                except TypeError as e:
+                    # Some callers pass extra/legacy keys (e.g. 'agent_id', 'name', 'log_level').
+                    # Filter known AgentConfig dataclass fields and preserve unknown keys under
+                    # config.config['meta'] so we don't lose helpful metadata.
+                    allowed = set(AgentConfig.__dataclass_fields__.keys())
+                    filtered = {k: v for k, v in config.items() if k in allowed}
+                    extra = {k: v for k, v in config.items() if k not in allowed}
+
+                    config = AgentConfig(**filtered)
+                    if extra:
+                        if config.config is None:
+                            config.config = {}
+                        meta = config.config.get('meta', {})
+                        meta.update(extra)
+                        config.config['meta'] = meta
+                        logger.debug(f"AgentInterface received extra config keys and stored under config.meta: {list(extra.keys())}")
+            except Exception as e:
+                raise TypeError(f"Invalid config dict for AgentInterface: {e}")
+
         self.config = config
         self.agent_type = config.agent_type
         self.is_busy = False

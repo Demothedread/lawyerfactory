@@ -501,7 +501,7 @@ async def test_prompt_chain_orchestrator():
     try:
         from enhanced_knowledge_graph import EnhancedKnowledgeGraph
         from skeletal_outline_generator import SkeletalOutlineGenerator
-        from comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
+        from src.claims_matrix.comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
         from maestro.evidence_api import EvidenceAPI
         
         # Initialize components
