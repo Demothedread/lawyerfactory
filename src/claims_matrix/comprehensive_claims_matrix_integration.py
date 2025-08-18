@@ -3,26 +3,42 @@ Comprehensive Claims Matrix Integration - Phase 3.3 Complete System
 Integrates cause of action definition engine, cascading decision trees, and interactive legal analysis
 """
 
-import logging
-import json
 import asyncio
-from typing import Dict, List, Any, Optional, Tuple
+import json
+import logging
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from dataclasses import dataclass, field, asdict
+from typing import Any, Dict, List, Optional, Tuple
 
-from enhanced_knowledge_graph import (
-    EnhancedKnowledgeGraph, CauseOfAction, LegalElement, ElementQuestion
-)
-from jurisdiction_manager import JurisdictionManager
-from cause_of_action_definition_engine import (
-    CauseOfActionDefinitionEngine, LegalDefinition, ElementBreakdown, ProvableQuestion
-)
-from cascading_decision_tree_engine import (
-    CascadingDecisionTreeEngine, ClickableTerm, DecisionPathResult, DecisionOutcome
-)
-from legal_research_integration import LegalResearchAPIIntegration
-from legal_authority_validator import LegalAuthorityValidator
-from claims_matrix_research_api import ClaimsMatrixResearchAPI
+from src.ingestion.api.cause_of_action_definition_engine import (
+    CauseOfActionDefinitionEngine, ElementBreakdown, LegalDefinition,
+    ProvableQuestion)
+from src.knowledge_graph.api.enhanced_knowledge_graph import (
+    CauseOfAction, ElementQuestion, EnhancedKnowledgeGraph, LegalElement)
+from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
+
+# cascading_decision_tree_engine may live in claims_matrix or src; try src first and fall back
+try:
+    from src.claims_matrix.cascading_decision_tree_engine import (
+        CascadingDecisionTreeEngine, ClickableTerm, DecisionOutcome,
+        DecisionPathResult)
+except Exception:
+    from cascading_decision_tree_engine import (CascadingDecisionTreeEngine,
+                                                ClickableTerm, DecisionOutcome,
+                                                DecisionPathResult)
+
+try:
+    from src.research.legal_research_integration import \
+        LegalResearchAPIIntegration
+except Exception:
+    from legal_research_integration import LegalResearchAPIIntegration
+
+try:
+    from src.research.legal_authority_validator import LegalAuthorityValidator
+except Exception:
+    from legal_authority_validator import LegalAuthorityValidator
+
+from claims_matrix.claims_matrix_research_api import ClaimsMatrixResearchAPI
 
 logger = logging.getLogger(__name__)
 
@@ -98,8 +114,9 @@ class ComprehensiveClaimsMatrixIntegration:
         # Initialize research integration if tokens provided
         if courtlistener_token or scholar_contact_email:
             try:
-                from legal_research_integration import LegalResearchAPIIntegration
                 from legal_authority_validator import LegalAuthorityValidator
+                from legal_research_integration import \
+                    LegalResearchAPIIntegration
                 
                 self.authority_validator = LegalAuthorityValidator(enhanced_kg, self.jurisdiction_manager)
                 self.research_integration = LegalResearchAPIIntegration(
@@ -311,7 +328,8 @@ class ComprehensiveClaimsMatrixIntegration:
                 return {'error': 'Session not found'}
             
             # Create research request
-            from claims_matrix_research_api import ClaimsMatrixResearchRequest, ResearchPriority
+            from claims_matrix.claims_matrix_research_api import (
+                ClaimsMatrixResearchRequest, ResearchPriority)
             
             request = ClaimsMatrixResearchRequest(
                 request_id=f"research_{session_id}",

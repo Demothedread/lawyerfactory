@@ -3,7 +3,7 @@
 ## Phase 1: Core Infrastructure & Database Schema (Sprint 1-2)
 
 ### 1.1 Enhanced Knowledge Graph Schema Extensions
-- [ ] Extend [`enhanced_knowledge_graph.py`](enhanced_knowledge_graph.py) with claims matrix tables
+- [ ] Extend [`enhanced_knowledge_graph.py`](../enhanced_knowledge_graph.py) with claims matrix tables
 - [ ] Create `causes_of_action` table with jurisdiction-specific definitions
 - [ ] Create `legal_elements` table linking elements to causes of action
 - [ ] Create `element_questions` table with provable questions for each element
@@ -20,7 +20,7 @@
 - [ ] Add jurisdiction validation and conflict detection
 
 ### 1.3 Cause of Action Detection Engine
-- [ ] Extend [`legal_relationship_detector.py`](legal_relationship_detector.py) with cause of action patterns
+- [ ] Extend [`legal_relationship_detector.py`](../legal_relationship_detector.py) with cause of action patterns
 - [ ] Create `CauseOfActionDetector` class for identifying legal claims from case facts
 - [ ] Implement cause of action confidence scoring based on supporting facts
 - [ ] Build legal element breakdown for common causes (negligence, breach, fraud, etc.)
@@ -64,7 +64,7 @@
 - [ ] Add drag-and-drop functionality for manual node positioning
 
 ### 3.2 Frontend Integration and UI Components
-- [ ] Extend [`factory.html`](factory.html) with claims matrix section
+- [ ] Extend [`factory.html`](../factory.html) with claims matrix section
 - [ ] Create claims matrix modal/panel for detailed interaction
 - [ ] Build jurisdiction dropdown selector integrated with mindmap
 - [ ] Implement expandable node panels showing legal elements
@@ -98,7 +98,7 @@
 - [ ] Add fact attachment confidence scoring and validation
 
 ### 4.3 Backend API Development
-- [ ] Extend [`app.py`](app.py) with claims matrix API endpoints
+- [ ] Extend [`app.py`](../app.py) with claims matrix API endpoints
 - [ ] Create `/api/claims-matrix/get-causes` endpoint for case-specific causes
 - [ ] Create `/api/claims-matrix/get-elements` endpoint for cause elements
 - [ ] Create `/api/claims-matrix/attach-facts` endpoint for fact linkage
@@ -108,7 +108,7 @@
 ## Phase 5: Advanced Features & Integration (Sprint 9-10)
 
 ### 5.1 Case Building Workflow Integration
-- [ ] Integrate with existing [`knowledge_graph_integration.py`](knowledge_graph_integration.py)
+- [ ] Integrate with existing [`knowledge_graph_integration.py`](../knowledge_graph_integration.py)
 - [ ] Connect to Facts Matrix output from Phase 2 system
 - [ ] Build attorney workflow integration for case building strategy
 - [ ] Create case strength dashboard with visual indicators

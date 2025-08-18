@@ -13,7 +13,7 @@ from dataclasses import dataclass, asdict
 
 from skeletal_outline_integration import SkeletalOutlineIntegration, SkeletalOutlineWorkflow
 from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-from comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
+from src.claims_matrix.comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
 from maestro.evidence_api import EvidenceAPI
 
 logger = logging.getLogger(__name__)
@@ -371,7 +371,7 @@ async def test_maestro_skeletal_outline_bot():
     """Test the Maestro skeletal outline bot"""
     try:
         from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-        from comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
+        from src.claims_matrix.comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
         from maestro.evidence_api import EvidenceAPI
         
         # Initialize components

@@ -13,7 +13,7 @@ from dataclasses import dataclass, field, asdict
 from enhanced_knowledge_graph import (
     EnhancedKnowledgeGraph, CauseOfAction, LegalElement, ElementQuestion
 )
-from jurisdiction_manager import JurisdictionManager
+from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
 from cause_of_action_definition_engine import (
     CauseOfActionDefinitionEngine, LegalDefinition, ElementBreakdown, ProvableQuestion
 )
@@ -22,7 +22,7 @@ from cascading_decision_tree_engine import (
 )
 from legal_research_integration import LegalResearchAPIIntegration
 from legal_authority_validator import LegalAuthorityValidator
-from claims_matrix_research_api import ClaimsMatrixResearchAPI
+from claims_matrix.claims_matrix_research_api import ClaimsMatrixResearchAPI
 
 logger = logging.getLogger(__name__)
 
@@ -311,7 +311,7 @@ class ComprehensiveClaimsMatrixIntegration:
                 return {'error': 'Session not found'}
             
             # Create research request
-            from claims_matrix_research_api import ClaimsMatrixResearchRequest, ResearchPriority
+            from claims_matrix.claims_matrix_research_api import ClaimsMatrixResearchRequest, ResearchPriority
             
             request = ClaimsMatrixResearchRequest(
                 request_id=f"research_{session_id}",

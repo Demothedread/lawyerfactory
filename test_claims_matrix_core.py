@@ -13,7 +13,7 @@ from enhanced_knowledge_graph import (
     EnhancedKnowledgeGraph, CauseOfAction, LegalElement, ElementQuestion,
     FactElementAttachment, LegalEntityType, LegalEntity, ConfidenceFactors
 )
-from jurisdiction_manager import JurisdictionManager, JurisdictionAuthority
+from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager, JurisdictionAuthority
 from cause_of_action_detector import CauseOfActionDetector
 
 # Configure logging for tests

@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-from jurisdiction_manager import JurisdictionManager
+from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
 from legal_research_integration import AuthorityLevel, LegalCitation
 
 logger = logging.getLogger(__name__)

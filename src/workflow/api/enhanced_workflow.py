@@ -6,12 +6,17 @@ Integrates with the new maestro orchestration system while maintaining compatibi
 import asyncio
 import logging
 import sys
+import uuid  # <-- added import
 from itertools import islice
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# Add maestro to the path for imports
-sys.path.append(str(Path(__file__).parent.parent))
+# Ensure src root is on sys.path so imports from src.* resolve when this module is executed from different CWDs.
+project_root = Path(__file__).resolve().parents[2]
+src_root = project_root
+# Ensure src root is first on sys.path so imports like `from knowledge_graph import ...` resolve
+if str(src_root) not in sys.path:
+    sys.path.insert(0, str(src_root))
 
 from knowledge_graph import KnowledgeGraph
 from maestro.enhanced_maestro import EnhancedMaestro
@@ -85,7 +90,7 @@ class EnhancedWorkflowManager:
         # This could include parallel processing, indexing, etc.
         await asyncio.sleep(0.1)  # Placeholder for actual batch processing
 
-    async def create_lawsuit_workflow(self, case_name: str, session_id: str,
+    async def create_lawsuit_workflow(self, case_name: str, session_id: Optional[str] = None,
                                     case_folder: Optional[str] = None,
                                     case_description: str = "",
                                     uploaded_documents: Optional[List[str]] = None) -> str:
@@ -94,11 +99,16 @@ class EnhancedWorkflowManager:
         
         Args:
             case_name: Name of the case
+            session_id: Optional session id. If None a new UUID will be generated.
             case_folder: Path to folder containing case documents (optional)
             case_description: Description of the case
             uploaded_documents: List of user-uploaded document paths (optional)
         """
         try:
+            # Ensure we have a concrete session id
+            if not session_id:
+                session_id = str(uuid.uuid4())
+            
             input_documents = []
             
             # Handle user-uploaded documents
@@ -224,50 +234,47 @@ class EnhancedWorkflowManager:
     async def pause_workflow(self, case_name: Optional[str] = None, session_id: Optional[str] = None) -> bool:
         """Pause a workflow"""
         try:
-            if session_id is None and case_name is not None:
-                session_id = self.active_sessions.get(case_name)
-                if not session_id:
-                    raise ValueError(f"No active workflow found for case: {case_name}")
-            
+            # ensure session_id is a concrete string
+            session_id = self._require_session_id(session_id, case_name)
+
             # Load the workflow state and pause it
             workflow_state = await self.maestro.state_manager.load_state(session_id)
             workflow_state.overall_status = PhaseStatus.PAUSED
             workflow_state.human_feedback_required = True
-            
+
             await self.maestro.state_manager.save_state(workflow_state)
-            
+
             logger.info(f"Paused workflow: {session_id}")
             return True
-            
-        except Exception as e:
-            logger.error(f"Failed to pause workflow: {e}")
+
+        except Exception as exc:
+            logger.error(f"Failed to pause workflow: {exc}")
             return False
 
     async def resume_workflow(self, case_name: Optional[str] = None, session_id: Optional[str] = None) -> bool:
         """Resume a paused workflow"""
         try:
-            if session_id is None and case_name is not None:
-                session_id = self.active_sessions.get(case_name)
-                if not session_id:
-                    raise ValueError(f"No active workflow found for case: {case_name}")
-            
+            # ensure session_id is a concrete string
+            session_id = self._require_session_id(session_id, case_name)
+
             # Load the workflow state and resume it
             workflow_state = await self.maestro.state_manager.load_state(session_id)
             workflow_state.overall_status = PhaseStatus.IN_PROGRESS
             workflow_state.human_feedback_required = False
-            
+
             await self.maestro.state_manager.save_state(workflow_state)
-            
+
             # Restart the workflow execution
             if session_id not in self.maestro.active_workflows:
+                # session_id guaranteed to be a str by helper
                 self.maestro.active_workflows[session_id] = workflow_state
                 asyncio.create_task(self.maestro._execute_workflow(session_id))
-            
+
             logger.info(f"Resumed workflow: {session_id}")
             return True
-            
-        except Exception as e:
-            logger.error(f"Failed to resume workflow: {e}")
+
+        except Exception as exc:
+            logger.error(f"Failed to resume workflow: {exc}")
             return False
 
     async def get_workflow_progress(self, case_name: Optional[str] = None, session_id: Optional[str] = None) -> Dict[str, Any]:
@@ -389,6 +396,9 @@ class EnhancedWorkflowManager:
     async def export_workflow_results(self, session_id: str, export_format: str = 'json') -> Dict[str, Any]:
         """Export workflow results and generated documents"""
         try:
+            # ensure session_id is concrete (this signature already expects str, but keep defensive)
+            session_id = str(session_id)
+            
             # Get workflow status and state
             status = await self.maestro.get_workflow_status(session_id)
             workflow_state = await self.maestro.state_manager.load_state(session_id)
@@ -437,15 +447,16 @@ class EnhancedWorkflowManager:
             session_id of the created workflow
         """
         try:
+            # Generate a session id for this workflow
+            session_id = str(uuid.uuid4())
+            
             # Convert case data to the format expected by the workflow
             initial_context = {
                 'case_data': case_data,
                 'case_name': case_name,
                 'case_description': case_data.get('case_name', case_name),
                 'workflow_type': 'ai_document_generation',
-                'ai_generation_options': options or {},
-                'document_count': len(case_data.get('evidence', [])),
-                'case_folder': f"output/{case_name.replace(' ', '_')}"
+                'ai_generation_options': options or {}
             }
             
             # Use case evidence as input documents if available
@@ -454,6 +465,7 @@ class EnhancedWorkflowManager:
             # Start the workflow with AI document generation focus
             session_id = await self.maestro.start_workflow(
                 case_name=case_name,
+                session_id=session_id,
                 input_documents=input_documents,
                 initial_context=initial_context
             )
@@ -480,10 +492,8 @@ class EnhancedWorkflowManager:
             Dictionary containing AI generation status and results
         """
         try:
-            if session_id is None and case_name is not None:
-                session_id = self.active_sessions.get(case_name)
-                if not session_id:
-                    raise ValueError(f"No active workflow found for case: {case_name}")
+            # ensure session_id is a concrete string
+            session_id = self._require_session_id(session_id, case_name)
             
             # Get workflow state
             workflow_state = await self.maestro.state_manager.load_state(session_id)
@@ -554,9 +564,8 @@ class EnhancedWorkflowManager:
             session_id of the workflow processing the Tesla case
         """
         try:
-            # Use case name from data or provided parameter
-            if not case_name:
-                case_name = tesla_case_data.get('case_name', 'Tesla_Case_Unknown')
+            # Resolve a concrete case name string (avoid passing Optional[str] to typed APIs)
+            resolved_case_name: str = case_name or tesla_case_data.get('case_name') or 'Tesla_Case_Unknown'
             
             # Validate Tesla case data has required fields
             required_fields = ['case_name', 'plaintiff_name', 'defendant_name']
@@ -566,7 +575,7 @@ class EnhancedWorkflowManager:
             
             # Create AI document workflow with Tesla data
             session_id = await self.create_ai_document_workflow(
-                case_name=case_name,
+                case_name=resolved_case_name,
                 case_data=tesla_case_data,
                 options={
                     'tesla_case': True,
@@ -575,7 +584,7 @@ class EnhancedWorkflowManager:
                 }
             )
             
-            logger.info(f"Started Tesla case processing: {case_name} -> {session_id}")
+            logger.info(f"Started Tesla case processing: {resolved_case_name} -> {session_id}")
             return session_id
             
         except Exception as e:
@@ -585,15 +594,11 @@ class EnhancedWorkflowManager:
     async def get_generated_documents(self, case_name: Optional[str] = None, session_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Get list of documents generated by AI agents.
-        
-        Args:
-            case_name: Name of the case
-            session_id: Session ID of the workflow
-            
-        Returns:
-            List of generated document information
         """
         try:
+            # ensure session_id is a concrete string
+            session_id = self._require_session_id(session_id, case_name)
+            
             ai_status = await self.get_ai_generation_status(case_name, session_id)
             
             generated_docs = []
@@ -634,12 +639,26 @@ class EnhancedWorkflowManager:
         except Exception as e:
             logger.error(f"Error during shutdown: {e}")
 
+    # NEW: helper to ensure we have a concrete session id string
+    def _require_session_id(self, session_id: Optional[str], case_name: Optional[str] = None) -> str:
+        """
+        Resolve and validate session_id. Prefer given session_id, fall back to active_sessions[case_name].
+        Raises ValueError if neither yields a non-empty string.
+        """
+        if session_id is None:
+            if case_name is not None:
+                session_id = self.active_sessions.get(case_name)
+        if not session_id:
+            raise ValueError("Either case_name or session_id must be provided")
+        return str(session_id)
+    
 
 # Compatibility functions for the existing workflow system
 async def create_tesla_lawsuit_workflow(case_folder: str = "Tesla") -> str:
     """Convenience function to create a Tesla lawsuit workflow"""
     workflow_manager = EnhancedWorkflowManager()
     try:
+        # generate session id implicitly (create_lawsuit_workflow handles None now)
         session_id = await workflow_manager.create_lawsuit_workflow(
             case_name="Tesla Securities Litigation",
             case_folder=case_folder,

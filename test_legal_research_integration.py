@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, patch, AsyncMock
 
 from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-from jurisdiction_manager import JurisdictionManager
+from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
 from cause_of_action_detector import CauseOfActionDetector, CauseDetectionResult
 from legal_research_integration import (
     LegalResearchAPIIntegration, LegalResearchRequest, ResearchPriority,
@@ -20,7 +20,7 @@ from legal_research_integration import (
 )
 from legal_authority_validator import LegalAuthorityValidator, CitationCompliance
 from legal_research_cache_manager import LegalResearchCacheManager
-from claims_matrix_research_api import (
+from claims_matrix.claims_matrix_research_api import (
     ClaimsMatrixResearchAPI, ClaimsMatrixResearchRequest, ClaimsMatrixResearchResponse
 )
 from maestro.bots.research_bot import LegalCitation

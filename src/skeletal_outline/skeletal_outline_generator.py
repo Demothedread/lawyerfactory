@@ -13,7 +13,7 @@ from dataclasses import dataclass, field, asdict
 from enum import Enum
 
 from enhanced_knowledge_graph import EnhancedKnowledgeGraph, LegalEntityType
-from comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
+from src.claims_matrix.comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
 from maestro.evidence_api import EvidenceAPI
 
 logger = logging.getLogger(__name__)
@@ -665,7 +665,7 @@ def test_skeletal_outline_generator():
     try:
         # Mock data for testing
         from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-        from comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
+        from src.claims_matrix.comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
         from maestro.evidence_api import EvidenceAPI
         
         # Initialize components

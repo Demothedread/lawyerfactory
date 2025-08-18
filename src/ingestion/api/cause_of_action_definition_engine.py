@@ -14,7 +14,7 @@ from enhanced_knowledge_graph import (
     EnhancedKnowledgeGraph, CauseOfAction, LegalElement, ElementQuestion,
     JurisdictionAuthority, LegalEntityType
 )
-from jurisdiction_manager import JurisdictionManager
+from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
 from legal_research_integration import LegalResearchAPIIntegration
 from legal_authority_validator import LegalAuthorityValidator
 
@@ -1004,7 +1004,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
     from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-    from jurisdiction_manager import JurisdictionManager
+    from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
     
     try:
         kg = EnhancedKnowledgeGraph("test_definition_engine.db")

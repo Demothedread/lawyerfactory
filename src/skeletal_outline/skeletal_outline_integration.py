@@ -15,7 +15,7 @@ from pathlib import Path
 from skeletal_outline_generator import SkeletalOutlineGenerator, SkeletalOutline
 from prompt_chain_orchestrator import PromptChainOrchestrator, PromptChainResult
 from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-from comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
+from src.claims_matrix.comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
 from maestro.evidence_api import EvidenceAPI
 
 try:
@@ -462,7 +462,7 @@ async def test_skeletal_outline_integration():
     """Test the complete skeletal outline integration"""
     try:
         from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-        from comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
+        from src.claims_matrix.comprehensive_claims_matrix_integration import ComprehensiveClaimsMatrixIntegration
         from maestro.evidence_api import EvidenceAPI
         
         # Initialize components

@@ -15,7 +15,7 @@ from enhanced_knowledge_graph import (
     EnhancedKnowledgeGraph, CauseOfAction, LegalElement, ElementQuestion,
     LegalEntityType, ConfidenceFactors
 )
-from jurisdiction_manager import JurisdictionManager
+from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
 
 logger = logging.getLogger(__name__)
 
@@ -479,7 +479,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
     from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-    from jurisdiction_manager import JurisdictionManager
+    from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
     
     kg = EnhancedKnowledgeGraph("test_cause_detector.db")
     jurisdiction_manager = JurisdictionManager(kg)

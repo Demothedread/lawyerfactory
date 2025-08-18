@@ -14,7 +14,7 @@ from enum import Enum
 from enhanced_knowledge_graph import (
     EnhancedKnowledgeGraph, LegalEntityType, LegalElement
 )
-from jurisdiction_manager import JurisdictionManager
+from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
 from cause_of_action_definition_engine import (
     CauseOfActionDefinitionEngine, DecisionTreeNode, LegalDefinition
 )
@@ -1009,7 +1009,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
     from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-    from jurisdiction_manager import JurisdictionManager
+    from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
     from cause_of_action_definition_engine import CauseOfActionDefinitionEngine
     
     try:

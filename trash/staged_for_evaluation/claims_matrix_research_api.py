@@ -12,7 +12,7 @@ from typing import Dict, List, Optional, Any, Union
 from dataclasses import dataclass, asdict
 
 from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-from jurisdiction_manager import JurisdictionManager
+from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
 from cause_of_action_detector import CauseOfActionDetector, CauseDetectionResult
 from legal_research_integration import (
     LegalResearchAPIIntegration, LegalResearchRequest, ResearchPriority
