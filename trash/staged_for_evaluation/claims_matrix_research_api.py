@@ -1,24 +1,29 @@
-"""
+# Script Name: claims_matrix_research_api.py
+# Description: Claims Matrix Research Integration API - Phase 3.2 Main API interface for legal research integration with Claims Matrix
+# Relationships:
+#   - Entity Type: API
+#   - Directory Group: Backend
+#   - Group Tags: claims-analysis, legal-research, api
 Claims Matrix Research Integration API - Phase 3.2
 Main API interface for legal research integration with Claims Matrix
 """
 
 import asyncio
-import json
 import logging
 import uuid
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Union
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
+from cause_of_action_detector import (CauseDetectionResult,
+                                      CauseOfActionDetector)
 from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
-from cause_of_action_detector import CauseOfActionDetector, CauseDetectionResult
-from legal_research_integration import (
-    LegalResearchAPIIntegration, LegalResearchRequest, ResearchPriority
-)
 from legal_authority_validator import LegalAuthorityValidator
 from legal_research_cache_manager import LegalResearchCacheManager
+from legal_research_integration import (LegalResearchAPIIntegration,
+                                        LegalResearchRequest, ResearchPriority)
+
+from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import JurisdictionManager
 
 logger = logging.getLogger(__name__)
 

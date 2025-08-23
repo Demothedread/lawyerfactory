@@ -1,23 +1,24 @@
-"""
+# Script Name: cascading_decision_tree_engine.py
+# Description: Cascading Decision Tree Engine for Claims Matrix Interactive legal analysis with clickable keyword expansion and fact-driven decision paths
+# Relationships:
+#   - Entity Type: Engine
+#   - Directory Group: Core
+#   - Group Tags: null
 Cascading Decision Tree Engine for Claims Matrix
 Interactive legal analysis with clickable keyword expansion and fact-driven decision paths
 """
 
 import logging
-import json
 import uuid
-from typing import Dict, List, Any, Optional, Tuple, Union
-from datetime import datetime
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
 
-from enhanced_knowledge_graph import (
-    EnhancedKnowledgeGraph, LegalEntityType, LegalElement
-)
-from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
-from cause_of_action_definition_engine import (
-    CauseOfActionDefinitionEngine, DecisionTreeNode, LegalDefinition
-)
+from cause_of_action_definition_engine import CauseOfActionDefinitionEngine
+from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+
+from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import JurisdictionManager
 
 logger = logging.getLogger(__name__)
 
@@ -1008,9 +1009,11 @@ if __name__ == "__main__":
     import sys
     logging.basicConfig(level=logging.INFO)
     
-    from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-    from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
     from cause_of_action_definition_engine import CauseOfActionDefinitionEngine
+    from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+
+    from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import \
+        JurisdictionManager
     
     try:
         kg = EnhancedKnowledgeGraph("test_decision_tree.db")

@@ -1,64 +1,206 @@
-# LawyerFactory - Clean, Maintainable Legal Automation Platform
+# LawyerFactory - Legal Document Processing System
 
-A Python-based platform for automated lawsuit generation and legal document workflows. It centers on shared domain entities (knowledge graph, memory, and orchestration) and a lean, modular architecture that is easy to troubleshoot and extend.
+## Overview
 
-Why this cleanup
+LawyerFactory is an advanced AI-powered legal document processing system that orchestrates the complete workflow from document intake through final legal document generation. The system uses a sophisticated 7-phase workflow to transform raw legal documents into attorney-ready legal products.
 
-Root-level documentation has accumulated clutter from multiple readme files and notes that duplicate or overlap with the project structure. This pass moves obsolete artifacts to a dedicated /trash folder and replaces the root with a single authoritative overview. No runtime logic or imports are changed in this pass.
+## Key Features
 
-Moved artifacts (for historical review)
-- [`trash/LEGAL_RESEARCH_INTEGRATION_README.md`](trash/LEGAL_RESEARCH_INTEGRATION_README.md:1)
-- [`trash/KNOWLEDGE_GRAPH_INTEGRATION_README.md`](trash/KNOWLEDGE_GRAPH_INTEGRATION_README.md:1)
-- [`trash/KNOWLEDGE_GRAPH_SCHEMA.md`](trash/KNOWLEDGE_GRAPH_SCHEMA.md:1)
-- [`trash/SYSTEM_DOCUMENTATION.md`](trash/SYSTEM_DOCUMENTATION.md:1)
-- [`trash/CLAIMS_MATRIX_IMPLEMENTATION_README.md`](trash/CLAIMS_MATRIX_IMPLEMENTATION_README.md:1)
-- [`trash/STATEMENT_OF_FACTS_GENERATOR_README.md`](trash/STATEMENT_OF_FACTS_GENERATOR_README.md:1)
+- **📥 Intelligent Document Intake**: Automated document classification and evidence extraction
+- **🔍 Advanced Legal Research**: CourtListener API integration with academic legal databases
+- **📋 Claims Matrix Analysis**: Comprehensive cause-of-action identification and analysis
+- **⚖️ Interactive Legal Analysis**: Attorney-guided decision tree analysis
+- **✍️ AI-Powered Drafting**: Context-aware legal document generation
+- **👥 Human Review Integration**: Seamless attorney collaboration workflows
+- **📄 Post-Production Processing**: Automated formatting, citation management, and compliance checking
+- **🎯 Orchestration Engine**: Coordinated multi-agent workflow management
 
-Core components (high level)
+## Architecture
 
-- Knowledge Graph core and extensions: [`knowledge_graph.py`](knowledge_graph.py:1) and [`enhanced_knowledge_graph.py`](enhanced_knowledge_graph.py:1)
+### Core Workflow Phases
 
-- Memory and persistence: [`mcp_memory_integration.py`](mcp_memory_integration.py:1)
+The system follows a sequential 7-phase workflow:
 
-- Maestro orchestration and agents: [`maestro/enhanced_maestro.py`](maestro/enhanced_maestro.py:1), [`maestro/evidence_api.py`](maestro/evidence_api.py:1)
+1. **01_intake** - Document ingestion and initial processing
+2. **02_research** - Legal research and authority identification
+3. **03_outline** - Claims analysis and case structuring
+4. **04_human_review** - Attorney review and feedback integration
+5. **05_drafting** - Legal document generation
+6. **06_post_production** - Formatting and compliance
+7. **07_orchestration** - Workflow coordination and state management
 
-- Orchestration and UI glue: [`lawyerfactory/workflow.py`](lawyerfactory/workflow.py:1), [`lawyerfactory/kanban_cli.py`](lawyerfactory/kanban_cli.py:1)
+### Component Organization
 
-- Document generation and templates: `lawyerfactory/document_generator/`
+```
+/src/lawyerfactory/
+├── phases/                    # Sequential workflow phases
+├── agents/                    # Specialized AI agents by function
+│   ├── research/             # Legal research agents
+│   ├── drafting/             # Document drafting agents
+│   ├── analysis/             # Claims analysis agents
+│   └── review/               # Review and validation agents
+├── infrastructure/           # Technical infrastructure
+│   ├── storage/              # File and data storage
+│   ├── messaging/            # Event system and notifications
+│   └── monitoring/           # Logging and metrics
+├── knowledge_graph/          # Legal knowledge representation
+├── config/                   # Configuration management
+└── shared/                   # Common utilities and base classes
+```
 
-- Web UI: `factory.html`
+## Quick Start
 
-Quick start
+### Prerequisites
 
-- Ensure Python 3.8+ is installed.
-- Create a virtual environment and install dependencies.
-- Run the application (for example: python app.py).
-- Access the interface in your browser (port defined by deployment config).
+- Python 3.8+
+- Qdrant vector database
+- OpenAI API key (for AI features)
+- CourtListener API token (for legal research)
 
-Roadmap and navigation
+### Installation
 
-- This root README provides a concise overview and links to the main components. For deeper dives, navigate to the root of each component or to the /trash catalog for historical artifacts.
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd lawyerfactory
+   ```
 
-Extending LawyerFactory
+2. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-- Add new document types, templates, or agents by following the interface contracts used by the components in lawyerfactory/
-- See the component references above for quick access.
+3. **Configure environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your API keys and configuration
+   ```
 
-Refactor rationale
+4. **Initialize the system**
+   ```bash
+   python -m src.lawyerfactory
+   ```
 
-- Reduced root-level noise, centralized documentation, and preserved legacy notes in /trash.
-- No runtime code changes were made in this pass; this is a documentation/organization change only.
+### Basic Usage
 
-Changelog
+```python
+from src.lawyerfactory.phases.intake.intake_processor import IntakeProcessor
+from src.lawyerfactory.phases.orchestration.maestro import Maestro
 
-- 2025-08-16: Initial consolidation pass; root README created and legacy READMEs moved to /trash.
-- 2025-08-16: /trash/index.md catalog updated to reflect moved artifacts.
+# Initialize the system
+maestro = Maestro()
 
-Next steps
+# Process a legal document
+result = await maestro.process_document("path/to/legal/document.pdf")
+```
 
-- See [`trash/index.md`](trash/index.md) catalog for moved artifacts with rationales and dates.
-- Upon confirmation, I will plan and execute deeper refactors around shared entities (knowledge graph, memory, orchestration) with minimal runtime impact, and provide a lightweight migration plan.
+## Documentation
 
-Contact and references
+- **[Architecture Guide](docs/architecture/)** - System design and data models
+- **[API Reference](docs/api/)** - Complete API documentation
+- **[Development Guide](docs/development/)** - Setup and contribution guidelines
+- **[User Manual](docs/guides/user_manual.md)** - End-user documentation
 
-- For questions or contributions, please follow the standard contribution guidelines in this repository.
+## Development
+
+### Project Structure
+
+- **Source Code**: `src/lawyerfactory/`
+- **Tests**: `tests/`
+- **Documentation**: `docs/`
+- **Configuration**: `configs/`
+- **Tools**: `tools/`
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest
+
+# Run specific test categories
+pytest tests/unit/
+pytest tests/integration/
+pytest tests/e2e/
+```
+
+### Code Organization
+
+The codebase follows these principles:
+
+1. **Phase-based workflow**: Clear sequential processing steps
+2. **Functional agent grouping**: Agents organized by purpose (research, drafting, etc.)
+3. **Infrastructure consolidation**: All technical components in one place
+4. **Shared utilities**: Common functionality centralized
+5. **Clean separation**: Clear boundaries between components
+
+## API Endpoints
+
+### Core Processing
+- `POST /api/intake` - Document intake and classification
+- `POST /api/research` - Legal research and authority identification
+- `POST /api/analyze` - Claims matrix analysis
+- `POST /api/draft` - Document generation
+- `POST /api/review` - Human review integration
+
+### Management
+- `GET /api/workflow/{id}` - Workflow status
+- `POST /api/workflow` - Start new workflow
+- `GET /api/health` - System health check
+
+## Configuration
+
+### Environment Variables
+
+```bash
+# AI Services
+OPENAI_API_KEY=your_openai_key
+QDRANT_API_KEY=your_qdrant_key
+
+# Legal Research
+COURTLISTENER_API_KEY=your_courtlistener_key
+
+# System Configuration
+WORKFLOW_STORAGE_PATH=./workflow_storage
+UPLOAD_DIR=./uploads
+```
+
+### Advanced Configuration
+
+See `src/lawyerfactory/config/settings.py` for detailed configuration options.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
+
+### Development Guidelines
+
+- Follow the existing code organization patterns
+- Add type hints to new functions
+- Write comprehensive tests
+- Update documentation for API changes
+- Use descriptive commit messages
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support and questions:
+- Create an issue in the repository
+- Check the troubleshooting guide in `docs/guides/troubleshooting.md`
+- Review the FAQ in `docs/guides/faq.md`
+
+## Changelog
+
+### Recent Updates
+- **Streamlined Organization**: Reorganized codebase for better maintainability
+- **Agent Reorganization**: Grouped agents by functional purpose
+- **Infrastructure Consolidation**: Unified technical components
+- **Documentation Consolidation**: Centralized documentation structure
+
+For complete changelog, see `docs/development/changelog.md`.

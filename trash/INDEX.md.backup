@@ -1,0 +1,40 @@
+# Trash Index - Files Moved for Review
+
+## Streamlining Refactor - August 21, 2025
+
+This directory contains files that have been moved from the main codebase during the streamlining refactor. These files are preserved for human review before final deletion.
+
+## Files Moved to Trash
+
+### Deprecated Shim Files (`trash/deprecated_shims/`)
+The following files were deprecated shims that will be removed in the next release. They only contained deprecation warnings and import redirects:
+
+- `lawyerfactory/agent_config_system.py` → Redirects to `lawyerfactory.lf_core.agent_config`
+- `lawyerfactory/document_type_framework.py` → Redirects to `lawyerfactory.lf_core.document_types`
+- `lawyerfactory/enhanced_workflow.py` → Redirects to `lawyerfactory.compose.maestro.workflow`
+- `lawyerfactory/file-storage.py` → Redirects to `lawyerfactory.infra.file_storage`
+- `lawyerfactory/knowledge_graph.py` → Redirects to `lawyerfactory.kg.graph`
+- `lawyerfactory/mcp_memory_integration.py` → Redirects to `lawyerfactory.vectors.memory_compression`
+- `lawyerfactory/models.py` → Redirects to `lawyerfactory.lf_core.models`
+- `lawyerfactory/workflow.py` → Redirects to `lawyerfactory.compose.maestro.workflow`
+
+### System Files (`trash/system_files/`)
+- `lawyerfactory/.DS_Store` - macOS system file
+- `lawyerfactory/__pycache__/` - Python bytecode cache directory
+
+## Rationale for Removal
+
+1. **Deprecated Shims**: These files were explicitly marked as "AUTO-GENERATED SHIM: will be removed in next release" and only served as temporary redirects during a migration period.
+
+2. **System Files**: .DS_Store files and __pycache__ directories are generated automatically and should not be tracked in version control.
+
+## Next Steps
+
+1. Review the moved files to ensure no functionality is lost
+2. Test the application to confirm everything still works
+3. If satisfied, these files can be permanently deleted
+4. If issues are found, use the undo script to restore files
+
+## Undo Script
+
+An undo script is available at `trash/undo_script.sh` to restore all moved files to their original locations.

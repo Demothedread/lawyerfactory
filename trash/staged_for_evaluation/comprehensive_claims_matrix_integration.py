@@ -1,28 +1,29 @@
-"""
+# Script Name: comprehensive_claims_matrix_integration.py
+# Description: Comprehensive Claims Matrix Integration - Phase 3.3 Complete System Integrates cause of action definition engine, cascading decision trees, and interactive legal analysis
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Core
+#   - Group Tags: claims-analysis
 Comprehensive Claims Matrix Integration - Phase 3.3 Complete System
 Integrates cause of action definition engine, cascading decision trees, and interactive legal analysis
 """
 
 import logging
-import json
-import asyncio
-from typing import Dict, List, Any, Optional, Tuple
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
-from dataclasses import dataclass, field, asdict
+from typing import Any, Dict, List, Optional
 
-from enhanced_knowledge_graph import (
-    EnhancedKnowledgeGraph, CauseOfAction, LegalElement, ElementQuestion
-)
-from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
-from cause_of_action_definition_engine import (
-    CauseOfActionDefinitionEngine, LegalDefinition, ElementBreakdown, ProvableQuestion
-)
-from cascading_decision_tree_engine import (
-    CascadingDecisionTreeEngine, ClickableTerm, DecisionPathResult, DecisionOutcome
-)
-from legal_research_integration import LegalResearchAPIIntegration
-from legal_authority_validator import LegalAuthorityValidator
+from cascading_decision_tree_engine import (CascadingDecisionTreeEngine,
+                                            ClickableTerm, DecisionOutcome,
+                                            DecisionPathResult)
+from cause_of_action_definition_engine import (CauseOfActionDefinitionEngine,
+                                               ElementBreakdown,
+                                               LegalDefinition,
+                                               ProvableQuestion)
+from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+
 from claims_matrix.claims_matrix_research_api import ClaimsMatrixResearchAPI
+from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import JurisdictionManager
 
 logger = logging.getLogger(__name__)
 
@@ -98,8 +99,9 @@ class ComprehensiveClaimsMatrixIntegration:
         # Initialize research integration if tokens provided
         if courtlistener_token or scholar_contact_email:
             try:
-                from legal_research_integration import LegalResearchAPIIntegration
                 from legal_authority_validator import LegalAuthorityValidator
+                from legal_research_integration import \
+                    LegalResearchAPIIntegration
                 
                 self.authority_validator = LegalAuthorityValidator(enhanced_kg, self.jurisdiction_manager)
                 self.research_integration = LegalResearchAPIIntegration(
@@ -311,7 +313,8 @@ class ComprehensiveClaimsMatrixIntegration:
                 return {'error': 'Session not found'}
             
             # Create research request
-            from claims_matrix.claims_matrix_research_api import ClaimsMatrixResearchRequest, ResearchPriority
+            from claims_matrix.claims_matrix_research_api import (
+                ClaimsMatrixResearchRequest, ResearchPriority)
             
             request = ClaimsMatrixResearchRequest(
                 request_id=f"research_{session_id}",
@@ -783,20 +786,20 @@ if __name__ == "__main__":
         # Get comprehensive definition
         definition = integration.get_comprehensive_definition(session_id)
         if definition:
-            print(f"\nComprehensive definition generated")
+            print("\nComprehensive definition generated")
             print(f"Primary definition: {definition.primary_definition[:100]}...")
             print(f"Authority citations: {len(definition.authority_citations)}")
         
         # Test clickable term expansion
         duty_term = integration.expand_clickable_term(session_id, "duty of care")
         if duty_term:
-            print(f"\nExpanded 'duty of care' term")
+            print("\nExpanded 'duty of care' term")
             print(f"Sub-terms: {duty_term.sub_terms}")
         
         # Get element breakdown
         duty_breakdown = integration.get_element_breakdown(session_id, 'duty')
         if duty_breakdown:
-            print(f"\nDuty element breakdown generated")
+            print("\nDuty element breakdown generated")
             print(f"Sub-elements: {len(duty_breakdown.sub_elements)}")
         
         # Build decision tree
@@ -811,14 +814,14 @@ if __name__ == "__main__":
         
         path_result = integration.analyze_decision_path(session_id, 'duty', test_decisions)
         if path_result:
-            print(f"\nDecision path analyzed")
+            print("\nDecision path analyzed")
             print(f"Outcome: {path_result.final_outcome.value}")
             print(f"Confidence: {path_result.confidence_score:.2f}")
         
         # Generate attorney-ready analysis
         attorney_analysis = integration.generate_attorney_ready_analysis(session_id)
         if attorney_analysis:
-            print(f"\nGenerated attorney-ready analysis")
+            print("\nGenerated attorney-ready analysis")
             print(f"Elements analyzed: {list(attorney_analysis.element_breakdowns.keys())}")
             print(f"Practice guidance items: {len(attorney_analysis.practice_guidance)}")
             print(f"Discovery recommendations: {len(attorney_analysis.discovery_recommendations)}")

@@ -1,4 +1,9 @@
-"""
+# Script Name: mcp_memory_integration.py
+# Description: MCP Memory Server Integration for LawyerFactory Pneumonic memory compression system using Model Context Protocol for context management. Provides intelligent context compression, retrieval, and workflow state persistence.
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Core
+#   - Group Tags: null
 MCP Memory Server Integration for LawyerFactory
 Pneumonic memory compression system using Model Context Protocol for context management.
 Provides intelligent context compression, retrieval, and workflow state persistence.
@@ -7,10 +12,10 @@ Provides intelligent context compression, retrieval, and workflow state persiste
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Tuple, Union
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

@@ -1,3 +1,9 @@
+# Script Name: kanban_cli.py
+# Description: Handles kanban cli functionality in the LawyerFactory system.
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Core
+#   - Group Tags: null
 from .models import STAGE_SEQUENCE
 from .workflow import TaskBoard
 

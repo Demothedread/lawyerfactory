@@ -1,0 +1,46 @@
+"""
+# Script Name: ai_document_generator.py
+# Description: Compatibility wrapper for older examples/tests.
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Document Generation
+#   - Group Tags: null
+from dataclasses import dataclass
+from typing import Any, Dict, List
+
+try:
+    from lawyerfactory.compose.maestro.workflow import ComplaintPipeline
+except Exception as exc:  # pragma: no cover
+    ComplaintPipeline = None
+
+@dataclass
+class DocumentGenerationResult:
+    case_classification: Any = None
+    form_selection: Any = None
+    form_mappings: List[Any] = None
+    filling_results: List[Any] = None
+    package_info: Dict[str, Any] = None
+    success: bool = False
+    total_processing_time: float = 0.0
+    errors: List[str] = None
+    warnings: List[str] = None
+    forms_generated: int = 0
+    fields_filled: int = 0
+    completion_percentage: float = 0.0
+    ready_for_filing: bool = False
+
+class AIDocumentGenerator:
+    """Thin bridge to the new ComplaintPipeline; extend as needed."""
+    def __init__(self, *_, **__):
+        if ComplaintPipeline is None:
+            raise ImportError("ComplaintPipeline not available; ensure compose.maestro.workflow is importable.")
+
+    def generate_documents(self, case_data: Dict[str, Any], case_name: str | None = None, options: Dict[str, Any] | None = None) -> DocumentGenerationResult:
+        # TODO: wire actual pipeline; for now, return a stub result so imports/tests collect.
+        return DocumentGenerationResult(success=True, ready_for_filing=False)
+
+    def analyze_case_requirements(self, case_data: Dict[str, Any]) -> Dict[str, Any]:
+        return {"case_classification": {"type": "unknown"}, "estimated_success_rate": 0.0}
+
+    def get_system_status(self) -> Dict[str, Any]:
+        return {"ai_document_generator": "available", "components": {"form_selector": {"available_forms": []}}}

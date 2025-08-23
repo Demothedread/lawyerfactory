@@ -1,0 +1,532 @@
+"""
+# Script Name: form_selector.py
+# Description: AI-Powered Form Selection Module for LawyerFactory  This module selects appropriate court forms based on case classifications, damage types, and case-specific requirements.
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Document Generation
+#   - Group Tags: null
+AI-Powered Form Selection Module for LawyerFactory
+
+This module selects appropriate court forms based on case classifications,
+damage types, and case-specific requirements.
+"""
+
+import logging
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+from .ai_case_classifier import CaseClassification, CaseType
+from .pdf_handler import PDFHandler
+
+
+@dataclass
+class FormRecommendation:
+    """Represents a recommended form for a case."""
+    
+    form_name: str
+    form_path: Path
+    priority: int  # 1 = highest priority
+    reason: str
+    required_fields: List[str]
+    confidence: float
+    form_type: str  # "complaint", "cover_sheet", "fee_waiver", etc.
+
+
+@dataclass
+class FormSelectionResult:
+    """Result of form selection process."""
+    
+    primary_forms: List[FormRecommendation]
+    optional_forms: List[FormRecommendation]
+    total_forms: int
+    selection_reasoning: str
+    warnings: List[str]
+    estimated_completion_time: int  # minutes
+
+
+class FormSelector:
+    """
+    AI-powered form selector that chooses appropriate court forms based on case analysis.
+    
+    This class maps case classifications to specific court forms and provides
+    intelligent recommendations for document completion.
+    """
+    
+    def __init__(self, forms_directory: str = "docs/Court_files"):
+        """
+        Initialize FormSelector with access to court forms.
+        
+        Args:
+            forms_directory: Path to directory containing PDF court forms
+        """
+        self.forms_directory = Path(forms_directory)
+        self.pdf_handler = PDFHandler(forms_directory)
+        self.logger = logging.getLogger(__name__)
+        
+        # Initialize form mappings and metadata
+        self._initialize_form_mappings()
+        
+        # Cache available forms
+        self.available_forms = self.pdf_handler.get_available_forms()
+        self.logger.info(f"FormSelector initialized with {len(self.available_forms)} available forms")
+    
+    def _initialize_form_mappings(self):
+        """Initialize mappings between case types and appropriate forms."""
+
+        # Primary form mappings based on case type
+        self.case_type_mappings = {
+            CaseType.BREACH_OF_CONTRACT: {
+                # Updated to match form_metadata keys
+                'primary': ['pld001_contract', 'pld001_complaint-general'],
+                'optional': ['fw002_additional-fee-waiver', 'civil-cover-sheet'],
+                'required_fields': ['plaintiff_name', 'defendant_name', 'contract_date', 'breach_details']
+            },
+
+            CaseType.PERSONAL_INJURY: {
+                'primary': ['pld001_injury-property-death', 'pld001_complaint-general'],
+                'optional': ['fw002_additional-fee-waiver', 'civil-cover-sheet'],
+                'required_fields': ['plaintiff_name', 'defendant_name', 'injury_date', 'injury_details', 'medical_expenses']
+            },
+
+            CaseType.NEGLIGENCE: {
+                'primary': ['pld001_negligence', 'pld001_complaint-general'],
+                'optional': ['fw002_additional-fee-waiver', 'civil-cover-sheet'],
+                'required_fields': ['plaintiff_name', 'defendant_name', 'incident_date', 'duty_of_care', 'breach_details']
+            },
+
+            CaseType.PRODUCT_LIABILITY: {
+                'primary': ['pld001_products-liability', 'civil-cover-sheet', 'pld001_complaint-general'],
+                'optional': ['fw002_additional-fee-waiver', 'fw001_fee-waiver', 'pld001_negligence','pld001_exemplary_damages'],
+                'required_fields': ['plaintiff_name', 'defendant_name', 'product_description', 'defect_type', 'injury_details']
+            },
+
+            CaseType.PROPERTY_DAMAGE: {
+                'primary': ['pld001_complaint-general', 'civil-cover-sheet'],
+                'optional': ['fw002_additional-fee-waiver'],
+                'required_fields': ['plaintiff_name', 'defendant_name', 'property_description', 'damage_amount']
+            },
+            CaseType.INTENTIONAL_TORT: {
+                'primary': ['pld001_intentional-tort', 'pld001_complaint-general', 'civil-cover-sheet'],
+                'optional': ['fw001_fee-waiver', 'fw002_additional-fee-waiver', 'pld001_exemplary_damages'],
+                'required_fields': ['plaintiff_name', 'defendant_name', 'intentional_tort_details']
+            }
+        }
+        
+        # Form metadata for intelligent selection
+        self.form_metadata = {
+            'pld001_complaint-general': {
+                'name': 'General Complaint Form',
+                'type': 'complaint',
+                'complexity': 'medium',
+                'estimated_time': 45,  # minutes
+                'description': 'General civil complaint form for most case types'
+            },
+            'pld001_contract': {
+                'name': 'Breach of Contract Complaint',
+                'type': 'complaint',
+                'complexity': 'medium',
+                'estimated_time': 50,
+                'description': 'Specialized complaint form for contract breach cases'
+            },
+            'pld001_injury-property-death': {
+                'name': 'Personal Injury Complaint',
+                'type': 'complaint',
+                'complexity': 'high',
+                'estimated_time': 60,
+                'description': 'Specialized complaint form for personal injury, resultant prop dmgs and/or wrongful death cases'
+            },
+            'pld001_negligence': {
+                'name': 'Negligence Complaint',
+                'type': 'complaint',
+                'complexity': 'high',
+                'estimated_time': 55,
+                'description': 'Specialized complaint form for negligence cases'
+            },
+            'pld001_products-liability': {
+                'name': 'Products Liability',
+                'type': 'complaint',
+                'complexity': 'high',
+                'estimated_time': 50,
+                'description': 'Specialized complaint form for products liability cases'
+            },
+            'pld001_intentional-tort': {
+                'name': 'Intentional Tort Complaint',
+                'type': 'complaint',
+                'complexity': 'high',
+                'estimated_time': 50,
+                'description': 'Specialized complaint form for intentional tort cases'
+            },
+            'pld001_exemplary_damages': {
+                'name': 'Exemplary Damages Complaint',
+                'type': 'complaint',
+                'complexity': 'high',
+                'estimated_time': 50,
+                'description': 'Specialized complaint form for exemplary damages cases'
+            },
+            'civil-cover-sheet': {
+                'name': 'Cover Sheet',
+                'type': 'cover_sheet',
+                'complexity': 'low',
+                'estimated_time': 15,
+                'description': 'Civil case cover sheet required for filing'
+            },
+            'fw001_fee-waiver':{
+                'name': 'Fee Waiver',
+                'type': 'fee_waiver',
+                'complexity': 'medium',
+                'estimated_time': 25,
+                'description': 'fee waiver for indigent filer'
+            },
+            'fw002_additional-fee-waiver': {
+                'name': 'Additional Fees Waiver',
+                'type': 'fee_waiver',
+                'complexity': 'low',
+                'estimated_time': 20,
+                'description': 'Request for waiver of additional court fees'
+            }
+        }
+        
+        # Damage-based form requirements
+        self.damage_form_requirements = {
+            'economic': ['financial_details', 'lost_income', 'expenses'],
+            'non_economic': ['pain_suffering_details', 'emotional_impact'],
+            'punitive': ['willful_conduct_details', 'malicious_intent']
+        }
+    
+    def select_forms(self, classification: CaseClassification, 
+                    case_context: Optional[Dict[str, Any]] = None) -> FormSelectionResult:
+        """
+        Select appropriate forms based on case classification.
+        
+        Args:
+            classification: Result from CaseClassifier
+            case_context: Additional context about the case (plaintiff financial status, etc.)
+            
+        Returns:
+            FormSelectionResult with recommended forms and reasoning
+        """
+        
+        case_context = case_context or {}
+        
+        # Get base form recommendations for case type
+        primary_recommendations = self._get_primary_forms(classification)
+        optional_recommendations = self._get_optional_forms(classification, case_context)
+        
+        # Apply damage-specific logic
+        damage_forms = self._get_damage_specific_forms(classification.damages_categories)
+        optional_recommendations.extend(damage_forms)
+        
+        # Apply urgency-based priorities
+        self._apply_urgency_priorities(primary_recommendations, optional_recommendations, classification.urgency_level)
+        
+        # Remove duplicates and sort by priority
+        primary_recommendations = self._deduplicate_and_sort(primary_recommendations)
+        optional_recommendations = self._deduplicate_and_sort(optional_recommendations)
+        
+        # Generate warnings
+        warnings = self._generate_warnings(classification, primary_recommendations, optional_recommendations)
+        
+        # Calculate estimated completion time
+        total_time = sum(rec.confidence * self._get_form_time(rec.form_name) 
+                        for rec in primary_recommendations + optional_recommendations)
+        
+        # Generate selection reasoning
+        reasoning = self._generate_selection_reasoning(classification, primary_recommendations, optional_recommendations)
+        
+        return FormSelectionResult(
+            primary_forms=primary_recommendations,
+            optional_forms=optional_recommendations,
+            total_forms=len(primary_recommendations) + len(optional_recommendations),
+            selection_reasoning=reasoning,
+            warnings=warnings,
+            estimated_completion_time=int(total_time)
+        )
+    
+    def _get_primary_forms(self, classification: CaseClassification) -> List[FormRecommendation]:
+        """Get primary form recommendations based on case classification."""
+
+        recommendations = []
+        case_type = classification.primary_type
+
+        if case_type in self.case_type_mappings:
+            mapping = self.case_type_mappings[case_type]
+
+            for i, form_key in enumerate(mapping['primary']):
+                if form_key in self.available_forms:
+                    form_path = self.available_forms[form_key]
+                    metadata = self.form_metadata.get(form_key, {})
+
+                    recommendations.append(FormRecommendation(
+                        form_name=form_key,
+                        form_path=form_path,
+                        priority=i + 1,
+                        reason=f"Primary form for {case_type.value} cases",
+                        required_fields=mapping.get('required_fields', []),
+                        confidence=classification.confidence,
+                        form_type=metadata.get('type', 'unknown')
+                    ))
+                else:
+                    self.logger.warning(f"Primary form not available: {form_key}")
+
+        # Always include general complaint if no specific forms found
+        if not recommendations and 'pld001_complaint-general' in self.available_forms:
+            form_path = self.available_forms['pld001_complaint-general']
+            recommendations.append(FormRecommendation(
+                form_name='pld001_complaint-general',
+                form_path=form_path,
+                priority=1,
+                reason="Fallback general complaint form",
+                required_fields=['plaintiff_name', 'defendant_name', 'facts'],
+                confidence=0.7,
+                form_type='complaint'
+            ))
+
+        return recommendations
+    
+    def _get_optional_forms(self, classification: CaseClassification, 
+                           case_context: Dict[str, Any]) -> List[FormRecommendation]:
+        """Get optional form recommendations."""
+
+        recommendations = []
+        case_type = classification.primary_type
+
+        # Case-type specific optional forms
+        if case_type in self.case_type_mappings:
+            mapping = self.case_type_mappings[case_type]
+
+            for form_key in mapping.get('optional', []):
+                if form_key in self.available_forms:
+                    form_path = self.available_forms[form_key]
+                    metadata = self.form_metadata.get(form_key, {})
+
+                    # Determine if this optional form should be recommended
+                    should_recommend, reason = self._should_recommend_optional_form(
+                        form_key, classification, case_context
+                    )
+
+                    if should_recommend:
+                        recommendations.append(FormRecommendation(
+                            form_name=form_key,
+                            form_path=form_path,
+                            priority=10,  # Lower priority than primary forms
+                            reason=reason,
+                            required_fields=[],
+                            confidence=0.6,
+                            form_type=metadata.get('type', 'unknown')
+                        ))
+
+        return recommendations
+    
+    def _should_recommend_optional_form(self, form_key: str, classification: CaseClassification, 
+                                       case_context: Dict[str, Any]) -> Tuple[bool, str]:
+        """Determine if an optional form should be recommended."""
+        
+        # Fee waiver logic
+        if 'feewaiver' in form_key.lower():
+            financial_hardship = case_context.get('financial_hardship', False)
+            low_income = case_context.get('low_income', False)
+            
+            if financial_hardship or low_income:
+                return True, "Recommended due to financial circumstances"
+            else:
+                return False, "Fee waiver not needed based on financial status"
+        
+        # Cover sheet logic
+        if 'cover' in form_key.lower() or 'cv' in form_key.lower():
+            return True, "Cover sheet typically required for court filing"
+        
+        # Default to recommending unless specific reason not to
+        return True, f"Standard optional form for {classification.primary_type.value} cases"
+    
+    def _get_damage_specific_forms(self, damage_categories: List[str]) -> List[FormRecommendation]:
+        """Get forms specific to damage types."""
+        
+        recommendations = []
+        
+        # For now, damage-specific forms are handled through field requirements
+        # In a more complete system, there might be specific forms for different damage types
+        
+        return recommendations
+    
+    def _apply_urgency_priorities(self, primary_recs: List[FormRecommendation], 
+                                 optional_recs: List[FormRecommendation], urgency: str):
+        """Adjust form priorities based on case urgency."""
+        
+        if urgency == 'high':
+            # Prioritize essential forms only
+            for rec in primary_recs:
+                rec.priority = max(1, rec.priority - 1)
+            
+            # De-prioritize optional forms
+            for rec in optional_recs:
+                rec.priority += 2
+        
+        elif urgency == 'low':
+            # Can afford to be thorough
+            for rec in optional_recs:
+                rec.priority = max(1, rec.priority - 1)
+    
+    def _deduplicate_and_sort(self, recommendations: List[FormRecommendation]) -> List[FormRecommendation]:
+        """Remove duplicates and sort by priority."""
+        
+        # Remove duplicates based on form_name
+        seen = set()
+        deduplicated = []
+        
+        for rec in recommendations:
+            if rec.form_name not in seen:
+                seen.add(rec.form_name)
+                deduplicated.append(rec)
+        
+        # Sort by priority (lower numbers = higher priority)
+        return sorted(deduplicated, key=lambda x: x.priority)
+    
+    def _generate_warnings(self, classification: CaseClassification, 
+                          primary_recs: List[FormRecommendation], 
+                          optional_recs: List[FormRecommendation]) -> List[str]:
+        """Generate warnings about form selection."""
+        
+        warnings = []
+        
+        # Low confidence warning
+        if classification.confidence < 0.6:
+            warnings.append(f"Low classification confidence ({classification.confidence:.1%}). "
+                          "Consider reviewing case facts for better form selection.")
+        
+        # Missing forms warning
+        if not primary_recs:
+            warnings.append("No primary forms found for this case type. Using general complaint form.")
+        
+        # Complex case warning
+        if len(primary_recs) + len(optional_recs) > 5:
+            warnings.append("Complex case requiring multiple forms. Consider legal consultation.")
+        
+        # Urgency warning
+        if classification.urgency_level == 'high':
+            warnings.append("High urgency case. Prioritize essential forms and consider expedited filing.")
+        
+        return warnings
+    
+    def _get_form_time(self, form_name: str) -> int:
+        """Get estimated completion time for a form."""
+        
+        metadata = self.form_metadata.get(form_name, {})
+        return metadata.get('estimated_time', 30)  # Default 30 minutes
+    
+    def _generate_selection_reasoning(self, classification: CaseClassification,
+                                     primary_recs: List[FormRecommendation],
+                                     optional_recs: List[FormRecommendation]) -> str:
+        """Generate human-readable reasoning for form selection."""
+        
+        reasoning_parts = [
+            f"Selected {len(primary_recs)} primary forms for {classification.primary_type.value} case."
+        ]
+        
+        if primary_recs:
+            primary_names = [rec.form_name for rec in primary_recs[:2]]  # Show top 2
+            reasoning_parts.append(f"Primary forms: {', '.join(primary_names)}.")
+        
+        if optional_recs:
+            reasoning_parts.append(f"Recommended {len(optional_recs)} optional forms for completeness.")
+        
+        if classification.damages_categories:
+            reasoning_parts.append(f"Forms selected accommodate {', '.join(classification.damages_categories)} damages.")
+        
+        return " ".join(reasoning_parts)
+    
+    def get_form_requirements(self, form_name: str) -> Dict[str, Any]:
+        """Get detailed requirements for a specific form."""
+        
+        if form_name not in self.available_forms:
+            return {}
+        
+        form_path = self.available_forms[form_name]
+        
+        try:
+            # Extract form fields
+            fields = self.pdf_handler.extract_form_fields(form_path)
+            
+            # Get metadata
+            metadata = self.form_metadata.get(form_name, {})
+            
+            return {
+                'form_name': form_name,
+                'form_path': str(form_path),
+                'field_count': len(fields),
+                'fields': [{'name': f.name, 'type': f.field_type, 'required': f.required} for f in fields],
+                'estimated_time': metadata.get('estimated_time', 30),
+                'complexity': metadata.get('complexity', 'medium'),
+                'description': metadata.get('description', ''),
+                'form_type': metadata.get('type', 'unknown')
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting requirements for {form_name}: {str(e)}")
+            return {'error': str(e)}
+
+
+def test_form_selector():
+    """Test function for FormSelector functionality."""
+    
+    # Import here to avoid circular imports in testing
+    from .ai_case_classifier import CaseClassification, CaseType
+    
+    selector = FormSelector()
+    
+    # Test with different case classifications
+    test_classifications = [
+        CaseClassification(
+            primary_type=CaseType.BREACH_OF_CONTRACT,
+            confidence=0.85,
+            secondary_types=[],
+            reasoning="Contract breach case",
+            key_indicators=['contract', 'breach'],
+            damages_categories=['economic'],
+            urgency_level='medium'
+        ),
+        CaseClassification(
+            primary_type=CaseType.PERSONAL_INJURY,
+            confidence=0.92,
+            secondary_types=[],
+            reasoning="Personal injury case",
+            key_indicators=['injury', 'medical'],
+            damages_categories=['economic', 'non_economic'],
+            urgency_level='high'
+        )
+    ]
+    
+    print("Testing Form Selector:")
+    print("=" * 50)
+    
+    for i, classification in enumerate(test_classifications, 1):
+        print(f"\nTest Case {i}: {classification.primary_type.value}")
+        print("-" * 40)
+        
+        # Test with different contexts
+        context = {'financial_hardship': True} if i == 2 else {}
+        
+        result = selector.select_forms(classification, context)
+        
+        print(f"Primary Forms ({len(result.primary_forms)}):")
+        for form in result.primary_forms:
+            print(f"  - {form.form_name} (Priority: {form.priority}, Confidence: {form.confidence:.1%})")
+            print(f"    Reason: {form.reason}")
+        
+        if result.optional_forms:
+            print(f"\nOptional Forms ({len(result.optional_forms)}):")
+            for form in result.optional_forms:
+                print(f"  - {form.form_name} (Priority: {form.priority})")
+                print(f"    Reason: {form.reason}")
+        
+        print(f"\nEstimated Time: {result.estimated_completion_time} minutes")
+        print(f"Reasoning: {result.selection_reasoning}")
+        
+        if result.warnings:
+            print(f"Warnings: {result.warnings}")
+
+
+if __name__ == "__main__":
+    # Enable logging for testing
+    logging.basicConfig(level=logging.INFO)
+    test_form_selector()

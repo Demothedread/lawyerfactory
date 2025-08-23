@@ -1,0 +1,10 @@
+# Script Name: events.py
+# Description: AUTO-GENERATED SHIM: will be removed in next release.
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Workflow
+#   - Group Tags: orchestration
+import warnings as _w
+
+_w.warn("Module maestro/event_system.py is deprecated; import lawyerfactory.compose.maestro.events instead.", DeprecationWarning, stacklevel=2)
+from lawyerfactory.compose.maestro.events import *  # noqa: F401,F403

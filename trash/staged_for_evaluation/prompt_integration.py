@@ -1,16 +1,21 @@
-"""
+# Script Name: prompt_integration.py
+# Description: Integration layer for LLM-powered prompt deconstruction with LawyerFactory enhanced system. Connects the prompt analysis engine with the maestro orchestration and WebSocket events.
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Core
+#   - Group Tags: null
 Integration layer for LLM-powered prompt deconstruction with LawyerFactory enhanced system.
 Connects the prompt analysis engine with the maestro orchestration and WebSocket events.
 """
 
-import asyncio
 import logging
-from typing import Any, Dict, Optional
 from datetime import datetime
+from typing import Any, Dict, Optional
 
-from .prompt_deconstruction import PromptDeconstructionService
 from maestro.enhanced_maestro import EnhancedMaestro
 from maestro.workflow_models import WorkflowPhase
+
+from .prompt_deconstruction import PromptDeconstructionService
 
 logger = logging.getLogger(__name__)
 

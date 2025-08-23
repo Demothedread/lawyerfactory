@@ -1,17 +1,22 @@
-"""
+# Script Name: attorney_review_interface.py
+# Description: Attorney Review Interface for Statement of Facts Generation Provides comprehensive review, modification, and approval capabilities for generated legal documents with version control and change tracking.
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Core
+#   - Group Tags: null
 Attorney Review Interface for Statement of Facts Generation
 Provides comprehensive review, modification, and approval capabilities
 for generated legal documents with version control and change tracking.
 """
 
-import logging
 import json
+import logging
 import uuid
-from typing import Dict, List, Any, Optional, Tuple
+from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
-from dataclasses import dataclass, field, asdict
 from enum import Enum
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@
     This guide covers best practices for structuring mode instructions using XML.
   </overview>
 
-  <why_use_xml_tags>
+  <why_use_xml_tags>  
     <benefit type="clarity">
       Clearly separate different parts of your instructions and ensure well-structured content
     </benefit>

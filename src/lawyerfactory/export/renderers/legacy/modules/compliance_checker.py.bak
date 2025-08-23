@@ -1,0 +1,64 @@
+# Script Name: compliance_checker.py
+# Description: Module for checking legal and formatting compliance.
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Document Generation
+#   - Group Tags: null
+Module for checking legal and formatting compliance.
+"""
+import re
+
+
+def check_rule_12b6(causes_of_action):
+    """
+    Verifies that each cause of action pleads facts for every element.
+
+    Args:
+        causes_of_action (list): The list of causes of action.
+
+    Returns:
+        list: A list of compliance issues.
+    """
+    issues = []
+    for cause in causes_of_action:
+        for element in cause['elements']:
+            if not element.get('fact_text'):
+                issues.append(
+                    f"Rule 12(b)(6) Issue: Element '{element['name']}' in cause "
+                    f"of action '{cause['name']}' lacks supporting facts."
+                )
+    return issues
+
+def validate_citations(research_findings):
+    """
+    Validates the format of citations.
+
+    Args:
+        research_findings (dict): The research findings.
+
+    Returns:
+        list: A list of citation formatting issues.
+    """
+    issues = []
+    # Simplified Bluebook format: [Case Name], [Volume] U.S. [Page] ([Year])
+    bluebook_pattern = re.compile(r".+, \d+ U\.S\. \d+ \(\d{4}\)")
+    for citation in research_findings.get('citations', []):
+        if not bluebook_pattern.match(citation.get('cite', '')):
+            issues.append(f"Citation Format Issue: '{citation.get('cite')}'")
+    return issues
+
+
+def flag_for_review(text, issues):
+    """
+    Adds a marker for attorney review if there are unresolved issues.
+
+    Args:
+        text (str): The text to flag.
+        issues (list): A list of compliance issues.
+
+    Returns:
+        str: The text with a review marker, if needed.
+    """
+    if issues:
+        return f"[ATTORNEY REVIEW REQUIRED: {'; '.join(issues)}]\\n{text}"
+    return text

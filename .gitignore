@@ -6,11 +6,48 @@ env312/bin/*
 .env.production
 law_venv
 *.log
-*.json
+tests/*.json
 # Ignore Python cache files
-__pycache__/
 *.py[cod]
 *.pyo
 *.pyd
 # Ignore IDE specific files
+# Security-sensitive files
+.vault_pass
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.*
+config/secrets.*
+*.secret
+
+# Terraform state files (contain sensitive data)
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# AWS credentials
+.aws/
+credentials
+config
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 .env
+.env.production
+law_venv/ 
+logs/
+misc/
+PAN/*

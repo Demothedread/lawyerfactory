@@ -1,22 +1,23 @@
-"""
+# Script Name: cause_of_action_definition_engine.py
+# Description: Cause of Action Definition and Element Breakdown Engine - Phase 3.3 Comprehensive legal definition system with California-specific authorities and provable question generation
+# Relationships:
+#   - Entity Type: Engine
+#   - Directory Group: Core
+#   - Group Tags: null
 Cause of Action Definition and Element Breakdown Engine - Phase 3.3
 Comprehensive legal definition system with California-specific authorities and provable question generation
 """
 
 import logging
-import json
-import re
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime
 from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from enhanced_knowledge_graph import (
-    EnhancedKnowledgeGraph, CauseOfAction, LegalElement, ElementQuestion,
-    JurisdictionAuthority, LegalEntityType
-)
-from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
-from legal_research_integration import LegalResearchAPIIntegration
+from enhanced_knowledge_graph import EnhancedKnowledgeGraph
 from legal_authority_validator import LegalAuthorityValidator
+from legal_research_integration import LegalResearchAPIIntegration
+
+from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import JurisdictionManager
 
 logger = logging.getLogger(__name__)
 
@@ -1004,7 +1005,9 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     
     from enhanced_knowledge_graph import EnhancedKnowledgeGraph
-    from src.knowledge_graph.api.jurisdiction_manager import JurisdictionManager
+
+    from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import \
+        JurisdictionManager
     
     try:
         kg = EnhancedKnowledgeGraph("test_definition_engine.db")
@@ -1019,7 +1022,7 @@ if __name__ == "__main__":
         if jurisdiction_manager.select_jurisdiction('ca_state'):
             definition = definition_engine.generate_comprehensive_definition('negligence', 'ca_state')
             if definition:
-                print(f"Generated definition for negligence:")
+                print("Generated definition for negligence:")
                 print(f"Primary definition: {definition.primary_definition}")
                 print(f"Authority citations: {definition.authority_citations}")
                 print(f"Clickable terms: {list(definition.clickable_terms.keys())}")
@@ -1027,7 +1030,7 @@ if __name__ == "__main__":
             # Test element breakdown
             duty_breakdown = definition_engine.generate_element_breakdown('negligence', 'duty', 'ca_state')
             if duty_breakdown:
-                print(f"\nGenerated element breakdown for duty:")
+                print("\nGenerated element breakdown for duty:")
                 print(f"Definition: {duty_breakdown.primary_definition}")
                 print(f"Sub-elements: {len(duty_breakdown.sub_elements)}")
                 

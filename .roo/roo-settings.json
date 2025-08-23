@@ -1,0 +1,66 @@
+{
+  "STAR": {
+    "Input": {
+      "Parse": ["intents", "entities", "goals", "constraints", "uncertainty"],
+      "Listify": ["collections", "procedures"],
+      "Taxonomy": "group_if_more_than_3",
+      "Layer": ["zoom_out", "zoom_in"]
+    },
+    "Memory": {
+      "Objects": {
+        "fields": ["id", "type", "distill", "provenance", "version", "confidence", "tags"],
+        "graphEdges": ["causal", "analogy", "contradiction"]
+      },
+      "Recall": {
+        "return": ["summary", "evidence", "confidence"]
+      }
+    },
+    "Cognition": [
+      "distill",
+      "emergence_map",
+      "holism_vs_reduction",
+      "optimize_80_20",
+      "exponential_trigger",
+      "cognitive_dissonance",
+      "information_forage",
+      "first_principles",
+      "abstract_lift",
+      "reify",
+      "incubate"
+    ],
+    "Modularity": {
+      "Module": ["name", "inputs", "outputs", "fallback"],
+      "Compose": "DAG_chain",
+      "Checklist": true,
+      "Fallback": true,
+      "MetaLoop": "evaluate_and_adjust"
+    },
+    "Sequencing": {
+      "Planner": "outline_inputs_subtasks_outputs_confidence",
+      "Iterate": "microsteps_with_status_deltas",
+      "Chain": "explicit_output_to_input",
+      "Recover": {"attempts": 3},
+      "Educate": true,
+      "SummarizeIncremental": true
+    },
+    "Output": {
+      "Essence": "one_liner_or_formula",
+      "Explanation": ["holistic", "reductive"],
+      "Plan": ["checklist", "module_graph"],
+      "Meta": ["confidence", "provenance", "discourses", "actionability"]
+    },
+    "Governance": {
+      "AuditTrail": true,
+      "Minimality": true,
+      "ConflictResolution": ["user_goal", "empirical_success", "source_reliability", "risk"],
+      "RefreshCycle": "every_7_iterations",
+      "SensitiveData": "opt_in_required"
+    },
+    "Feedback": {
+      "Reflect": ["assumptions", "outcomes", "pattern_extract"],
+      "SelfCritique": true,
+      "StudentLoop": true,
+      "MetaLearning": "promote_successful_templates"
+    }
+  }
+}

@@ -1,16 +1,20 @@
-"""
+# Script Name: prompt_deconstruction.py
+# Description: LLM-Powered Prompt Deconstruction Engine for LawyerFactory Replaces regex-based keyword extraction with intelligent semantic analysis. Integrates with the enhanced maestro orchestration system.
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Core
+#   - Group Tags: null
 LLM-Powered Prompt Deconstruction Engine for LawyerFactory
 Replaces regex-based keyword extraction with intelligent semantic analysis.
 Integrates with the enhanced maestro orchestration system.
 """
 
-import asyncio
 import json
 import logging
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -404,13 +408,13 @@ class LLMPromptDeconstructionEngine:
                 prompts.append(f"Create legal complaint outline for {', '.join(primary_subjects)} addressing {', '.join(legal_issues)}")
             
             # Drafting phase prompt
-            prompts.append(f"Draft professional legal complaint incorporating research findings and factual allegations")
+            prompts.append("Draft professional legal complaint incorporating research findings and factual allegations")
         
         elif document_type == 'business_proposal':
             if primary_subjects:
                 prompts.append(f"Research market opportunities and competitive landscape for {', '.join(primary_subjects)}")
                 prompts.append(f"Create business proposal outline for {', '.join(primary_subjects)}")
-                prompts.append(f"Draft comprehensive business proposal with financial projections")
+                prompts.append("Draft comprehensive business proposal with financial projections")
         
         return prompts
     

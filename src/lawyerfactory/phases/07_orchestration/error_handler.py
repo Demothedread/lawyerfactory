@@ -1,0 +1,391 @@
+"""
+# Script Name: errors.py
+# Description: Error handling and recovery mechanisms for the workflow orchestration system.
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Orchestration
+#   - Group Tags: orchestration
+Error handling and recovery mechanisms for the workflow orchestration system.
+"""
+
+import asyncio
+import logging
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Dict, Optional
+
+from .workflow_models import PhaseStatus, WorkflowState, WorkflowTask
+
+logger = logging.getLogger(__name__)
+
+
+class ErrorSeverity(Enum):
+    """Error severity levels"""
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
+class ErrorType(Enum):
+    """Types of errors that can occur"""
+    AGENT_ERROR = "agent_error"
+    TASK_ERROR = "task_error"
+    WORKFLOW_ERROR = "workflow_error"
+    SYSTEM_ERROR = "system_error"
+    TIMEOUT_ERROR = "timeout_error"
+    DEPENDENCY_ERROR = "dependency_error"
+    VALIDATION_ERROR = "validation_error"
+
+
+class WorkflowErrorHandler:
+    """Handles errors and implements recovery strategies"""
+
+    def __init__(self, event_bus):
+        self.event_bus = event_bus
+        self.error_history: list = []
+        self.max_history_size = 1000
+        self.retry_strategies = self._initialize_retry_strategies()
+
+    def _initialize_retry_strategies(self) -> Dict[ErrorType, Dict[str, Any]]:
+        """Initialize retry strategies for different error types"""
+        return {
+            ErrorType.AGENT_ERROR: {
+                'max_retries': 3,
+                'backoff_multiplier': 2,
+                'initial_delay': 5,
+                'max_delay': 300
+            },
+            ErrorType.TASK_ERROR: {
+                'max_retries': 2,
+                'backoff_multiplier': 1.5,
+                'initial_delay': 3,
+                'max_delay': 180
+            },
+            ErrorType.TIMEOUT_ERROR: {
+                'max_retries': 1,
+                'backoff_multiplier': 1,
+                'initial_delay': 10,
+                'max_delay': 60
+            },
+            ErrorType.DEPENDENCY_ERROR: {
+                'max_retries': 5,
+                'backoff_multiplier': 1,
+                'initial_delay': 1,
+                'max_delay': 30
+            },
+            ErrorType.VALIDATION_ERROR: {
+                'max_retries': 0,  # Don't retry validation errors
+                'backoff_multiplier': 1,
+                'initial_delay': 0,
+                'max_delay': 0
+            },
+            ErrorType.SYSTEM_ERROR: {
+                'max_retries': 1,
+                'backoff_multiplier': 3,
+                'initial_delay': 30,
+                'max_delay': 600
+            },
+            ErrorType.WORKFLOW_ERROR: {
+                'max_retries': 1,
+                'backoff_multiplier': 2,
+                'initial_delay': 15,
+                'max_delay': 300
+            }
+        }
+
+    async def handle_task_error(self, task: WorkflowTask, error: Exception, workflow_state: WorkflowState):
+        """Handle errors that occur during task execution"""
+        error_info = self._create_error_info(
+            error_type=ErrorType.TASK_ERROR,
+            error=error,
+            context={
+                'task_id': task.id,
+                'task_phase': task.phase.value,
+                'agent_type': task.agent_type,
+                'session_id': workflow_state.session_id
+            }
+        )
+        
+        logger.error(f"Task error in {task.id}: {error}")
+        
+        # Update task status
+        task.status = PhaseStatus.FAILED
+        task.error_message = str(error)
+        task.retry_count += 1
+        
+        # Add to failed tasks list
+        if task.id not in workflow_state.failed_tasks:
+            workflow_state.failed_tasks.append(task.id)
+        
+        # Determine if retry is appropriate
+        if await self._should_retry_task(task, error_info):
+            await self._schedule_task_retry(task, error_info)
+        else:
+            # Mark task as permanently failed
+            await self._handle_permanent_task_failure(task, workflow_state, error_info)
+        
+        # Log error and emit event
+        await self._log_error(error_info)
+        await self.event_bus.emit('task_error', {
+            'task_id': task.id,
+            'session_id': workflow_state.session_id,
+            'error': str(error),
+            'retry_count': task.retry_count,
+            'will_retry': task.retry_count < task.max_retries
+        })
+
+    async def handle_agent_error(self, agent_type: str, error: Exception, workflow_state: WorkflowState):
+        """Handle errors related to agent execution"""
+        error_info = self._create_error_info(
+            error_type=ErrorType.AGENT_ERROR,
+            error=error,
+            context={
+                'agent_type': agent_type,
+                'session_id': workflow_state.session_id
+            }
+        )
+        
+        logger.error(f"Agent error for {agent_type}: {error}")
+        
+        # Find all tasks assigned to this agent that are currently in progress
+        affected_tasks = [
+            task for task in workflow_state.tasks.values()
+            if task.agent_type == agent_type and task.status == PhaseStatus.IN_PROGRESS
+        ]
+        
+        # Handle each affected task
+        for task in affected_tasks:
+            await self.handle_task_error(task, error, workflow_state)
+        
+        # Log error and emit event
+        await self._log_error(error_info)
+        await self.event_bus.emit('agent_error', {
+            'agent_type': agent_type,
+            'session_id': workflow_state.session_id,
+            'error': str(error),
+            'affected_tasks': len(affected_tasks)
+        })
+
+    async def handle_workflow_error(self, workflow_state: WorkflowState, error: Exception):
+        """Handle critical workflow-level errors"""
+        error_info = self._create_error_info(
+            error_type=ErrorType.WORKFLOW_ERROR,
+            error=error,
+            context={
+                'session_id': workflow_state.session_id,
+                'current_phase': workflow_state.current_phase.value,
+                'case_name': workflow_state.case_name
+            }
+        )
+        
+        logger.critical(f"Workflow error in {workflow_state.session_id}: {error}")
+        
+        # Update workflow status
+        workflow_state.overall_status = PhaseStatus.FAILED
+        
+        # Determine recovery strategy
+        recovery_action = self._determine_recovery_action(error_info, workflow_state)
+        
+        if recovery_action == 'pause':
+            workflow_state.overall_status = PhaseStatus.PAUSED
+            workflow_state.human_feedback_required = True
+            logger.info(f"Workflow {workflow_state.session_id} paused for manual intervention")
+        
+        elif recovery_action == 'retry':
+            await self._schedule_workflow_retry(workflow_state, error_info)
+        
+        else:  # 'fail'
+            logger.error(f"Workflow {workflow_state.session_id} permanently failed")
+        
+        # Log error and emit event
+        await self._log_error(error_info)
+        await self.event_bus.emit('workflow_error', {
+            'session_id': workflow_state.session_id,
+            'error': str(error),
+            'recovery_action': recovery_action,
+            'requires_human_intervention': recovery_action == 'pause'
+        })
+
+    async def _should_retry_task(self, task: WorkflowTask, error_info: Dict[str, Any]) -> bool:
+        """Determine if a task should be retried"""
+        if task.retry_count >= task.max_retries:
+            return False
+        
+        error_type = error_info['error_type']
+        strategy = self.retry_strategies.get(error_type, {})
+        max_retries = strategy.get('max_retries', 0)
+        
+        return task.retry_count < max_retries
+
+    async def _schedule_task_retry(self, task: WorkflowTask, error_info: Dict[str, Any]):
+        """Schedule a task for retry with backoff"""
+        error_type = error_info['error_type']
+        strategy = self.retry_strategies.get(error_type, {})
+        
+        # Calculate delay with exponential backoff
+        base_delay = strategy.get('initial_delay', 5)
+        multiplier = strategy.get('backoff_multiplier', 2)
+        max_delay = strategy.get('max_delay', 300)
+        
+        delay = min(base_delay * (multiplier ** (task.retry_count - 1)), max_delay)
+        
+        logger.info(f"Scheduling retry for task {task.id} in {delay} seconds (attempt {task.retry_count})")
+        
+        # Reset task status for retry
+        task.status = PhaseStatus.PENDING
+        task.error_message = None
+        task.started_at = None
+        task.completed_at = None
+        
+        # In a real implementation, you would schedule the retry
+        # For now, we'll just log it
+        await asyncio.sleep(delay)
+
+    async def _handle_permanent_task_failure(self, task: WorkflowTask, workflow_state: WorkflowState, error_info: Dict[str, Any]):
+        """Handle a task that has permanently failed"""
+        logger.warning(f"Task {task.id} permanently failed after {task.retry_count} retries")
+        
+        # Check if this task failure affects the entire workflow
+        if task.priority.value >= 3:  # HIGH or CRITICAL priority
+            # Critical task failure might require human intervention
+            workflow_state.human_feedback_required = True
+            workflow_state.pending_approvals.append(f"task_failure_{task.id}")
+        
+        # Check if there are dependent tasks that need to be handled
+        dependent_tasks = [
+            t for t in workflow_state.tasks.values()
+            if task.id in t.depends_on
+        ]
+        
+        if dependent_tasks:
+            logger.warning(f"Task failure affects {len(dependent_tasks)} dependent tasks")
+            for dep_task in dependent_tasks:
+                # Mark dependent tasks as blocked or failed
+                if dep_task.status == PhaseStatus.PENDING:
+                    dep_task.status = PhaseStatus.FAILED
+                    dep_task.error_message = f"Dependency failed: {task.id}"
+
+    async def _schedule_workflow_retry(self, workflow_state: WorkflowState, error_info: Dict[str, Any]):
+        """Schedule a workflow for retry"""
+        # This would implement workflow-level retry logic
+        # For now, just log the intention
+        logger.info(f"Workflow retry scheduled for {workflow_state.session_id}")
+        
+        # Reset workflow to previous stable state
+        workflow_state.overall_status = PhaseStatus.PAUSED
+        workflow_state.human_feedback_required = True
+
+    def _determine_recovery_action(self, error_info: Dict[str, Any], workflow_state: WorkflowState) -> str:
+        """Determine the appropriate recovery action for a workflow error"""
+        error_severity = self._assess_error_severity(error_info)
+        
+        if error_severity == ErrorSeverity.CRITICAL:
+            return 'pause'  # Require human intervention
+        elif error_severity == ErrorSeverity.HIGH:
+            # Check if we've already tried recovery
+            recent_errors = self._get_recent_errors(workflow_state.session_id, hours=1)
+            if len(recent_errors) > 3:
+                return 'pause'  # Too many recent errors
+            else:
+                return 'retry'
+        else:
+            return 'retry'
+
+    def _assess_error_severity(self, error_info: Dict[str, Any]) -> ErrorSeverity:
+        """Assess the severity of an error"""
+        error_type = error_info['error_type']
+        error_msg = error_info['error_message'].lower()
+        
+        # Critical keywords
+        critical_keywords = ['corruption', 'security', 'authentication', 'authorization', 'disk space']
+        high_keywords = ['timeout', 'connection', 'network', 'memory']
+        
+        if any(keyword in error_msg for keyword in critical_keywords):
+            return ErrorSeverity.CRITICAL
+        elif error_type in [ErrorType.SYSTEM_ERROR, ErrorType.WORKFLOW_ERROR]:
+            return ErrorSeverity.HIGH
+        elif any(keyword in error_msg for keyword in high_keywords):
+            return ErrorSeverity.MEDIUM
+        else:
+            return ErrorSeverity.LOW
+
+    def _create_error_info(self, error_type: ErrorType, error: Exception, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Create standardized error information"""
+        return {
+            'error_type': error_type,
+            'error_class': error.__class__.__name__,
+            'error_message': str(error),
+            'timestamp': datetime.now().isoformat(),
+            'context': context,
+            'severity': self._assess_error_severity({
+                'error_type': error_type,
+                'error_message': str(error)
+            }).value
+        }
+
+    async def _log_error(self, error_info: Dict[str, Any]):
+        """Log error information and maintain error history"""
+        # Add to error history
+        self.error_history.append(error_info)
+        if len(self.error_history) > self.max_history_size:
+            self.error_history.pop(0)
+        
+        # Log based on severity
+        severity = ErrorSeverity(error_info['severity'])
+        if severity == ErrorSeverity.CRITICAL:
+            logger.critical(f"Critical error: {error_info['error_message']}")
+        elif severity == ErrorSeverity.HIGH:
+            logger.error(f"High severity error: {error_info['error_message']}")
+        elif severity == ErrorSeverity.MEDIUM:
+            logger.warning(f"Medium severity error: {error_info['error_message']}")
+        else:
+            logger.info(f"Low severity error: {error_info['error_message']}")
+
+    def _get_recent_errors(self, session_id: str, hours: int = 24) -> list:
+        """Get recent errors for a specific session"""
+        cutoff_time = datetime.now() - timedelta(hours=hours)
+        
+        recent_errors = []
+        for error in self.error_history:
+            error_time = datetime.fromisoformat(error['timestamp'])
+            if (error_time > cutoff_time and 
+                error['context'].get('session_id') == session_id):
+                recent_errors.append(error)
+        
+        return recent_errors
+
+    def get_error_statistics(self, session_id: Optional[str] = None) -> Dict[str, Any]:
+        """Get error statistics for analysis"""
+        if session_id:
+            errors = [e for e in self.error_history if e['context'].get('session_id') == session_id]
+        else:
+            errors = self.error_history
+        
+        if not errors:
+            return {'total_errors': 0}
+        
+        # Count by type
+        error_types = {}
+        severities = {}
+        recent_count = 0
+        recent_cutoff = datetime.now() - timedelta(hours=24)
+        
+        for error in errors:
+            error_type = error['error_type'].value
+            error_types[error_type] = error_types.get(error_type, 0) + 1
+            
+            severity = error['severity']
+            severities[severity] = severities.get(severity, 0) + 1
+            
+            error_time = datetime.fromisoformat(error['timestamp'])
+            if error_time > recent_cutoff:
+                recent_count += 1
+        
+        return {
+            'total_errors': len(errors),
+            'recent_errors_24h': recent_count,
+            'error_types': error_types,
+            'severities': severities,
+            'session_id': session_id
+        }
