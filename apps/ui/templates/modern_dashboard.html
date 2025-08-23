@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LawyerFactory - Modern Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .metric-change {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .metric-change.positive {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .metric-change.negative {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .activity-item {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .activity-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            stroke: #e2e8f0;
+            fill: transparent;
+            stroke-width: 8;
+            stroke-linecap: round;
+        }
+
+        .progress-ring-circle.progress {
+            stroke: #667eea;
+            stroke-dasharray: 283;
+            stroke-dashoffset: calc(283 - (283 * var(--progress)) / 100);
+            transition: stroke-dashoffset 0.5s ease-in-out;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .agent-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+        }
+
+        .agent-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            border: 2px solid white;
+        }
+
+        .agent-status.online {
+            background: #10b981;
+        }
+
+        .agent-status.offline {
+            background: #6b7280;
+        }
+
+        .agent-status.busy {
+            background: #f59e0b;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 24px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 16px;
+            bottom: -16px;
+            width: 2px;
+            background: #e2e8f0;
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+
+        .notification-bell {
+            position: relative;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .quick-action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .quick-action-btn {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: #374151;
+        }
+
+        .quick-action-btn:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .quick-action-icon {
+            width: 32px;
+            height: 32px;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .system-health {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .health-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .health-good {
+            background: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+        }
+
+        .health-warning {
+            background: #f59e0b;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+        }
+
+        .health-error {
+            background: #ef4444;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Modern Header -->
+    <header class="dashboard-header shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo and Brand -->
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold">⚖️ LawyerFactory</h1>
+                    </div>
+                    <div class="ml-8 system-health">
+                        <div class="health-indicator health-good pulse"></div>
+                        <span class="text-sm">All Systems Operational</span>
+                    </div>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="/" class="text-white hover:text-blue-200 transition-colors">Dashboard</a>
+                    <a href="/cases" class="text-white hover:text-blue-200 transition-colors">Cases</a>
+                    <a href="/orchestration" class="text-white hover:text-blue-200 transition-colors">AI Orchestration</a>
+                    <a href="/documents" class="text-white hover:text-blue-200 transition-colors">Documents</a>
+                </nav>
+
+                <!-- User Actions -->
+                <div class="flex items-center space-x-4">
+                    <!-- Notifications -->
+                    <button class="notification-bell p-2 rounded-full hover:bg-white/10 transition-colors">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        <span class="notification-badge">3</span>
+                    </button>
+
+                    <!-- User Menu -->
+                    <div class="flex items-center space-x-2">
+                        <div class="agent-avatar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            AI
+                        </div>
+                        <span class="text-sm">AI Maestro</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Welcome Section -->
+        <div class="mb-8 fade-in">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome back, Attorney!</h1>
+            <p class="text-gray-600">Here's what's happening with your AI-powered legal practice today.</p>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="metric-card">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="metric-value" id="active-cases">24</div>
+                        <div class="metric-label">Active Cases</div>
+                    </div>
+                    <div class="p-2 bg-blue-50 rounded-lg">
+                        <i data-lucide="folder-open" class="w-6 h-6 text-blue-600"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="metric-change positive">+12% from last week</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="metric-value" id="ai-efficiency">94%</div>
+                        <div class="metric-label">AI Efficiency</div>
+                    </div>
+                    <div class="p-2 bg-green-50 rounded-lg">
+                        <i data-lucide="cpu" class="w-6 h-6 text-green-600"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="metric-change positive">+2% from yesterday</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="metric-value" id="time-saved">127</div>
+                        <div class="metric-label">Hours Saved</div>
+                    </div>
+                    <div class="p-2 bg-purple-50 rounded-lg">
+                        <i data-lucide="clock" class="w-6 h-6 text-purple-600"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="metric-change positive">+18% this month</span>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="metric-value" id="success-rate">98.5%</div>
+                        <div class="metric-label">Success Rate</div>
+                    </div>
+                    <div class="p-2 bg-yellow-50 rounded-lg">
+                        <i data-lucide="target" class="w-6 h-6 text-yellow-600"></i>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="metric-change positive">+0.5% from last month</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Quick Actions & Recent Activity -->
+            <div class="space-y-8">
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+                    <div class="quick-action-grid">
+                        <a href="/intake" class="quick-action-btn">
+                            <i data-lucide="file-text" class="quick-action-icon"></i>
+                            <div class="font-medium">New Case</div>
+                            <div class="text-sm text-gray-500">Start intake process</div>
+                        </a>
+                        <a href="/orchestration" class="quick-action-btn">
+                            <i data-lucide="play-circle" class="quick-action-icon"></i>
+                            <div class="font-medium">AI Orchestration</div>
+                            <div class="text-sm text-gray-500">Launch AI agents</div>
+                        </a>
+                        <a href="/documents" class="quick-action-btn">
+                            <i data-lucide="search" class="quick-action-icon"></i>
+                            <div class="font-medium">Search Documents</div>
+                            <div class="text-sm text-gray-500">Find legal docs</div>
+                        </a>
+                        <a href="/analytics" class="quick-action-btn">
+                            <i data-lucide="bar-chart-3" class="quick-action-icon"></i>
+                            <div class="font-medium">View Analytics</div>
+                            <div class="text-sm text-gray-500">Performance insights</div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
+                    <div class="space-y-4">
+                        <div class="activity-item">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="agent-avatar" style="background: #10b981; font-size: 12px;">RW</div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Research completed</p>
+                                        <p class="text-sm text-gray-500">Tesla product liability case</p>
+                                    </div>
+                                </div>
+                                <span class="status-badge status-success">Success</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">2 minutes ago</p>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="agent-avatar" style="background: #f59e0b; font-size: 12px;">CV</div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Citation validation</p>
+                                        <p class="text-sm text-gray-500">Found 2 issues requiring review</p>
+                                    </div>
+                                </div>
+                                <span class="status-badge status-warning">Review</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">15 minutes ago</p>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="agent-avatar" style="background: #667eea; font-size: 12px;">WM</div>
+                                    <div>
+                                        <p class="font-medium text-gray-900">Document generation</p>
+                                        <p class="text-sm text-gray-500">Complaint draft completed</p>
+                                    </div>
+                                </div>
+                                <span class="status-badge status-success">Complete</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2">1 hour ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Column: Charts & Analytics -->
+            <div class="space-y-8">
+                <!-- AI Performance Chart -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">AI Performance Overview</h2>
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Case Progress -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Case Progress</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-700">Smith v. Tesla</span>
+                            <span class="text-sm text-gray-500">85%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: 85%"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-700">Johnson v. AutoCorp</span>
+                            <span class="text-sm text-gray-500">60%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-600 h-2 rounded-full" style="width: 60%"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-700">Brown v. MegaCorp</span>
+                            <span class="text-sm text-gray-500">30%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-yellow-600 h-2 rounded-full" style="width: 30%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: AI Agents Status & Timeline -->
+            <div class="space-y-8">
+                <!-- AI Agents Status -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">AI Agents Status</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="agent-avatar relative" style="background: #10b981;">
+                                    R
+                                    <div class="agent-status online"></div>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">Research Agent</p>
+                                    <p class="text-sm text-gray-500">Active</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-medium text-gray-900">98.5%</div>
+                                <div class="text-xs text-gray-500">Success Rate</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="agent-avatar relative" style="background: #f59e0b;">
+                                    W
+                                    <div class="agent-status busy"></div>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">Writing Agent</p>
+                                    <p class="text-sm text-gray-500">Busy</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-medium text-gray-900">94.2%</div>
+                                <div class="text-xs text-gray-500">Success Rate</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="agent-avatar relative" style="background: #667eea;">
+                                    C
+                                    <div class="agent-status online"></div>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">Citation Agent</p>
+                                    <p class="text-sm text-gray-500">Active</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-sm font-medium text-gray-900">96.8%</div>
+                                <div class="text-xs text-gray-500">Success Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Timeline -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">System Timeline</h2>
+                    <div class="space-y-4">
+                        <div class="timeline-item">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-medium text-gray-900">Case intake completed</p>
+                                    <p class="text-sm text-gray-500">Smith v. Tesla case data processed</p>
+                                </div>
+                                <span class="text-xs text-gray-400">2 min ago</span>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-medium text-gray-900">AI research initiated</p>
+                                    <p class="text-sm text-gray-500">Research agent activated for Tesla cases</p>
+                                </div>
+                                <span class="text-xs text-gray-400">5 min ago</span>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-medium text-gray-900">Document generation started</p>
+                                    <p class="text-sm text-gray-500">Complaint draft in progress</p>
+                                </div>
+                                <span class="text-xs text-gray-400">8 min ago</span>
+                            </div>
+                        </div>
+
+                        <div class="timeline-item">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-medium text-gray-900">Citation validation</p>
+                                    <p class="text-sm text-gray-500">Checking legal authorities</p>
+                                </div>
+                                <span class="text-xs text-gray-400">12 min ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Initialize performance chart
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const performanceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'AI Efficiency',
+                    data: [88, 90, 92, 91, 94, 94],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Success Rate',
+                    data: [95, 96, 97, 97, 98, 98.5],
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 85,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        // Real-time updates simulation
+        function updateMetrics() {
+            // Simulate real-time metric updates
+            const metrics = {
+                'active-cases': Math.floor(Math.random() * 10) + 20,
+                'ai-efficiency': Math.floor(Math.random() * 5) + 90,
+                'time-saved': Math.floor(Math.random() * 20) + 120,
+                'success-rate': (Math.random() * 2 + 97).toFixed(1)
+            };
+
+            Object.keys(metrics).forEach(metricId => {
+                const element = document.getElementById(metricId);
+                if (element) {
+                    element.textContent = metrics[metricId] + (metricId === 'success-rate' ? '%' : '');
+                }
+            });
+        }
+
+        // Update metrics every 30 seconds
+        setInterval(updateMetrics, 30000);
+
+        // Add fade-in animation to cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.metric-card, .activity-item');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('fade-in');
+                }, index * 100);
+            });
+        });
+
+        // Quick action handlers
+        function handleQuickAction(action) {
+            switch(action) {
+                case 'new-case':
+                    window.location.href = '/intake';
+                    break;
+                case 'orchestration':
+                    window.location.href = '/orchestration';
+                    break;
+                case 'search':
+                    // Focus search bar
+                    break;
+                case 'analytics':
+                    window.location.href = '/analytics';
+                    break;
+            }
+        }
+
+        // Notification handlers
+        function handleNotificationClick() {
+            // Show notifications panel
+            console.log('Notifications clicked');
+        }
+
+        console.log('Modern Dashboard initialized');
+    </script>
+</body>
+</html>

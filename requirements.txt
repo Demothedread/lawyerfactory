@@ -26,7 +26,7 @@ pymupdf==1.26.3
 
 
 # Encryption support (optional)
-sqlcipher-wheels
+sqlcipher3-wheels
 
 
 

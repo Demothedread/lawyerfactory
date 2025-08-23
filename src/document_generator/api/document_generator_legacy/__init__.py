@@ -1,1 +1,0 @@
-# This file marks the document_generator directory as a Python package.

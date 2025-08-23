@@ -1,0 +1,62 @@
+{
+  "summary": {
+    "total_rules": 3,
+    "disabled_rules": 1,
+    "any_any_rules": 1,
+    "rules_without_logging": 1,
+    "rules_without_security_profiles": 1,
+    "shadowed_rules": 2,
+    "redundant_rules": 2
+  },
+  "issues": [
+    {
+      "type": "any_any_rule",
+      "severity": "warning",
+      "description": "Rule 'Any-Any-Rule' allows traffic from any source to any destination using any application"
+    },
+    {
+      "type": "no_logging",
+      "severity": "warning",
+      "description": "Rule 'Any-Any-Rule' has no log setting configured"
+    },
+    {
+      "type": "no_security_profile",
+      "severity": "warning",
+      "description": "Rule 'Any-Any-Rule' has no security profile group assigned"
+    },
+    {
+      "type": "shadowed_rule",
+      "severity": "error",
+      "description": "Rule 'Any-Any-Rule' is shadowed by a previous rule"
+    },
+    {
+      "type": "redundant_rule",
+      "severity": "warning",
+      "description": "Rule 'Any-Any-Rule' may be redundant with: Allow-Web"
+    },
+    {
+      "type": "disabled_rule",
+      "severity": "info",
+      "description": "Rule 'Disabled-Rule' is disabled"
+    },
+    {
+      "type": "shadowed_rule",
+      "severity": "error",
+      "description": "Rule 'Disabled-Rule' is shadowed by a previous rule"
+    },
+    {
+      "type": "redundant_rule",
+      "severity": "warning",
+      "description": "Rule 'Disabled-Rule' may be redundant with: Any-Any-Rule"
+    }
+  ],
+  "recommendations": [
+    "Review and remove disabled rules to clean up the rulebase",
+    "Replace 'any-any' rules with more specific rules for better security",
+    "Configure logging for all rules to enable proper monitoring and troubleshooting",
+    "Assign security profiles to all rules for threat prevention and content filtering",
+    "Remove or reorder shadowed rules that will never be evaluated",
+    "Consolidate redundant rules to simplify management and improve performance"
+  ],
+  "rule_count": 3
+}

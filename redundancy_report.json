@@ -1,0 +1,5447 @@
+{
+  "generated_at": "2025-08-22T05:12:46.606989",
+  "total_files_analyzed": 0,
+  "redundant_files": [
+    {
+      "file": "maestro/bot_interface.py",
+      "type": "deprecated_shim",
+      "reason": "Auto-generated shim marked for removal",
+      "redirects_to": "unknown",
+      "size_lines": 10,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "maestro/bots/reader_bot.py",
+      "type": "deprecated_shim",
+      "reason": "Auto-generated shim marked for removal",
+      "redirects_to": "unknown",
+      "size_lines": 10,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "maestro/bots/maestro_bot.py",
+      "type": "deprecated_shim",
+      "reason": "Auto-generated shim marked for removal",
+      "redirects_to": "unknown",
+      "size_lines": 10,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "src/lawyerfactory/compose/maestro/enhanced_maestro.py",
+      "type": "duplicate_implementation",
+      "reason": "Multiple maestro implementations - keep the main one in compose/maestro",
+      "keep_instead": "maestro/enhanced_maestro.py",
+      "size_lines": 1651,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "src/lawyerfactory/phases/07_orchestration/maestro/enhanced_maestro.py",
+      "type": "duplicate_implementation",
+      "reason": "Multiple maestro implementations - keep the main one in compose/maestro",
+      "keep_instead": "maestro/enhanced_maestro.py",
+      "size_lines": 10,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "src/lawyerfactory/file_storage.py",
+      "type": "duplicate_implementation",
+      "reason": "Multiple file storage implementations - consolidate to infra/file_storage.py",
+      "keep_instead": "lawyerfactory/file-storage.py",
+      "size_lines": 9,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "src/lawyerfactory/infra/file_storage.py",
+      "type": "duplicate_implementation",
+      "reason": "Multiple file storage implementations - consolidate to infra/file_storage.py",
+      "keep_instead": "lawyerfactory/file-storage.py",
+      "size_lines": 115,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "src/lawyerfactory/infra/file_storage_api.py",
+      "type": "duplicate_implementation",
+      "reason": "Multiple file storage implementations - consolidate to infra/file_storage.py",
+      "keep_instead": "lawyerfactory/file-storage.py",
+      "size_lines": 312,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/LIBOPSCivil-273-CivilEfilingTipsForReducingRejectionsMAY2025.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 5807,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Court_Citing_guidelines.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 1901,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/.DS_Store",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 96,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/California-2025-SB511-Amended.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 10092,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Icon\r",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/CourtFiling_Topsheet_Packet.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 48141,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Tesla_FSD_Master_Bibliography.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 24,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/background/RegisteredAgent_Tesla.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 3777,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/background/.DS_Store",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 7,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/background/Legal Search API \u2013 CourtListener.com.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 6665,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/background/Level-of-Automation-052522-tag.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 7721,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/background/Summons-100.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 1295,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/background/Tipstoavoidrejection.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 5807,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/background/CADMV-DisengagementStatsAV-2023.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 12693,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/background/sc100_claimfordamages.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 9403,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/test_cases/tesla_workflow_test.py",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 250,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/test_cases/tesla_case_data.py",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 297,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/test_cases/__pycache__/tesla_workflow_test.cpython-311-pytest-7.4.2.pyc",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 294,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/test_cases/__pycache__/tesla_case_data.cpython-311.pyc",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 309,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Drafts/.DS_Store",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 5,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Drafts/Tesla\u2019s Pursuit of Level\u00a04 \u201cFull Self-Driving\u201d (FSD) \u2013 2022\u20132025 Evidence Table (1).docx",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 1098,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Drafts/Tesla\u2019s Self-Driving Tech_ Legal Battles, Regulatory Scrutiny, and Technical Insights.docx",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 1307,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Drafts/Tesla\u2019s Self-Driving Tech_ Legal Battles, Regulatory Scrutiny, and Technical Insights.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 3969,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Drafts/TeslaTheStory.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 2382,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Drafts/Statement of Facts/Tesla_StatementOfFacts-Macropicture-WorkInProgress.docx",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 571,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Tweets & Statements/@elonmusk.png",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 1068,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Tweets & Statements/Twitter_MuskDataset.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 404,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Tweets & Statements/2021-extremelyconfidentinLevel5.png",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 1239,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Tweets & Statements/TSLAQ12024_EarningsCall.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 12474,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Tweets & Statements/dataset_twitter-x-data-tweet-scraper-pay-per-result-cheapest_2025-08-03_16-26-47-758.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 310,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/car data/.DS_Store",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 3,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/car data/tesladatalog042724short.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 4668,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/car data/2024-04-26_briefly.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 159786,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/car data/3MonthPeriod_Safe Driving Score Data.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 436,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/car data/TeslaCrashpics.png",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 54348,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/car data/2024-04-26 Tesla Impact Report.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 2536,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/car data/Safety Score Data.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 433,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/.DS_Store",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 91,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Account Details/Access Your Payment Details.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 16169,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Account Details/Warranties.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 7,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Account Details/Customer Support Activity.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 11,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Account Details/Orders.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 4,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Account Details/Documents.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 13,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Account Details/Vehicle Details.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 2,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Account Details/Account Details.csv",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 7,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/evidence/Tesla-early-access-FSD-signinscreen.webp",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 716,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/evidence/.DS_Store",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 3,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/evidence/Your Full Self-Driving (Supervised) Trial starts now!.png",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 1606,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/evidence/Nov302024-SubmissionToTeslaLegal-NoticeofClaim7DaysBegins.jpg",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 7246,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/evidence/NHTSAReportonTesla-042524.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 5896,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/evidence/TeslaInvoiceMay7th-Newkeydidntrrequestit.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 1726,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/evidence/PAsadena-Preliminary Estimate.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 4713,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/evidence/ECF teslaamountowed.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 4671,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/evidence/STandingORder_NHTSA.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 13974,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/evidence/Reback_NHTSAFiling.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 796,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/Tesla Under Another Federal Investigation for Fraud Related to Self-Driving Claims.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 58184,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/-61225-Rogue' Tesla demonstration shows dangers to Texas roads.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 192936,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/May82024-NewsArticle-TeslaInvestsInLidar.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 36810,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/Inside the WSJ Tesla Autopilot Crash Investigation_ How We Analyzed Hundreds of Incidents - WSJ.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 151881,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/newsArt_Tesla13FatalAccidentsCausebyFSD_042624.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 16490,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/May2024-NewsArticle-LiDarPricesToBeHalvedby2025-Hesai.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 46801,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/Report_april152024-10PercentLaidOff.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 38362,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/100624-U.S. to probe Tesla's 'Full Self-Driving' system after pedestrian killed _ NPR.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 18869,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/Wapo-Tesla Autopilot crashes and recall raise questions about federal oversight - The Washington Post-062024.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 8053,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/TheVerge_Tesla_SelfDrivingIssue.png",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 9922,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/Wapo-Tesla employee in fiery crash may be first \u2018Full Self-Driving\u2019 death-102023.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 954998,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/NewsArt_Nytimes_AutopilotRenewedScrutiny.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 35697,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/Tesla 'Autopilot' crashes and fatalities surge, despite Musk's claims - The Washington Post-062023.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 6751,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/Tesla bought over $2 million worth of lidar sensors from Luminar this year _ The Verge.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 38357,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/ConsumerReports-Tesla Full Self Driving Review-2020-NotesSafetyTest",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 28953,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/Inside the final seconds of a deadly Tesla Autopilot crash - Washington Post.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 198135,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/News Artcles (Tesla)/NewsArt_Sept2021Jun23Updated-Inside Tesla_ How Elon Musk Pushed His Vision for Autopilot - The New York Times.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 81760,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/CaseLaw_Packet_Tesla.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 122695,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/CrespoVTesla.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 82464,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/.DS_Store",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 3,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/Tesla_Lawsuit_Example.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 229779,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/Second-Amended-SGO-2021-01_2023-04-05_2.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 31744,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/gov.uscourts.cand.310416.43.0.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 21963,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/PeopleVConagra_PublicNuisance.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 6094,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/CreateAIvBotAuto_Texas_TradeSecrets_FSD.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 25043,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/private:var:folders:nd:cm7x.textClipping",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 2,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/FloresvTesla_DeceptiveMarketing.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 13073,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/Lamontagne v. Tesla, Inc. et al, No. 3_2023cv00869 - Document 77 (N.D. Cal. 2024) __ Justia.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 268062,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/JooVTesla_complaint_Example.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 3539,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/Case-395482439-Tesla-Inc-vs-Martin-Tripp.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 3516,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Tesla Case Law/Tesla_Answer_gov.uscourts.caed.464536.6.0.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 3525,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Peer-Reviewed/EpilepticlikeSeizuresInFSD.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 17522,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/Peer-Reviewed/AddressingDriverDisengagementandProperSystemUse.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 20018,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/TeslaCommspdf.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 15692,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/TeslaConvo-ServiceComplete.jpeg",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 10049,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/May8-EmailChainwithPasadena-WaitingonOutcomeofWarrantyClaim.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 8985,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/.DS_Store",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 95,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/Tesla-Aug27-Payment.PNG",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 4229,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/Aug28-EmailtoPaymentResolution-SeekingHelpGoesUnanswered.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 3578,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/Tesla-LaysOutWhatHappened.PNG",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 6724,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/teslacomma_allApr28-May8.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 23037,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/May14-May20-PasadenaCollisionEmails-JReffortstogetResponsefromBurbank.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 6719,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/May29_PaymentResolutionSeekingHelp.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 4607,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/Gmail-thread-TeslaInsurance_ClaimClosureCL-18-922JPH-1.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 9030,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/Arbitration_OptOut.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 61267,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/TeslaInsurance-August13-ClaimClosure.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 4161,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/TeslaInsurance_DenialofClaimOfficial.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 770,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/0428-29_Thread_TeslaNopermissiontomovecar.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 25736,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/May29-EmailtoPaymentRes-PleaseHelp-Unanswered.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 4607,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/Main/All tesla comms/Tesla-EstimateSentOver.PNG",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 4845,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/tesla_internal/386374205-WgistleblowerHansen-letter.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 3270,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "Tesla/tesla_internal/Tesla_autodrive_commsplans.pdf",
+      "type": "case_specific",
+      "reason": "Tesla case-specific data file",
+      "size_lines": 4659,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/ruff/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/aiohttp/_websocket/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pymupdf/_build.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/thinc/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/thinc/tests/layers/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/thinc/tests/backends/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/thinc/tests/extra/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/thinc/tests/shims/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/thinc/tests/mypy/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/thinc/tests/mypy/modules/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/thinc/tests/model/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/thinc/tests/regression/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/thinc/tests/regression/issue519/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/thinc/extra/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/thinc/extra/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/tokenizers/tools/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/httpcore/_backends/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/Crypto/Math/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/language_data/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/readwrite/json_graph/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/readwrite/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/drawing/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/linalg/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/classes/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/tree/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/isomorphism/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/link_analysis/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/operators/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/connectivity/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/approximation/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/centrality/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/bipartite/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/components/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/traversal/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/shortest_paths/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/assortativity/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/community/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/coloring/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/algorithms/flow/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/utils/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/networkx/generators/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/huggingface_hub/inference/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/huggingface_hub/inference/_mcp/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/huggingface_hub/inference/_generated/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/dotenv/version.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/spec/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/templating/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/templating/security/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/templating/responses/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/templating/media_types/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/contrib/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/contrib/falcon/views.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/extensions/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/extensions/models/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/schema/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/deserializing/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/casting/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/validation/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openapi_core/unmarshalling/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/release.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/galgebra.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/series/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/series/benchmarks/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/crypto/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/core/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/core/benchmarks/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/unify/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/polys/domains/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/polys/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/polys/benchmarks/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/polys/numberfields/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/polys/agca/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/polys/matrices/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/concrete/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/holonomic/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/strategies/branch/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/strategies/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/ntheory/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/discrete/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/printing/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/printing/pretty/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/algebras/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/logic/algorithms/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/logic/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/solvers/diophantine/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/solvers/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/solvers/ode/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/solvers/benchmarks/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/codegen/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/multipledispatch/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/liealgebras/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/utilities/mathml/data/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/utilities/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/utilities/_compilation/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/testing/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/integrals/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/integrals/benchmarks/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/assumptions/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/sandbox/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/plotting/pygletplot/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/plotting/intervalmath/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/plotting/backends/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/plotting/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/sets/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/sets/handlers/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/benchmarks/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/combinatorics/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/interactive/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/functions/special/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/functions/special/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/functions/special/benchmarks/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/functions/combinatorial/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/functions/combinatorial/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/functions/elementary/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/functions/elementary/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/functions/elementary/benchmarks/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/tensor/array/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/tensor/array/expressions/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/tensor/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/geometry/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/physics/hep/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/physics/hep/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/physics/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/physics/mechanics/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/physics/units/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/physics/biomechanics/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/physics/continuum_mechanics/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/physics/vector/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/physics/control/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/physics/optics/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/physics/quantum/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/external/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/parsing/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/parsing/fortran/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/parsing/c/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/calculus/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/simplify/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/vector/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/categories/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/diffgeom/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/stats/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/stats/sampling/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/stats/sampling/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/matrices/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/matrices/benchmarks/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sympy/matrices/expressions/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/murmurhash/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/PyPDF2/_version.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/grpc/_grpcio_metadata.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/mpmath/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/preshed/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/preshed/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_client/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_client/uploader/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_client/conversions/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_client/models/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_client/local/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_client/local/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_client/http/models/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_client/http/api/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/cymem/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/cymem/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/fsspec/implementations/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/google/protobuf/testdata/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/google/protobuf/util/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/google/protobuf/pyext/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/google/protobuf/compiler/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/referencing/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/starlette/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/markdown_it/_compat.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/markdown_it/cli/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/markdown_it/common/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/fastmcp/server/auth/providers/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/fastmcp/utilities/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/wasabi/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/idna/package_data.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/werkzeug/middleware/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/werkzeug/sansio/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/wheel/vendored/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/wheel/vendored/packaging/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_thread_safe_fork.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_export/pass_infra/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_export/serde/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_dispatch/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_custom_op/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/nn/quantized/_reference/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/nn/quantized/dynamic/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/nn/backends/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/nn/quantizable/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/nn/intrinsic/qat/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/nn/intrinsic/quantized/dynamic/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/onnx/_internal/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/onnx/_internal/exporter/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/onnx/_internal/exporter/_torchlib/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_vendor/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/distributed/nn/jit/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/distributed/nn/jit/templates/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/distributed/nn/api/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/distributed/elastic/agent/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/distributed/algorithms/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/distributed/algorithms/_checkpoint/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/distributed/algorithms/model_averaging/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/distributed/algorithms/_optimizer_overlap/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/distributed/algorithms/_quantization/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/distributed/_shard/sharding_plan/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/distributed/_shard/sharding_spec/chunk_sharding_spec_ops/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/autograd/_functions/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/fx/experimental/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/fx/experimental/migrate_gradual_types/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/fx/passes/infra/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/fx/passes/backends/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/fx/passes/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/fx/passes/utils/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/fx/passes/dialect/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/fx/passes/dialect/common/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/cuda/error.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/cuda/sparse.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/backends/_coreml/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/backends/xeon/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/backends/_nnapi/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_inductor/runtime/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_inductor/codegen/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_inductor/codegen/cuda/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_inductor/codegen/cuda/cutlass_lib_extensions/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_inductor/codegen/xpu/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_inductor/codegen/rocm/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_inductor/compile_worker/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_inductor/autoheuristic/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_inductor/autoheuristic/artifacts/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_inductor/fx_passes/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_inductor/fx_passes/serialized_patterns/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_inductor/kernel/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_inductor/package/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/utils/benchmark/op_fuzzers/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/utils/benchmark/utils/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/utils/benchmark/utils/valgrind_wrapper/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/utils/benchmark/examples/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/utils/_sympy/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/utils/serialization/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/utils/hipify/version.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/utils/hipify/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/utils/bottleneck/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/utils/viz/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/utils/jit/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/utils/data/datapipes/utils/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/utils/_strobelight/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/contrib/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/testing/_internal/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/testing/_internal/generated/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/testing/_internal/test_module/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/testing/_internal/distributed/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/testing/_internal/distributed/_tensor/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/testing/_internal/distributed/nn/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/testing/_internal/distributed/nn/api/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/testing/_internal/distributed/_shard/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/testing/_internal/distributed/rpc/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/testing/_internal/distributed/rpc/jit/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/testing/_internal/distributed/rpc/examples/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/testing/_internal/codegen/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/testing/_internal/data/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/jit/_passes/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_dynamo/backends/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_dynamo/repro/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/nn/qat/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/nn/qat/dynamic/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/nn/quantized/dynamic/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/nn/quantizable/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/nn/intrinsic/qat/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/nn/intrinsic/quantized/dynamic/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/nn/sparse/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/ns/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/ns/fx/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/quantization/backend_config/observation_type.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/quantization/pt2e/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/quantization/fx/_model_report/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/pruning/sparsifier/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/pruning/_experimental/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/pruning/_experimental/data_sparsifier/lightning/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/pruning/_experimental/data_sparsifier/lightning/callbacks/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/pruning/_experimental/activation_sparsifier/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/ao/pruning/scheduler/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_refs/nn/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/nested/_internal/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torch/_strobelight/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/mcp/server/fastmcp/utilities/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/mcp/shared/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/mcp/os/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/mcp/os/posix/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/mcp/os/win32/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/mcp/client/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/isort/deprecated/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/engineio/async_drivers/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/distutils/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/linalg/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/ma/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/_pyinstaller/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/typing/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/f2py/__version__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/testing/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/testing/_private/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/lib/user_array.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/lib/npyio.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/lib/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/fft/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/random/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/random/tests/data/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/matrixlib/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/numpy/polynomial/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/botocore/vendored/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/anyio/_backends/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/anyio/_core/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/anyio/streams/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_internal/network/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_internal/utils/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_internal/models/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_internal/operations/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_internal/operations/install/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_internal/operations/build/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_internal/resolution/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_internal/resolution/legacy/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_internal/resolution/resolvelib/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_internal/index/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_vendor/idna/package_data.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_vendor/urllib3/contrib/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_vendor/urllib3/contrib/_securetransport/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_vendor/urllib3/packages/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pip/_vendor/urllib3/packages/backports/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/_built_with_meson.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/tree/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/metrics/cluster/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/metrics/_plot/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/metrics/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/ensemble/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/ensemble/_hist_gradient_boosting/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/experimental/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/cluster/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/cluster/_hdbscan/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/feature_extraction/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/_loss/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/semi_supervised/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/gaussian_process/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/compose/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_561/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_62/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_42074/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_40589/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_40675/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_1/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_42585/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_292/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_1590/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_61/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_40945/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_1119/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_2/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_3/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/datasets/tests/data/openml/id_40966/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/externals/array_api_compat/dask/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/externals/array_api_compat/common/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/externals/_scipy/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/externals/_scipy/sparse/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/externals/_scipy/sparse/csgraph/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/externals/array_api_extra/_lib/_utils/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/externals/_packaging/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/linear_model/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/impute/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/utils/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/utils/_repr_html/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/covariance/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/neural_network/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/feature_selection/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/inspection/_plot/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/inspection/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/svm/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/manifold/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/mixture/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/preprocessing/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/frozen/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/model_selection/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/_build_utils/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/decomposition/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/cross_decomposition/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sklearn/neighbors/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/joblib/test/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/joblib/test/data/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/joblib/externals/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/sniffio/_tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/transformers/kernels/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/transformers/models/dialogpt/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/transformers/models/megatron_gpt2/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/transformers/models/dit/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/transformers/models/deprecated/bort/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/jsonschema/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/multipart/multipart.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/multipart/decoders.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/multipart/exceptions.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/tqdm/_dist_ver.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/srsly/about.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/srsly/ujson/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/srsly/msgpack/_version.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/srsly/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/srsly/tests/ujson/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/srsly/tests/msgpack/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/srsly/tests/cloudpickle/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/srsly/tests/ruamel_yaml/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/fastapi/templating.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/fastapi/staticfiles.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/fastapi/testclient.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/fastapi/middleware/gzip.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/fastapi/middleware/cors.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/fastapi/middleware/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/fastapi/middleware/wsgi.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/fastapi/dependencies/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/fastapi/openapi/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_openapi_client/exceptions.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_openapi_client/models/models.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_openapi_client/models/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_openapi_client/api/points_api.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_openapi_client/api/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/qdrant_openapi_client/api/collections_api.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/uvicorn/middleware/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/uvicorn/lifespan/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/uvicorn/loops/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/uvicorn/protocols/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/uvicorn/protocols/websockets/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/uvicorn/protocols/http/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torchgen/selective_build/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torchgen/packaged/autograd/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torchgen/static_runtime/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torchgen/operator_versions/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torchgen/api/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/torchgen/aoti/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pydantic_settings/version.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/urllib3/contrib/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/urllib3/contrib/_securetransport/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/urllib3/packages/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/urllib3/packages/backports/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/weasel/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/weasel/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/weasel/tests/cli/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/jsonschema_specifications/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/compat/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/_vendor/inflect/compat/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/_vendor/importlib_metadata/compat/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/_vendor/wheel/vendored/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/_vendor/wheel/vendored/packaging/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/_vendor/zipp/compat/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/_vendor/backports/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/_vendor/backports/tarfile/compat/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/tests/script-with-bom.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/tests/mod_with_constant.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/tests/compat/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/tests/config/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/tests/integration/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/_distutils/tests/test_versionpredicate.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/setuptools/_distutils/tests/compat/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pkg_resources/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/pipeline/_parser_internals/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/pipeline/_edit_tree_internals/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/pipeline/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/tokenizer/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/training/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/serialize/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/parser/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/matcher/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/sl/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/sk/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ur/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/kmr/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/pl/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/vi/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/sq/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/sv/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ga/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/he/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ms/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/hy/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/am/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/am/test_exception.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/nn/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/da/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ky/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/gu/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/grc/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ja/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/el/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/lv/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/lb/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/it/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ca/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/is/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/cs/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ru/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/tl/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ro/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/hsb/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/yo/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/sa/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/pt/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/zh/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/uk/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/sr/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ml/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/bo/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/mk/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ar/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/hr/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/hu/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/nl/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/bn/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ne/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/af/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/nb/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/hi/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/de/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ko/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/fi/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/id/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/fr/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/lg/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/es/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/et/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/en/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/fa/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/lt/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/fo/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/eu/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/la/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/xx/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/tt/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/dsb/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ta/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/th/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/tr/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ti/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/lang/ti/test_exception.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/vocab_vectors/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/doc/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/morphology/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/tests/package/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/cli/project/run.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/cli/project/pull.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/cli/project/dvc.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/cli/project/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/cli/project/remote_storage.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/cli/project/assets.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/cli/project/document.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/cli/project/clone.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/cli/project/push.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy/lang/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/_distutils_hack/override.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/authlib/oidc/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/authlib/integrations/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/authlib/common/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy_loggers/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy_loggers/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/greenlet/platform/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/eventlet/green/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/eventlet/green/OpenSSL/version.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/eventlet/green/OpenSSL/tsafe.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/eventlet/green/OpenSSL/crypto.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/eventlet/zipkin/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/eventlet/zipkin/_thrift/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/eventlet/zipkin/_thrift/zipkinCore/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/catalogue/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pydantic/_internal/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pydantic/deprecated/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/reportlab/graphics/samples/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy_legacy/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy_legacy/layers/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy_legacy/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy_legacy/tests/pipeline/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy_legacy/tests/parser/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy_legacy/architectures/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/spacy_legacy/components/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/typing_inspection/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pypdf/_version.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/lxml/includes/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/lxml/includes/libxml/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/lxml/includes/libxslt/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/lxml/includes/libexslt/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/lxml/includes/extlibs/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/odr/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/cluster/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/linalg/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/optimize/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/optimize/_shgo_lib/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/optimize/_highspy/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/optimize/_trustregion_constr/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/integrate/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/integrate/_ivp/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/constants/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/datasets/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/io/arff/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/io/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/io/_harwell_boeing/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/io/matlab/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/_lib/array_api_compat/dask/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/_lib/array_api_compat/common/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/_lib/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/_lib/array_api_extra/_lib/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/_lib/array_api_extra/_lib/_utils/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/_lib/pyprima/cobyla/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/_lib/pyprima/common/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/special/_precompute/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/special/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/special/tests/data/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/differentiate/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/fftpack/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/interpolate/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/fft/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/fft/_pocketfft/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/sparse/linalg/_eigen/arpack/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/sparse/linalg/_eigen/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/sparse/linalg/_eigen/lobpcg/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/sparse/linalg/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/sparse/linalg/_isolve/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/sparse/linalg/_dsolve/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/sparse/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/sparse/csgraph/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/spatial/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/spatial/transform/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/signal/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/stats/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/scipy/stats/_unuran/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/functorch/experimental/ops.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/functorch/_src/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/docx/oxml/text/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/docx/opc/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/docx/opc/parts/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/docx/dml/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/docx/parts/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/docx/text/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/blis/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/confection/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pyupgrade/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/pyupgrade/_plugins/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/email_validator/version.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openai/cli/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openai/cli/_api/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/openai/cli/_tools/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/_pytest/_py/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/docstring_parser/tests/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 1 lines of actual content",
+      "size_lines": 1,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "law_venv/lib/python3.11/site-packages/boto3/resources/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "maestro/agent_registry.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "maestro/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "maestro/enhanced_maestro.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "trash/empty_files/app.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "lawyerfactory/file-storage.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "src/lawyerfactory/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "src/lawyerfactory/compose/bots/__init__.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    },
+    {
+      "file": "src/claims_matrix/comprehensive_claims_matrix_integration.py",
+      "type": "minimal_content",
+      "reason": "Only 0 lines of actual content",
+      "size_lines": 0,
+      "action": "stage_to_trash"
+    }
+  ],
+  "total_redundant": 776
+}

@@ -1,0 +1,540 @@
+/* ===== STEAMPUNK INDUSTRIAL FRAMEWORK ===== */
+
+:root {
+    --steam-primary: #b6b04f;
+    --steam-secondary: #77274a;
+    --steam-accent: #ff6b35;
+    --steam-success: #10b981;
+    --steam-warning: #f59e0b;
+    --steam-error: #ef4444;
+    --steam-metal: #2c2c2c;
+    --steam-metal-light: #3a3a3a;
+    --steam-brass: #cd853f;
+    --steam-copper: #b87333;
+    --steam-rust: #8b4513;
+    --steam-shadow: rgba(0,0,0,0.6);
+    --steam-glow: rgba(255,107,53,0.3);
+    --steam-glow-success: rgba(16, 185, 129, 0.3);
+    --steam-glow-warning: rgba(245, 158, 11, 0.3);
+    --steam-glow-error: rgba(239, 68, 68, 0.3);
+}
+
+/* ===== FUNCTIONAL STATUS INDICATORS ===== */
+
+/* Status Gear - Shows system processing state */
+.status-gear {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle at 50% 50%, #666 30%, #444 70%, #222 100%);
+    border: 3px solid #333;
+    border-radius: 50%;
+    box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.1),
+        0 4px 8px var(--steam-shadow);
+    transition: all 0.3s ease;
+}
+
+.status-gear::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 20px; height: 20px;
+    background: #333;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.2);
+}
+
+.status-gear::after {
+    content: '⚙';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    color: #888;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    transition: all 0.3s ease;
+}
+
+/* Status states for gears */
+.status-gear.idle {
+    animation: none;
+}
+
+.status-gear.processing {
+    animation: gear-rotate 2s linear infinite;
+    border-color: var(--steam-accent);
+    box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.1),
+        0 0 15px var(--steam-glow),
+        0 4px 8px var(--steam-shadow);
+}
+
+.status-gear.processing::after {
+    color: var(--steam-accent);
+    text-shadow: 0 0 8px var(--steam-accent);
+}
+
+.status-gear.success {
+    border-color: var(--steam-success);
+    box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.1),
+        0 0 15px var(--steam-glow-success),
+        0 4px 8px var(--steam-shadow);
+}
+
+.status-gear.success::after {
+    color: var(--steam-success);
+    text-shadow: 0 0 8px var(--steam-success);
+}
+
+.status-gear.warning {
+    border-color: var(--steam-warning);
+    box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.1),
+        0 0 15px var(--steam-glow-warning),
+        0 4px 8px var(--steam-shadow);
+}
+
+.status-gear.warning::after {
+    color: var(--steam-warning);
+    text-shadow: 0 0 8px var(--steam-warning);
+}
+
+.status-gear.error {
+    border-color: var(--steam-error);
+    box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.1),
+        0 0 15px var(--steam-glow-error),
+        0 4px 8px var(--steam-shadow);
+}
+
+.status-gear.error::after {
+    color: var(--steam-error);
+    text-shadow: 0 0 8px var(--steam-error);
+}
+
+/* Counter Frame - Shows upload counts and statistics */
+.counter-frame {
+    position: relative;
+    background:
+        linear-gradient(135deg, var(--steam-metal) 0%, var(--steam-metal-light) 100%),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 50%);
+    border: 2px solid #555;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.3),
+        0 4px 8px var(--steam-shadow);
+    min-width: 120px;
+    text-align: center;
+}
+
+.counter-frame::before {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px; bottom: -2px;
+    background: linear-gradient(45deg, var(--steam-brass), var(--steam-copper), var(--steam-brass));
+    border-radius: 10px;
+    z-index: -1;
+    opacity: 0.3;
+}
+
+.counter-frame .label {
+    font-size: 10px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    font-family: 'Courier New', monospace;
+}
+
+.counter-frame .value {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--steam-primary);
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.counter-frame .value.success {
+    color: var(--steam-success);
+}
+
+.counter-frame .value.warning {
+    color: var(--steam-warning);
+}
+
+.counter-frame .value.error {
+    color: var(--steam-error);
+}
+
+/* Odometer-style Counter */
+.odometer-counter {
+    position: relative;
+    background: var(--steam-metal);
+    border: 2px solid #444;
+    border-radius: 6px;
+    padding: 8px 12px;
+    box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.5),
+        0 2px 4px var(--steam-shadow);
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    color: var(--steam-primary);
+    text-align: center;
+    min-width: 80px;
+}
+
+.odometer-counter::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255,255,255,0.1) 50%,
+        transparent 100%);
+    pointer-events: none;
+}
+
+.odometer-counter.updating {
+    animation: odometer-flicker 0.3s ease-in-out;
+}
+
+@keyframes odometer-flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Status Gauge - Shows progress and health */
+.status-gauge {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 30% 30%, #4a4a4a, #2a2a2a),
+        conic-gradient(from 0deg, #333 0deg, #666 180deg, #333 360deg);
+    border: 4px solid #1a1a1a;
+    box-shadow:
+        inset 0 3px 6px rgba(0,0,0,0.5),
+        0 4px 12px var(--steam-shadow);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.status-gauge::before {
+    content: '';
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 30% 30%, #6a6a6a, #3a3a3a),
+        linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+    border: 3px solid #555;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.status-gauge .gauge-needle {
+    position: absolute;
+    width: 3px;
+    height: 40%;
+    background: linear-gradient(180deg, #ff4444 0%, #cc0000 100%);
+    transform-origin: bottom center;
+    top: 10%;
+    left: 50%;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 6px rgba(255, 68, 68, 0.8);
+}
+
+.status-gauge .gauge-needle::before {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    background: #ff4444;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 8px rgba(255, 68, 68, 0.9);
+}
+
+/* Status gauge states */
+.status-gauge.idle .gauge-needle {
+    transform: rotate(-90deg);
+}
+
+.status-gauge.processing .gauge-needle {
+    transform: rotate(-45deg);
+    background: linear-gradient(180deg, var(--steam-accent) 0%, #cc5500 100%);
+    box-shadow: 0 0 8px var(--steam-accent);
+}
+
+.status-gauge.processing .gauge-needle::before {
+    background: var(--steam-accent);
+    box-shadow: 0 0 10px var(--steam-accent);
+}
+
+.status-gauge.success .gauge-needle {
+    transform: rotate(45deg);
+    background: linear-gradient(180deg, var(--steam-success) 0%, #0d9668 100%);
+    box-shadow: 0 0 8px var(--steam-success);
+}
+
+.status-gauge.success .gauge-needle::before {
+    background: var(--steam-success);
+    box-shadow: 0 0 10px var(--steam-success);
+}
+
+.status-gauge.warning .gauge-needle {
+    transform: rotate(0deg);
+    background: linear-gradient(180deg, var(--steam-warning) 0%, #d97706 100%);
+    box-shadow: 0 0 8px var(--steam-warning);
+}
+
+.status-gauge.warning .gauge-needle::before {
+    background: var(--steam-warning);
+    box-shadow: 0 0 10px var(--steam-warning);
+}
+
+.status-gauge.error .gauge-needle {
+    transform: rotate(-90deg);
+    background: linear-gradient(180deg, var(--steam-error) 0%, #dc2626 100%);
+    box-shadow: 0 0 8px var(--steam-error);
+}
+
+.status-gauge.error .gauge-needle::before {
+    background: var(--steam-error);
+    box-shadow: 0 0 10px var(--steam-error);
+}
+
+/* Activity Indicator - Shows real-time system activity */
+.activity-indicator {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, #666 30%, #333 70%);
+    border: 2px solid #222;
+    border-radius: 50%;
+    box-shadow:
+        inset 0 1px 2px rgba(255,255,255,0.1),
+        0 2px 4px var(--steam-shadow);
+    transition: all 0.3s ease;
+}
+
+.activity-indicator::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 6px; height: 6px;
+    background: #999;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 4px rgba(153, 153, 153, 0.5);
+}
+
+.activity-indicator.active {
+    background: radial-gradient(circle, var(--steam-accent) 30%, #cc5500 70%);
+    border-color: var(--steam-accent);
+    box-shadow:
+        inset 0 1px 2px rgba(255,255,255,0.1),
+        0 0 8px var(--steam-glow),
+        0 2px 4px var(--steam-shadow);
+}
+
+.activity-indicator.active::before {
+    background: var(--steam-accent);
+    box-shadow: 0 0 6px var(--steam-accent);
+    animation: activity-pulse 1.5s ease-in-out infinite;
+}
+
+.activity-indicator.success {
+    background: radial-gradient(circle, var(--steam-success) 30%, #0d9668 70%);
+    border-color: var(--steam-success);
+    box-shadow:
+        inset 0 1px 2px rgba(255,255,255,0.1),
+        0 0 8px var(--steam-glow-success),
+        0 2px 4px var(--steam-shadow);
+}
+
+.activity-indicator.success::before {
+    background: var(--steam-success);
+    box-shadow: 0 0 6px var(--steam-success);
+}
+
+.activity-indicator.warning {
+    background: radial-gradient(circle, var(--steam-warning) 30%, #d97706 70%);
+    border-color: var(--steam-warning);
+    box-shadow:
+        inset 0 1px 2px rgba(255,255,255,0.1),
+        0 0 8px var(--steam-glow-warning),
+        0 2px 4px var(--steam-shadow);
+}
+
+.activity-indicator.warning::before {
+    background: var(--steam-warning);
+    box-shadow: 0 0 6px var(--steam-warning);
+}
+
+.activity-indicator.error {
+    background: radial-gradient(circle, var(--steam-error) 30%, #dc2626 70%);
+    border-color: var(--steam-error);
+    box-shadow:
+        inset 0 1px 2px rgba(255,255,255,0.1),
+        0 0 8px var(--steam-glow-error),
+        0 2px 4px var(--steam-shadow);
+}
+
+.activity-indicator.error::before {
+    background: var(--steam-error);
+    box-shadow: 0 0 6px var(--steam-error);
+}
+
+/* Progress Pipe - Shows workflow progress */
+.progress-pipe {
+    position: relative;
+    height: 20px;
+    background:
+        linear-gradient(90deg,
+            var(--steam-rust) 0%,
+            var(--steam-brass) 15%,
+            var(--steam-rust) 30%,
+            var(--steam-copper) 45%,
+            var(--steam-rust) 60%,
+            var(--steam-brass) 75%,
+            var(--steam-rust) 100%);
+    border: 3px solid #654321;
+    border-radius: 25px;
+    box-shadow:
+        inset 0 3px 6px rgba(0,0,0,0.4),
+        0 4px 12px var(--steam-shadow);
+    overflow: hidden;
+}
+
+.progress-pipe .progress-fill {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    background:
+        linear-gradient(90deg,
+            transparent 0%,
+            rgba(255,255,255,0.4) 20%,
+            transparent 40%,
+            rgba(255,255,255,0.4) 60%,
+            transparent 80%,
+            rgba(255,255,255,0.4) 100%);
+    width: 0%;
+    transition: width 0.5s ease;
+    animation: steam-flow 3s linear infinite;
+}
+
+.progress-pipe .progress-fill.success {
+    background:
+        linear-gradient(90deg,
+            transparent 0%,
+            var(--steam-glow-success) 20%,
+            transparent 40%,
+            var(--steam-glow-success) 60%,
+            transparent 80%,
+            var(--steam-glow-success) 100%);
+}
+
+.progress-pipe .progress-fill.warning {
+    background:
+        linear-gradient(90deg,
+            transparent 0%,
+            var(--steam-glow-warning) 20%,
+            transparent 40%,
+            var(--steam-glow-warning) 60%,
+            transparent 80%,
+            var(--steam-glow-warning) 100%);
+}
+
+.progress-pipe .progress-fill.error {
+    background:
+        linear-gradient(90deg,
+            transparent 0%,
+            var(--steam-glow-error) 20%,
+            transparent 40%,
+            var(--steam-glow-error) 60%,
+            transparent 80%,
+            var(--steam-glow-error) 100%);
+}
+
+/* Status Panel - Groups multiple indicators */
+.status-panel {
+    background:
+        linear-gradient(135deg, var(--steam-metal) 0%, var(--steam-metal-light) 100%),
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 50%);
+    border: 2px solid #555;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.3),
+        0 4px 12px var(--steam-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.status-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+        repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 15px,
+            rgba(255,255,255,0.02) 15px,
+            rgba(255,255,255,0.02) 30px
+        );
+    pointer-events: none;
+}
+
+.status-panel .panel-title {
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.status-panel .indicator-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Keyframes */
+@keyframes gear-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes activity-pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.7; }
+}
+
+@keyframes steam-flow {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+@keyframes odometer-flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}

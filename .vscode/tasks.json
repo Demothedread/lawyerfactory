@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "format-python",
+			"type": "shell",
+			"command": "python -m isort \"${workspaceFolder}\" && python -m black \"${workspaceFolder}\" && python -m autopep8 --in-place --aggressive --aggressive \"${workspaceFolder}\"",
+			"presentation": {
+				"echo": true,
+				"reveal": "silent",
+				"focus": false,
+				"panel": "shared"
+			},
+			"problemMatcher": []
+		}
+	]
+}

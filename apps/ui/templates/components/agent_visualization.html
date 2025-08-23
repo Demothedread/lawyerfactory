@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Agent Status Visualization</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .visualization-container {
+            background: rgba(30, 41, 59, 0.95);
+            border-radius: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            overflow: hidden;
+            height: 600px;
+            position: relative;
+        }
+
+        .agent-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.3));
+        }
+
+        .agent-node:hover {
+            filter: drop-shadow(0 0 12px rgba(102, 126, 234, 0.5));
+            transform: scale(1.05);
+        }
+
+        .agent-node.active {
+            filter: drop-shadow(0 0 16px rgba(34, 197, 94, 0.6));
+        }
+
+        .agent-node.busy {
+            filter: drop-shadow(0 0 16px rgba(245, 158, 11, 0.6));
+        }
+
+        .agent-node.error {
+            filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.6));
+        }
+
+        .agent-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-avatar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .agent-avatar.research {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        .agent-avatar.writing {
+            background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+        }
+
+        .agent-avatar.citation {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .agent-avatar.orchestration {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .agent-status {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 3px solid #0f172a;
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+        }
+
+        .status-online {
+            background: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+        }
+
+        .status-busy {
+            background: #f59e0b;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
+        }
+
+        .status-offline {
+            background: #64748b;
+        }
+
+        .status-error {
+            background: #ef4444;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+        }
+
+        .agent-label {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .connection-line {
+            stroke: rgba(102, 126, 234, 0.4);
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+
+        .connection-line.active {
+            stroke: rgba(34, 197, 94, 0.8);
+            stroke-width: 3;
+        }
+
+        .connection-line.busy {
+            stroke: rgba(245, 158, 11, 0.8);
+            stroke-width: 3;
+        }
+
+        .data-flow {
+            stroke: #667eea;
+            stroke-width: 3;
+            stroke-dasharray: 10, 5;
+            animation: flow 2s linear infinite;
+        }
+
+        @keyframes flow {
+            to {
+                stroke-dashoffset: -15;
+            }
+        }
+
+        .control-panel {
+            background: rgba(30, 41, 59, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .control-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 16px;
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .control-btn {
+            padding: 12px 16px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 8px;
+            background: rgba(102, 126, 234, 0.1);
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .control-btn:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .control-btn.active {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .agent-details {
+            background: rgba(30, 41, 59, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .detail-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .detail-info h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin: 0 0 4px 0;
+        }
+
+        .detail-info p {
+            font-size: 14px;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 12px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .task-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .task-item.completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .task-item.active {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .task-name {
+            font-weight: 500;
+        }
+
+        .task-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+
+        .task-status.completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .task-status.active {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+
+        .task-status.pending {
+            background: rgba(148, 163, 184, 0.1);
+            color: #94a3b8;
+        }
+
+        .log-panel {
+            background: rgba(30, 41, 59, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-header {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 12px;
+        }
+
+        .log-content {
+            flex: 1;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            padding: 4px 8px;
+            margin-bottom: 2px;
+            border-radius: 4px;
+            color: #94a3b8;
+        }
+
+        .log-entry.info {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .log-entry.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .log-entry.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .log-entry.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .log-time {
+            color: #64748b;
+            margin-right: 8px;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        .legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 41, 59, 0.95);
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8 fade-in">
+            <h1 class="text-4xl font-bold mb-2">AI Agent Network</h1>
+            <p class="text-gray-400">Real-time visualization of AI agent collaboration and task execution</p>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel fade-in">
+            <h2 class="control-title">Agent Controls</h2>
+            <div class="control-buttons">
+                <button class="control-btn" onclick="startWorkflow()">
+                    <i data-lucide="play" class="w-4 h-4 inline-block mr-2"></i>
+                    Start Workflow
+                </button>
+                <button class="control-btn" onclick="pauseWorkflow()">
+                    <i data-lucide="pause" class="w-4 h-4 inline-block mr-2"></i>
+                    Pause All
+                </button>
+                <button class="control-btn" onclick="resetAgents()">
+                    <i data-lucide="rotate-cw" class="w-4 h-4 inline-block mr-2"></i>
+                    Reset Agents
+                </button>
+                <button class="control-btn" onclick="toggleAutoMode()">
+                    <i data-lucide="zap" class="w-4 h-4 inline-block mr-2"></i>
+                    Auto Mode
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Visualization -->
+        <div class="visualization-container fade-in">
+            <svg id="agent-network" width="100%" height="100%"></svg>
+
+            <!-- Legend -->
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color status-online"></div>
+                    <span>Online</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color status-busy"></div>
+                    <span>Busy</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color status-offline"></div>
+                    <span>Offline</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color status-error"></div>
+                    <span>Error</span>
+                </div>
+            </div>
+
+            <!-- Tooltip -->
+            <div id="tooltip" class="tooltip"></div>
+        </div>
+
+        <!-- Agent Details Panel -->
+        <div class="agent-details fade-in">
+            <div class="detail-header">
+                <div class="detail-avatar">R</div>
+                <div class="detail-info">
+                    <h3>Research Agent</h3>
+                    <p>Currently analyzing Tesla product liability cases</p>
+                </div>
+                <div class="agent-status status-online pulse"></div>
+            </div>
+
+            <div class="metric-grid">
+                <div class="metric-item">
+                    <span class="metric-value">47</span>
+                    <span class="metric-label">Cases Found</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-value">94.2%</span>
+                    <span class="metric-label">Accuracy</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-value">1.3s</span>
+                    <span class="metric-label">Avg Response</span>
+                </div>
+                <div class="metric-item">
+                    <span class="metric-value">89%</span>
+                    <span class="metric-label">Relevance</span>
+                </div>
+            </div>
+
+            <div class="task-list">
+                <div class="task-item active">
+                    <span class="task-name">Search Tesla product liability cases</span>
+                    <span class="task-status active">Active</span>
+                </div>
+                <div class="task-item">
+                    <span class="task-name">Analyze California jurisdiction requirements</span>
+                    <span class="task-status pending">Pending</span>
+                </div>
+                <div class="task-item">
+                    <span class="task-name">Extract relevant precedents</span>
+                    <span class="task-status pending">Pending</span>
+                </div>
+                <div class="task-item completed">
+                    <span class="task-name">Connect to legal databases</span>
+                    <span class="task-status completed">Completed</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="log-panel fade-in">
+            <div class="log-header">System Activity Log</div>
+            <div class="log-content" id="activity-log">
+                <div class="log-entry info">
+                    <span class="log-time">14:32:15</span>
+                    Research Agent connected to CourtListener API
+                </div>
+                <div class="log-entry success">
+                    <span class="log-time">14:32:14</span>
+                    Citation Agent initialized successfully
+                </div>
+                <div class="log-entry info">
+                    <span class="log-time">14:32:12</span>
+                    Writing Agent loading templates...
+                </div>
+                <div class="log-entry warning">
+                    <span class="log-time">14:32:10</span>
+                    High memory usage detected - optimizing...
+                </div>
+                <div class="log-entry success">
+                    <span class="log-time">14:32:08</span>
+                    All agents ready for task execution
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        // Agent network data
+        const agents = [
+            { id: 'research', name: 'Research Agent', x: 200, y: 150, status: 'online', type: 'research' },
+            { id: 'writing', name: 'Writing Agent', x: 500, y: 150, status: 'busy', type: 'writing' },
+            { id: 'citation', name: 'Citation Agent', x: 350, y: 300, status: 'online', type: 'citation' },
+            { id: 'orchestration', name: 'Orchestration Agent', x: 350, y: 50, status: 'online', type: 'orchestration' }
+        ];
+
+        const connections = [
+            { source: 'orchestration', target: 'research', status: 'active' },
+            { source: 'orchestration', target: 'writing', status: 'busy' },
+            { source: 'research', target: 'citation', status: 'active' },
+            { source: 'writing', target: 'citation', status: 'active' }
+        ];
+
+        // Initialize D3 visualization
+        const svg = d3.select('#agent-network');
+        const width = svg.node().getBoundingClientRect().width;
+        const height = svg.node().getBoundingClientRect().height;
+
+        // Create arrowhead marker
+        svg.append('defs').append('marker')
+            .attr('id', 'arrowhead')
+            .attr('viewBox', '0 -5 10 10')
+            .attr('refX', 20)
+            .attr('refY', 0)
+            .attr('markerWidth', 6)
+            .attr('markerHeight', 6)
+            .attr('orient', 'auto')
+            .append('path')
+            .attr('d', 'M0,-5L10,0L0,5')
+            .attr('fill', 'rgba(102, 126, 234, 0.6)');
+
+        // Draw connections
+        const linkGroup = svg.append('g').attr('class', 'connections');
+
+        function updateConnections() {
+            const links = linkGroup.selectAll('.connection-line')
+                .data(connections);
+
+            links.enter()
+                .append('line')
+                .attr('class', 'connection-line')
+                .attr('x1', d => agents.find(a => a.id === d.source).x)
+                .attr('y1', d => agents.find(a => a.id === d.source).y)
+                .attr('x2', d => agents.find(a => a.id === d.target).x)
+                .attr('y2', d => agents.find(a => a.id === d.target).y)
+                .attr('class', d => `connection-line ${d.status}`);
+
+            links.attr('class', d => `connection-line ${d.status}`);
+        }
+
+        // Draw agent nodes
+        const nodeGroup = svg.append('g').attr('class', 'nodes');
+
+        function updateNodes() {
+            const nodes = nodeGroup.selectAll('.agent-node')
+                .data(agents);
+
+            const nodeEnter = nodes.enter()
+                .append('g')
+                .attr('class', 'agent-node')
+                .attr('transform', d => `translate(${d.x},${d.y})`)
+                .on('mouseover', showTooltip)
+                .on('mouseout', hideTooltip)
+                .on('click', showAgentDetails);
+
+            nodeEnter.append('circle')
+                .attr('r', 35)
+                .attr('fill', 'none')
+                .attr('stroke', '#667eea')
+                .attr('stroke-width', 2);
+
+            nodeEnter.append('circle')
+                .attr('r', 30)
+                .attr('class', d => `agent-avatar ${d.type}`)
+                .text(d => d.name.charAt(0));
+
+            nodeEnter.append('text')
+                .attr('class', 'agent-label')
+                .attr('dy', 60)
+                .text(d => d.name);
+
+            // Add status indicators
+            nodeEnter.append('circle')
+                .attr('class', d => `agent-status status-${d.status}`)
+                .attr('cx', 25)
+                .attr('cy', -25)
+                .attr('r', 8);
+
+            nodes.attr('class', d => `agent-node ${d.status}`);
+        }
+
+        // Tooltip functionality
+        const tooltip = d3.select('#tooltip');
+
+        function showTooltip(event, d) {
+            tooltip
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px')
+                .html(`
+                    <div><strong>${d.name}</strong></div>
+                    <div>Status: ${d.status}</div>
+                    <div>Type: ${d.type}</div>
+                `)
+                .classed('show', true);
+        }
+
+        function hideTooltip() {
+            tooltip.classed('show', false);
+        }
+
+        function showAgentDetails(event, d) {
+            // Update agent details panel
+            const detailAvatar = document.querySelector('.detail-avatar');
+            const detailName = document.querySelector('.detail-info h3');
+            const detailDesc = document.querySelector('.detail-info p');
+
+            detailAvatar.textContent = d.name.charAt(0);
+            detailName.textContent = d.name;
+            detailDesc.textContent = `Currently ${d.status} - Processing tasks`;
+
+            // Update agent status indicator
+            const statusIndicator = document.querySelector('.agent-details .agent-status');
+            statusIndicator.className = `agent-status status-${d.status}`;
+
+            console.log(`Selected agent: ${d.name}`);
+        }
+
+        // Initialize visualization
+        updateConnections();
+        updateNodes();
+
+        // Control functions
+        function startWorkflow() {
+            console.log('Starting workflow...');
+            // Simulate workflow start
+            agents[0].status = 'busy';
+            connections[0].status = 'busy';
+            updateNodes();
+            updateConnections();
+            addLogEntry('info', 'Workflow started - Research Agent activated');
+        }
+
+        function pauseWorkflow() {
+            console.log('Pausing workflow...');
+            agents.forEach(agent => agent.status = 'online');
+            connections.forEach(conn => conn.status = 'active');
+            updateNodes();
+            updateConnections();
+            addLogEntry('warning', 'All agents paused');
+        }
+
+        function resetAgents() {
+            console.log('Resetting agents...');
+            agents.forEach(agent => agent.status = 'online');
+            connections.forEach(conn => conn.status = 'active');
+            updateNodes();
+            updateConnections();
+            addLogEntry('success', 'All agents reset to idle state');
+        }
+
+        function toggleAutoMode() {
+            console.log('Toggling auto mode...');
+            addLogEntry('info', 'Auto mode enabled - Agents will coordinate automatically');
+        }
+
+        // Activity log functions
+        function addLogEntry(type, message) {
+            const logContent = document.getElementById('activity-log');
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `<span class="log-time">${timeString}</span>${message}`;
+
+            logContent.appendChild(logEntry);
+            logContent.scrollTop = logContent.scrollHeight;
+        }
+
+        // Simulate real-time updates
+        function simulateActivity() {
+            const activities = [
+                { type: 'info', message: 'Research Agent found 3 new relevant cases' },
+                { type: 'success', message: 'Citation validation completed successfully' },
+                { type: 'info', message: 'Writing Agent generating document section' },
+                { type: 'warning', message: 'High CPU usage detected - optimizing performance' }
+            ];
+
+            const randomActivity = activities[Math.floor(Math.random() * activities.length)];
+            addLogEntry(randomActivity.type, randomActivity.message);
+        }
+
+        // Update every 5-10 seconds
+        setInterval(simulateActivity, Math.random() * 5000 + 5000);
+
+        // Simulate agent status changes
+        function simulateStatusChange() {
+            const randomAgent = agents[Math.floor(Math.random() * agents.length)];
+            const statuses = ['online', 'busy', 'error'];
+            const newStatus = statuses[Math.floor(Math.random() * statuses.length)];
+
+            randomAgent.status = newStatus;
+            updateNodes();
+
+            addLogEntry('info', `${randomAgent.name} status changed to ${newStatus}`);
+        }
+
+        // Update agent statuses every 15-30 seconds
+        setInterval(simulateStatusChange, Math.random() * 15000 + 15000);
+
+        console.log('Interactive Agent Visualization initialized');
+    </script>
+</body>
+</html>

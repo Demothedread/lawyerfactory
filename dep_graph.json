@@ -1,0 +1,329 @@
+{
+  "nodes": [
+    {
+      "id": "app.py",
+      "type": "entrypoint",
+      "domain": "root",
+      "imports": []
+    },
+    {
+      "id": "knowledge_graph.py",
+      "type": "module",
+      "domain": "knowledge_graph",
+      "imports": [],
+      "target_location": "src/knowledge_graph/api/knowledge_graph.py"
+    },
+    {
+      "id": "lawyerfactory/knowledge_graph.py",
+      "type": "module", 
+      "domain": "knowledge_graph",
+      "imports": [],
+      "target_location": "src/knowledge_graph/api/knowledge_graph.py",
+      "merge_with": "knowledge_graph.py"
+    },
+    {
+      "id": "enhanced_knowledge_graph.py",
+      "type": "module",
+      "domain": "knowledge_graph", 
+      "imports": ["knowledge_graph"],
+      "target_location": "src/knowledge_graph/api/enhanced_knowledge_graph.py"
+    },
+    {
+      "id": "knowledge_graph_extensions.py",
+      "type": "module",
+      "domain": "knowledge_graph",
+      "imports": ["enhanced_knowledge_graph"],
+      "target_location": "src/knowledge_graph/api/knowledge_graph_extensions.py"
+    },
+    {
+      "id": "knowledge_graph_integration.py", 
+      "type": "module",
+      "domain": "knowledge_graph",
+      "imports": ["enhanced_knowledge_graph"],
+      "target_location": "src/knowledge_graph/api/knowledge_graph_integration.py"
+    },
+    {
+      "id": "lawyerfactory/enhanced_workflow.py",
+      "type": "module",
+      "domain": "workflow",
+      "imports": ["lawyerfactory.knowledge_graph", "lawyerfactory.document_generator"],
+      "target_location": "src/workflow/api/enhanced_workflow.py"
+    },
+    {
+      "id": "lawyerfactory/workflow.py", 
+      "type": "module",
+      "domain": "workflow",
+      "imports": [],
+      "target_location": "src/workflow/api/workflow.py"
+    },
+    {
+      "id": "lawyerfactory/document_generator/ai_document_generator.py",
+      "type": "module",
+      "domain": "document_generator",
+      "imports": ["lawyerfactory.document_generator.modules"],
+      "target_location": "src/document_generator/api/ai_document_generator.py"
+    },
+    {
+      "id": "lawyerfactory/document_generator/generator.py",
+      "type": "module", 
+      "domain": "document_generator",
+      "imports": ["modules"],
+      "target_location": "src/document_generator/api/generator.py"
+    },
+    {
+      "id": "document_export_system.py",
+      "type": "module",
+      "domain": "document_generator",
+      "imports": [],
+      "target_location": "src/document_generator/api/document_export_system.py"
+    },
+    {
+      "id": "enhanced_draft_processor.py",
+      "type": "module",
+      "domain": "document_generator", 
+      "imports": [],
+      "target_location": "src/document_generator/api/enhanced_draft_processor.py"
+    },
+    {
+      "id": "lawyerfactory/file-storage.py",
+      "type": "module",
+      "domain": "storage",
+      "imports": [],
+      "target_location": "src/storage/api/file_storage.py"
+    },
+    {
+      "id": "maestro/bots/ingest-server.py",
+      "type": "module",
+      "domain": "ingestion",
+      "imports": [],
+      "target_location": "src/ingestion/api/ingest_server.py"
+    },
+    {
+      "id": "maestro/bots/ai_document_agent.py",
+      "type": "module",
+      "domain": "ingestion",
+      "imports": ["lawyerfactory.document_generator.ai_document_generator"],
+      "target_location": "src/ingestion/api/ai_document_agent.py"
+    },
+    {
+      "id": "maestro/bots/writer_bot.py",
+      "type": "module", 
+      "domain": "ingestion",
+      "imports": ["lawyerfactory.document_generator.modules.fact_synthesis", "lawyerfactory.document_generator.modules.legal_theory_mapping"],
+      "target_location": "src/ingestion/api/writer_bot.py"
+    },
+    {
+      "id": "maestro/bots/legal_editor.py",
+      "type": "module",
+      "domain": "ingestion", 
+      "imports": ["lawyerfactory.document_generator.modules.compliance_checker"],
+      "target_location": "src/ingestion/api/legal_editor.py"
+    },
+    {
+      "id": "lawyerfactory/models.py",
+      "type": "module",
+      "domain": "shared",
+      "imports": [],
+      "target_location": "src/shared/models.py"
+    },
+    {
+      "id": "lawyerfactory/agent_config_system.py",
+      "type": "module",
+      "domain": "shared", 
+      "imports": [],
+      "target_location": "src/shared/agent_config_system.py"
+    },
+    {
+      "id": "lawyerfactory/document_type_framework.py",
+      "type": "module",
+      "domain": "shared",
+      "imports": [],
+      "target_location": "src/shared/document_type_framework.py"
+    },
+    {
+      "id": "tests/test_enhanced_integration.py",
+      "type": "test",
+      "domain": "tests",
+      "imports": ["lawyerfactory.enhanced_workflow"]
+    },
+    {
+      "id": "tests/test_comprehensive_integration.py", 
+      "type": "test",
+      "domain": "tests",
+      "imports": ["lawyerfactory.enhanced_workflow", "lawyerfactory.document_generator.generator"]
+    },
+    {
+      "id": "tests/test_ai_document_integration.py",
+      "type": "test",
+      "domain": "tests", 
+      "imports": ["lawyerfactory.enhanced_workflow"]
+    },
+    {
+      "id": "tests/test_workflow.py",
+      "type": "test",
+      "domain": "tests",
+      "imports": ["lawyerfactory.workflow"]
+    },
+    {
+      "id": "tests/test_kanban.py",
+      "type": "test", 
+      "domain": "tests",
+      "imports": ["lawyerfactory.kanban_cli"]
+    }
+  ],
+  "edges": [
+    {
+      "from": "enhanced_knowledge_graph.py",
+      "to": "knowledge_graph.py",
+      "type": "import"
+    },
+    {
+      "from": "knowledge_graph_extensions.py", 
+      "to": "enhanced_knowledge_graph.py",
+      "type": "import"
+    },
+    {
+      "from": "knowledge_graph_integration.py",
+      "to": "enhanced_knowledge_graph.py", 
+      "type": "import"
+    },
+    {
+      "from": "lawyerfactory/enhanced_workflow.py",
+      "to": "lawyerfactory/knowledge_graph.py",
+      "type": "import"
+    },
+    {
+      "from": "lawyerfactory/enhanced_workflow.py",
+      "to": "lawyerfactory/document_generator/ai_document_generator.py",
+      "type": "import"
+    },
+    {
+      "from": "maestro/bots/ai_document_agent.py",
+      "to": "lawyerfactory/document_generator/ai_document_generator.py", 
+      "type": "import"
+    },
+    {
+      "from": "maestro/bots/writer_bot.py",
+      "to": "lawyerfactory/document_generator/modules/fact_synthesis.py",
+      "type": "import"
+    },
+    {
+      "from": "maestro/bots/writer_bot.py",
+      "to": "lawyerfactory/document_generator/modules/legal_theory_mapping.py",
+      "type": "import"
+    },
+    {
+      "from": "maestro/bots/legal_editor.py",
+      "to": "lawyerfactory/document_generator/modules/compliance_checker.py",
+      "type": "import"
+    },
+    {
+      "from": "tests/test_enhanced_integration.py",
+      "to": "lawyerfactory/enhanced_workflow.py",
+      "type": "import"
+    },
+    {
+      "from": "tests/test_comprehensive_integration.py",
+      "to": "lawyerfactory/enhanced_workflow.py", 
+      "type": "import"
+    },
+    {
+      "from": "tests/test_comprehensive_integration.py",
+      "to": "lawyerfactory/document_generator/generator.py",
+      "type": "import"
+    },
+    {
+      "from": "tests/test_ai_document_integration.py",
+      "to": "lawyerfactory/enhanced_workflow.py",
+      "type": "import" 
+    },
+    {
+      "from": "tests/test_workflow.py",
+      "to": "lawyerfactory/workflow.py",
+      "type": "import"
+    },
+    {
+      "from": "tests/test_kanban.py",
+      "to": "lawyerfactory/kanban_cli.py",
+      "type": "import"
+    }
+  ],
+  "clusters": {
+    "knowledge_graph": [
+      "knowledge_graph.py",
+      "lawyerfactory/knowledge_graph.py", 
+      "enhanced_knowledge_graph.py",
+      "knowledge_graph_extensions.py",
+      "knowledge_graph_integration.py"
+    ],
+    "document_generator": [
+      "lawyerfactory/document_generator/ai_document_generator.py",
+      "lawyerfactory/document_generator/generator.py",
+      "document_export_system.py",
+      "enhanced_draft_processor.py"
+    ],
+    "workflow": [
+      "lawyerfactory/enhanced_workflow.py",
+      "lawyerfactory/workflow.py"
+    ],
+    "storage": [
+      "lawyerfactory/file-storage.py"
+    ],
+    "ingestion": [
+      "maestro/bots/ingest-server.py",
+      "maestro/bots/ai_document_agent.py", 
+      "maestro/bots/writer_bot.py",
+      "maestro/bots/legal_editor.py"
+    ],
+    "shared": [
+      "lawyerfactory/models.py",
+      "lawyerfactory/agent_config_system.py",
+      "lawyerfactory/document_type_framework.py"
+    ],
+    "tests": [
+      "tests/test_enhanced_integration.py",
+      "tests/test_comprehensive_integration.py",
+      "tests/test_ai_document_integration.py", 
+      "tests/test_workflow.py",
+      "tests/test_kanban.py"
+    ]
+  },
+  "cycles": [],
+  "import_update_needed": [
+    {
+      "file": "tests/test_enhanced_integration.py",
+      "old_import": "from lawyerfactory.enhanced_workflow import EnhancedWorkflowManager",
+      "new_import": "from src.workflow.api.enhanced_workflow import EnhancedWorkflowManager"
+    },
+    {
+      "file": "tests/test_comprehensive_integration.py",
+      "old_import": "from lawyerfactory.enhanced_workflow import EnhancedWorkflowManager", 
+      "new_import": "from src.workflow.api.enhanced_workflow import EnhancedWorkflowManager"
+    },
+    {
+      "file": "tests/test_ai_document_integration.py",
+      "old_import": "from lawyerfactory.enhanced_workflow import EnhancedWorkflowManager",
+      "new_import": "from src.workflow.api.enhanced_workflow import EnhancedWorkflowManager"
+    },
+    {
+      "file": "tests/test_workflow.py",
+      "old_import": "from lawyerfactory.workflow import progress_task, is_complete",
+      "new_import": "from src.workflow.api.workflow import progress_task, is_complete"
+    },
+    {
+      "file": "maestro/bots/ai_document_agent.py",
+      "old_import": "from lawyerfactory.document_generator.ai_document_generator import AIDocumentGenerator",
+      "new_import": "from src.document_generator.api.ai_document_generator import AIDocumentGenerator"
+    },
+    {
+      "file": "maestro/bots/writer_bot.py",
+      "old_import": "from lawyerfactory.document_generator.modules.fact_synthesis import synthesize_facts",
+      "new_import": "from src.document_generator.api.modules.fact_synthesis import synthesize_facts"
+    },
+    {
+      "file": "maestro/bots/legal_editor.py", 
+      "old_import": "from lawyerfactory.document_generator.modules.compliance_checker import check_rule_12b6, validate_citations, flag_for_review",
+      "new_import": "from src.document_generator.api.modules.compliance_checker import check_rule_12b6, validate_citations, flag_for_review"
+    }
+  ]
+}

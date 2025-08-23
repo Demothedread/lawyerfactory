@@ -1,152 +1,244 @@
-# Proposed Tree Structure (After Reorganization)
+# Proposed Directory Structure - LawyerFactory
 
-## New Domain-Oriented Layout
+## Overview
+This document proposes a reorganized directory structure following the workflow's organization heuristics. The system is a sequenced pipeline (legal workflow), so the primary organization is by execution order (phases), with secondary organization by module type within each phase.
 
-### /src (New organized structure)
+## Current Issues Identified
+1. **Multiple locations for similar functionality**:
+   - Maestro implementations in 3 different locations
+   - File storage implementations scattered across multiple files
+   - Knowledge graph components in both `src/knowledge_graph/` and `src/lawyerfactory/kg/`
+
+2. **Mixed organizational patterns**:
+   - Some code organized by phase (`src/lawyerfactory/phases/`)
+   - Some code organized by function (`src/lawyerfactory/compose/`)
+   - Some code in root-level directories (`maestro/`, `lawyerfactory/`)
+
+3. **Deep nesting**:
+   - Some paths exceed 4-5 levels deep
+   - Complex relative imports
+
+## Proposed Structure
+
 ```
-src/
-├── knowledge_graph/
-│   └── api/
+/src/lawyerfactory/                    # Main application package
+├── __init__.py
+├── config/                             # Configuration management
+│   ├── __init__.py
+│   ├── settings.py
+│   └── deployment.py
+├── shared/                             # Shared utilities and base classes
+│   ├── __init__.py
+│   ├── base_classes.py
+│   ├── utilities.py
+│   ├── constants.py
+│   └── exceptions.py
+├── phases/                             # Primary organization by workflow phases
+│   ├── __init__.py
+│   ├── 01_intake/
+│   │   ├── __init__.py
+│   │   ├── api/                        # API endpoints for intake
+│   │   │   ├── __init__.py
+│   │   │   ├── routes.py
+│   │   │   └── models.py
+│   │   ├── services/                   # Business logic for intake
+│   │   │   ├── __init__.py
+│   │   │   ├── document_processor.py
+│   │   │   ├── intake_validator.py
+│   │   │   └── evidence_extractor.py
+│   │   ├── repositories/               # Data access for intake
+│   │   │   ├── __init__.py
+│   │   │   ├── intake_repository.py
+│   │   │   └── evidence_repository.py
+│   │   └── ui/                         # UI components for intake
+│   │       ├── __init__.py
+│   │       ├── forms.py
+│   │       └── intake_dashboard.py
+│   ├── 02_research/
+│   │   ├── __init__.py
+│   │   ├── api/
+│   │   ├── services/                   # Research agents and retrievers
+│   │   │   ├── research_bot.py
+│   │   │   ├── caselaw_researcher.py
+│   │   │   ├── citation_formatter.py
+│   │   │   └── cache.py
+│   │   ├── repositories/
+│   │   └── ui/
+│   ├── 03_outline/
+│   │   ├── __init__.py
+│   │   ├── api/
+│   │   ├── services/                   # Claims analysis and outline generation
+│   │   │   ├── claims_matrix.py
+│   │   │   ├── cause_of_action_engine.py
+│   │   │   ├── outline_generator.py
+│   │   │   └── shotlist_generator.py
+│   │   ├── repositories/
+│   │   └── ui/
+│   ├── 04_human_review/
+│   │   ├── __init__.py
+│   │   ├── api/
+│   │   ├── services/
+│   │   ├── repositories/
+│   │   └── ui/                         # Human review interfaces
+│   │       ├── attorney_review_interface.py
+│   │       └── review_dashboard.py
+│   ├── 05_drafting/
+│   │   ├── __init__.py
+│   │   ├── api/
+│   │   ├── services/                   # Writing and editing agents
+│   │   │   ├── writer_bot.py
+│   │   │   ├── editor_bot.py
+│   │   │   ├── procedure_bot.py
+│   │   │   └── prompt_integrator.py
+│   │   ├── repositories/
+│   │   └── ui/
+│   ├── 06_post_production/
+│   │   ├── __init__.py
+│   │   ├── api/
+│   │   ├── services/                   # Formatting and validation
+│   │   │   ├── document_formatter.py
+│   │   │   ├── legal_validator.py
+│   │   │   ├── pdf_generator.py
+│   │   │   └── citations.py
+│   │   ├── repositories/
+│   │   └── ui/
+│   └── 07_orchestration/
 │       ├── __init__.py
-│       ├── knowledge_graph.py (consolidated from root + lawyerfactory)
-│       ├── enhanced_knowledge_graph.py (moved from root)
-│       ├── knowledge_graph_extensions.py (moved from root)
-│       └── knowledge_graph_integration.py (moved from root)
-├── document_generator/
-│   └── api/
-│       ├── __init__.py
-│       ├── ai_document_generator.py (from lawyerfactory/document_generator/)
-│       ├── generator.py (from lawyerfactory/document_generator/)
-│       ├── document_export_system.py (moved from root)
-│       ├── enhanced_draft_processor.py (moved from root)
-│       └── modules/ (entire subtree from lawyerfactory/document_generator/)
-├── storage/
-│   └── api/
-│       ├── __init__.py
-│       └── file_storage.py (renamed from file-storage.py, moved from lawyerfactory/)
-├── workflow/
-│   └── api/
-│       ├── __init__.py
-│       ├── enhanced_workflow.py (moved from lawyerfactory/)
-│       └── workflow.py (moved from lawyerfactory/)
-├── ingestion/
-│   └── api/
-│       ├── __init__.py
-│       └── ingest_server.py (moved from maestro/bots/)
-└── shared/
+│       ├── api/
+│       ├── services/                   # Workflow orchestration
+│       │   ├── maestro.py              # Main orchestrator
+│       │   ├── workflow_engine.py
+│       │   ├── state_manager.py
+│       │   └── error_handler.py
+│       ├── repositories/
+│       └── ui/                         # Orchestration dashboard
+│           └── orchestration_dashboard.py
+├── knowledge_graph/                    # Knowledge graph functionality
+│   ├── __init__.py
+│   ├── api/                            # KG API endpoints
+│   │   ├── __init__.py
+│   │   ├── knowledge_graph.py
+│   │   ├── jurisdiction_manager.py
+│   │   └── legal_relationship_detector.py
+│   ├── services/                       # KG business logic
+│   │   ├── __init__.py
+│   │   ├── enhanced_graph.py
+│   │   ├── graph_builder.py
+│   │   └── graph_integration.py
+│   ├── repositories/                   # KG data access
+│   │   ├── __init__.py
+│   │   ├── graph_repository.py
+│   │   └── vector_repository.py
+│   └── ui/                             # KG UI components
+│       └── kg_visualization.py
+├── infrastructure/                     # Infrastructure components
+│   ├── __init__.py
+│   ├── api/                            # Infrastructure APIs
+│   │   ├── __init__.py
+│   │   ├── file_storage.py
+│   │   └── database.py
+│   ├── services/                       # Infrastructure services
+│   │   ├── __init__.py
+│   │   ├── file_storage_manager.py
+│   │   ├── database_manager.py
+│   │   └── repository.py
+│   └── ui/                             # Infrastructure UI
+│       └── file_browser.py
+└── ui/                                 # Global UI components
     ├── __init__.py
-    ├── models.py (moved from lawyerfactory/)
-    ├── agent_config_system.py (moved from lawyerfactory/)
-    └── document_type_framework.py (moved from lawyerfactory/)
+    ├── static/                         # Static assets
+    │   ├── css/
+    │   ├── js/
+    │   └── assets/
+    ├── templates/                      # HTML templates
+    │   ├── components/
+    │   └── layouts/
+    └── apps/                           # UI applications
+        ├── claims_matrix/
+        └── orchestration_dashboard/
+
+# Separate directories (not under /src)
+├── tests/                              # All tests
+│   ├── __init__.py
+│   ├── unit/
+│   ├── integration/
+│   ├── e2e/
+│   └── fixtures/
+├── docs/                               # Documentation
+│   ├── api/
+│   ├── architecture/
+│   ├── development/
+│   ├── components/
+│   └── examples/
+├── scripts/                            # Utility scripts
+├── configs/                            # Configuration files
+├── data/                               # Data files
+│   ├── kg/
+│   └── vectors/
+└── tools/                              # Development tools
 ```
 
-### Root Level (Cleaned up)
-```
-├── app.py (main entrypoint - preserved)
-├── deploy_lawyerfactory.py (deployment script - preserved)
-├── start_enhanced_factory.py (startup script - preserved)
-├── tests/ (preserved as-is)
-├── docs/ (preserved, consolidated)
-├── static/ (preserved as-is)
-├── templates/ (preserved as-is)
-├── Tesla/ (case data - preserved as-is)
-├── trash/ (staging area for unused files)
-└── src/ (new organized structure)
-```
+## Key Improvements
 
-## Migration Mapping
+### 1. Clear Separation of Concerns
+- **Phases**: Primary organization by workflow execution order
+- **Domains**: Secondary organization by functionality (api, services, repositories, ui)
+- **Shared**: Common utilities and base classes
+- **Infrastructure**: Technical infrastructure components
 
-### Knowledge Graph Domain
-- `knowledge_graph.py` → `src/knowledge_graph/api/knowledge_graph.py`
-- `lawyerfactory/knowledge_graph.py` → **MERGED** into `src/knowledge_graph/api/knowledge_graph.py`
-- `enhanced_knowledge_graph.py` → `src/knowledge_graph/api/enhanced_knowledge_graph.py`
-- `knowledge_graph_extensions.py` → `src/knowledge_graph/api/knowledge_graph_extensions.py`
-- `knowledge_graph_integration.py` → `src/knowledge_graph/api/knowledge_graph_integration.py`
+### 2. Consistent Structure
+- Every phase follows the same pattern: `api/`, `services/`, `repositories/`, `ui/`
+- Clear boundaries between different types of code
+- Predictable file locations
 
-### Document Generation Domain
-- `lawyerfactory/document_generator/` → `src/document_generator/api/`
-- `document_export_system.py` → `src/document_generator/api/document_export_system.py`
-- `enhanced_draft_processor.py` → `src/document_generator/api/enhanced_draft_processor.py`
+### 3. Reduced Nesting
+- Maximum depth reduced from 6-7 levels to 4-5 levels
+- Clearer import paths
+- Easier navigation
 
-### Storage Domain
-- `lawyerfactory/file-storage.py` → `src/storage/api/file_storage.py` (renamed)
+### 4. Consolidated Functionality
+- Single location for maestro orchestration
+- Consolidated file storage implementation
+- Unified knowledge graph components
 
-### Workflow Domain
-- `lawyerfactory/enhanced_workflow.py` → `src/workflow/api/enhanced_workflow.py`
-- `lawyerfactory/workflow.py` → `src/workflow/api/workflow.py`
+## Migration Strategy
 
-### Ingestion Domain
-- `maestro/bots/ingest-server.py` → `src/ingestion/api/ingest_server.py`
+### Phase 1: Create New Structure
+1. Create the new directory structure
+2. Copy files to new locations (don't move yet)
+3. Update import statements in copied files
 
-### Shared Components
-- `lawyerfactory/models.py` → `src/shared/models.py`
-- `lawyerfactory/agent_config_system.py` → `src/shared/agent_config_system.py`
-- `lawyerfactory/document_type_framework.py` → `src/shared/document_type_framework.py`
+### Phase 2: Update References
+1. Update all import statements throughout codebase
+2. Update configuration files
+3. Update documentation references
 
-### Files to Stage in /trash
-- `attorney_review_interface.py` (candidate for legal analysis domain or shared)
-- `cascading_decision_tree_engine.py` (candidate for legal analysis domain)
-- `cause_of_action_definition_engine.py` (candidate for legal analysis domain)
-- `comprehensive_claims_matrix_integration.py` (candidate for legal analysis domain)
-- `claims_matrix_research_api.py` (candidate for legal analysis domain)
-- `lawyerfactory/prompt_deconstruction.py` (evaluate usage)
-- `lawyerfactory/prompt_integration.py` (evaluate usage)
-- `lawyerfactory/mcp_memory_integration.py` (evaluate for shared or separate domain)
-- `lawyerfactory/kanban_cli.py` (evaluate for workflow or utilities)
+### Phase 3: Remove Old Structure
+1. Move old files to trash staging
+2. Verify all functionality works
+3. Remove old directories
 
-## Compatibility Strategy
+## Benefits
 
-### Import Wrappers
-Create compatibility wrappers in original locations:
+1. **Maintainability**: Clear organization makes it easier to find and modify code
+2. **Scalability**: Consistent patterns make it easier to add new features
+3. **Onboarding**: New developers can quickly understand the codebase structure
+4. **Testing**: Clear separation makes unit testing more straightforward
+5. **Deployment**: Cleaner structure simplifies packaging and deployment
 
-```python
-# lawyerfactory/enhanced_workflow.py (wrapper)
-from src.workflow.api.enhanced_workflow import *
+## Implementation Priority
 
-# lawyerfactory/knowledge_graph.py (wrapper)
-from src.knowledge_graph.api.knowledge_graph import *
+### High Priority (Immediate)
+- Create new directory structure
+- Move infrastructure components (file storage, database)
+- Consolidate duplicate maestro implementations
 
-# knowledge_graph.py (root wrapper)
-from src.knowledge_graph.api.knowledge_graph import *
-```
+### Medium Priority (Next Sprint)
+- Reorganize phase-specific code
+- Update import statements
+- Move knowledge graph components
 
-### Updated Import Paths (Target State)
-```python
-# New import style (after migration complete)
-from src.knowledge_graph.api import EnhancedKnowledgeGraph
-from src.document_generator.api import AIDocumentGenerator
-from src.workflow.api import EnhancedWorkflowManager
-from src.storage.api import file_storage
-from src.shared import models
-```
-
-## Benefits of New Structure
-
-1. **Clear Domain Separation**: Each domain has its own namespace
-2. **Reduced Root Clutter**: Only essential files remain at root
-3. **Consistent API Pattern**: All domains follow /api pattern
-4. **Shared Components**: Common utilities in /shared prevent duplication
-5. **Import Clarity**: Clear import paths showing domain relationships
-6. **Scalability**: Easy to add new domains or split existing ones
-7. **Testing**: Domain-specific testing becomes easier
-
-## Migration Phases
-
-### Phase A: Scaffolding ✅ COMPLETE
-- Created /src structure with domain folders
-- Domain folders: knowledge_graph, document_generator, storage, workflow, ingestion, shared
-
-### Phase B: File Migration (Next)
-- Move files to new locations with compatibility wrappers
-- Consolidate duplicate knowledge graph files
-- Rename file-storage.py to file_storage.py
-
-### Phase C: Import Refactoring
-- Update all imports to use new paths
-- Remove compatibility wrappers gradually
-- Test at each step
-
-### Phase D: Cleanup
-- Move unused files to /trash
+### Low Priority (Future)
+- Reorganize UI components
 - Update documentation
-- Generate final artifacts
+- Clean up remaining legacy files

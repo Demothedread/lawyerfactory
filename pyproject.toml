@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lawyerfactory"
+version = "0.0.0"
+requires-python = ">=3.10"
+description = "LawyerFactory monorepo (src-layout)"
+dependencies = []
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.black]
+line-length = 88
+[tool.isort]
+ profile = "black"

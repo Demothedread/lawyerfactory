@@ -1,0 +1,322 @@
+# Script Name: citation_formatter.py
+# Description: Citation Formatter Agent for LawyerFactory Orchestration Phase.  This agent handles proper legal citation formatting according to Bluebook rules. It processes citations for cases, statutes, regulations, and other legal authorities, ensuring they conform to the Bluebook: A Uniform System of Citation standards.  Key capabilities: - Case citation formatting - Statute citation formatting - Regulatory citation formatting - Secondary source citations - Inline citation placement - Bibliography generation
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Orchestration
+#   - Group Tags: null
+Citation Formatter Agent for LawyerFactory Orchestration Phase.
+
+This agent handles proper legal citation formatting according to Bluebook rules.
+It processes citations for cases, statutes, regulations, and other legal authorities,
+ensuring they conform to the Bluebook: A Uniform System of Citation standards.
+
+Key capabilities:
+- Case citation formatting
+- Statute citation formatting
+- Regulatory citation formatting
+- Secondary source citations
+- Inline citation placement
+- Bibliography generation
+"""
+
+import logging
+import re
+from typing import Dict, List, Optional, Any, Tuple
+from dataclasses import dataclass, field
+
+from ...compose.maestro.registry import AgentInterface, AgentCapability
+from ...compose.maestro.workflow_models import WorkflowTask
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class Citation:
+    """Represents a formatted legal citation"""
+    original_text: str
+    formatted_citation: str
+    citation_type: str  # case, statute, regulation, secondary
+    source: str
+    pin_page: Optional[str] = None
+    bluebook_format: bool = True
+
+
+class CitationFormatterAgent(AgentInterface):
+    """Agent that formats legal citations according to Bluebook rules"""
+
+    def __init__(self, knowledge_graph=None):
+        self.knowledge_graph = knowledge_graph
+        self.capabilities = [AgentCapability.LEGAL_RESEARCH]
+
+        # Bluebook formatting patterns
+        self._load_bluebook_patterns()
+
+    def _load_bluebook_patterns(self):
+        """Load Bluebook citation patterns and rules"""
+        self.case_patterns = {
+            'federal_circuit': re.compile(r'(\d+)\s+F\.\s*(?:Supp\.\s*)?(\d+)\s*\((\d{4})\)'),
+            'supreme_court': re.compile(r'(\d+)\s+U\.\s*S\.\s*(\d+)\s*\((\d{4})\)'),
+            'federal_district': re.compile(r'(\d+)\s+F\.\s*(?:Supp\.\s*)?(\d+)\s*\((\d{4})\)'),
+            'state_court': re.compile(r'(\d+)\s+([A-Za-z]+\.\s*)?(\d+)\s*\((\d{4})\)')
+        }
+
+        self.statute_patterns = {
+            'usc': re.compile(r'(\d+)\s*U\.\s*S\.\s*C\.\s*§\s*(\d+(?:-\d+)?)'),
+            'state_statute': re.compile(r'([A-Za-z]+)\s+Code\s+§\s*(\d+(?:\.\d+)?)')
+        }
+
+    async def process(self, message: str) -> str:
+        """Process a natural language request for citation formatting"""
+        try:
+            # Extract citations from the message
+            citations = self._extract_citations_from_text(message)
+
+            if not citations:
+                return "No citations found in the provided text."
+
+            # Format the citations
+            formatted_citations = []
+            for citation in citations:
+                formatted = await self.format_citation(citation)
+                formatted_citations.append(formatted)
+
+            # Generate response
+            response = "Formatted Citations (Bluebook Style):\n\n"
+            for i, citation in enumerate(formatted_citations, 1):
+                response += f"{i}. {citation.formatted_citation}\n"
+                if citation.pin_page:
+                    response += f"   (Pin page: {citation.pin_page})\n"
+                response += f"   Type: {citation.citation_type}\n\n"
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Error processing citation formatting request: {e}")
+            return f"Error formatting citations: {str(e)}"
+
+    async def execute_task(self, task: WorkflowTask, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute a workflow task related to citation formatting"""
+        try:
+            # Extract text from context
+            text_to_format = self._extract_text_from_context(context)
+
+            # Format citations
+            formatted_text = await self.format_document_citations(text_to_format)
+
+            # Generate bibliography if needed
+            bibliography = await self.generate_bibliography(formatted_text)
+
+            return {
+                "status": "completed",
+                "formatted_text": formatted_text,
+                "bibliography": bibliography,
+                "citations_formatted": len(self._extract_citations_from_text(text_to_format))
+            }
+
+        except Exception as e:
+            logger.error(f"Error executing citation formatting task: {e}")
+            return {
+                "status": "failed",
+                "error": str(e),
+                "formatted_text": "",
+                "bibliography": [],
+                "citations_formatted": 0
+            }
+
+    async def health_check(self) -> bool:
+        """Check if the agent is functioning properly"""
+        try:
+            test_text = "See Smith v. Jones, 123 U.S. 456 (2023)"
+            formatted = await self.format_citation(Citation(
+                original_text=test_text,
+                formatted_citation="",
+                citation_type="case",
+                source="test"
+            ))
+            return formatted.formatted_citation != ""
+        except Exception as e:
+            logger.error(f"Health check failed: {e}")
+            return False
+
+    async def initialize(self) -> None:
+        """Initialize the agent"""
+        try:
+            logger.info("Citation Formatter Agent initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize Citation Formatter Agent: {e}")
+
+    async def cleanup(self) -> None:
+        """Clean up resources"""
+        pass
+
+    async def can_handle_task(self, task: WorkflowTask) -> bool:
+        """Check if this agent can handle the given task"""
+        task_text = f"{task.description} {task.agent_type}".lower()
+        return any(keyword in task_text for keyword in [
+            "citation", "bluebook", "format", "cite", "reference"
+        ])
+
+    async def format_citation(self, citation: Citation) -> Citation:
+        """Format a single citation according to Bluebook rules"""
+        try:
+            if citation.citation_type == "case":
+                formatted = self._format_case_citation(citation.original_text)
+            elif citation.citation_type == "statute":
+                formatted = self._format_statute_citation(citation.original_text)
+            elif citation.citation_type == "regulation":
+                formatted = self._format_regulation_citation(citation.original_text)
+            else:
+                formatted = citation.original_text  # Return as-is if unknown type
+
+            citation.formatted_citation = formatted
+            return citation
+
+        except Exception as e:
+            logger.error(f"Error formatting citation: {e}")
+            citation.formatted_citation = citation.original_text
+            return citation
+
+    async def format_document_citations(self, text: str) -> str:
+        """Format all citations in a document"""
+        try:
+            citations = self._extract_citations_from_text(text)
+            formatted_text = text
+
+            for citation in citations:
+                formatted_citation = await self.format_citation(citation)
+                formatted_text = formatted_text.replace(
+                    citation.original_text,
+                    formatted_citation.formatted_citation
+                )
+
+            return formatted_text
+
+        except Exception as e:
+            logger.error(f"Error formatting document citations: {e}")
+            return text
+
+    async def generate_bibliography(self, text: str) -> List[str]:
+        """Generate a bibliography from citations in the text"""
+        try:
+            citations = self._extract_citations_from_text(text)
+            bibliography = []
+
+            for citation in citations:
+                formatted = await self.format_citation(citation)
+                bibliography.append(formatted.formatted_citation)
+
+            # Remove duplicates and sort
+            unique_bibliography = list(set(bibliography))
+            return sorted(unique_bibliography)
+
+        except Exception as e:
+            logger.error(f"Error generating bibliography: {e}")
+            return []
+
+    def _extract_citations_from_text(self, text: str) -> List[Citation]:
+        """Extract citations from text"""
+        citations = []
+
+        # Look for case citations
+        for pattern_name, pattern in self.case_patterns.items():
+            matches = pattern.finditer(text)
+            for match in matches:
+                citations.append(Citation(
+                    original_text=match.group(0),
+                    formatted_citation="",
+                    citation_type="case",
+                    source=pattern_name
+                ))
+
+        # Look for statute citations
+        for pattern_name, pattern in self.statute_patterns.items():
+            matches = pattern.finditer(text)
+            for match in matches:
+                citations.append(Citation(
+                    original_text=match.group(0),
+                    formatted_citation="",
+                    citation_type="statute",
+                    source=pattern_name
+                ))
+
+        # Look for generic citation patterns
+        generic_patterns = [
+            r'\d+\s+[A-Za-z\.]+\s+\d+',  # Generic case pattern
+            r'[A-Za-z]+\s+Code\s+§\s+\d+',  # Generic statute pattern
+        ]
+
+        for pattern in generic_patterns:
+            matches = re.finditer(pattern, text)
+            for match in matches:
+                # Check if not already captured
+                if not any(c.original_text == match.group(0) for c in citations):
+                    citations.append(Citation(
+                        original_text=match.group(0),
+                        formatted_citation="",
+                        citation_type="unknown",
+                        source="generic"
+                    ))
+
+        return citations
+
+    def _extract_text_from_context(self, context: Dict[str, Any]) -> str:
+        """Extract text from workflow context"""
+        text_parts = []
+
+        # Look for text in various context fields
+        if "draft_text" in context:
+            text_parts.append(context["draft_text"])
+        if "analysis" in context:
+            text_parts.append(context["analysis"])
+        if "claims" in context:
+            for claim in context["claims"]:
+                if isinstance(claim, dict):
+                    text_parts.append(claim.get("text", ""))
+                else:
+                    text_parts.append(str(claim))
+
+        return " ".join(text_parts)
+
+    def _format_case_citation(self, citation_text: str) -> str:
+        """Format a case citation according to Bluebook rules"""
+        # Basic formatting - in practice, this would be more sophisticated
+        citation_text = citation_text.strip()
+
+        # Ensure proper spacing
+        citation_text = re.sub(r'\s+', ' ', citation_text)
+
+        # Format reporter names
+        citation_text = re.sub(r'U\.S\.', 'U.S.', citation_text)
+        citation_text = re.sub(r'F\.', 'F.', citation_text)
+        citation_text = re.sub(r'Supp\.', 'Supp.', citation_text)
+
+        # Ensure year is in parentheses
+        if not re.search(r'\(\d{4}\)', citation_text):
+            # Try to add year if missing
+            match = re.search(r'(\d{4})', citation_text)
+            if match:
+                year = match.group(1)
+                citation_text = re.sub(rf'{year}', f'({year})', citation_text)
+
+        return citation_text
+
+    def _format_statute_citation(self, citation_text: str) -> str:
+        """Format a statute citation according to Bluebook rules"""
+        citation_text = citation_text.strip()
+
+        # Format U.S.C. citations
+        citation_text = re.sub(r'U\.S\.C\.', 'U.S.C.', citation_text)
+        citation_text = re.sub(r'§', '§', citation_text)
+
+        # Ensure proper spacing
+        citation_text = re.sub(r'\s+', ' ', citation_text)
+
+        return citation_text
+
+    def _format_regulation_citation(self, citation_text: str) -> str:
+        """Format a regulation citation according to Bluebook rules"""
+        # Basic formatting - would need more specific rules for different agencies
+        citation_text = citation_text.strip()
+        citation_text = re.sub(r'\s+', ' ', citation_text)
+
+        return citation_text

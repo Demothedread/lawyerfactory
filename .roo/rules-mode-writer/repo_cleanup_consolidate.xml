@@ -1,0 +1,367 @@
+<custom_gpt_mode name="repo_cleanup_consolidation" version="1.0">
+
+  <!-- =========================================================
+       0) HOW TO FORMAT INSTRUCTIONS & OUTPUTS (TEMPLATES)
+       ========================================================= -->
+  <xml_structuring_best_practices>
+    <overview>
+      Use these tags to structure ALL instructions and outputs.
+      This improves parseability, auditability, and reuse.
+    </overview>
+
+    <common_tag_patterns>
+      <pattern name="workflow_structure">
+        <template><![CDATA
+        [
+        <workflow>
+        <overview>High-level description</overview>
+        <prerequisites>
+            <prerequisite>Required condition 1</prerequisite>
+            <prerequisite>Required condition 2</prerequisite>
+        </prerequisites>
+        <phases>
+            <phase name="name_here">
+            <goal>What this phase accomplishes</goal>
+            <steps>
+                <step number="1">
+                <title>Step Title</title>
+                <actions>
+                    <action>Concrete, verifiable action</action>
+                </actions>
+                <validation>How success is verified</validation>
+                <failure_handling>What to do on failure</failure_handling>
+                </step>
+            </steps>
+            <artifacts>
+                <artifact>Files/records produced</artifact>
+            </artifacts>
+            </phase>
+        </phases>
+        </workflow>
+        ]]></template>
+      </pattern>
+
+      <pattern name="guidelines_structure">
+        <template><![CDATA
+            <guidelines category="category_name">
+            <guideline priority="high">
+                <rule>Specific rule</rule>
+                <rationale>Why it matters</rationale>
+                <exceptions>When it doesn't apply</exceptions>
+            </guideline>
+            </guidelines>
+        ]]></template>
+      </pattern>
+
+      <pattern name="record_structure">
+        <template><![CDATA
+<record type="decision">
+  <context>What was compared/changed</context>
+  <criteria>Rules or thresholds applied</criteria>
+  <outcome>Chosen action and reason</outcome>
+  <links>
+    <link>path/to/file_or_diff</link>
+  </links>
+</record>
+        ]]></template>
+      </pattern>
+    </common_tag_patterns>
+
+    <formatting_guidelines>
+      <guideline name="indentation">Use 2 spaces</guideline>
+      <guideline name="line_breaks">Blank line between major sections</guideline>
+      <guideline name="comments">Use XML comments to explain tricky bits</guideline>
+      <guideline name="cdata">Wrap code/diffs in <![CDATA[ ... ]]></guideline>
+      <guideline name="attrs_vs_elems">Attributes = metadata; elements = content</guideline>
+    </formatting_guidelines>
+  </xml_structuring_best_practices>
+
+  <!-- =========================================================
+       1) MODE OVERVIEW & OBJECTIVE
+       ========================================================= -->
+  <objective>
+    Reduce an over-cluttered codebase by: (a) normalizing file headers,
+    (b) pruning shims/outdated/redundant files, (c) reorganizing the
+    directory tree to a clear, intuitive structure, (d) consolidating
+    proliferated Markdown into a definitive root README plus minimal
+    sub-READMEs, and (e) executing tests and e2e checks, auto-fixing
+    until green.
+  </objective>
+
+  <!-- =========================================================
+       2) STANDARD FILE-HEADER SCHEMA (MANDATORY)
+       ========================================================= -->
+  <file_header_schema>
+    <lines max="20">
+      <![CDATA[
+# Script Name: <filename.ext>
+# Description: <1–3 sentence summary of purpose and behavior>
+# Relationships:
+#   - Entity Type: <Module|Tool|Function|Component|Element|...>
+#   - Directory Group: <Frontend|Backend|Storage|UIUX|Network|Utilities|...>
+#   - Group Tags: <comma_separated_tags_or_null>
+      ]]>
+    </lines>
+    <rules>
+      <rule>Always rewrite the first 20 lines to conform.</rule>
+      <rule>If purpose unclear, scan class/function names and the first 2 lines of variable definitions to infer role.</rule>
+      <rule>Do not remove license headers; place this block directly beneath.</rule>
+    </rules>
+  </file_header_schema>
+
+  <!-- =========================================================
+       3) REDUNDANCY & DEPRECATION POLICY
+       ========================================================= -->
+  <guidelines category="redundancy_detection">
+    <guideline priority="high">
+      <rule>When two files are ≥90% code-identical, keep the newer/more advanced version and consolidate features.</rule>
+      <rationale>Removes duplication and drift.</rationale>
+      <exceptions>Keep both if they target different runtime environments or APIs, with explicit headers explaining divergence.</exceptions>
+    </guideline>
+    <guideline priority="high">
+      <rule>Deprecated shims (simple pass-through imports) are staged to /_trash_staging with a mapping note, then removed after review.</rule>
+      <rationale>Eliminates unnecessary indirection.</rationale>
+      <exceptions>Retain temporarily if external user code imports them; add deprecation notice with migration path.</exceptions>
+    </guideline>
+  </guidelines>
+
+  <!-- =========================================================
+       4) DIRECTORY ORGANIZATION HEURISTICS
+       ========================================================= -->
+  <guidelines category="organization">
+    <guideline priority="high">
+      <rule>Prefer the organization that most naturally reflects the codebase’s core purpose.</rule>
+      <rationale>Reduces cognitive load.</rationale>
+      <exceptions>None.</exceptions>
+    </guideline>
+    <guideline priority="high">
+      <rule>If the system is a sequenced pipeline, organize primarily by execution order (phases/stages), then by module type.</rule>
+      <rationale>Optimizes traceability of flow.</rationale>
+    </guideline>
+    <guideline priority="medium">
+      <rule>If the system is componentized (plug-and-play parts), organize by self-contained modules/containers and a shared /utilities.</rule>
+    </guideline>
+    <guideline priority="medium">
+      <rule>Combining both is allowed: top-level by sequence; within each stage, group by components and shared utilities.</rule>
+    </guideline>
+    <guideline priority="high">
+      <rule>Create new subdirectories when necessary; avoid deep nesting beyond 3–4 levels.</rule>
+    </guideline>
+  </guidelines>
+
+  <!-- =========================================================
+       5) MARKDOWN CONSOLIDATION POLICY
+       ========================================================= -->
+  <guidelines category="docs_consolidation">
+    <guideline priority="high">
+      <rule>Root README.md is the authoritative manual: overview, install, start, architecture, ToC, contributor notes, license.</rule>
+    </guideline>
+    <guideline priority="high">
+      <rule>Create sub-README.md only for very important/complex/unique directories; keep them short and link from root ToC.</rule>
+    </guideline>
+    <guideline priority="high">
+      <rule>Merge duplicate/overlapping docs; preserve valuable details in appendices or link out; remove stale copies to /_trash_staging.</rule>
+    </guideline>
+  </guidelines>
+
+  <!-- =========================================================
+       6) SIZE-BASED REVIEW PASSES
+       ========================================================= -->
+  <size_passes>
+    <pass name="round_two_shortest">
+      <selection>Read the 10 shortest files fully; compare for overlap; decide: consolidate / leave / modularize.</selection>
+    </pass>
+    <pass name="round_two_largest">
+      <selection>Read the 10 largest files; consider splitting into smaller modules if cohesion allows; re-home parts appropriately.</selection>
+    </pass>
+  </size_passes>
+
+  <!-- =========================================================
+       7) WORKFLOW
+       ========================================================= -->
+  <workflow>
+    <overview>Full cleanup cycle with verification and audit trail.</overview>
+    <prerequisites>
+      <prerequisite>Repo cloned and readable</prerequisite>
+      <prerequisite>Ability to run tests and app (local CI/dev env)</prerequisite>
+    </prerequisites>
+    <phases>
+
+      <phase name="scan_and_map">
+        <goal>Build directory tree and file inventory</goal>
+        <steps>
+          <step number="1">
+            <title>Recursive scan</title>
+            <actions>
+              <action>Enumerate files/folders; record sizes, mtimes, types</action>
+              <action>Extract first 20 lines for header normalization</action>
+              <action>Fallback: inspect class/function names + first 2 lines of key vars</action>
+            </actions>
+            <validation>Inventory present with inferred roles</validation>
+            <failure_handling>Mark unknowns; schedule deeper scan</failure_handling>
+          </step>
+        </steps>
+        <artifacts>
+          <artifact>inventory.json</artifact>
+          <artifact>tree_before.txt</artifact>
+        </artifacts>
+      </phase>
+
+      <phase name="normalize_headers">
+        <goal>Apply standard header schema to every file</goal>
+        <steps>
+          <step number="1">
+            <title>Rewrite first 20 lines</title>
+            <actions>
+              <action>Inject standardized header block</action>
+              <action>Preserve licenses above; place header beneath</action>
+            </actions>
+            <validation>Headers match schema</validation>
+          </step>
+        </steps>
+        <artifacts>
+          <artifact>header_changes.diff</artifact>
+        </artifacts>
+      </phase>
+
+      <phase name="dedupe_and_prune">
+        <goal>Detect ≥90% duplicates; stage deletions; consolidate</goal>
+        <steps>
+          <step number="1">
+            <title>Similarity scan</title>
+            <actions>
+              <action>Compute similarity; identify pairs ≥0.90</action>
+              <action>Pick newer/more capable; merge diffs if needed</action>
+              <action>Stage redundant file to /_trash_staging with note</action>
+            </actions>
+            <validation>All redundancies handled with records</validation>
+          </step>
+          <step number="2">
+            <title>Shim cleanup</title>
+            <actions>
+              <action>Find pass-through shims; deprecate/move with map</action>
+            </actions>
+          </step>
+        </steps>
+        <artifacts>
+          <artifact>redundancy_report.xml</artifact>
+          <artifact>trash_manifest.json</artifact>
+        </artifacts>
+      </phase>
+
+      <phase name="reorganize_tree">
+        <goal>Apply best-fit structure (sequence, components, or hybrid)</goal>
+        <steps>
+          <step number="1">
+            <title>Propose target layout</title>
+            <actions>
+              <action>Draft target tree with rationale</action>
+              <action>Move files; create subdirs; update imports/paths</action>
+            </actions>
+            <validation>Build/test paths resolve</validation>
+          </step>
+          <step number="2">
+            <title>Docs consolidation</title>
+            <actions>
+              <action>Create definitive root README with ToC</action>
+              <action>Create minimal sub-READMEs where warranted</action>
+            </actions>
+          </step>
+        </steps>
+        <artifacts>
+          <artifact>tree_after.txt</artifact>
+          <artifact>doc_consolidation_log.xml</artifact>
+        </artifacts>
+      </phase>
+
+      <phase name="size_based_refactors">
+        <goal>Short/long file passes for modularization</goal>
+        <steps>
+          <step number="1"><title>10 shortest</title><actions><action>Consolidate or modularize as needed</action></actions></step>
+          <step number="2"><title>10 largest</title><actions><action>Split into cohesive modules; re-home</action></actions></step>
+        </steps>
+        <artifacts>
+          <artifact>refactor_decisions.xml</artifact>
+        </artifacts>
+      </phase>
+
+      <phase name="test_and_fix">
+        <goal>Run unit/integration tests; auto-fix until green</goal>
+        <steps>
+          <step number="1">
+            <title>Activate code/debug toolkit</title>
+            <actions>
+              <action>Install deps; set up env</action>
+              <action>Run full test suite with coverage</action>
+              <action>Iteratively fix failing tests</action>
+            </actions>
+            <validation>All tests pass</validation>
+            <failure_handling>Record failures; patch; re-run</failure_handling>
+          </step>
+        </steps>
+        <artifacts>
+          <artifact>test_report.xml</artifact>
+          <artifact>fix_log.xml</artifact>
+        </artifacts>
+      </phase>
+
+      <phase name="e2e_validation">
+        <goal>Run app end-to-end; capture bugs; fix</goal>
+        <steps>
+          <step number="1">
+            <title>Launch app</title>
+            <actions>
+              <action>Run via terminal or headless browser (e.g., Puppeteer)</action>
+              <action>Exercise core flows; record bugs/errors</action>
+              <action>Fix issues; re-test until pass</action>
+            </actions>
+            <validation>Core flows succeed without errors</validation>
+          </step>
+        </steps>
+        <artifacts>
+          <artifact>e2e_checklist.xml</artifact>
+          <artifact>buglist_and_fixes.xml</artifact>
+        </artifacts>
+      </phase>
+
+    </phases>
+  </workflow>
+
+  <!-- =========================================================
+       8) OUTPUT LOGGING TEMPLATES
+       ========================================================= -->
+  <templates>
+    <template name="bug_record"><![CDATA[
+<bug id="BUG-####">
+  <symptom>Observed failure</symptom>
+  <steps_to_reproduce>List steps</steps_to_reproduce>
+  <expected>Expected behavior</expected>
+  <actual>Actual behavior</actual>
+  <fix>Patch summary + link to diff</fix>
+  <status>fixed|deferred</status>
+</bug>
+    ]]></template>
+
+    <template name="decision_record"><!CDATA[
+<record type="decision">
+  <context>Compared A vs B</context>
+  <criteria>≥90% similarity; newer file wins</criteria>
+  <outcome>Kept A; staged B to /_trash_staging</outcome>
+  <links>
+    <link>diffs/compare_A_B.patch</link>                                                          c
+  </links>zx
+</record>
+    ]]></template>
+  </templates>
+
+  <!-- =========================================================
+       9) SAFETY & REVIEW
+       ========================================================= -->
+  <safety>
+    <rule>Never hard-delete; always stage to /_trash_staging with manifest.</rule>
+    <rule>Record all moves/renames; produce a migration map.</rule>
+    <rule>Run formatting/linting after moves/refactors.</rule>
+    <rule>Fail fast on missing licenses or NOTICE files; preserve them.</rule>
+  </safety>
+
+</custom_gpt_mode>

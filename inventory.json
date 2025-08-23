@@ -1,0 +1,1320 @@
+{
+  "total_files": 315,
+  "analyzed_files": 50,
+  "files": [
+    {
+      "path": "tools/fix_imports.py",
+      "size_lines": 206,
+      "header_preview": [
+        " 1: #!/usr/bin/env python3",
+        " 2: \"\"\"",
+        " 3: fix_imports.py \u2014 rewrite old module paths to the new lawyerfactory layout.",
+        " 4: ",
+        " 5: Usage:",
+        " 6:   # dry-run (default)",
+        " 7:   python fix_imports.py",
+        " 8: ",
+        " 9:   # write changes in-place",
+        "10:   python fix_imports.py --apply",
+        "11: ",
+        "12:   # limit to certain paths",
+        "13:   python fix_imports.py --apply src/ tests/",
+        "14: ",
+        "15: Notes:",
+        "16: - Only touches *.py files outside excluded dirs.",
+        "17: - Handles both `import X` and `from X import Y`.",
+        "18: - Picks the LONGEST matching old-prefix for robust remaps.",
+        "19: \"\"\"",
+        "20: import argparse"
+      ],
+      "inferred_roles": [
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "maestro/agent_registry.py",
+      "size_lines": 0,
+      "header_preview": [],
+      "inferred_roles": [],
+      "extension": ".py"
+    },
+    {
+      "path": "maestro/__init__.py",
+      "size_lines": 0,
+      "header_preview": [],
+      "inferred_roles": [],
+      "extension": ".py"
+    },
+    {
+      "path": "maestro/bot_interface.py",
+      "size_lines": 5,
+      "header_preview": [
+        " 1: # AUTO-GENERATED SHIM: will be removed in next release.",
+        " 2: import warnings as _w",
+        " 3: ",
+        " 4: _w.warn(\"Module maestro/bot_interface.py is deprecated; import lawyerfactory.compose.maestro.base instead.\", DeprecationWarning, stacklevel=2)",
+        " 5: from lawyerfactory.compose.maestro.base import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "maestro/enhanced_maestro.py",
+      "size_lines": 0,
+      "header_preview": [],
+      "inferred_roles": [],
+      "extension": ".py"
+    },
+    {
+      "path": "maestro/bots/reader_bot.py",
+      "size_lines": 5,
+      "header_preview": [
+        " 1: # AUTO-GENERATED SHIM: will be removed in next release.",
+        " 2: import warnings as _w",
+        " 3: ",
+        " 4: _w.warn(\"Module maestro/bots/reader_bot.py is deprecated; import lawyerfactory.compose.bots.reader instead.\", DeprecationWarning, stacklevel=2)",
+        " 5: from lawyerfactory.compose.bots.reader import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "maestro/bots/maestro_bot.py",
+      "size_lines": 5,
+      "header_preview": [
+        " 1: # AUTO-GENERATED SHIM: will be removed in next release.",
+        " 2: import warnings as _w",
+        " 3: ",
+        " 4: _w.warn(\"maestro/bots/maestro_bot.py is deprecated; use lawyerfactory.compose.maestro.maestro_bot\", DeprecationWarning, stacklevel=2)",
+        " 5: from lawyerfactory.compose.maestro.maestro_bot import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/validate_system_integration.py",
+      "size_lines": 957,
+      "header_preview": [
+        " 1: #!/usr/bin/env python3",
+        " 2: \"\"\"",
+        " 3: Complete System Integration Validation for LawyerFactory",
+        " 4: Final validation script that runs all tests and validates system readiness.",
+        " 5: \"\"\"",
+        " 6: ",
+        " 7: import json",
+        " 8: import logging",
+        " 9: import subprocess",
+        "10: import sys",
+        "11: import time",
+        "12: import traceback",
+        "13: from datetime import datetime",
+        "14: from pathlib import Path",
+        "15: from typing import Any, Dict, List",
+        "16: ",
+        "17: # Configure logging",
+        "18: logging.basicConfig(",
+        "19:     level=logging.INFO,",
+        "20:     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',"
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "initializer",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/test_post_production_integration.py",
+      "size_lines": 334,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Test Post-Production Integration with EnhancedMaestro",
+        " 3: ",
+        " 4: This test verifies that the post-production phase is properly integrated into",
+        " 5: the workflow orchestration system.",
+        " 6: \"\"\"",
+        " 7: ",
+        " 8: import asyncio",
+        " 9: import pytest",
+        "10: import sys",
+        "11: from pathlib import Path",
+        "12: from unittest.mock import Mock, AsyncMock, patch",
+        "13: ",
+        "14: # Add src to path for imports",
+        "15: project_root = Path(__file__).resolve().parents[1]",
+        "16: src_path = project_root / 'src'",
+        "17: if str(src_path) not in sys.path:",
+        "18:     sys.path.insert(0, str(src_path))",
+        "19: ",
+        "20: # Import the modules we're testing"
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/test_shotlist_robustness.py",
+      "size_lines": 335,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Unit tests for enhanced shotlist functionality",
+        " 3: ",
+        " 4: Tests the robust error handling and missing field tolerance in",
+        " 5: the evidence shotlist builder.",
+        " 6: \"\"\"",
+        " 7: ",
+        " 8: import pytest",
+        " 9: import tempfile",
+        "10: import csv",
+        "11: from pathlib import Path",
+        "12: from unittest.mock import patch",
+        "13: from src.lawyerfactory.evidence.shotlist import (",
+        "14:     build_shot_list,",
+        "15:     validate_evidence_rows,",
+        "16:     _process_evidence_row,",
+        "17:     _log_processing_stats",
+        "18: )",
+        "19: ",
+        "20: "
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/test_statement_of_facts_normalizer.py",
+      "size_lines": 344,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Unit tests for StatementOfFactsGenerator normalizer and enhanced methods",
+        " 3: ",
+        " 4: Tests the normalizer's ability to handle various input formats and the",
+        " 5: robust error handling in legal fact processing.",
+        " 6: \"\"\"",
+        " 7: ",
+        " 8: import pytest",
+        " 9: from unittest.mock import patch, MagicMock",
+        "10: from datetime import datetime",
+        "11: from src.lawyerfactory.compose.strategies.statement_of_facts import (",
+        "12:     StatementOfFactsGenerator,",
+        "13:     FactCategory,",
+        "14:     LegalFact",
+        "15: )",
+        "16: ",
+        "17: ",
+        "18: class TestStatementOfFactsNormalizer:",
+        "19:     \"\"\"Test suite for StatementOfFactsGenerator normalizer and enhanced methods\"\"\"",
+        "20: "
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/test_end_to_end_intake_system.py",
+      "size_lines": 395,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: End-to-End System Validation Tests for LawyerFactory Intake System",
+        " 3: ",
+        " 4: Tests the complete pipeline from intake form to document generation,",
+        " 5: including jurisdiction determination, authority validation, and citation management.",
+        " 6: \"\"\"",
+        " 7: ",
+        " 8: import pytest",
+        " 9: import asyncio",
+        "10: import json",
+        "11: from unittest.mock import Mock, patch, AsyncMock",
+        "12: from pathlib import Path",
+        "13: from datetime import datetime",
+        "14: ",
+        "15: from src.lawyerfactory.phases.one_intake.intake_processor import IntakeProcessor, IntakeData",
+        "16: from src.lawyerfactory.kg.legal_authorities import LegalAuthorityManager, AuthorityCitationManager",
+        "17: from src.lawyerfactory.phases.07_orchestration.caselaw_validator import CaselawValidationAgent, ValidationReport",
+        "18: from src.lawyerfactory.compose.strategies.statement_of_facts import StatementOfFactsGenerator",
+        "19: ",
+        "20: "
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/test_facts_matrix_adapter.py",
+      "size_lines": 262,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Unit tests for FactsMatrixAdapter",
+        " 3: ",
+        " 4: Tests the adapter's ability to transform raw ingestion data into canonical",
+        " 5: facts_matrix format with proper error handling and validation.",
+        " 6: \"\"\"",
+        " 7: ",
+        " 8: import pytest",
+        " 9: from unittest.mock import patch, MagicMock",
+        "10: from src.lawyerfactory.ingest.adapters.facts_matrix_adapter import FactsMatrixAdapter",
+        "11: ",
+        "12: ",
+        "13: class TestFactsMatrixAdapter:",
+        "14:     \"\"\"Test suite for FactsMatrixAdapter\"\"\"",
+        "15: ",
+        "16:     def test_transform_to_facts_matrix_basic(self):",
+        "17:         \"\"\"Test basic transformation with complete data\"\"\"",
+        "18:         raw_data = {",
+        "19:             \"undisputed_facts\": [\"Fact 1\", \"Fact 2\"],",
+        "20:             \"disputed_facts\": [\"Disputed fact 1\"],"
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/test_fixes.py",
+      "size_lines": 121,
+      "header_preview": [
+        " 1: #!/usr/bin/env python3",
+        " 2: \"\"\"",
+        " 3: Test script to verify the three key fixes are working:",
+        " 4: 1. /api/evidence endpoint",
+        " 5: 2. KnowledgeGraph.query_relationships fallback",
+        " 6: 3. EnhancedMaestro.list_workflows method",
+        " 7: \"\"\"",
+        " 8: ",
+        " 9: import sys",
+        "10: ",
+        "11: ",
+        "12: def test_evidence_endpoint():",
+        "13:     \"\"\"Test the evidence endpoint functionality\"\"\"",
+        "14:     print(\"=== Testing Evidence Endpoint ===\")",
+        "15:     try:",
+        "16:         # Import the app and get the evidence function",
+        "17:         import app",
+        "18:         result = app.get_evidence()",
+        "19: ",
+        "20:         # Normalize possible tuple responses like (response, status)"
+      ],
+      "inferred_roles": [
+        "function",
+        "module",
+        "api",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/test_research_loop_integration.py",
+      "size_lines": 342,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Integration tests for iterative research loop functionality in EnhancedMaestro.",
+        " 3: ",
+        " 4: This module tests the ability of the workflow to transition backward from later phases",
+        " 5: (like DRAFTING) to the RESEARCH phase when research_needed flags are detected.",
+        " 6: \"\"\"",
+        " 7: ",
+        " 8: import pytest",
+        " 9: import asyncio",
+        "10: from datetime import datetime",
+        "11: from unittest.mock import Mock, AsyncMock, patch",
+        "12: from dataclasses import dataclass, field",
+        "13: from typing import List, Dict, Any, Optional",
+        "14: ",
+        "15: # Import the workflow components",
+        "16: from src.lawyerfactory.compose.maestro.enhanced_maestro import EnhancedMaestro",
+        "17: from src.lawyerfactory.compose.maestro.workflow_models import (",
+        "18:     WorkflowState, WorkflowTask, WorkflowPhase, PhaseStatus, TaskStatus",
+        "19: )",
+        "20: "
+      ],
+      "inferred_roles": [
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/test_phase_validation.py",
+      "size_lines": 598,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Phase Validation Tests for LawyerFactory",
+        " 3: ",
+        " 4: Tests each phase of the system independently and validates the complete",
+        " 5: 7-phase pipeline with real data and no shortcuts.",
+        " 6: \"\"\"",
+        " 7: ",
+        " 8: import pytest",
+        " 9: import asyncio",
+        "10: import json",
+        "11: from unittest.mock import Mock, patch, AsyncMock",
+        "12: from pathlib import Path",
+        "13: from datetime import datetime",
+        "14: ",
+        "15: from src.lawyerfactory.phases.intake_processor import IntakeProcessor, IntakeData",
+        "16: from src.lawyerfactory.compose.bots.research import ResearchBot",
+        "17: from src.lawyerfactory.compose.strategies.statement_of_facts import (",
+        "18:     StatementOfFactsGenerator,",
+        "19: )",
+        "20: from src.lawyerfactory.compose.strategies.custom_llm_writer import ("
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/e2e_ingestion_test.py",
+      "size_lines": 283,
+      "header_preview": [
+        " 1: #!/usr/bin/env python3",
+        " 2: \"\"\"",
+        " 3: End-to-End Ingestion Test for LawyerFactory",
+        " 4: Tests the complete workflow of file ingestion through API endpoints",
+        " 5: \"\"\"",
+        " 6: ",
+        " 7: import json",
+        " 8: from pathlib import Path",
+        " 9: ",
+        "10: import requests",
+        "11: ",
+        "12: # Configuration",
+        "13: BASE_URL = \"http://localhost:5000\"",
+        "14: TESLA_DATA_PATH = \"./Tesla\"",
+        "15: TEST_TIMEOUT = 30",
+        "16: ",
+        "17: class E2EIngestTest:",
+        "18:     def __init__(self):",
+        "19:         self.session = requests.Session()",
+        "20:         self.results = {}"
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "initializer",
+        "api",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/test_research_loop_minimal.py",
+      "size_lines": 342,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Minimal tests for iterative research loop functionality.",
+        " 3: ",
+        " 4: This module tests the research loop logic independently of the full EnhancedMaestro",
+        " 5: to validate the core functionality without import dependencies.",
+        " 6: \"\"\"",
+        " 7: ",
+        " 8: import asyncio",
+        " 9: from dataclasses import dataclass, field",
+        "10: from datetime import datetime",
+        "11: from typing import Any, Dict, List, Optional",
+        "12: from unittest.mock import AsyncMock, Mock",
+        "13: ",
+        "14: import pytest",
+        "15: ",
+        "16: # Import only the workflow models which should be available",
+        "17: from src.lawyerfactory.compose.maestro.workflow_models import (PhaseStatus,",
+        "18:                                                                TaskPriority,",
+        "19:                                                                WorkflowPhase,",
+        "20:                                                                WorkflowState,"
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "initializer",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/test_end_to_end_lightweight.py",
+      "size_lines": 191,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Lightweight End-to-End Test Harness",
+        " 3: ===================================",
+        " 4: ",
+        " 5: This test demonstrates the canonical data flow:",
+        " 6: Ingestion \u2192 Facts Matrix Adapter \u2192 SoF \u2192 Shotlist",
+        " 7: ",
+        " 8: Purpose: Verify data contracts and pipeline integrity without heavy codebase changes.",
+        " 9: \"\"\"",
+        "10: ",
+        "11: import pytest",
+        "12: from unittest.mock import Mock, patch",
+        "13: import sys",
+        "14: import os",
+        "15: ",
+        "16: # Add src to path for imports",
+        "17: sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))",
+        "18: ",
+        "19: try:",
+        "20:     from lawyerfactory.ingest.adapters.facts_matrix_adapter import FactsMatrixAdapter"
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/research/test_legal_research_integration.py",
+      "size_lines": 664,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Test Suite for Legal Research Integration System - Phase 3.2",
+        " 3: Comprehensive tests for Claims Matrix legal research capabilities",
+        " 4: \"\"\"",
+        " 5: ",
+        " 6: import logging",
+        " 7: import unittest",
+        " 8: from datetime import datetime",
+        " 9: from unittest.mock import AsyncMock, patch",
+        "10: ",
+        "11: from cause_of_action_detector import (CauseDetectionResult,",
+        "12:                                       CauseOfActionDetector)",
+        "13: from enhanced_knowledge_graph import EnhancedKnowledgeGraph",
+        "14: from legal_authority_validator import (CitationCompliance,",
+        "15:                                        LegalAuthorityValidator)",
+        "16: from legal_research_cache_manager import LegalResearchCacheManager",
+        "17: from legal_research_integration import (AuthorityLevel,",
+        "18:                                         LegalResearchAPIIntegration,",
+        "19:                                         LegalResearchRequest, ResearchPriority)",
+        "20: "
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "api",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/research/test_research_bot.py",
+      "size_lines": 228,
+      "header_preview": [
+        " 1: #!/usr/bin/env python3",
+        " 2: \"\"\"",
+        " 3: Test script for the enhanced ResearchBot integration with the orchestration system.",
+        " 4: \"\"\"",
+        " 5: ",
+        " 6: import asyncio",
+        " 7: import logging",
+        " 8: import sys",
+        " 9: from pathlib import Path",
+        "10: ",
+        "11: sys.path.insert(0, str(Path(__file__).parent.parent))",
+        "12: ",
+        "13: ",
+        "14: from knowledge_graph import KnowledgeGraph",
+        "15: from maestro.bots.research_bot import ResearchBot, ResearchQuery",
+        "16: from maestro.workflow_models import TaskPriority, WorkflowPhase, WorkflowTask",
+        "17: ",
+        "18: log_dir = Path(__file__).parent.parent / 'logs'",
+        "19: log_dir.mkdir(exist_ok=True)",
+        "20: log_file = log_dir / f'research_bot_{os.getpid()}.log'"
+      ],
+      "inferred_roles": [
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/evidence/test_shotlist.py",
+      "size_lines": 20,
+      "header_preview": [
+        " 1: import csv",
+        " 2: import tempfile",
+        " 3: from pathlib import Path",
+        " 4: ",
+        " 5: from lawyerfactory.evidence.shotlist import build_shot_list",
+        " 6: ",
+        " 7: ",
+        " 8: def test_build_shot_list_roundtrip():",
+        " 9:     rows = [",
+        "10:         {\"source_id\":\"doc1\",\"timestamp\":\"2024-01-01\",\"summary\":\"A thing happened\",\"entities\":[\"A\",\"B\"],\"citations\":[\"CL:123\"]},",
+        "11:         {\"source_id\":\"doc2\",\"timestamp\":\"2024-01-02\",\"summary\":\"Another thing\",\"entities\":[\"C\"],\"citations\":[]},",
+        "12:     ]",
+        "13:     with tempfile.TemporaryDirectory() as td:",
+        "14:         out = Path(td)/\"shot_list.csv\"",
+        "15:         path = build_shot_list(rows, out)",
+        "16:         assert path.exists()",
+        "17:         with path.open() as f:",
+        "18:             r = list(csv.DictReader(f))",
+        "19:         assert len(r) == 2",
+        "20:         assert r[0][\"summary\"] == \"A thing happened\""
+      ],
+      "inferred_roles": [
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/ingest/test_assessor.py",
+      "size_lines": 31,
+      "header_preview": [
+        " 1: import sys",
+        " 2: from pathlib import Path",
+        " 3: ",
+        " 4: sys.path.append(str(Path(__file__).parent.parent))",
+        " 5: import repository",
+        " 6: from assessor import intake_document",
+        " 7: ",
+        " 8: ",
+        " 9: def test_intake_document(tmp_path):",
+        "10:     repo_file = tmp_path / 'repository.csv'",
+        "11:     repository.REPO_FILE = repo_file",
+        "12:     repository.init_repo()",
+        "13: ",
+        "14:     text = 'This is a contract between parties. It outlines terms.'",
+        "15:     intake_document('Alice', 'Contract A', '2023-01-01', text)",
+        "16: ",
+        "17:     entries = repository.list_entries()",
+        "18:     assert len(entries) == 1",
+        "19:     entry = entries[0]",
+        "20:     assert entry['author'] == 'Alice'"
+      ],
+      "inferred_roles": [
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/compose/test_statement_of_facts_system.py",
+      "size_lines": 539,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Comprehensive Test Suite for Statement of Facts Generation System",
+        " 3: Tests all components: generation, templates, review interface, and export system",
+        " 4: \"\"\"",
+        " 5: ",
+        " 6: import logging",
+        " 7: import shutil",
+        " 8: import tempfile",
+        " 9: import unittest",
+        "10: from datetime import datetime",
+        "11: from pathlib import Path",
+        "12: from typing import Any, Dict",
+        "13: ",
+        "14: from attorney_review_interface import AttorneyReviewInterface, ReviewStatus",
+        "15: from document_export_system import (DocumentExportSystem, DocumentMetadata,",
+        "16:                                     ExportFormat)",
+        "17: from legal_document_templates import (CourtLevel, DocumentType,",
+        "18:                                       LegalDocumentTemplates)",
+        "19: # Import the Statement of Facts system components",
+        "20: from statement_of_facts_generator import StatementOfFactsGenerator"
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/compose/test_comprehensive_integration.py",
+      "size_lines": 1162,
+      "header_preview": [
+        " 1: #!/usr/bin/env python3",
+        " 2: \"\"\"",
+        " 3: Comprehensive integration test suite for the LawyerFactory automated lawsuit generation system.",
+        " 4: Validates complete end-to-end workflow from case initiation to final document delivery.",
+        " 5: \"\"\"",
+        " 6: ",
+        " 7: import json",
+        " 8: import logging",
+        " 9: import shutil",
+        "10: import sys",
+        "11: import tempfile",
+        "12: import time",
+        "13: import traceback",
+        "14: import uuid",
+        "15: from datetime import datetime",
+        "16: from pathlib import Path",
+        "17: from typing import Any, Dict, List, Optional, Union",
+        "18: from unittest.mock import Mock, patch",
+        "19: ",
+        "20: # Ensure correct import paths for subdirectory"
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "initializer",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/compose/test_workflow.py",
+      "size_lines": 21,
+      "header_preview": [
+        " 1: import pathlib",
+        " 2: import sys",
+        " 3: ",
+        " 4: sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))  # noqa: E402",
+        " 5: ",
+        " 6: from lawyerfactory.models import Stage, Task  # noqa: E402",
+        " 7: from lawyerfactory.workflow import is_complete, progress_task  # noqa: E402",
+        " 8: ",
+        " 9: ",
+        "10: def test_progress_task_advances_stage_and_logs():",
+        "11:     task = Task(id=1, title=\"example\")",
+        "12:     graph = {\"observations\": []}",
+        "13:     assert task.stage == Stage.PREPRODUCTION_PLANNING",
+        "14:     progress_task(task, graph)",
+        "15:     assert task.stage == Stage.RESEARCH_AND_DEVELOPMENT",
+        "16:     assert graph[\"observations\"]",
+        "17: ",
+        "18: ",
+        "19: def test_is_complete():",
+        "20:     task = Task(id=1, title=\"example\", stage=Stage.FINAL_DRAFT)"
+      ],
+      "inferred_roles": [
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/compose/test_enhanced_integration.py",
+      "size_lines": 402,
+      "header_preview": [
+        " 1: #!/usr/bin/env python3",
+        " 2: \"\"\"",
+        " 3: Comprehensive integration test for the Enhanced LawyerFactory Platform.",
+        " 4: Tests all major components and their integration.",
+        " 5: \"\"\"",
+        " 6: ",
+        " 7: import logging",
+        " 8: import os",
+        " 9: import sys",
+        "10: import tempfile",
+        "11: import time",
+        "12: from pathlib import Path",
+        "13: from unittest.mock import Mock, patch",
+        "14: ",
+        "15: # Ensure correct import paths for subdirectory",
+        "16: sys.path.insert(0, str(Path(__file__).parent.parent))",
+        "17: ",
+        "18: ",
+        "19: log_dir = Path(__file__).parent.parent / 'logs'",
+        "20: log_dir.mkdir(exist_ok=True)"
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "initializer",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/compose/test_orchestration.py",
+      "size_lines": 369,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Test script for the enhanced maestro orchestration system.",
+        " 3: Validates the core functionality and integration with the knowledge graph.",
+        " 4: \"\"\"",
+        " 5: ",
+        " 6: import asyncio",
+        " 7: import logging",
+        " 8: import os",
+        " 9: import sys",
+        "10: from pathlib import Path",
+        "11: ",
+        "12: # Configure logging to /logs subdirectory",
+        "13: log_dir = Path(__file__).parent.parent / 'logs'",
+        "14: log_dir.mkdir(exist_ok=True)",
+        "15: log_file = log_dir / f'orchestration_{os.getpid()}.log'",
+        "16: logging.basicConfig(",
+        "17:     level=logging.INFO,",
+        "18:     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',",
+        "19:     handlers=[logging.FileHandler(log_file), logging.StreamHandler()]",
+        "20: )"
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "initializer",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/compose/test_ai_document_integration.py",
+      "size_lines": 302,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Integration Test for AI Document Generation System",
+        " 3: Tests the complete integration of AI document generation with the LawyerFactory orchestration system.",
+        " 4: \"\"\"",
+        " 5: ",
+        " 6: import asyncio",
+        " 7: import logging",
+        " 8: import sys",
+        " 9: from pathlib import Path",
+        "10: from typing import Any, Dict",
+        "11: ",
+        "12: # Add project root to path",
+        "13: sys.path.append(str(Path(__file__).parent.parent))",
+        "14: ",
+        "15: from lawyerfactory.enhanced_workflow import EnhancedWorkflowManager",
+        "16: from Tesla.test_cases.tesla_case_data import TESLA_CONTRACT_BREACH_CASE",
+        "17: ",
+        "18: # Configure logging",
+        "19: logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')",
+        "20: logger = logging.getLogger(__name__)"
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "initializer",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/compose/test_integration_runner.py",
+      "size_lines": 54,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Simple test runner to validate the AI Document Integration",
+        " 3: \"\"\"",
+        " 4: ",
+        " 5: import asyncio",
+        " 6: import sys",
+        " 7: from pathlib import Path",
+        " 8: ",
+        " 9: # Add the project root to Python path",
+        "10: sys.path.append(str(Path(__file__).parent))",
+        "11: ",
+        "12: async def main():",
+        "13:     \"\"\"Run the integration test\"\"\"",
+        "14:     try:",
+        "15:         print(\"=== AI Document Integration Test Runner ===\\n\")",
+        "16: ",
+        "17:         # Import and run the integration test",
+        "18:         from tests.test_ai_document_integration import run_integration_test",
+        "19: ",
+        "20:         print(\"Starting AI Document Integration Test...\")"
+      ],
+      "inferred_roles": [
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/cli/test_kanban.py",
+      "size_lines": 28,
+      "header_preview": [
+        " 1: import pathlib",
+        " 2: import sys",
+        " 3: ",
+        " 4: sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))  # noqa: E402",
+        " 5: ",
+        " 6: import os",
+        " 7: ",
+        " 8: from lawyerfactory.kanban_cli import display_board  # noqa: E402",
+        " 9: from lawyerfactory.models import Task  # noqa: E402",
+        "10: from lawyerfactory.workflow import TaskBoard  # noqa: E402",
+        "11: ",
+        "12: ",
+        "13: def test_kanban():",
+        "14:     # ...existing code...",
+        "15:     log_dir = os.path.join(os.path.dirname(__file__), '../logs')",
+        "16:     os.makedirs(log_dir, exist_ok=True)",
+        "17:     log_path = os.path.join(log_dir, 'test_kanban.log')",
+        "18:     with open(log_path, 'w') as f:",
+        "19:         f.write(\"Kanban test completed.\\n\")",
+        "20:     print(f\"Kanban test completed. Log written to {log_path}\")"
+      ],
+      "inferred_roles": [
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/kg/test_knowledge_graph_integration.py",
+      "size_lines": 383,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Test Script for Knowledge Graph Integration",
+        " 3: Comprehensive testing of the enhanced knowledge graph system for legal relationship mapping",
+        " 4: \"\"\"",
+        " 5: ",
+        " 6: import json",
+        " 7: import logging",
+        " 8: import os",
+        " 9: import tempfile",
+        "10: ",
+        "11: # Configure logging",
+        "12: logging.basicConfig(",
+        "13:     level=logging.INFO,",
+        "14:     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'",
+        "15: )",
+        "16: logger = logging.getLogger(__name__)",
+        "17: ",
+        "18: ",
+        "19: def test_enhanced_knowledge_graph():",
+        "20:     \"\"\"Test the enhanced knowledge graph with legal entities and relationships\"\"\""
+      ],
+      "inferred_roles": [
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/api/test_draft_endpoints.py",
+      "size_lines": 121,
+      "header_preview": [
+        " 1: #!/usr/bin/env python3",
+        " 2: \"\"\"",
+        " 3: Test script for draft document upload endpoints",
+        " 4: \"\"\"",
+        " 5: ",
+        " 6: import asyncio",
+        " 7: import os",
+        " 8: import tempfile",
+        " 9: ",
+        "10: import aiohttp",
+        "11: ",
+        "12: ",
+        "13: async def test_draft_endpoints():",
+        "14:     \"\"\"Test the new draft document upload endpoints\"\"\"",
+        "15: ",
+        "16:     print(\"Testing draft document upload endpoints...\")",
+        "17: ",
+        "18:     # Create test files",
+        "19:     with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:",
+        "20:         f.write(\"\"\""
+      ],
+      "inferred_roles": [
+        "function",
+        "module",
+        "api",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/claims/test_claims_matrix.py",
+      "size_lines": 275,
+      "header_preview": [
+        " 1: #!/usr/bin/env python3",
+        " 2: \"\"\"",
+        " 3: Test script for Claims Matrix Interactive Frontend",
+        " 4: Tests the integration between frontend JavaScript and backend API",
+        " 5: \"\"\"",
+        " 6: ",
+        " 7: import logging",
+        " 8: import os",
+        " 9: import sys",
+        "10: ",
+        "11: import requests",
+        "12: ",
+        "13: # Configure logging",
+        "14: logging.basicConfig(level=logging.INFO)",
+        "15: logger = logging.getLogger(__name__)",
+        "16: ",
+        "17: # Test server configuration",
+        "18: TEST_SERVER_URL = os.getenv('TEST_SERVER_URL', 'http://localhost:5000')",
+        "19: ",
+        "20: "
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "initializer",
+        "api",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "tests/claims/test_claims_matrix_core.py",
+      "size_lines": 351,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Test suite for Claims Matrix core functionality",
+        " 3: Tests the enhanced knowledge graph, jurisdiction manager, and cause detection",
+        " 4: \"\"\"",
+        " 5: ",
+        " 6: import logging",
+        " 7: import os",
+        " 8: import tempfile",
+        " 9: import unittest",
+        "10: ",
+        "11: from cause_of_action_detector import CauseOfActionDetector",
+        "12: from enhanced_knowledge_graph import (CauseOfAction, EnhancedKnowledgeGraph,",
+        "13:                                       FactElementAttachment, LegalElement,",
+        "14:                                       LegalEntity, LegalEntityType)",
+        "15: ",
+        "16: from src.knowledge_graph.api.jurisdiction_manager import (",
+        "17:     JurisdictionAuthority, JurisdictionManager)",
+        "18: ",
+        "19: # Configure logging for tests",
+        "20: logging.basicConfig(level=logging.INFO)"
+      ],
+      "inferred_roles": [
+        "class",
+        "function",
+        "module",
+        "api",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "Tesla/test_cases/tesla_workflow_test.py",
+      "size_lines": 245,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Tesla Complete Workflow Test",
+        " 3: ",
+        " 4: This module tests the complete AI-powered document generation workflow",
+        " 5: using the Tesla case data, demonstrating the full system capabilities.",
+        " 6: \"\"\"",
+        " 7: ",
+        " 8: import os",
+        " 9: import sys",
+        "10: ",
+        "11: sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))",
+        "12: ",
+        "13: import logging",
+        "14: ",
+        "15: from lawyerfactory.document_generator.ai_document_generator import \\",
+        "16:     AIDocumentGenerator",
+        "17: from Tesla.test_cases.tesla_case_data import get_test_case, validate_case_data",
+        "18: ",
+        "19: ",
+        "20: def test_tesla_contract_case():"
+      ],
+      "inferred_roles": [
+        "function",
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "Tesla/test_cases/tesla_case_data.py",
+      "size_lines": 291,
+      "header_preview": [
+        " 1: \"\"\"",
+        " 2: Tesla Case Test Data for AI Document Generator",
+        " 3: ",
+        " 4: This module contains comprehensive test cases based on the Tesla documents",
+        " 5: and background materials provided, designed to test the AI document generation system.",
+        " 6: \"\"\"",
+        " 7: ",
+        " 8: from typing import Any, Dict",
+        " 9: ",
+        "10: # Tesla Case Data - Comprehensive test case",
+        "11: TESLA_CONTRACT_BREACH_CASE = {",
+        "12:     # Basic Case Information",
+        "13:     'case_name': 'Tesla Vehicle Delivery Breach of Contract',",
+        "14:     'case_number': 'CV-2024-001234',",
+        "15:     'filing_date': '2024-04-15',",
+        "16:     'court_name': 'Superior Court of California, County of San Francisco',",
+        "17:     'court_address': '400 McAllister Street, San Francisco, CA 94102',",
+        "18: ",
+        "19:     # Party Information",
+        "20:     'plaintiff_name': 'John David Smith',"
+      ],
+      "inferred_roles": [
+        "module",
+        "test"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "trash/move_script.py",
+      "size_lines": 228,
+      "header_preview": [
+        " 1: #!/usr/bin/env python3",
+        " 2: \"\"\"",
+        " 3: LawyerFactory Codebase Reorganization Script",
+        " 4: Moves files to new domain-oriented /src structure with compatibility wrappers",
+        " 5: \"\"\"",
+        " 6: ",
+        " 7: import shutil",
+        " 8: from pathlib import Path",
+        " 9: ",
+        "10: ",
+        "11: def create_directory(path):",
+        "12:     \"\"\"Create directory if it doesn't exist\"\"\"",
+        "13:     Path(path).mkdir(parents=True, exist_ok=True)",
+        "14:     print(f\"\u2713 Created directory: {path}\")",
+        "15: ",
+        "16: def move_file(src, dst):",
+        "17:     \"\"\"Move file from src to dst, creating directories as needed\"\"\"",
+        "18:     dst_path = Path(dst)",
+        "19:     create_directory(dst_path.parent)",
+        "20: "
+      ],
+      "inferred_roles": [
+        "function",
+        "module",
+        "initializer"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "trash/undo_reorganization.py",
+      "size_lines": 248,
+      "header_preview": [
+        " 1: #!/usr/bin/env python3",
+        " 2: \"\"\"",
+        " 3: Undo Script for LawyerFactory Codebase Reorganization",
+        " 4: Reverts all changes made by move_script.py",
+        " 5: \"\"\"",
+        " 6: ",
+        " 7: import os",
+        " 8: import shutil",
+        " 9: from pathlib import Path",
+        "10: ",
+        "11: ",
+        "12: def restore_file(src, dst):",
+        "13:     \"\"\"Restore file from src back to dst\"\"\"",
+        "14:     if Path(src).exists():",
+        "15:         # Create destination directory if needed",
+        "16:         Path(dst).parent.mkdir(parents=True, exist_ok=True)",
+        "17:         shutil.move(src, dst)",
+        "18:         print(f\"\u2713 Restored: {src} \u2192 {dst}\")",
+        "19:         return True",
+        "20:     else:"
+      ],
+      "inferred_roles": [
+        "function",
+        "module",
+        "api"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "trash/deprecated_shims/mcp_memory_integration.py",
+      "size_lines": 5,
+      "header_preview": [
+        " 1: # AUTO-GENERATED SHIM: will be removed in next release.",
+        " 2: import warnings as _w",
+        " 3: ",
+        " 4: _w.warn(\"Module lawyerfactory/mcp_memory_integration.py is deprecated; import lawyerfactory.vectors.memory_compression instead.\", DeprecationWarning, stacklevel=2)",
+        " 5: from lawyerfactory.vectors.memory_compression import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "trash/deprecated_shims/models.py",
+      "size_lines": 5,
+      "header_preview": [
+        " 1: # AUTO-GENERATED SHIM: will be removed in next release.",
+        " 2: import warnings as _w",
+        " 3: ",
+        " 4: _w.warn(\"Module lawyerfactory/models.py is deprecated; import lawyerfactory.lf_core.models instead.\", DeprecationWarning, stacklevel=2)",
+        " 5: from lawyerfactory.lf_core.models import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "trash/deprecated_shims/knowledge_graph.py",
+      "size_lines": 5,
+      "header_preview": [
+        " 1: # AUTO-GENERATED SHIM: will be removed in next release.",
+        " 2: import warnings as _w",
+        " 3: ",
+        " 4: _w.warn(\"Module lawyerfactory/knowledge_graph.py is deprecated; import lawyerfactory.kg.graph instead.\", DeprecationWarning, stacklevel=2)",
+        " 5: from lawyerfactory.kg.graph import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "trash/deprecated_shims/file-storage.py",
+      "size_lines": 5,
+      "header_preview": [
+        " 1: # AUTO-GENERATED SHIM: will be removed in next release.",
+        " 2: import warnings as _w",
+        " 3: ",
+        " 4: _w.warn(\"Module lawyerfactory/file-storage.py is deprecated; import lawyerfactory.infra.file_storage instead.\", DeprecationWarning, stacklevel=2)",
+        " 5: from lawyerfactory.infra.file_storage import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "trash/deprecated_shims/workflow.py",
+      "size_lines": 5,
+      "header_preview": [
+        " 1: # AUTO-GENERATED SHIM: will be removed in next release.",
+        " 2: import warnings as _w",
+        " 3: ",
+        " 4: _w.warn(\"Module lawyerfactory/workflow.py is deprecated; import lawyerfactory.compose.maestro.workflow instead.\", DeprecationWarning, stacklevel=2)",
+        " 5: from lawyerfactory.compose.maestro.workflow import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "trash/deprecated_shims/agent_config_system.py",
+      "size_lines": 5,
+      "header_preview": [
+        " 1: # AUTO-GENERATED SHIM: will be removed in next release.",
+        " 2: import warnings as _w",
+        " 3: ",
+        " 4: _w.warn(\"Module lawyerfactory/agent_config_system.py is deprecated; import lawyerfactory.lf_core.agent_config instead.\", DeprecationWarning, stacklevel=2)",
+        " 5: from lawyerfactory.lf_core.agent_config import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "trash/deprecated_shims/document_type_framework.py",
+      "size_lines": 5,
+      "header_preview": [
+        " 1: # AUTO-GENERATED SHIM: will be removed in next release.",
+        " 2: import warnings as _w",
+        " 3: ",
+        " 4: _w.warn(\"Module lawyerfactory/document_type_framework.py is deprecated; import lawyerfactory.lf_core.document_types instead.\", DeprecationWarning, stacklevel=2)",
+        " 5: from lawyerfactory.lf_core.document_types import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "trash/deprecated_shims/enhanced_workflow.py",
+      "size_lines": 5,
+      "header_preview": [
+        " 1: # AUTO-GENERATED SHIM: will be removed in next release.",
+        " 2: import warnings as _w",
+        " 3: ",
+        " 4: _w.warn(\"Module lawyerfactory/enhanced_workflow.py is deprecated; import lawyerfactory.compose.maestro.workflow instead.\", DeprecationWarning, stacklevel=2)",
+        " 5: from lawyerfactory.compose.maestro.workflow import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "trash/deprecated_shims_root/assessor.py",
+      "size_lines": 4,
+      "header_preview": [
+        " 1: # AUTO-SHIM (top-level): deprecated module",
+        " 2: import warnings as _w",
+        " 3: _w.warn(\"Import 'assessor.py' is deprecated; use 'lawyerfactory.phases.01_intake.ingestion.assessor'.\", DeprecationWarning, stacklevel=2)",
+        " 4: from lawyerfactory.phases.01_intake.ingestion.assessor import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "trash/deprecated_shims_root/cause_of_action_detector.py",
+      "size_lines": 4,
+      "header_preview": [
+        " 1: # AUTO-SHIM",
+        " 2: import warnings as _w",
+        " 3: _w.warn(\"Import 'cause_of_action_detector' is deprecated; use 'lawyerfactory.claims.detect'.\", DeprecationWarning, stacklevel=2)",
+        " 4: from lawyerfactory.claims.detect import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    },
+    {
+      "path": "trash/deprecated_shims_root/knowledge_graph.py",
+      "size_lines": 4,
+      "header_preview": [
+        " 1: # AUTO-SHIM",
+        " 2: import warnings as _w",
+        " 3: _w.warn(\"Import 'knowledge_graph' is deprecated; use 'lawyerfactory.kg.graph_root'.\", DeprecationWarning, stacklevel=2)",
+        " 4: from lawyerfactory.kg.graph_root import *  # noqa: F401,F403"
+      ],
+      "inferred_roles": [
+        "module"
+      ],
+      "extension": ".py"
+    }
+  ]
+}

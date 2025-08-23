@@ -1,0 +1,376 @@
+"""
+# Script Name: verification.py
+# Description: Post-Production Fact Verification Module  This module provides fact-checking and verification capabilities for generated legal documents.
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Core
+#   - Group Tags: null
+Post-Production Fact Verification Module
+
+This module provides fact-checking and verification capabilities for generated legal documents.
+"""
+
+import logging
+from typing import Dict, List, Any, Optional, Tuple
+from dataclasses import dataclass
+from enum import Enum
+
+logger = logging.getLogger(__name__)
+
+
+class VerificationLevel(Enum):
+    """Levels of fact verification"""
+    BASIC = "basic"
+    STANDARD = "standard"
+    COMPREHENSIVE = "comprehensive"
+
+
+class FactStatus(Enum):
+    """Status of fact verification"""
+    VERIFIED = "verified"
+    UNVERIFIED = "unverified"
+    CONTRADICTED = "contradicted"
+    NEEDS_REVIEW = "needs_review"
+
+
+@dataclass
+class FactVerificationResult:
+    """Result of fact verification"""
+    fact_id: str
+    original_text: str
+    status: FactStatus
+    confidence_score: float
+    supporting_evidence: List[str]
+    contradicting_evidence: List[str]
+    verification_notes: str
+    reviewer_suggestions: Optional[str] = None
+
+
+@dataclass
+class VerificationReport:
+    """Comprehensive verification report"""
+    document_id: str
+    verification_level: VerificationLevel
+    total_facts_checked: int
+    verified_facts: int
+    unverified_facts: int
+    contradicted_facts: int
+    needs_review_facts: int
+    overall_confidence: float
+    fact_results: List[FactVerificationResult]
+    summary_notes: str
+    created_at: str
+
+
+class FactChecker:
+    """
+    Advanced fact-checking system for legal documents.
+    
+    Verifies facts against source documents and case materials to ensure
+    accuracy and consistency in generated legal documents.
+    """
+    
+    def __init__(self, knowledge_graph=None, evidence_api=None):
+        """Initialize the FactChecker"""
+        self.knowledge_graph = knowledge_graph
+        self.evidence_api = evidence_api
+        self.verification_cache = {}
+        logger.info("FactChecker initialized")
+    
+    async def verify_document_facts(
+        self, 
+        document_content: str,
+        source_materials: Dict[str, Any],
+        verification_level: VerificationLevel = VerificationLevel.STANDARD
+    ) -> VerificationReport:
+        """
+        Verify facts in a document against source materials.
+        
+        Args:
+            document_content: The document text to verify
+            source_materials: Dictionary containing source documents and evidence
+            verification_level: Level of verification to perform
+            
+        Returns:
+            VerificationReport: Comprehensive verification report
+        """
+        logger.info(f"Starting fact verification with {verification_level.value} level")
+        
+        # Extract facts from document
+        extracted_facts = await self._extract_facts_from_document(document_content)
+        
+        # Verify each fact
+        fact_results = []
+        for fact in extracted_facts:
+            result = await self._verify_single_fact(fact, source_materials, verification_level)
+            fact_results.append(result)
+        
+        # Generate report
+        report = self._generate_verification_report(
+            document_content, verification_level, fact_results
+        )
+        
+        logger.info(f"Fact verification completed. {report.verified_facts}/{report.total_facts_checked} facts verified")
+        return report
+    
+    async def _extract_facts_from_document(self, document_content: str) -> List[Dict[str, Any]]:
+        """Extract factual statements from document content"""
+        # This is a simplified implementation - in production, this would use
+        # NLP techniques to identify factual claims
+        
+        facts = []
+        sentences = document_content.split('.')
+        
+        for i, sentence in enumerate(sentences):
+            sentence = sentence.strip()
+            if len(sentence) > 10:  # Skip very short sentences
+                facts.append({
+                    'id': f"fact_{i}",
+                    'text': sentence,
+                    'type': self._classify_fact_type(sentence),
+                    'position': i
+                })
+        
+        logger.debug(f"Extracted {len(facts)} facts from document")
+        return facts
+    
+    def _classify_fact_type(self, fact_text: str) -> str:
+        """Classify the type of fact"""
+        fact_lower = fact_text.lower()
+        
+        if any(keyword in fact_lower for keyword in ['date', 'on', 'during', 'at']):
+            return 'temporal'
+        elif any(keyword in fact_lower for keyword in ['$', 'dollar', 'amount', 'cost']):
+            return 'financial'
+        elif any(keyword in fact_lower for keyword in ['court', 'judge', 'case', 'ruling']):
+            return 'legal'
+        elif any(keyword in fact_lower for keyword in ['plaintiff', 'defendant', 'party']):
+            return 'party'
+        else:
+            return 'general'
+    
+    async def _verify_single_fact(
+        self, 
+        fact: Dict[str, Any], 
+        source_materials: Dict[str, Any],
+        verification_level: VerificationLevel
+    ) -> FactVerificationResult:
+        """Verify a single fact against source materials"""
+        
+        # Check cache first
+        cache_key = f"{fact['id']}_{verification_level.value}"
+        if cache_key in self.verification_cache:
+            return self.verification_cache[cache_key]
+        
+        supporting_evidence = []
+        contradicting_evidence = []
+        confidence_score = 0.0
+        verification_notes = ""
+        
+        # Search for supporting evidence in source materials
+        if 'facts_matrix' in source_materials:
+            supporting_evidence.extend(
+                self._search_facts_matrix(fact, source_materials['facts_matrix'])
+            )
+        
+        if 'case_documents' in source_materials:
+            supporting_evidence.extend(
+                self._search_case_documents(fact, source_materials['case_documents'])
+            )
+        
+        # Use knowledge graph if available
+        if self.knowledge_graph:
+            kg_evidence = await self._search_knowledge_graph(fact)
+            supporting_evidence.extend(kg_evidence)
+        
+        # Determine verification status and confidence
+        status, confidence_score, verification_notes = self._assess_fact_verification(
+            fact, supporting_evidence, contradicting_evidence, verification_level
+        )
+        
+        result = FactVerificationResult(
+            fact_id=fact['id'],
+            original_text=fact['text'],
+            status=status,
+            confidence_score=confidence_score,
+            supporting_evidence=supporting_evidence,
+            contradicting_evidence=contradicting_evidence,
+            verification_notes=verification_notes,
+            reviewer_suggestions=self._generate_reviewer_suggestions(status, confidence_score)
+        )
+        
+        # Cache the result
+        self.verification_cache[cache_key] = result
+        
+        return result
+    
+    def _search_facts_matrix(self, fact: Dict[str, Any], facts_matrix: Dict[str, Any]) -> List[str]:
+        """Search for supporting evidence in facts matrix"""
+        evidence = []
+        fact_text_lower = fact['text'].lower()
+        
+        # Search in different fact categories
+        for category in ['undisputed_facts', 'disputed_facts', 'procedural_facts']:
+            if category in facts_matrix:
+                for fact_item in facts_matrix[category]:
+                    if isinstance(fact_item, str):
+                        if self._has_semantic_overlap(fact_text_lower, fact_item.lower()):
+                            evidence.append(f"Facts Matrix ({category}): {fact_item}")
+        
+        return evidence
+    
+    def _search_case_documents(self, fact: Dict[str, Any], case_documents: List[Dict[str, Any]]) -> List[str]:
+        """Search for supporting evidence in case documents"""
+        evidence = []
+        fact_text_lower = fact['text'].lower()
+        
+        for doc in case_documents:
+            if 'content' in doc:
+                doc_content_lower = doc['content'].lower()
+                if self._has_semantic_overlap(fact_text_lower, doc_content_lower):
+                    doc_name = doc.get('name', 'Unknown Document')
+                    evidence.append(f"Document ({doc_name}): Content contains related information")
+        
+        return evidence
+    
+    async def _search_knowledge_graph(self, fact: Dict[str, Any]) -> List[str]:
+        """Search for supporting evidence in knowledge graph"""
+        evidence = []
+        
+        try:
+            if hasattr(self.knowledge_graph, 'search_entities'):
+                # Search for related entities
+                results = await self.knowledge_graph.search_entities(fact['text'])
+                for result in results[:3]:  # Limit to top 3 results
+                    evidence.append(f"Knowledge Graph: {result}")
+        except Exception as e:
+            logger.warning(f"Knowledge graph search failed: {str(e)}")
+        
+        return evidence
+    
+    def _has_semantic_overlap(self, text1: str, text2: str, threshold: float = 0.3) -> bool:
+        """Check if two texts have semantic overlap"""
+        # Simple word overlap check - in production, use more sophisticated NLP
+        words1 = set(text1.split())
+        words2 = set(text2.split())
+        
+        if not words1 or not words2:
+            return False
+        
+        overlap = len(words1.intersection(words2))
+        overlap_ratio = overlap / min(len(words1), len(words2))
+        
+        return overlap_ratio >= threshold
+    
+    def _assess_fact_verification(
+        self, 
+        fact: Dict[str, Any],
+        supporting_evidence: List[str],
+        contradicting_evidence: List[str],
+        verification_level: VerificationLevel
+    ) -> Tuple[FactStatus, float, str]:
+        """Assess the verification status of a fact"""
+        
+        support_count = len(supporting_evidence)
+        contradict_count = len(contradicting_evidence)
+        
+        # Determine minimum evidence thresholds based on verification level
+        thresholds = {
+            VerificationLevel.BASIC: 1,
+            VerificationLevel.STANDARD: 2,
+            VerificationLevel.COMPREHENSIVE: 3
+        }
+        min_evidence = thresholds[verification_level]
+        
+        if contradict_count > 0:
+            status = FactStatus.CONTRADICTED
+            confidence = max(0.1, 0.5 - (contradict_count * 0.2))
+            notes = f"Found {contradict_count} contradicting evidence(s)"
+        elif support_count >= min_evidence:
+            status = FactStatus.VERIFIED
+            confidence = min(0.95, 0.6 + (support_count * 0.1))
+            notes = f"Verified with {support_count} supporting evidence(s)"
+        elif support_count > 0:
+            status = FactStatus.NEEDS_REVIEW
+            confidence = 0.4 + (support_count * 0.1)
+            notes = f"Partial verification: {support_count} supporting evidence(s), but below threshold"
+        else:
+            status = FactStatus.UNVERIFIED
+            confidence = 0.1
+            notes = "No supporting evidence found"
+        
+        return status, confidence, notes
+    
+    def _generate_reviewer_suggestions(self, status: FactStatus, confidence: float) -> Optional[str]:
+        """Generate suggestions for human reviewers"""
+        if status == FactStatus.CONTRADICTED:
+            return "URGENT: This fact contradicts source materials. Verify accuracy and consider revision."
+        elif status == FactStatus.NEEDS_REVIEW:
+            return "Review recommended: Limited supporting evidence found. Consider additional verification."
+        elif status == FactStatus.UNVERIFIED:
+            return "No supporting evidence found. Verify fact or consider removing if not essential."
+        elif status == FactStatus.VERIFIED and confidence < 0.7:
+            return "Verified but with moderate confidence. Consider additional review for critical facts."
+        
+        return None
+    
+    def _generate_verification_report(
+        self,
+        document_content: str,
+        verification_level: VerificationLevel,
+        fact_results: List[FactVerificationResult]
+    ) -> VerificationReport:
+        """Generate comprehensive verification report"""
+        
+        total_facts = len(fact_results)
+        verified_count = sum(1 for r in fact_results if r.status == FactStatus.VERIFIED)
+        unverified_count = sum(1 for r in fact_results if r.status == FactStatus.UNVERIFIED)
+        contradicted_count = sum(1 for r in fact_results if r.status == FactStatus.CONTRADICTED)
+        needs_review_count = sum(1 for r in fact_results if r.status == FactStatus.NEEDS_REVIEW)
+        
+        if total_facts > 0:
+            overall_confidence = sum(r.confidence_score for r in fact_results) / total_facts
+        else:
+            overall_confidence = 0.0
+        
+        # Generate summary notes
+        summary_lines = [
+            f"Verification completed at {verification_level.value} level.",
+            f"Overall accuracy: {(verified_count/total_facts)*100:.1f}%" if total_facts > 0 else "No facts to verify."
+        ]
+        
+        if contradicted_count > 0:
+            summary_lines.append(f"⚠️ {contradicted_count} facts contradicted - immediate review required.")
+        if needs_review_count > 0:
+            summary_lines.append(f"📋 {needs_review_count} facts need additional review.")
+        
+        summary_notes = " ".join(summary_lines)
+        
+        from datetime import datetime
+        
+        return VerificationReport(
+            document_id=f"doc_{hash(document_content[:100]) % 10000}",
+            verification_level=verification_level,
+            total_facts_checked=total_facts,
+            verified_facts=verified_count,
+            unverified_facts=unverified_count,
+            contradicted_facts=contradicted_count,
+            needs_review_facts=needs_review_count,
+            overall_confidence=overall_confidence,
+            fact_results=fact_results,
+            summary_notes=summary_notes,
+            created_at=datetime.now().isoformat()
+        )
+
+
+# Utility functions for external use
+async def verify_document_quick(document_content: str, source_materials: Dict[str, Any]) -> VerificationReport:
+    """Quick fact verification with basic level"""
+    checker = FactChecker()
+    return await checker.verify_document_facts(document_content, source_materials, VerificationLevel.BASIC)
+
+
+async def verify_document_comprehensive(document_content: str, source_materials: Dict[str, Any], kg=None) -> VerificationReport:
+    """Comprehensive fact verification with knowledge graph support"""
+    checker = FactChecker(knowledge_graph=kg)
+    return await checker.verify_document_facts(document_content, source_materials, VerificationLevel.COMPREHENSIVE)
