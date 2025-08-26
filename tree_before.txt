@@ -108,10 +108,10 @@
 ./src/lawyerfactory/phases/phaseA02_research
 ./src/lawyerfactory/phases/phaseA02_research/agents
 ./src/lawyerfactory/phases/phaseA02_research/retrievers
-./src/lawyerfactory/phases/03_outline
-./src/lawyerfactory/phases/03_outline/claims
-./src/lawyerfactory/phases/03_outline/outline
-./src/lawyerfactory/phases/03_outline/shotlist
+./src/lawyerfactory/phases/phaseA03_outline
+./src/lawyerfactory/phases/phaseA03_outline/claims
+./src/lawyerfactory/phases/phaseA03_outline/outline
+./src/lawyerfactory/phases/phaseA03_outline/shotlist
 ./src/lawyerfactory/phases/04_human_review
 ./src/lawyerfactory/phases/04_human_review/io
 ./src/lawyerfactory/phases/04_human_review/ui
