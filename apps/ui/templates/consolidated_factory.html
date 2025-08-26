@@ -1,0 +1,1184 @@
+"""
+Consolidated LawyerFactory Interface
+
+A unified interface that combines the best elements from all UI components:
+- Retro Eastern European mechanical punk aesthetic with metallic textures
+- LLM dashboard integration from modern_dashboard.html
+- Legal intake form as popup modal
+- Agent swarm visualization in center console
+- Phase method workflow visualization
+- Interactive widgets and gizmos that spin and provide status
+- Sidebar integration for new deliverables
+
+Design inspired by cold war Eastern Europe with mechanical punk elements,
+featuring oxidized copper, emerald, gold, and industrial textures.
+"""
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ LAWYERFACTORY ⚙️ - Consolidated Interface</title>
+
+    <!-- Core Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Retro Eastern European Mechanical Punk Aesthetic */
+        :root {
+            --metallic-silver: #c0c0c0;
+            --oxidized-copper: #b87333;
+            --emerald-green: #50c878;
+            --gold-accent: #ffd700;
+            --rust-brown: #8b4513;
+            --industrial-gray: #2f2f2f;
+            --charcoal-dark: #1c1c1e;
+            --steam-punk: #8b7355;
+        }
+
+        body {
+            font-family: 'Courier Prime', 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, var(--charcoal-dark) 0%, var(--industrial-gray) 100%);
+            color: var(--metallic-silver);
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.03)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.02)"/><circle cx="50" cy="10" r="0.5" fill="rgba(184,115,51,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Industrial Machine Components */
+        .factory-header {
+            background: linear-gradient(90deg,
+                var(--industrial-gray) 0%,
+                var(--steam-punk) 30%,
+                var(--oxidized-copper) 70%,
+                var(--industrial-gray) 100%);
+            border-bottom: 3px solid var(--rust-brown);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .factory-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 20px,
+                rgba(255,255,255,0.05) 20px,
+                rgba(255,255,255,0.05) 40px
+            );
+            pointer-events: none;
+        }
+
+        .console-panel {
+            background: linear-gradient(135deg,
+                var(--industrial-gray) 0%,
+                var(--charcoal-dark) 50%,
+                var(--industrial-gray) 100%);
+            border: 2px solid var(--oxidized-copper);
+            border-radius: 8px;
+            box-shadow:
+                inset 0 2px 4px rgba(0,0,0,0.5),
+                0 4px 8px rgba(0,0,0,0.3),
+                0 0 20px rgba(184,115,51,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .console-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(80,200,120,0.1), transparent 50%);
+            pointer-events: none;
+        }
+
+        /* Mechanical Widgets and Gizmos */
+        .gizmo-dial {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%,
+                var(--metallic-silver),
+                var(--industrial-gray));
+            border: 4px solid var(--oxidized-copper);
+            box-shadow:
+                inset 0 2px 4px rgba(0,0,0,0.5),
+                0 2px 8px rgba(0,0,0,0.3);
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gizmo-dial:hover {
+            transform: scale(1.05);
+            box-shadow:
+                inset 0 2px 4px rgba(0,0,0,0.5),
+                0 4px 12px rgba(184,115,51,0.4);
+        }
+
+        .gizmo-dial::before {
+            content: '';
+            position: absolute;
+            width: 60%;
+            height: 60%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%,
+                var(--emerald-green),
+                var(--industrial-gray));
+            border: 2px solid var(--gold-accent);
+        }
+
+        .gizmo-needle {
+            position: absolute;
+            width: 2px;
+            height: 35%;
+            background: var(--gold-accent);
+            transform-origin: bottom center;
+            top: 15%;
+            left: 50%;
+            margin-left: -1px;
+            border-radius: 1px;
+            transition: transform 0.5s ease;
+            box-shadow: 0 0 4px rgba(255,215,0,0.6);
+        }
+
+        .gizmo-pipe {
+            background: linear-gradient(90deg,
+                var(--oxidized-copper) 0%,
+                var(--rust-brown) 15%,
+                var(--oxidized-copper) 30%,
+                var(--steam-punk) 45%,
+                var(--oxidized-copper) 60%,
+                var(--rust-brown) 75%,
+                var(--oxidized-copper) 100%);
+            border: 2px solid var(--industrial-gray);
+            border-radius: 20px;
+            box-shadow:
+                inset 0 2px 4px rgba(0,0,0,0.3),
+                0 2px 8px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gizmo-pipe::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg,
+                transparent,
+                rgba(255,215,0,0.3),
+                transparent);
+            animation: flow 3s ease-in-out infinite;
+        }
+
+        @keyframes flow {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .gizmo-valve {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%,
+                var(--industrial-gray),
+                var(--charcoal-dark));
+            border-radius: 50%;
+            border: 2px solid var(--oxidized-copper);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .gizmo-valve:hover {
+            background: radial-gradient(circle at 30% 30%,
+                var(--steam-punk),
+                var(--industrial-gray));
+            box-shadow: 0 0 10px rgba(184,115,51,0.4);
+        }
+
+        .gizmo-valve::after {
+            content: '⚙';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
+            color: var(--gold-accent);
+            animation: spin 4s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* LLM Dashboard Integration */
+        .llm-metrics-panel {
+            background: linear-gradient(135deg,
+                rgba(30, 41, 59, 0.9) 0%,
+                rgba(51, 65, 85, 0.9) 100%);
+            border: 1px solid var(--emerald-green);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .metric-card {
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid var(--oxidized-copper);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card:hover {
+            border-color: var(--emerald-green);
+            box-shadow: 0 0 20px rgba(80,200,120,0.2);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gold-accent);
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--metallic-silver);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Agent Swarm Visualization */
+        .agent-swarm-container {
+            background: radial-gradient(circle at center,
+                rgba(80,200,120,0.1) 0%,
+                rgba(15, 23, 42, 0.8) 70%);
+            border: 2px solid var(--emerald-green);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 0 8px var(--emerald-green));
+        }
+
+        .agent-node:hover {
+            filter: drop-shadow(0 0 12px var(--gold-accent));
+            transform: scale(1.1);
+        }
+
+        .agent-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--oxidized-copper);
+        }
+
+        .agent-avatar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--emerald-green), var(--industrial-gray));
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        /* Phase Method Visualization */
+        .phase-visualization {
+            background: linear-gradient(135deg,
+                var(--industrial-gray) 0%,
+                var(--charcoal-dark) 100%);
+            border: 2px solid var(--gold-accent);
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .phase-node {
+            background: var(--oxidized-copper);
+            border: 2px solid var(--gold-accent);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .phase-node.active {
+            background: var(--emerald-green);
+            box-shadow: 0 0 20px rgba(80,200,120,0.6);
+        }
+
+        .phase-node.completed {
+            background: var(--gold-accent);
+        }
+
+        /* Legal Intake Form Modal */
+        .intake-modal {
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(5px);
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .intake-form-container {
+            background: #fff9c2;
+            border: 3px solid var(--rust-brown);
+            border-radius: 8px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .legal-pad-header {
+            background: #ffe082;
+            border-bottom: 2px solid var(--rust-brown);
+            padding: 16px 20px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .pad-spiral {
+            width: 20px;
+            height: 20px;
+            background: var(--industrial-gray);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .pad-spiral::before {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--oxidized-copper);
+            border-radius: 50%;
+            top: 4px;
+            left: 4px;
+        }
+
+        .pad-title {
+            font-family: 'Courier Prime', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--rust-brown);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .legal-pad-content {
+            padding: 20px;
+            background-image:
+                linear-gradient(transparent 29px, rgba(0,0,0,0.1) 30px),
+                linear-gradient(90deg, transparent 29px, rgba(0,0,0,0.1) 30px);
+            background-size: 100% 30px, 30px 100%;
+            line-height: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 24px;
+        }
+
+        .form-section h3 {
+            font-family: 'Courier Prime', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--rust-brown);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 16px;
+        }
+
+        .form-row label {
+            font-family: 'Courier Prime', monospace;
+            font-weight: 600;
+            color: var(--industrial-gray);
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        .pad-input, .pad-textarea, .pad-select {
+            border: 1px solid var(--rust-brown);
+            border-radius: 4px;
+            padding: 8px;
+            font-family: 'Courier Prime', monospace;
+            background: rgba(255,255,255,0.9);
+            color: var(--industrial-gray);
+        }
+
+        .pad-input:focus, .pad-textarea:focus, .pad-select:focus {
+            outline: none;
+            border-color: var(--emerald-green);
+            box-shadow: 0 0 8px rgba(80,200,120,0.3);
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid var(--oxidized-copper);
+            position: relative;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-online {
+            background: var(--emerald-green);
+            box-shadow: 0 0 8px rgba(80,200,120,0.8);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .status-busy {
+            background: var(--gold-accent);
+            box-shadow: 0 0 8px rgba(255,215,0,0.8);
+            animation: spin 3s linear infinite;
+        }
+
+        .status-error {
+            background: var(--rust-brown);
+            box-shadow: 0 0 8px rgba(139,69,19,0.8);
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        /* Sidebar Integration */
+        .sidebar-panel {
+            background: linear-gradient(180deg,
+                var(--industrial-gray) 0%,
+                var(--charcoal-dark) 100%);
+            border: 2px solid var(--oxidized-copper);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(184,115,51,0.05) 10px,
+                rgba(184,115,51,0.05) 20px
+            );
+            pointer-events: none;
+        }
+
+        .sidebar-title {
+            font-family: 'Courier Prime', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gold-accent);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .factory-layout {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto auto;
+            }
+
+            .gizmo-dial {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        /* Utility Classes */
+        .industrial-texture {
+            background: linear-gradient(135deg,
+                var(--industrial-gray) 0%,
+                var(--steam-punk) 25%,
+                var(--industrial-gray) 50%,
+                var(--steam-punk) 75%,
+                var(--industrial-gray) 100%);
+            border: 1px solid var(--oxidized-copper);
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.1),
+                        inset 0 -1px 2px rgba(0,0,0,0.3);
+        }
+
+        .metallic-text {
+            color: var(--metallic-silver);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .accent-text {
+            color: var(--gold-accent);
+            text-shadow: 0 0 8px rgba(255,215,0,0.3);
+        }
+
+        .emerald-text {
+            color: var(--emerald-green);
+            text-shadow: 0 0 8px rgba(80,200,120,0.3);
+        }
+    </style>
+</head>
+<body class="h-screen overflow-hidden">
+    <!-- Legal Intake Form Modal -->
+    <div id="intakeModal" class="intake-modal">
+        <div class="intake-form-container">
+            <div class="legal-pad-header">
+                <div class="pad-spiral"></div>
+                <h2 class="pad-title">⚖️ LEGAL INTAKE FORM</h2>
+                <button class="text-2xl metallic-text hover:accent-text" onclick="closeIntakeForm()">×</button>
+            </div>
+
+            <div class="legal-pad-content">
+                <form id="intakeForm" class="space-y-6">
+                    <!-- Client Information -->
+                    <div class="form-section">
+                        <h3>📋 Client Information</h3>
+                        <div class="form-row">
+                            <label for="user_name">Your Name:</label>
+                            <input type="text" id="user_name" name="user_name" class="pad-input" required>
+                        </div>
+                        <div class="form-row">
+                            <label for="user_address">Your Address:</label>
+                            <textarea id="user_address" name="user_address" class="pad-textarea" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Other Party Information -->
+                    <div class="form-section">
+                        <h3>⚖️ Other Party Information</h3>
+                        <div class="form-row">
+                            <label for="other_party_name">Other Party Name:</label>
+                            <input type="text" id="other_party_name" name="other_party_name" class="pad-input" required>
+                        </div>
+                        <div class="form-row">
+                            <label for="party_role">Are you the:</label>
+                            <select id="party_role" name="party_role" class="pad-select" required>
+                                <option value="">Select...</option>
+                                <option value="plaintiff">Plaintiff (Suing)</option>
+                                <option value="defendant">Defendant (Being Sued)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Case Details -->
+                    <div class="form-section">
+                        <h3>📜 Case Details</h3>
+                        <div class="form-row">
+                            <label for="claim_description">Claim Description:</label>
+                            <textarea id="claim_description" name="claim_description" class="pad-textarea" rows="3" required></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label for="jurisdiction">Jurisdiction:</label>
+                            <select id="jurisdiction" name="jurisdiction" class="pad-select">
+                                <option value="">Select...</option>
+                                <option value="federal">Federal</option>
+                                <option value="state">State</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex justify-between items-center pt-4 border-t border-gray-300">
+                        <button type="button" onclick="closeIntakeForm()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                            Start Processing
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Factory Interface -->
+    <div class="h-full flex flex-col">
+        <!-- Factory Header -->
+        <header class="factory-header p-4 flex justify-between items-center z-20">
+            <div class="flex items-center space-x-4">
+                <div class="text-3xl font-bold metallic-text tracking-wider">
+                    ⚙️ LAWYERFACTORY ⚙️
+                </div>
+                <div class="text-sm metallic-text opacity-75">
+                    Consolidated Interface v2.0
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-6">
+                <!-- Status Indicators -->
+                <div class="flex items-center space-x-2">
+                    <span class="status-indicator status-online"></span>
+                    <span class="text-sm metallic-text">LLM Online</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="status-indicator status-busy"></span>
+                    <span class="text-sm metallic-text">Processing</span>
+                </div>
+
+                <!-- Control Buttons -->
+                <button onclick="openIntakeForm()" class="industrial-texture px-4 py-2 metallic-text hover:accent-text transition-all">
+                    📝 Intake Form
+                </button>
+                <button onclick="startFactory()" class="industrial-texture px-4 py-2 metallic-text hover:accent-text transition-all">
+                    ▶️ Start Factory
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Factory Layout -->
+        <main class="flex-grow grid grid-cols-12 gap-4 p-4 overflow-hidden factory-layout">
+            <!-- Left Sidebar -->
+            <div class="col-span-3 space-y-4">
+                <!-- LLM Dashboard Panel -->
+                <div class="sidebar-panel">
+                    <h3 class="sidebar-title">🤖 LLM Dashboard</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="metric-card">
+                            <div class="metric-value" id="documentsProcessed">0</div>
+                            <div class="metric-label">Documents</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="accuracyScore">95%</div>
+                            <div class="metric-label">Accuracy</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="activeAgents">3</div>
+                            <div class="metric-label">Active Agents</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="processingTime">2.3s</div>
+                            <div class="metric-label">Avg Time</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase Method Visualization -->
+                <div class="sidebar-panel">
+                    <h3 class="sidebar-title">⚡ Phase Method</h3>
+                    <div class="space-y-3">
+                        <div class="phase-node active flex items-center justify-center w-12 h-12 mx-auto">
+                            <span class="text-white font-bold">1</span>
+                        </div>
+                        <div class="text-center text-xs metallic-text">Intake</div>
+
+                        <div class="phase-node flex items-center justify-center w-10 h-10 mx-auto">
+                            <span class="text-white font-bold">2</span>
+                        </div>
+                        <div class="text-center text-xs metallic-text">Research</div>
+
+                        <div class="phase-node flex items-center justify-center w-10 h-10 mx-auto">
+                            <span class="text-white font-bold">3</span>
+                        </div>
+                        <div class="text-center text-xs metallic-text">Drafting</div>
+
+                        <div class="phase-node flex items-center justify-center w-10 h-10 mx-auto">
+                            <span class="text-white font-bold">4</span>
+                        </div>
+                        <div class="text-center text-xs metallic-text">Review</div>
+                    </div>
+                <!-- Vector Store Controls -->
+                <div class="sidebar-panel">
+                    <div class="panel-header">
+                        <h3 style="color: var(--gold-accent); margin: 0;">
+                            <i class="fas fa-database"></i> VECTOR STORE CONTROLS
+                        </h3>
+                    </div>
+
+                    <div style="padding: 1rem; space-y: 1rem;">
+                        <!-- Validation Type Selector -->
+                        <div class="validation-type-selector console-panel" style="margin-bottom: 1rem;">
+                            <div class="panel-header">
+                                <h4 style="color: var(--emerald-green); margin: 0; font-size: 0.9rem;">
+                                    <i class="fas fa-filter"></i> VALIDATION TYPE
+                                </h4>
+                            </div>
+
+                            <div style="padding: 0.5rem;">
+                                <select id="validationTypeSelect" class="gizmo-dial"
+                                        style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; font-size: 0.8rem;">
+                                    <option value="complaints_against_tesla" selected>Complaints Against Tesla</option>
+                                    <option value="contract_disputes">Contract Disputes</option>
+                                    <option value="personal_injury">Personal Injury</option>
+                                    <option value="employment_claims">Employment Claims</option>
+                                    <option value="intellectual_property">Intellectual Property</option>
+                                </select>
+                                <button id="applyValidationFilter" class="gizmo-dial"
+                                        style="width: 100%; background: var(--emerald-green); color: black; border: none; font-size: 0.8rem;">
+                                    <i class="fas fa-check"></i> Apply Filter
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Vector Store Status -->
+                        <div class="vector-store-status console-panel">
+                            <div class="panel-header">
+                                <h4 style="color: var(--gold-accent); margin: 0; font-size: 0.9rem;">
+                                    <i class="fas fa-chart-bar"></i> VECTOR STATUS
+                                </h4>
+                            </div>
+
+                            <div id="vectorStoreStatus" style="padding: 0.5rem;">
+                                <div class="status-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.8rem;">
+                                    <div class="status-item">
+                                        <div style="color: var(--emerald-green); font-size: 0.7rem;">PRIMARY</div>
+                                        <div id="primaryEvidenceCount" style="color: var(--metallic-silver); font-weight: bold;">0</div>
+                                    </div>
+                                    <div class="status-item">
+                                        <div style="color: var(--emerald-green); font-size: 0.7rem;">OPINIONS</div>
+                                        <div id="caseOpinionsCount" style="color: var(--metallic-silver); font-weight: bold;">0</div>
+                                    </div>
+                                    <div class="status-item">
+                                        <div style="color: var(--emerald-green); font-size: 0.7rem;">RAG</div>
+                                        <div id="generalRagCount" style="color: var(--metallic-silver); font-weight: bold;">0</div>
+                                    </div>
+                                    <div class="status-item">
+                                        <div style="color: var(--emerald-green); font-size: 0.7rem;">FILTERED</div>
+                                        <div id="validationSubVectorsCount" style="color: var(--metallic-silver); font-weight: bold;">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+
+                <!-- Control Panel -->
+                <div class="sidebar-panel">
+                    <h3 class="sidebar-title">🎛️ Control Panel</h3>
+                    <div class="space-y-4">
+                        <div class="gizmo-dial">
+                            <div class="gizmo-needle" style="transform: rotate(45deg);"></div>
+                            <span class="absolute text-xs metallic-text">Speed</span>
+                        </div>
+                        <div class="gizmo-dial">
+                            <div class="gizmo-needle" style="transform: rotate(90deg);"></div>
+                            <span class="absolute text-xs metallic-text">Quality</span>
+                        </div>
+                        <div class="flex justify-center">
+                            <div class="gizmo-valve"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Console - Agent Swarm -->
+            <div class="col-span-6 console-panel flex flex-col">
+                <h2 class="text-xl font-bold p-4 metallic-text border-b border-oxidized-copper">
+                    🕸️ Agent Swarm Console
+                </h2>
+                <div class="flex-grow p-4">
+                    <div id="agentSwarmContainer" class="agent-swarm-container w-full h-full rounded-full">
+                        <!-- Agent nodes will be dynamically added here -->
+                    </div>
+                </div>
+                <div class="p-4 border-t border-oxidized-copper">
+                    <div class="flex justify-between items-center text-sm metallic-text">
+                        <span>Status: <span id="factoryStatus" class="accent-text">IDLE</span></span>
+                        <span>Phase: <span id="currentPhase" class="emerald-text">Ready</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="col-span-3 space-y-4">
+                <!-- Document Preview -->
+                <div class="sidebar-panel">
+                    <h3 class="sidebar-title">📄 Document Preview</h3>
+                    <div id="documentPreview" class="space-y-2 text-sm metallic-text">
+                        <div class="industrial-texture p-3 rounded">
+                            <div class="font-medium accent-text">No document selected</div>
+                            <div class="text-xs opacity-75">Upload or select a document to preview</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Indicators -->
+                <div class="sidebar-panel">
+                    <h3 class="sidebar-title">📊 Progress</h3>
+                    <div class="space-y-3">
+                        <div class="industrial-texture p-3 rounded">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="metallic-text">Overall</span>
+                                <span class="accent-text" id="overallProgress">0%</span>
+                            </div>
+                            <div class="gizmo-pipe h-2">
+                                <div class="bg-emerald-green h-full rounded" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="industrial-texture p-3 rounded">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="metallic-text">Current Task</span>
+                                <span class="emerald-text" id="taskProgress">0%</span>
+                            </div>
+                            <div class="gizmo-pipe h-2">
+                                <div class="bg-gold-accent h-full rounded" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Feed -->
+                <div class="sidebar-panel">
+                    <h3 class="sidebar-title">📋 Activity Feed</h3>
+                    <div id="activityFeed" class="space-y-2 max-h-64 overflow-y-auto">
+                        <div class="industrial-texture p-2 rounded text-xs metallic-text">
+                            <div class="font-medium accent-text">System Ready</div>
+                            <div class="opacity-75">Factory initialized and waiting for input</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer Status Bar -->
+        <footer class="factory-header p-3 flex justify-between items-center text-sm">
+            <div class="flex items-center space-x-4">
+                <span class="metallic-text">Connection: <span class="accent-text">Online</span></span>
+                <span class="metallic-text">LLM: <span class="emerald-text">Active</span></span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="metallic-text">v2.0 - Consolidated Interface</span>
+                <span class="metallic-text">Built with ❤️ for Legal Innovation</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Socket.IO connection for real-time updates
+        const socket = io();
+
+        socket.on('connect', function() {
+            console.log('Connected to LawyerFactory server');
+            updateActivityFeed('🔗 Connected to server', 'success');
+        });
+
+        socket.on('disconnect', function() {
+            console.log('Disconnected from server');
+            updateActivityFeed('❌ Disconnected from server', 'error');
+        });
+
+        // LLM Dashboard updates
+        socket.on('llm_metrics_update', function(data) {
+            updateLLMMetrics(data);
+        });
+
+        socket.on('agent_activity', function(data) {
+            updateAgentSwarm(data);
+            updateActivityFeed(`🤖 ${data.agent}: ${data.action}`, 'info');
+        });
+
+        socket.on('phase_change', function(data) {
+            updatePhaseVisualization(data);
+            updateActivityFeed(`⚡ Phase changed to: ${data.phase}`, 'info');
+        });
+
+        socket.on('document_processed', function(data) {
+            updateDocumentPreview(data);
+            updateProgress(data.progress);
+            updateActivityFeed(`📄 Processed: ${data.filename}`, 'success');
+        });
+
+        // Legal Intake Form Functions
+        function openIntakeForm() {
+            document.getElementById('intakeModal').style.display = 'flex';
+        }
+
+        function closeIntakeForm() {
+            document.getElementById('intakeModal').style.display = 'none';
+        }
+
+        // Form submission
+        document.getElementById('intakeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const intakeData = Object.fromEntries(formData.entries());
+
+            socket.emit('start_legal_intake', intakeData);
+            closeIntakeForm();
+
+            updateActivityFeed('📝 Legal intake form submitted', 'info');
+            updateFactoryStatus('Processing intake...');
+        });
+
+        // Factory Control Functions
+        function startFactory() {
+            socket.emit('start_factory');
+            updateFactoryStatus('Starting factory...');
+            updateActivityFeed('🏭 Starting LawyerFactory', 'info');
+        }
+
+        // UI Update Functions
+        function updateLLMMetrics(data) {
+            document.getElementById('documentsProcessed').textContent = data.documents_processed || 0;
+            document.getElementById('accuracyScore').textContent = data.accuracy_score || '95%';
+            document.getElementById('activeAgents').textContent = data.active_agents || 3;
+            document.getElementById('processingTime').textContent = data.processing_time || '2.3s';
+        }
+
+        function updateAgentSwarm(data) {
+            const container = document.getElementById('agentSwarmContainer');
+            // Update agent swarm visualization based on data
+            // This would integrate with D3.js for the agent network visualization
+        }
+
+        function updatePhaseVisualization(data) {
+            // Update phase method visualization
+            const phases = document.querySelectorAll('.phase-node');
+            phases.forEach((phase, index) => {
+                phase.classList.remove('active', 'completed');
+                if (index + 1 < data.current_phase) {
+                    phase.classList.add('completed');
+                } else if (index + 1 === data.current_phase) {
+                    phase.classList.add('active');
+                }
+            });
+        }
+
+        function updateDocumentPreview(data) {
+            const preview = document.getElementById('documentPreview');
+            preview.innerHTML = `
+                <div class="industrial-texture p-3 rounded">
+                    <div class="font-medium accent-text">${data.filename || 'Unknown'}</div>
+                    <div class="text-xs metallic-text mt-1">${data.content_preview || 'No preview available'}</div>
+                    <div class="text-xs emerald-text mt-2">Type: ${data.document_type || 'Unknown'}</div>
+                </div>
+            `;
+        }
+
+        function updateProgress(data) {
+            document.getElementById('overallProgress').textContent = `${data.overall || 0}%`;
+            document.getElementById('taskProgress').textContent = `${data.task || 0}%`;
+
+            // Update progress bars
+            const overallBar = document.querySelector('.gizmo-pipe .bg-emerald-green');
+            const taskBar = document.querySelector('.gizmo-pipe .bg-gold-accent');
+
+            if (overallBar) overallBar.style.width = `${data.overall || 0}%`;
+            if (taskBar) taskBar.style.width = `${data.task || 0}%`;
+        }
+
+        function updateFactoryStatus(status) {
+            document.getElementById('factoryStatus').textContent = status;
+        }
+
+        function updateActivityFeed(message, type = 'info') {
+            const feed = document.getElementById('activityFeed');
+            const entry = document.createElement('div');
+            entry.className = `industrial-texture p-2 rounded text-xs metallic-text`;
+            entry.innerHTML = `
+                <div class="font-medium ${type === 'error' ? 'text-red-400' : type === 'success' ? 'accent-text' : 'metallic-text'}">
+                    ${message}
+                </div>
+            `;
+
+            feed.insertBefore(entry, feed.firstChild);
+
+            // Keep only last 10 entries
+            while (feed.children.length > 10) {
+                feed.removeChild(feed.lastChild);
+            }
+        }
+
+        // Initialize gizmo animations
+        function initializeGizmos() {
+            // Animate dials
+            const dials = document.querySelectorAll('.gizmo-dial .gizmo-needle');
+            dials.forEach((dial, index) => {
+                setInterval(() => {
+                    const angle = Math.sin(Date.now() * 0.001 + index) * 45 + 90;
+                    dial.style.transform = `rotate(${angle}deg)`;
+                }, 100);
+            });
+        }
+
+        // Initialize agent swarm visualization
+        function initializeAgentSwarm() {
+            const container = document.getElementById('agentSwarmContainer');
+
+            // Create sample agent nodes
+            const agents = [
+                { id: 'intake', name: 'Intake', x: 100, y: 100, status: 'active' },
+                { id: 'research', name: 'Research', x: 200, y: 150, status: 'idle' },
+                { id: 'drafting', name: 'Drafting', x: 150, y: 200, status: 'idle' },
+                { id: 'review', name: 'Review', x: 250, y: 100, status: 'idle' }
+            ];
+
+            agents.forEach(agent => {
+                const agentNode = document.createElement('div');
+                agentNode.className = 'agent-node absolute';
+                agentNode.style.left = `${agent.x}px`;
+                agentNode.style.top = `${agent.y}px`;
+
+                agentNode.innerHTML = `
+                    <div class="agent-avatar ${agent.status === 'active' ? 'bg-emerald-500' : 'bg-gray-500'}">
+                        ${agent.name[0]}
+                    </div>
+                    <div class="agent-label">${agent.name}</div>
+                `;
+
+                container.appendChild(agentNode);
+            });
+        }
+
+        // Initialize the interface
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeGizmos();
+            initializeAgentSwarm();
+            updateActivityFeed('⚙️ LawyerFactory Consolidated Interface v2.0 Ready', 'success');
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'i' && e.ctrlKey) {
+                e.preventDefault();
+                openIntakeForm();
+            } else if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                startFactory();
+            }
+        });
+                // Vector Store Controls Functionality
+                document.getElementById('applyValidationFilter').addEventListener('click', function() {
+                    const selectedType = document.getElementById('validationTypeSelect').value;
+                    applyValidationFilter(selectedType);
+                });
+
+                async function applyValidationFilter(validationType) {
+                    try {
+                        const response = await fetch('/api/vector-store/apply-validation-filter', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                validation_type: validationType
+                            })
+                        });
+
+                        const data = await response.json();
+
+                        if (data.success) {
+                            addActivityLog(`Applied ${validationType} filter. Found ${data.document_count} documents.`, 'success');
+                            updateVectorStoreStatus();
+                        } else {
+                            addActivityLog('Failed to apply validation filter.', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error applying validation filter:', error);
+                        addActivityLog('Error applying validation filter.', 'error');
+                    }
+                }
+
+                async function updateVectorStoreStatus() {
+                    try {
+                        const response = await fetch('/api/vector-store/status');
+                        const data = await response.json();
+
+                        if (data.success) {
+                            document.getElementById('primaryEvidenceCount').textContent = data.stores.primary_evidence?.documents || 0;
+                            document.getElementById('caseOpinionsCount').textContent = data.stores.case_opinions?.documents || 0;
+                            document.getElementById('generalRagCount').textContent = data.stores.general_rag?.documents || 0;
+                            document.getElementById('validationSubVectorsCount').textContent = data.validation_sub_vectors || 0;
+                        }
+                    } catch (error) {
+                        console.error('Error updating vector store status:', error);
+                    }
+                }
+
+                function addActivityLog(message, type = 'info') {
+                    const activityFeed = document.getElementById('activityFeed');
+                    const logEntry = document.createElement('div');
+                    logEntry.className = 'industrial-texture p-2 rounded text-xs metallic-text';
+                    logEntry.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span>${message}</span>
+                            <span class="text-xs opacity-70">${new Date().toLocaleTimeString()}</span>
+                        </div>
+                    `;
+
+                    activityFeed.insertBefore(logEntry, activityFeed.firstChild);
+
+                    // Keep only last 20 entries
+                    while (activityFeed.children.length > 20) {
+                        activityFeed.removeChild(activityFeed.lastChild);
+                    }
+                }
+
+                // Auto-update vector store status every 30 seconds
+                setInterval(updateVectorStoreStatus, 30000);
+
+                // Initial status update
+                updateVectorStoreStatus();
+
+                // Add some initial activity logs
+                addActivityLog('Vector store system initialized', 'success');
+                addActivityLog('Default validation type: Complaints Against Tesla', 'info');
+                addActivityLog('Ready for evidence ingestion and RAG queries', 'info');
+    </script>
+</body>
+</html>

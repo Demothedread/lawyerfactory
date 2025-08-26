@@ -27,6 +27,30 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CauseDetectionResult:
     """Result of cause of action detection"""
+# Import LLM integration functions
+try:
+    from .llm_outline_integration import (
+        llm_detect_causes_of_action,
+        llm_analyze_legal_elements,
+        llm_generate_document_outline,
+        llm_generate_provable_questions,
+        llm_enhance_legal_definition,
+        llm_build_decision_tree
+    )
+
+    LLM_OUTLINE_AVAILABLE = True
+except Exception:
+    LLM_OUTLINE_AVAILABLE = False
+    logger.warning("LLM outline integration functions not available")
+
+# try to import new LLM service
+try:
+    from ...lf_core.llm import LLMService
+
+    LLM_SERVICE_AVAILABLE = True
+except Exception:
+    LLM_SERVICE_AVAILABLE = False
+    logger.warning("LLM service not available - using fallback categorization")
     cause_name: str
     confidence_score: float
     supporting_facts: List[str]
@@ -508,6 +532,102 @@ if __name__ == "__main__":
             },
             {
                 'id': 'fact_3',
+    # --- LLM-Enhanced Methods ---
+
+    def llm_enhanced_detect_causes_from_facts(self, case_facts: List[Dict[str, Any]],
+                                             jurisdiction: str = "general") -> List[CauseDetectionResult]:
+        """Enhanced cause detection using LLM for better accuracy and context understanding."""
+        if not LLM_OUTLINE_AVAILABLE:
+            logger.warning("LLM outline integration not available, using traditional detection")
+            return self.detect_causes_from_facts(case_facts, jurisdiction)
+
+        try:
+            # Combine all case facts into text for LLM analysis
+            combined_text = " ".join([fact.get("content", "") for fact in case_facts if fact.get("content")])
+
+            # Use LLM for cause detection
+            llm_causes = llm_detect_causes_of_action(combined_text, jurisdiction)
+
+            # Convert LLM results to CauseDetectionResult format
+            results = []
+            for cause_data in llm_causes:
+                result = CauseDetectionResult(
+                    cause_name=cause_data.get("cause_name", "Unknown"),
+                    confidence_score=cause_data.get("confidence_score", 0.0),
+                    supporting_facts=cause_data.get("supporting_facts", []),
+                    jurisdiction=jurisdiction,
+                    elements_detected=cause_data.get("elements_detected", []),
+                    authority_citation=cause_data.get("authority_citation")
+                )
+                results.append(result)
+
+            # If LLM didn't find causes, fall back to traditional method
+            if not results:
+                logger.info("LLM found no causes, falling back to traditional detection")
+                return self.detect_causes_from_facts(case_facts, jurisdiction)
+
+            return results
+
+        except Exception as e:
+            logger.error("LLM-enhanced cause detection failed: %s", e)
+            return self.detect_causes_from_facts(case_facts, jurisdiction)
+
+    def llm_enhanced_analyze_elements_for_cause(self, text: str, cause_name: str) -> List[Dict[str, Any]]:
+        """Enhanced element analysis using LLM for better understanding of legal elements."""
+        if not LLM_OUTLINE_AVAILABLE:
+            logger.warning("LLM outline integration not available, using traditional analysis")
+            return self._detect_elements_for_cause(text, cause_name)
+
+        try:
+            # Use LLM for element analysis
+            analysis = llm_analyze_legal_elements(text, cause_name)
+
+            if analysis.get("analysis_method") == "llm":
+                return analysis.get("elements_analyzed", self._detect_elements_for_cause(text, cause_name))
+            else:
+                return self._detect_elements_for_cause(text, cause_name)
+
+        except Exception as e:
+            logger.error("LLM-enhanced element analysis failed: %s", e)
+            return self._detect_elements_for_cause(text, cause_name)
+
+    def generate_llm_enhanced_outline(self, case_facts: List[Dict[str, Any]],
+                                    cause_of_action: str, jurisdiction: str = "general") -> Dict[str, Any]:
+        """Generate document outline using LLM for intelligent structure creation."""
+        if not LLM_OUTLINE_AVAILABLE:
+            logger.warning("LLM outline integration not available, using basic outline")
+            return self._generate_basic_outline(case_facts, cause_of_action, jurisdiction)
+
+        try:
+            # Combine case facts for LLM analysis
+            combined_facts = " ".join([fact.get("content", "") for fact in case_facts if fact.get("content")])
+
+            # Use LLM to generate outline
+            outline = llm_generate_document_outline(combined_facts, cause_of_action, jurisdiction)
+
+            if outline.get("generation_method") == "llm":
+                return outline
+            else:
+                return self._generate_basic_outline(case_facts, cause_of_action, jurisdiction)
+
+        except Exception as e:
+            logger.error("LLM-enhanced outline generation failed: %s", e)
+            return self._generate_basic_outline(case_facts, cause_of_action, jurisdiction)
+
+    def _generate_basic_outline(self, case_facts: List[Dict[str, Any]],
+                              cause_of_action: str, jurisdiction: str = "general") -> Dict[str, Any]:
+        """Fallback outline generation when LLM is not available."""
+        return {
+            "cause_of_action": cause_of_action,
+            "jurisdiction": jurisdiction,
+            "sections": [
+                {"title": "Introduction", "content": "Case overview and parties"},
+                {"title": "Factual Background", "content": f"Facts relevant to {cause_of_action}"},
+                {"title": "Legal Analysis", "content": f"Analysis of {cause_of_action} elements"},
+                {"title": "Conclusion", "content": "Summary and recommendations"}
+            ],
+            "generation_method": "fallback"
+        }
                 'name': 'Injuries',
                 'description': 'Plaintiff suffered broken ribs and medical expenses of $25,000',
                 'type': 'evidence'

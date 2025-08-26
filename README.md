@@ -14,6 +14,11 @@ LawyerFactory is an advanced AI-powered legal document processing system that or
 - **👥 Human Review Integration**: Seamless attorney collaboration workflows
 - **📄 Post-Production Processing**: Automated formatting, citation management, and compliance checking
 - **🎯 Orchestration Engine**: Coordinated multi-agent workflow management
+- **🧠 Multi-Purpose Vector Stores**: Specialized vector databases for evidence, case law, and RAG
+- **🔍 Semantic Search & RAG**: Retrieval-augmented generation with context-aware LLM integration
+- **📊 Validation Type Filtering**: User-selectable validation criteria with sub-vector creation
+- **⚡ Real-time Vector Processing**: Automated evidence ingestion with tokenization
+- **🎨 Retro Mechanical UI**: Eastern European mechanical punk aesthetic with interactive controls
 
 ## Architecture
 
@@ -40,11 +45,42 @@ The system follows a sequential 7-phase workflow:
 │   ├── analysis/             # Claims analysis agents
 │   └── review/               # Review and validation agents
 ├── infrastructure/           # Technical infrastructure
-│   ├── storage/              # File and data storage
+│   ├── storage/              # Object/blob storage (S3 or local dir) and data storage
 │   ├── messaging/            # Event system and notifications
+├── vectors/                   # Vector storage and retrieval system
+│   ├── enhanced_vector_store.py # Multi-purpose vector store manager
+│   ├── evidence_ingestion.py    # Automated evidence ingestion pipeline
+│   ├── research_integration.py  # Research rounds integration
+│   ├── llm_rag_integration.py   # LLM RAG functionality
+│   ├── ui_components.py         # UI components for vector controls
+│   └── memory_compression.py    # MCP memory compression system
 │   └── monitoring/           # Logging and metrics
 ├── knowledge_graph/          # Legal knowledge representation
 ├── config/                   # Configuration management
+### Vector Store System
+
+The system includes a sophisticated multi-purpose vector storage system:
+
+#### Specialized Vector Stores
+- **Primary Evidence Store**: For Statement of Facts construction and evidence management
+- **Case Opinions Store**: For knowledge graph integration and legal precedent storage
+- **General RAG Store**: For semantic search and LLM augmentation
+- **Validation Sub-Vectors**: Filtered collections for specific validation types
+
+#### Key Capabilities
+- **Automated Evidence Ingestion**: Tokenizes and stores text from intake/research phases
+- **Research Rounds Integration**: Accumulates knowledge across research iterations
+- **Semantic Search & RAG**: Retrieval-augmented generation with context-aware LLM integration
+- **Validation Type Filtering**: User-selectable validation criteria (default: "complaints against tesla")
+- **Real-time Processing**: Automated vectorization with caching and optimization
+- **IRAC/IR{C}C Format Support**: Structured legal writing with vector-enhanced context
+- **Directory-Based Keys for Evidence**: Uploaded files are stored with directory-like prefixes (store/case_id/YYYY/MM/uuid_filename) in S3 or a local uploads folder; vectors reference the blob via `blob_key` and `blob_locator`.
+
+#### UI Integration
+- **Validation Type Selector**: Dropdown for choosing validation types with descriptions
+- **Vector Store Status**: Real-time metrics and health indicators
+- **Activity Monitoring**: Live updates on evidence ingestion and processing
+- **Retro Mechanical Design**: Eastern European mechanical punk aesthetic with interactive controls
 └── shared/                   # Common utilities and base classes
 ```
 
@@ -127,6 +163,14 @@ pytest tests/e2e/
 
 The codebase follows these principles:
 
+### Vector Store APIs
+- `POST /api/vector-store/ingest` - Ingest evidence into vector stores
+- `POST /api/vector-store/ingest-file` - Upload a file; stores in S3/local and indexes extracted text
+- `POST /api/vector-store/search` - Perform semantic search across stores
+- `GET /api/vector-store/status` - Get vector store metrics and health
+- `POST /api/vector-store/apply-validation-filter` - Apply validation type filtering
+- `POST /api/vector-store/rag-context` - Get RAG context for LLM augmentation
+- `GET /api/vector-store/validation-types` - List available validation types
 1. **Phase-based workflow**: Clear sequential processing steps
 2. **Functional agent grouping**: Agents organized by purpose (research, drafting, etc.)
 3. **Infrastructure consolidation**: All technical components in one place
@@ -162,6 +206,15 @@ COURTLISTENER_API_KEY=your_courtlistener_key
 # System Configuration
 WORKFLOW_STORAGE_PATH=./workflow_storage
 UPLOAD_DIR=./uploads
+
+# Object/Blob Storage (choose one)
+# Option A: S3 (recommended for cloud)
+LF_S3_BUCKET=your_s3_bucket_name
+LF_S3_REGION=us-west-2
+LF_S3_PREFIX=lawyerfactory
+
+# Option B: Local directory (default fallback)
+LF_LOCAL_UPLOAD_DIR=./uploads
 ```
 
 ### Advanced Configuration

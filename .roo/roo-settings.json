@@ -1,4 +1,14 @@
 {
+  "providerProfiles": {
+    "vs-copilot-default": {
+      "provider": "github-copilot",
+      "model": "${VS_COPILOT_MODEL | 'copilot-gpt-5.0-mini'}",
+      "apiKey": "${GITHUB_COPILOT_TOKEN}",
+      "temperature": 0.2,
+      "useVSCodeSettings": true
+    }
+  },
+  "defaultProviderProfileKey": "vs-copilot-default",
   "STAR": {
     "Input": {
       "Parse": ["intents", "entities", "goals", "constraints", "uncertainty"],

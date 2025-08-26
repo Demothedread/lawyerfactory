@@ -5,11 +5,27 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
+        "/Users/jreback/Desktop",
         "/Users/jreback/projects/lawyerfactory"
       ],
       "alwaysAllow": [
-        "create_directory"
-      ]
+        "create_directory",
+        "read_multiple_files",
+        "edit_file",
+        "write_file",
+        "move_folder",
+        "move_file",
+        "list_directory_with_Sizes",
+        "list_directory",
+        "search_files",
+        "directory_tree",
+        "get_file_info",
+        "read_file",
+        "read_text_file",
+        "read_media_file",
+        "list_allowed_directories"
+      ],
+      "timeout": 60
     },
     "puppeteer": {
       "command": "npx",
