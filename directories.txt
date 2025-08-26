@@ -105,9 +105,9 @@
 ./src/lawyerfactory/phases/phaseA01_intake/evidence
 ./src/lawyerfactory/phases/phaseA01_intake/ingestion
 ./src/lawyerfactory/phases/phaseA01_intake/ingestion/__pycache__
-./src/lawyerfactory/phases/02_research
-./src/lawyerfactory/phases/02_research/agents
-./src/lawyerfactory/phases/02_research/retrievers
+./src/lawyerfactory/phases/phaseA02_research
+./src/lawyerfactory/phases/phaseA02_research/agents
+./src/lawyerfactory/phases/phaseA02_research/retrievers
 ./src/lawyerfactory/phases/03_outline
 ./src/lawyerfactory/phases/03_outline/claims
 ./src/lawyerfactory/phases/03_outline/outline

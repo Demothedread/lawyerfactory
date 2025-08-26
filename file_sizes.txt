@@ -35,8 +35,8 @@
        1 ./src/lawyerfactory/phases/__init__.py
        1 ./src/lawyerfactory/phases/phaseA01_intake/evidence/__init__.py
        1 ./src/lawyerfactory/phases/phaseA01_intake/ingestion/__init__.py
-       1 ./src/lawyerfactory/phases/02_research/agents/__init__.py
-       1 ./src/lawyerfactory/phases/02_research/retrievers/__init__.py
+       1 ./src/lawyerfactory/phases/phaseA02_research/agents/__init__.py
+       1 ./src/lawyerfactory/phases/phaseA02_research/retrievers/__init__.py
        1 ./src/lawyerfactory/phases/03_outline/claims/__init__.py
        1 ./src/lawyerfactory/phases/03_outline/outline/__init__.py
        1 ./src/lawyerfactory/phases/03_outline/shotlist/__init__.py
@@ -79,9 +79,9 @@
        5 ./src/lawyerfactory/lf_core/document_types.py
        5 ./src/lawyerfactory/lf_core/models.py
        5 ./src/lawyerfactory/phases/phaseA01_intake/evidence/table.py
-       5 ./src/lawyerfactory/phases/02_research/agents/research_bot.py
-       5 ./src/lawyerfactory/phases/02_research/retrievers/cache.py
-       5 ./src/lawyerfactory/phases/02_research/retrievers/integration.py
+       5 ./src/lawyerfactory/phases/phaseA02_research/agents/research_bot.py
+       5 ./src/lawyerfactory/phases/phaseA02_research/retrievers/cache.py
+       5 ./src/lawyerfactory/phases/phaseA02_research/retrievers/integration.py
        5 ./src/lawyerfactory/phases/03_outline/claims/matrix.py
        5 ./src/lawyerfactory/phases/03_outline/claims/research_api.py
        5 ./src/lawyerfactory/phases/03_outline/outline/generator.py

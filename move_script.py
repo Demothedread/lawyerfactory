@@ -62,9 +62,9 @@ MIGRATION_MAPPING = {
     "src/lawyerfactory/phases/phaseA01_intake/ingestion/server.py": "src/lawyerfactory/phases/phaseA01_intake/services/intake_server.py",
     "src/lawyerfactory/phases/phaseA01_intake/intake_processor.py": "src/lawyerfactory/phases/phaseA01_intake/services/intake_processor.py",
 
-    "src/lawyerfactory/phases/02_research/agents/research_bot.py": "src/lawyerfactory/phases/02_research/services/research_bot.py",
-    "src/lawyerfactory/phases/02_research/retrievers/cache.py": "src/lawyerfactory/phases/02_research/services/cache.py",
-    "src/lawyerfactory/phases/02_research/retrievers/integration.py": "src/lawyerfactory/phases/02_research/services/retriever_integration.py",
+    "src/lawyerfactory/phases/phaseA02_research/agents/research_bot.py": "src/lawyerfactory/phases/phaseA02_research/services/research_bot.py",
+    "src/lawyerfactory/phases/phaseA02_research/retrievers/cache.py": "src/lawyerfactory/phases/phaseA02_research/services/cache.py",
+    "src/lawyerfactory/phases/phaseA02_research/retrievers/integration.py": "src/lawyerfactory/phases/phaseA02_research/services/retriever_integration.py",
 
     "src/lawyerfactory/claims/matrix.py": "src/lawyerfactory/phases/03_outline/services/claims_matrix.py",
     "src/lawyerfactory/phases/03_outline/claims/cause_of_action_definition_engine.py": "src/lawyerfactory/phases/03_outline/services/cause_of_action_engine.py",
@@ -89,8 +89,8 @@ MIGRATION_MAPPING = {
     "src/lawyerfactory/phases/06_post_production/validators/legal_authority_validator.py": "src/lawyerfactory/phases/06_post_production/services/legal_authority_validator.py",
 
     # Bot reorganization
-    "src/lawyerfactory/compose/bots/caselaw_researcher.py": "src/lawyerfactory/phases/02_research/services/caselaw_researcher.py",
-    "src/lawyerfactory/compose/bots/citation_formatter.py": "src/lawyerfactory/phases/02_research/services/citation_formatter.py",
+    "src/lawyerfactory/compose/bots/caselaw_researcher.py": "src/lawyerfactory/phases/phaseA02_research/services/caselaw_researcher.py",
+    "src/lawyerfactory/compose/bots/citation_formatter.py": "src/lawyerfactory/phases/phaseA02_research/services/citation_formatter.py",
     "src/lawyerfactory/compose/bots/civil_procedure_specialist.py": "src/lawyerfactory/phases/05_drafting/services/civil_procedure_specialist.py",
     "src/lawyerfactory/compose/bots/editor.py": "src/lawyerfactory/phases/05_drafting/services/editor.py",
     "src/lawyerfactory/compose/bots/fact_objectivity_agent.py": "src/lawyerfactory/phases/03_outline/services/fact_objectivity_agent.py",
@@ -99,8 +99,8 @@ MIGRATION_MAPPING = {
     "src/lawyerfactory/compose/bots/legal_validation_agent.py": "src/lawyerfactory/phases/04_human_review/services/legal_validation_agent.py",
     "src/lawyerfactory/compose/bots/procedure.py": "src/lawyerfactory/phases/05_drafting/services/procedure.py",
     "src/lawyerfactory/compose/bots/reader.py": "src/lawyerfactory/phases/phaseA01_intake/services/reader.py",
-    "src/lawyerfactory/compose/bots/research.py": "src/lawyerfactory/phases/02_research/services/research.py",
-    "src/lawyerfactory/compose/bots/rules_of_law.py": "src/lawyerfactory/phases/02_research/services/rules_of_law.py",
+    "src/lawyerfactory/compose/bots/research.py": "src/lawyerfactory/phases/phaseA02_research/services/research.py",
+    "src/lawyerfactory/compose/bots/rules_of_law.py": "src/lawyerfactory/phases/phaseA02_research/services/rules_of_law.py",
     "src/lawyerfactory/compose/bots/writer.py": "src/lawyerfactory/phases/05_drafting/services/writer.py",
 
     # UI reorganization

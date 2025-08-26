@@ -22,7 +22,7 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 ```
 /src/lawyerfactory/
 ├── phases/phaseA01_intake/{api,services,repositories,ui}/
-├── phases/02_research/{api,services,repositories,ui}/
+├── phases/phaseA02_research/{api,services,repositories,ui}/
 ├── phases/03_outline/{api,services,repositories,ui}/
 ├── phases/04_human_review/{api,services,repositories,ui}/
 ├── phases/05_drafting/{api,services,repositories,ui}/
@@ -105,9 +105,9 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 #### Research Phase (02_research)
 | Current Path | New Path | Status |
 |-------------|----------|---------|
-| `src/lawyerfactory/phases/02_research/agents/research_bot.py` | `src/lawyerfactory/phases/02_research/services/research_bot.py` | MIGRATE |
-| `src/lawyerfactory/phases/02_research/retrievers/cache.py` | `src/lawyerfactory/phases/02_research/services/cache.py` | MIGRATE |
-| `src/lawyerfactory/phases/02_research/retrievers/integration.py` | `src/lawyerfactory/phases/02_research/services/retriever_integration.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA02_research/agents/research_bot.py` | `src/lawyerfactory/phases/phaseA02_research/services/research_bot.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA02_research/retrievers/cache.py` | `src/lawyerfactory/phases/phaseA02_research/services/cache.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA02_research/retrievers/integration.py` | `src/lawyerfactory/phases/phaseA02_research/services/retriever_integration.py` | MIGRATE |
 
 #### Outline Phase (03_outline)
 | Current Path | New Path | Status |
@@ -146,8 +146,8 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 #### Bot Components
 | Current Path | New Path | Status |
 |-------------|----------|---------|
-| `src/lawyerfactory/compose/bots/caselaw_researcher.py` | `src/lawyerfactory/phases/02_research/services/caselaw_researcher.py` | MIGRATE |
-| `src/lawyerfactory/compose/bots/citation_formatter.py` | `src/lawyerfactory/phases/02_research/services/citation_formatter.py` | MIGRATE |
+| `src/lawyerfactory/compose/bots/caselaw_researcher.py` | `src/lawyerfactory/phases/phaseA02_research/services/caselaw_researcher.py` | MIGRATE |
+| `src/lawyerfactory/compose/bots/citation_formatter.py` | `src/lawyerfactory/phases/phaseA02_research/services/citation_formatter.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/civil_procedure_specialist.py` | `src/lawyerfactory/phases/05_drafting/services/civil_procedure_specialist.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/editor.py` | `src/lawyerfactory/phases/05_drafting/services/editor.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/fact_objectivity_agent.py` | `src/lawyerfactory/phases/03_outline/services/fact_objectivity_agent.py` | MIGRATE |
@@ -156,8 +156,8 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 | `src/lawyerfactory/compose/bots/legal_validation_agent.py` | `src/lawyerfactory/phases/04_human_review/services/legal_validation_agent.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/procedure.py` | `src/lawyerfactory/phases/05_drafting/services/procedure.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/reader.py` | `src/lawyerfactory/phases/phaseA01_intake/services/reader.py` | MIGRATE |
-| `src/lawyerfactory/compose/bots/research.py` | `src/lawyerfactory/phases/02_research/services/research.py` | MIGRATE |
-| `src/lawyerfactory/compose/bots/rules_of_law.py` | `src/lawyerfactory/phases/02_research/services/rules_of_law.py` | MIGRATE |
+| `src/lawyerfactory/compose/bots/research.py` | `src/lawyerfactory/phases/phaseA02_research/services/research.py` | MIGRATE |
+| `src/lawyerfactory/compose/bots/rules_of_law.py` | `src/lawyerfactory/phases/phaseA02_research/services/rules_of_law.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/writer.py` | `src/lawyerfactory/phases/05_drafting/services/writer.py` | MIGRATE |
 
 ### Phase 6: UI and API Reorganization
