@@ -88,11 +88,11 @@ STREAMLINED_MIGRATION = {
     "src/lawyerfactory/phases/phaseA03_outline/outline/integration.py": "src/lawyerfactory/phases/phaseA03_outline/outline_integration.py",
     "src/lawyerfactory/phases/phaseA03_outline/shotlist/shotlist.py": "src/lawyerfactory/phases/phaseA03_outline/shotlist_generator.py",
 
-    "src/lawyerfactory/phases/05_drafting/generator/editor_bot.py": "src/lawyerfactory/phases/05_drafting/editor_bot.py",
-    "src/lawyerfactory/phases/05_drafting/generator/procedure_bot.py": "src/lawyerfactory/phases/05_drafting/procedure_bot.py",
-    "src/lawyerfactory/phases/05_drafting/generator/writer_bot.py": "src/lawyerfactory/phases/05_drafting/writer_bot.py",
-    "src/lawyerfactory/phases/05_drafting/promptkits/prompt_deconstruction.py": "src/lawyerfactory/phases/05_drafting/prompt_deconstruction.py",
-    "src/lawyerfactory/phases/05_drafting/promptkits/prompt_integration.py": "src/lawyerfactory/phases/05_drafting/prompt_integration.py",
+    "src/lawyerfactory/phases/phaseB02_drafting/generator/editor_bot.py": "src/lawyerfactory/phases/phaseB02_drafting/editor_bot.py",
+    "src/lawyerfactory/phases/phaseB02_drafting/generator/procedure_bot.py": "src/lawyerfactory/phases/phaseB02_drafting/procedure_bot.py",
+    "src/lawyerfactory/phases/phaseB02_drafting/generator/writer_bot.py": "src/lawyerfactory/phases/phaseB02_drafting/writer_bot.py",
+    "src/lawyerfactory/phases/phaseB02_drafting/promptkits/prompt_deconstruction.py": "src/lawyerfactory/phases/phaseB02_drafting/prompt_deconstruction.py",
+    "src/lawyerfactory/phases/phaseB02_drafting/promptkits/prompt_integration.py": "src/lawyerfactory/phases/phaseB02_drafting/prompt_integration.py",
 
     "src/lawyerfactory/post_production/citations.py": "src/lawyerfactory/phases/06_post_production/citations.py",
     "src/lawyerfactory/post_production/pdf_generator.py": "src/lawyerfactory/phases/06_post_production/pdf_generator.py",

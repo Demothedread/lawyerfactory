@@ -74,11 +74,11 @@ MIGRATION_MAPPING = {
     "src/lawyerfactory/phases/phaseA03_outline/outline/integration.py": "src/lawyerfactory/phases/phaseA03_outline/services/outline_integration.py",
     "src/lawyerfactory/phases/phaseA03_outline/shotlist/shotlist.py": "src/lawyerfactory/phases/phaseA03_outline/services/shotlist_generator.py",
 
-    "src/lawyerfactory/phases/05_drafting/generator/editor_bot.py": "src/lawyerfactory/phases/05_drafting/services/editor_bot.py",
-    "src/lawyerfactory/phases/05_drafting/generator/procedure_bot.py": "src/lawyerfactory/phases/05_drafting/services/procedure_bot.py",
-    "src/lawyerfactory/phases/05_drafting/generator/writer_bot.py": "src/lawyerfactory/phases/05_drafting/services/writer_bot.py",
-    "src/lawyerfactory/phases/05_drafting/promptkits/prompt_deconstruction.py": "src/lawyerfactory/phases/05_drafting/services/prompt_deconstruction.py",
-    "src/lawyerfactory/phases/05_drafting/promptkits/prompt_integration.py": "src/lawyerfactory/phases/05_drafting/services/prompt_integration.py",
+    "src/lawyerfactory/phases/phaseB02_drafting/generator/editor_bot.py": "src/lawyerfactory/phases/phaseB02_drafting/services/editor_bot.py",
+    "src/lawyerfactory/phases/phaseB02_drafting/generator/procedure_bot.py": "src/lawyerfactory/phases/phaseB02_drafting/services/procedure_bot.py",
+    "src/lawyerfactory/phases/phaseB02_drafting/generator/writer_bot.py": "src/lawyerfactory/phases/phaseB02_drafting/services/writer_bot.py",
+    "src/lawyerfactory/phases/phaseB02_drafting/promptkits/prompt_deconstruction.py": "src/lawyerfactory/phases/phaseB02_drafting/services/prompt_deconstruction.py",
+    "src/lawyerfactory/phases/phaseB02_drafting/promptkits/prompt_integration.py": "src/lawyerfactory/phases/phaseB02_drafting/services/prompt_integration.py",
 
     "src/lawyerfactory/post_production/citations.py": "src/lawyerfactory/phases/06_post_production/services/citations.py",
     "src/lawyerfactory/post_production/pdf_generator.py": "src/lawyerfactory/phases/06_post_production/services/pdf_generator.py",
@@ -91,17 +91,17 @@ MIGRATION_MAPPING = {
     # Bot reorganization
     "src/lawyerfactory/compose/bots/caselaw_researcher.py": "src/lawyerfactory/phases/phaseA02_research/services/caselaw_researcher.py",
     "src/lawyerfactory/compose/bots/citation_formatter.py": "src/lawyerfactory/phases/phaseA02_research/services/citation_formatter.py",
-    "src/lawyerfactory/compose/bots/civil_procedure_specialist.py": "src/lawyerfactory/phases/05_drafting/services/civil_procedure_specialist.py",
-    "src/lawyerfactory/compose/bots/editor.py": "src/lawyerfactory/phases/05_drafting/services/editor.py",
+    "src/lawyerfactory/compose/bots/civil_procedure_specialist.py": "src/lawyerfactory/phases/phaseB02_drafting/services/civil_procedure_specialist.py",
+    "src/lawyerfactory/compose/bots/editor.py": "src/lawyerfactory/phases/phaseB02_drafting/services/editor.py",
     "src/lawyerfactory/compose/bots/fact_objectivity_agent.py": "src/lawyerfactory/phases/phaseA03_outline/services/fact_objectivity_agent.py",
     "src/lawyerfactory/compose/bots/issuespotter.py": "src/lawyerfactory/phases/phaseA03_outline/services/issuespotter.py",
     "src/lawyerfactory/compose/bots/legal_claim_validator.py": "src/lawyerfactory/phases/phaseA03_outline/services/legal_claim_validator.py",
     "src/lawyerfactory/compose/bots/legal_validation_agent.py": "src/lawyerfactory/phases/phaseB01_review/services/legal_validation_agent.py",
-    "src/lawyerfactory/compose/bots/procedure.py": "src/lawyerfactory/phases/05_drafting/services/procedure.py",
+    "src/lawyerfactory/compose/bots/procedure.py": "src/lawyerfactory/phases/phaseB02_drafting/services/procedure.py",
     "src/lawyerfactory/compose/bots/reader.py": "src/lawyerfactory/phases/phaseA01_intake/services/reader.py",
     "src/lawyerfactory/compose/bots/research.py": "src/lawyerfactory/phases/phaseA02_research/services/research.py",
     "src/lawyerfactory/compose/bots/rules_of_law.py": "src/lawyerfactory/phases/phaseA02_research/services/rules_of_law.py",
-    "src/lawyerfactory/compose/bots/writer.py": "src/lawyerfactory/phases/05_drafting/services/writer.py",
+    "src/lawyerfactory/compose/bots/writer.py": "src/lawyerfactory/phases/phaseB02_drafting/services/writer.py",
 
     # UI reorganization
     "apps/ui/templates/attorney_review_interface.py": "src/lawyerfactory/phases/phaseB01_review/ui/attorney_review_interface.py",
