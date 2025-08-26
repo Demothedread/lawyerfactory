@@ -21,7 +21,7 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 
 ```
 /src/lawyerfactory/
-├── phases/01_intake/{api,services,repositories,ui}/
+├── phases/phaseA01_intake/{api,services,repositories,ui}/
 ├── phases/02_research/{api,services,repositories,ui}/
 ├── phases/03_outline/{api,services,repositories,ui}/
 ├── phases/04_human_review/{api,services,repositories,ui}/
@@ -93,14 +93,14 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 
 ### Phase 4: Phase-Specific Reorganization
 
-#### Intake Phase (01_intake)
+#### Intake Phase (phaseA01_intake)
 | Current Path | New Path | Status |
 |-------------|----------|---------|
-| `src/lawyerfactory/phases/01_intake/evidence/table.py` | `src/lawyerfactory/phases/01_intake/services/evidence_table.py` | MIGRATE |
-| `src/lawyerfactory/phases/01_intake/ingestion/assessor.py` | `src/lawyerfactory/phases/01_intake/services/assessor.py` | MIGRATE |
-| `src/lawyerfactory/phases/01_intake/ingestion/knowledge_graph_extensions.py` | `src/lawyerfactory/phases/01_intake/services/kg_extensions.py` | MIGRATE |
-| `src/lawyerfactory/phases/01_intake/ingestion/server.py` | `src/lawyerfactory/phases/01_intake/services/intake_server.py` | MIGRATE |
-| `src/lawyerfactory/phases/01_intake/intake_processor.py` | `src/lawyerfactory/phases/01_intake/services/intake_processor.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA01_intake/evidence/table.py` | `src/lawyerfactory/phases/phaseA01_intake/services/evidence_table.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA01_intake/ingestion/assessor.py` | `src/lawyerfactory/phases/phaseA01_intake/services/assessor.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA01_intake/ingestion/knowledge_graph_extensions.py` | `src/lawyerfactory/phases/phaseA01_intake/services/kg_extensions.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA01_intake/ingestion/server.py` | `src/lawyerfactory/phases/phaseA01_intake/services/intake_server.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA01_intake/intake_processor.py` | `src/lawyerfactory/phases/phaseA01_intake/services/intake_processor.py` | MIGRATE |
 
 #### Research Phase (02_research)
 | Current Path | New Path | Status |
@@ -155,7 +155,7 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 | `src/lawyerfactory/compose/bots/legal_claim_validator.py` | `src/lawyerfactory/phases/03_outline/services/legal_claim_validator.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/legal_validation_agent.py` | `src/lawyerfactory/phases/04_human_review/services/legal_validation_agent.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/procedure.py` | `src/lawyerfactory/phases/05_drafting/services/procedure.py` | MIGRATE |
-| `src/lawyerfactory/compose/bots/reader.py` | `src/lawyerfactory/phases/01_intake/services/reader.py` | MIGRATE |
+| `src/lawyerfactory/compose/bots/reader.py` | `src/lawyerfactory/phases/phaseA01_intake/services/reader.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/research.py` | `src/lawyerfactory/phases/02_research/services/research.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/rules_of_law.py` | `src/lawyerfactory/phases/02_research/services/rules_of_law.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/writer.py` | `src/lawyerfactory/phases/05_drafting/services/writer.py` | MIGRATE |
@@ -166,13 +166,13 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 | Current Path | New Path | Status |
 |-------------|----------|---------|
 | `apps/ui/templates/attorney_review_interface.py` | `src/lawyerfactory/phases/04_human_review/ui/attorney_review_interface.py` | MIGRATE |
-| `src/lawyerfactory/ui/legal_intake_form.py` | `src/lawyerfactory/phases/01_intake/ui/legal_intake_form.py` | MIGRATE |
+| `src/lawyerfactory/ui/legal_intake_form.py` | `src/lawyerfactory/phases/phaseA01_intake/ui/legal_intake_form.py` | MIGRATE |
 | `src/lawyerfactory/ui/orchestration_dashboard.py` | `src/lawyerfactory/phases/07_orchestration/ui/orchestration_dashboard.py` | MIGRATE |
 
 #### API Components
 | Current Path | New Path | Status |
 |-------------|----------|---------|
-| `apps/api/routes/evidence.py` | `src/lawyerfactory/phases/01_intake/api/evidence_routes.py` | MIGRATE |
+| `apps/api/routes/evidence.py` | `src/lawyerfactory/phases/phaseA01_intake/api/evidence_routes.py` | MIGRATE |
 
 ## Implementation Strategy
 

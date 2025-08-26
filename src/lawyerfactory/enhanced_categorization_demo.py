@@ -10,10 +10,10 @@ from pathlib import Path
 from typing import Dict, Any
 
 # Import the new enhanced components
-from .phases01_intake.enhanced_document_categorizer import EnhancedDocumentCategorizer
-from .phases01_intake.vector_cluster_manager import VectorClusterManager
-from .phases01_intake.enhanced_intake_processor import EnhancedIntakeProcessor
-from .phases01_intake.legal_intake_form import LegalIntakeForm, IntakeFormData
+from .phasesphaseA01_intake.enhanced_document_categorizer import EnhancedDocumentCategorizer
+from .phasesphaseA01_intake.vector_cluster_manager import VectorClusterManager
+from .phasesphaseA01_intake.enhanced_intake_processor import EnhancedIntakeProcessor
+from .phasesphaseA01_intake.legal_intake_form import LegalIntakeForm, IntakeFormData
 from .phases05_drafting.drafting_validator import DraftingValidator
 
 # Configure logging

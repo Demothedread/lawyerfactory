@@ -59,7 +59,7 @@ This document summarizes the successful implementation of the custom repo cleanu
 **New Structure Highlights**:
 ```
 /src/lawyerfactory/
-├── phases/01_intake/{api,services,repositories,ui}/
+├── phases/phaseA01_intake/{api,services,repositories,ui}/
 ├── phases/02_research/{api,services,repositories,ui}/
 ├── phases/03_outline/{api,services,repositories,ui}/
 ├── phases/04_human_review/{api,services,repositories,ui}/

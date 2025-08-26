@@ -53,7 +53,7 @@
 │   └── post_processing/             # Formatting and export agents
 ├── phases/                          # Core workflow phases
 │   ├── __init__.py
-│   ├── 01_intake/
+│   ├── phaseA01_intake/
 │   │   ├── __init__.py
 │   │   ├── intake_processor.py      # Main intake logic
 │   │   ├── document_classifier.py   # Document classification

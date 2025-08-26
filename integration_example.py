@@ -17,7 +17,7 @@ def integrate_with_phase_1_intake():
     print("=" * 60)
 
     integration_code = '''
-# In src/lawyerfactory/phases/01_intake/ingestion/server.py
+# In src/lawyerfactory/phases/phaseA01_intake/ingestion/server.py
 
 # Add imports
 from enhanced_document_categorizer import EnhancedDocumentCategorizer
@@ -141,7 +141,7 @@ def create_enhanced_assessor():
     print("=" * 60)
 
     enhanced_assessor_code = '''
-# In src/lawyerfactory/phases/01_intake/ingestion/assessor.py
+# In src/lawyerfactory/phases/phaseA01_intake/ingestion/assessor.py
 
 # Enhanced categorization function
 def enhanced_categorize_document(content, filename, defendant_hint=None):

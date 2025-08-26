@@ -101,10 +101,10 @@
 ./src/lawyerfactory/outline
 ./src/lawyerfactory/phases
 ./src/lawyerfactory/phases/__pycache__
-./src/lawyerfactory/phases/01_intake
-./src/lawyerfactory/phases/01_intake/evidence
-./src/lawyerfactory/phases/01_intake/ingestion
-./src/lawyerfactory/phases/01_intake/ingestion/__pycache__
+./src/lawyerfactory/phases/phaseA01_intake
+./src/lawyerfactory/phases/phaseA01_intake/evidence
+./src/lawyerfactory/phases/phaseA01_intake/ingestion
+./src/lawyerfactory/phases/phaseA01_intake/ingestion/__pycache__
 ./src/lawyerfactory/phases/02_research
 ./src/lawyerfactory/phases/02_research/agents
 ./src/lawyerfactory/phases/02_research/retrievers

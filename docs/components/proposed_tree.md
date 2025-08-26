@@ -35,7 +35,7 @@ This document proposes a reorganized directory structure following the workflow'
 │   └── exceptions.py
 ├── phases/                             # Primary organization by workflow phases
 │   ├── __init__.py
-│   ├── 01_intake/
+│   ├── phaseA01_intake/
 │   │   ├── __init__.py
 │   │   ├── api/                        # API endpoints for intake
 │   │   │   ├── __init__.py

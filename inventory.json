@@ -1280,8 +1280,8 @@
       "header_preview": [
         " 1: # AUTO-SHIM (top-level): deprecated module",
         " 2: import warnings as _w",
-        " 3: _w.warn(\"Import 'assessor.py' is deprecated; use 'lawyerfactory.phases.01_intake.ingestion.assessor'.\", DeprecationWarning, stacklevel=2)",
-        " 4: from lawyerfactory.phases.01_intake.ingestion.assessor import *  # noqa: F401,F403"
+        " 3: _w.warn(\"Import 'assessor.py' is deprecated; use 'lawyerfactory.phases.phaseA01_intake.ingestion.assessor'.\", DeprecationWarning, stacklevel=2)",
+        " 4: from lawyerfactory.phases.phaseA01_intake.ingestion.assessor import *  # noqa: F401,F403"
       ],
       "inferred_roles": [
         "module"
