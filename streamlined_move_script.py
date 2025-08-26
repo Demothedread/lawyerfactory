@@ -76,9 +76,9 @@ STREAMLINED_MIGRATION = {
     "src/lawyerfactory/phases/phaseA01_intake/ingestion/knowledge_graph_extensions.py": "src/lawyerfactory/phases/phaseA01_intake/kg_extensions.py",
     "src/lawyerfactory/phases/phaseA01_intake/ingestion/server.py": "src/lawyerfactory/phases/phaseA01_intake/intake_server.py",
 
-    "src/lawyerfactory/phases/02_research/agents/research_bot.py": "src/lawyerfactory/phases/02_research/research_bot.py",
-    "src/lawyerfactory/phases/02_research/retrievers/cache.py": "src/lawyerfactory/phases/02_research/cache.py",
-    "src/lawyerfactory/phases/02_research/retrievers/integration.py": "src/lawyerfactory/phases/02_research/retriever_integration.py",
+    "src/lawyerfactory/phases/phaseA02_research/agents/research_bot.py": "src/lawyerfactory/phases/phaseA02_research/research_bot.py",
+    "src/lawyerfactory/phases/phaseA02_research/retrievers/cache.py": "src/lawyerfactory/phases/phaseA02_research/cache.py",
+    "src/lawyerfactory/phases/phaseA02_research/retrievers/integration.py": "src/lawyerfactory/phases/phaseA02_research/retriever_integration.py",
 
     "src/lawyerfactory/claims/matrix.py": "src/lawyerfactory/phases/03_outline/claims_matrix.py",
     "src/lawyerfactory/phases/03_outline/claims/cause_of_action_definition_engine.py": "src/lawyerfactory/phases/03_outline/cause_of_action_engine.py",

@@ -178,11 +178,11 @@
 ./src/lawyerfactory/phases/phaseA01_intake/ingestion/knowledge_graph_extensions.py
 ./src/lawyerfactory/phases/phaseA01_intake/ingestion/server.py
 ./src/lawyerfactory/phases/phaseA01_intake/intake_processor.py
-./src/lawyerfactory/phases/02_research/agents/__init__.py
-./src/lawyerfactory/phases/02_research/agents/research_bot.py
-./src/lawyerfactory/phases/02_research/retrievers/__init__.py
-./src/lawyerfactory/phases/02_research/retrievers/cache.py
-./src/lawyerfactory/phases/02_research/retrievers/integration.py
+./src/lawyerfactory/phases/phaseA02_research/agents/__init__.py
+./src/lawyerfactory/phases/phaseA02_research/agents/research_bot.py
+./src/lawyerfactory/phases/phaseA02_research/retrievers/__init__.py
+./src/lawyerfactory/phases/phaseA02_research/retrievers/cache.py
+./src/lawyerfactory/phases/phaseA02_research/retrievers/integration.py
 ./src/lawyerfactory/phases/03_outline/claims/__init__.py
 ./src/lawyerfactory/phases/03_outline/claims/cause_of_action_definition_engine.py
 ./src/lawyerfactory/phases/03_outline/claims/detect.py
