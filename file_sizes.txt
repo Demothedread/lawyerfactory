@@ -33,8 +33,8 @@
        1 ./src/lawyerfactory/lf_core/__init__.py
        1 ./src/lawyerfactory/outline/__init__.py
        1 ./src/lawyerfactory/phases/__init__.py
-       1 ./src/lawyerfactory/phases/01_intake/evidence/__init__.py
-       1 ./src/lawyerfactory/phases/01_intake/ingestion/__init__.py
+       1 ./src/lawyerfactory/phases/phaseA01_intake/evidence/__init__.py
+       1 ./src/lawyerfactory/phases/phaseA01_intake/ingestion/__init__.py
        1 ./src/lawyerfactory/phases/02_research/agents/__init__.py
        1 ./src/lawyerfactory/phases/02_research/retrievers/__init__.py
        1 ./src/lawyerfactory/phases/03_outline/claims/__init__.py
@@ -78,7 +78,7 @@
        5 ./src/lawyerfactory/lf_core/agent_config.py
        5 ./src/lawyerfactory/lf_core/document_types.py
        5 ./src/lawyerfactory/lf_core/models.py
-       5 ./src/lawyerfactory/phases/01_intake/evidence/table.py
+       5 ./src/lawyerfactory/phases/phaseA01_intake/evidence/table.py
        5 ./src/lawyerfactory/phases/02_research/agents/research_bot.py
        5 ./src/lawyerfactory/phases/02_research/retrievers/cache.py
        5 ./src/lawyerfactory/phases/02_research/retrievers/integration.py
@@ -143,7 +143,7 @@
       93 ./docs/README.md
       96 ./.roo/roo-instructions.json
       96 ./.roo/rooinstructions.json
-     102 ./src/lawyerfactory/phases/01_intake/ingestion/assessor.py
+     102 ./src/lawyerfactory/phases/phaseA01_intake/ingestion/assessor.py
      103 ./src/lawyerfactory/compose/maestro/compat_wrappers.py
      105 ./SYSTEM_DOCUMENTATION.md
      108 ./src/lawyerfactory/infra/file_storage.py
@@ -173,7 +173,7 @@
      205 ./tools/fix_imports.py
      211 ./src/lawyerfactory/compose/maestro/checkpoints.py
      217 ./src/lawyerfactory/compose/maestro/maestro_bot.py
-     226 ./src/lawyerfactory/phases/01_intake/ingestion/knowledge_graph_extensions.py
+     226 ./src/lawyerfactory/phases/phaseA01_intake/ingestion/knowledge_graph_extensions.py
      226 ./src/lawyerfactory/phases/03_outline/shotlist/shotlist.py
      227 ./tests/research/test_research_bot.py
      227 ./trash/move_script.py
@@ -205,7 +205,7 @@
      323 ./src/lawyerfactory/infra/file_storage_api.py
      325 ./src/lawyerfactory/compose/bots/issuespotter.py
      326 ./src/lawyerfactory/compose/bots/caselaw_researcher.py
-     327 ./src/lawyerfactory/phases/01_intake/ingestion/ai_document_agent.py
+     327 ./src/lawyerfactory/phases/phaseA01_intake/ingestion/ai_document_agent.py
      328 ./dep_graph.json
      329 ./apps/api/routes/evidence.py
      331 ./launch-website.sh
@@ -231,7 +231,7 @@
      381 ./src/lawyerfactory/compose/strategies/custom_llm_writer.py
      382 ./tests/kg/test_knowledge_graph_integration.py
      384 ./src/lawyerfactory/compose/maestro/errors.py
-     389 ./src/lawyerfactory/phases/01_intake/intake_processor.py
+     389 ./src/lawyerfactory/phases/phaseA01_intake/intake_processor.py
      390 ./README.md
      394 ./tests/test_end_to_end_intake_system.py
      401 ./tests/compose/test_enhanced_integration.py
@@ -309,7 +309,7 @@
     1137 ./src/lawyerfactory/compose/strategies/statement_of_facts.py
     1161 ./tests/compose/test_comprehensive_integration.py
     1261 ./src/lawyerfactory/kg/enhanced_graph.py
-    1300 ./src/lawyerfactory/phases/01_intake/ingestion/server.py
+    1300 ./src/lawyerfactory/phases/phaseA01_intake/ingestion/server.py
     1644 ./src/lawyerfactory/compose/maestro/enhanced_maestro.py
     3305 ./data/evidence_table.json
    17206 ./current_tree.md

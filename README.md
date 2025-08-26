@@ -26,7 +26,7 @@ LawyerFactory is an advanced AI-powered legal document processing system that or
 
 The system follows a sequential 7-phase workflow:
 
-1. **01_intake** - Document ingestion and initial processing
+1. **phaseA01_intake** - Document ingestion and initial processing
 2. **02_research** - Legal research and authority identification
 3. **03_outline** - Claims analysis and case structuring
 4. **04_human_review** - Attorney review and feedback integration

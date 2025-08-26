@@ -28,7 +28,7 @@ After analyzing the codebase structure, I've identified several key problems:
 
 ### ✅ **Preserve What's Working**
 - **Phase-based workflow structure** (`src/lawyerfactory/phases/`) is excellent
-- **Sequential numbering** (01_intake, 02_research, etc.) clearly shows workflow order
+- **Sequential numbering** (phaseA01_intake, 02_research, etc.) clearly shows workflow order
 - **Clear separation of concerns** between phases
 
 ### 🔧 **Fix What's Broken**

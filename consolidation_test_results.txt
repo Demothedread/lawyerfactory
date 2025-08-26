@@ -1,0 +1,843 @@
+
+==================================== ERRORS ====================================
+_______________ ERROR collecting test_enhanced_categorization.py _______________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/test_enhanced_categorization.py", line 130
+E       print("
+E             ^
+E   SyntaxError: unterminated string literal (detected at line 130)
+____________________ ERROR collecting test_vector_store.py _____________________
+test_vector_store.py:36: in <module>
+    from lawyerfactory.vectors.evidence_ingestion import EvidenceIngestionPipeline
+E   ModuleNotFoundError: No module named 'lawyerfactory.vectors.evidence_ingestion'
+
+During handling of the above exception, another exception occurred:
+law_venv/lib/python3.11/site-packages/_pytest/runner.py:341: in from_call
+    result: Optional[TResult] = func()
+law_venv/lib/python3.11/site-packages/_pytest/runner.py:372: in <lambda>
+    call = CallInfo.from_call(lambda: list(collector.collect()), "collect")
+law_venv/lib/python3.11/site-packages/_pytest/python.py:531: in collect
+    self._inject_setup_module_fixture()
+law_venv/lib/python3.11/site-packages/_pytest/python.py:545: in _inject_setup_module_fixture
+    self.obj, ("setUpModule", "setup_module")
+law_venv/lib/python3.11/site-packages/_pytest/python.py:310: in obj
+    self._obj = obj = self._getobj()
+law_venv/lib/python3.11/site-packages/_pytest/python.py:528: in _getobj
+    return self._importtestmodule()
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:178: in exec_module
+    exec(co, module.__dict__)
+test_vector_store.py:43: in <module>
+    sys.exit(1)
+E   SystemExit: 1
+------------------------------- Captured stdout --------------------------------
+❌ Failed to import vector store modules: No module named 'lawyerfactory.vectors.evidence_ingestion'
+Please ensure you're running from the law_venv environment
+___________ ERROR collecting test_vector_store_cloud_integration.py ____________
+test_vector_store_cloud_integration.py:34: in <module>
+    from lawyerfactory.vectors.evidence_ingestion import EvidenceIngestionPipeline
+E   ModuleNotFoundError: No module named 'lawyerfactory.vectors.evidence_ingestion'
+
+During handling of the above exception, another exception occurred:
+law_venv/lib/python3.11/site-packages/_pytest/runner.py:341: in from_call
+    result: Optional[TResult] = func()
+law_venv/lib/python3.11/site-packages/_pytest/runner.py:372: in <lambda>
+    call = CallInfo.from_call(lambda: list(collector.collect()), "collect")
+law_venv/lib/python3.11/site-packages/_pytest/python.py:531: in collect
+    self._inject_setup_module_fixture()
+law_venv/lib/python3.11/site-packages/_pytest/python.py:545: in _inject_setup_module_fixture
+    self.obj, ("setUpModule", "setup_module")
+law_venv/lib/python3.11/site-packages/_pytest/python.py:310: in obj
+    self._obj = obj = self._getobj()
+law_venv/lib/python3.11/site-packages/_pytest/python.py:528: in _getobj
+    return self._importtestmodule()
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:178: in exec_module
+    exec(co, module.__dict__)
+test_vector_store_cloud_integration.py:42: in <module>
+    sys.exit(1)
+E   SystemExit: 1
+------------------------------- Captured stdout --------------------------------
+❌ Failed to import vector store modules: No module named 'lawyerfactory.vectors.evidence_ingestion'
+Please ensure you're running from the law_venv environment
+__________________ ERROR collecting PAN/test_pan_analyzer.py ___________________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/PAN/test_pan_analyzer.py", line 83
+E       """Test the RuleAnalyzer class"""
+E                                     ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 121)
+_ ERROR collecting archive/intake_archive_202508252331/tests/e2e_ingestion_test.py _
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/archive/intake_archive_202508252331/tests/e2e_ingestion_test.py", line 224
+E       """Generate final test report"""
+E                                    ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 287)
+______ ERROR collecting src/lawyerfactory/phases/01_intake/simple_test.py ______
+src/lawyerfactory/phases/01_intake/simple_test.py:16: in <module>
+    from lawyerfactory.phases.assessor_consolidated import (
+E   ModuleNotFoundError: No module named 'lawyerfactory.phases.assessor_consolidated'
+
+During handling of the above exception, another exception occurred:
+law_venv/lib/python3.11/site-packages/_pytest/runner.py:341: in from_call
+    result: Optional[TResult] = func()
+law_venv/lib/python3.11/site-packages/_pytest/runner.py:372: in <lambda>
+    call = CallInfo.from_call(lambda: list(collector.collect()), "collect")
+law_venv/lib/python3.11/site-packages/_pytest/python.py:531: in collect
+    self._inject_setup_module_fixture()
+law_venv/lib/python3.11/site-packages/_pytest/python.py:545: in _inject_setup_module_fixture
+    self.obj, ("setUpModule", "setup_module")
+law_venv/lib/python3.11/site-packages/_pytest/python.py:310: in obj
+    self._obj = obj = self._getobj()
+law_venv/lib/python3.11/site-packages/_pytest/python.py:528: in _getobj
+    return self._importtestmodule()
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:178: in exec_module
+    exec(co, module.__dict__)
+src/lawyerfactory/phases/01_intake/simple_test.py:27: in <module>
+    sys.exit(1)
+E   SystemExit: 1
+------------------------------- Captured stdout --------------------------------
+❌ Failed to import functions: No module named 'lawyerfactory.phases.assessor_consolidated'
+_ ERROR collecting src/lawyerfactory/phases/01_intake/test_llm_integration.py __
+ImportError while importing test module '/Users/jreback/Projects/lawyerfactory/src/lawyerfactory/phases/01_intake/test_llm_integration.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+src/lawyerfactory/phases/01_intake/test_llm_integration.py:15: in <module>
+    from .assessor_consolidated import (
+E   ImportError: attempted relative import with no known parent package
+___________ ERROR collecting tests/test_end_to_end_intake_system.py ____________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/test_end_to_end_intake_system.py", line 167
+E       According to Smith v. Jones, 123 Cal.App.4th 456 (2023), the standard is clear.
+E                                                ^
+E   SyntaxError: invalid decimal literal
+____________ ERROR collecting tests/test_end_to_end_lightweight.py _____________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/test_end_to_end_lightweight.py", line 11
+E       Ingestion → Facts Matrix Adapter → SoF → Shotlist
+E                 ^
+E   SyntaxError: invalid character '→' (U+2192)
+_____________ ERROR collecting tests/test_facts_matrix_adapter.py ______________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/test_facts_matrix_adapter.py", line 9
+E       Tests the adapter's ability to transform raw ingestion data into canonical
+E                        ^
+E   SyntaxError: unterminated string literal (detected at line 9)
+_____________________ ERROR collecting tests/test_fixes.py _____________________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/test_fixes.py", line 97
+E       """Run all tests"""
+E                       ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 125)
+_______________ ERROR collecting tests/test_phase_validation.py ________________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/test_phase_validation.py", line 240
+E       3. This Court has jurisdiction pursuant to California Code of Civil Procedure § 410.10.
+E                                                                                     ^
+E   SyntaxError: invalid character '§' (U+00A7)
+__________ ERROR collecting tests/test_post_production_integration.py __________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/test_post_production_integration.py", line 286
+E       """Integration test that verifies all components work together"""
+E                                                                     ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 339)
+___________ ERROR collecting tests/test_research_loop_integration.py ___________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/test_research_loop_integration.py", line 320
+E       """Test that research loops can update the evidence table."""
+E                                                                 ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 347)
+_____________ ERROR collecting tests/test_research_loop_minimal.py _____________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/test_research_loop_minimal.py", line 327
+E       """Test that phase statuses remain consistent during research loops."""
+E                                                                           ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 347)
+______________ ERROR collecting tests/test_shotlist_robustness.py ______________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/test_shotlist_robustness.py", line 308
+E       """Test handling of larger datasets"""
+E                                          ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 340)
+_________ ERROR collecting tests/test_statement_of_facts_normalizer.py _________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/test_statement_of_facts_normalizer.py", line 9
+E       Tests the normalizer's ability to handle various input formats and the
+E                           ^
+E   SyntaxError: unterminated string literal (detected at line 9)
+______________ ERROR collecting tests/api/test_draft_endpoints.py ______________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/api/test_draft_endpoints.py", line 48
+E       This court has jurisdiction over this matter pursuant to 28 U.S.C. § 1332.
+E                                                                          ^
+E   SyntaxError: invalid character '§' (U+00A7)
+_____________ ERROR collecting tests/claims/test_claims_matrix.py ______________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/claims/test_claims_matrix.py", line 260
+E       """Main test runner"""
+E                          ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 279)
+___________ ERROR collecting tests/claims/test_claims_matrix_core.py ___________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/claims/test_claims_matrix_core.py", line 329
+E       """Run all Claims Matrix core tests"""
+E                                          ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 356)
+__________________ ERROR collecting tests/cli/test_kanban.py ___________________
+ImportError while importing test module '/Users/jreback/Projects/lawyerfactory/tests/cli/test_kanban.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/cli/test_kanban.py:14: in <module>
+    from lawyerfactory.kanban_cli import display_board  # noqa: E402
+src/lawyerfactory/kanban_cli.py:7: in <module>
+    from apps.cli.lf import *  # noqa: F401,F403
+apps/cli/lf.py:7: in <module>
+    from .models import STAGE_SEQUENCE
+E   ModuleNotFoundError: No module named 'apps.cli.models'
+________ ERROR collecting tests/compose/test_ai_document_integration.py ________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/compose/test_ai_document_integration.py", line 301
+E       """Run the AI document integration test"""
+E                                              ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 307)
+_______ ERROR collecting tests/compose/test_comprehensive_integration.py _______
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/compose/test_comprehensive_integration.py", line 1149
+E       """Main test runner"""
+E                          ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 1166)
+_________ ERROR collecting tests/compose/test_enhanced_integration.py __________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/compose/test_enhanced_integration.py", line 391
+E       """Main test runner"""
+E                          ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 406)
+__________ ERROR collecting tests/compose/test_integration_runner.py ___________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/compose/test_integration_runner.py", line 18
+E       """Run the integration test"""
+E                                  ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 59)
+_____________ ERROR collecting tests/compose/test_orchestration.py _____________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/compose/test_orchestration.py", line 324
+E       """Run all tests"""
+E                       ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 374)
+_______ ERROR collecting tests/compose/test_statement_of_facts_system.py _______
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/compose/test_statement_of_facts_system.py", line 294
+E       2. Defendant terminated Plaintiff's employment on March 20, 2024. (Ex. B)
+E                                        ^
+E   SyntaxError: unterminated string literal (detected at line 294)
+_______________ ERROR collecting tests/compose/test_workflow.py ________________
+ImportError while importing test module '/Users/jreback/Projects/lawyerfactory/tests/compose/test_workflow.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/compose/test_workflow.py:12: in <module>
+    from lawyerfactory.models import Stage, Task  # noqa: E402
+src/lawyerfactory/models.py:9: in <module>
+    from lawyerfactory.lf_core.models import *  # noqa: F401,F403
+src/lawyerfactory/lf_core/models.py:11: in <module>
+    from src.shared.models import *
+E   ModuleNotFoundError: No module named 'src.shared.models'
+_______________ ERROR collecting tests/evidence/test_shotlist.py _______________
+ImportError while importing test module '/Users/jreback/Projects/lawyerfactory/tests/evidence/test_shotlist.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/evidence/test_shotlist.py:11: in <module>
+    from lawyerfactory.evidence.shotlist import build_shot_list
+src/lawyerfactory/evidence/shotlist.py:23: in <module>
+    from lawyerfactory.phases.outline.shotlist.shotlist import (
+E   ModuleNotFoundError: No module named 'lawyerfactory.phases.outline'
+________________ ERROR collecting tests/ingest/test_assessor.py ________________
+ImportError while importing test module '/Users/jreback/Projects/lawyerfactory/tests/ingest/test_assessor.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+tests/ingest/test_assessor.py:11: in <module>
+    import repository
+E   ModuleNotFoundError: No module named 'repository'
+________ ERROR collecting tests/kg/test_knowledge_graph_integration.py _________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/kg/test_knowledge_graph_integration.py", line 104
+E       when defendant MegaCorp's delivery truck ran a red light and collided with 
+E                              ^
+E   SyntaxError: unterminated string literal (detected at line 104)
+______ ERROR collecting tests/research/test_legal_research_integration.py ______
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/research/test_legal_research_integration.py", line 656
+E       """Create a test research request for testing purposes"""
+E                                                             ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 669)
+_____________ ERROR collecting tests/research/test_research_bot.py _____________
+law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+    mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
+law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
+    importlib.import_module(module_name)
+../../.pyenv/versions/3.11.13/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1147: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:690: in _load_unlocked
+    ???
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:169: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+law_venv/lib/python3.11/site-packages/_pytest/assertion/rewrite.py:351: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+../../.pyenv/versions/3.11.13/lib/python3.11/ast.py:50: in parse
+    return compile(source, filename, mode, flags,
+E     File "/Users/jreback/Projects/lawyerfactory/tests/research/test_research_bot.py", line 195
+E       """Run all ResearchBot tests"""
+E                                   ^
+E   SyntaxError: unterminated triple-quoted string literal (detected at line 232)
+=============================== warnings summary ===============================
+tests/compose/test_workflow.py:12
+  /Users/jreback/Projects/lawyerfactory/tests/compose/test_workflow.py:12: DeprecationWarning: Use 'lawyerfactory.lf_core.models' instead of 'lawyerfactory.models'.
+    from lawyerfactory.models import Stage, Task  # noqa: E402
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR test_enhanced_categorization.py
+ERROR test_vector_store.py - SystemExit: 1
+ERROR test_vector_store_cloud_integration.py - SystemExit: 1
+ERROR PAN/test_pan_analyzer.py
+ERROR archive/intake_archive_202508252331/tests/e2e_ingestion_test.py
+ERROR src/lawyerfactory/phases/01_intake/simple_test.py - SystemExit: 1
+ERROR src/lawyerfactory/phases/01_intake/test_llm_integration.py
+ERROR tests/test_end_to_end_intake_system.py
+ERROR tests/test_end_to_end_lightweight.py
+ERROR tests/test_facts_matrix_adapter.py
+ERROR tests/test_fixes.py
+ERROR tests/test_phase_validation.py
+ERROR tests/test_post_production_integration.py
+ERROR tests/test_research_loop_integration.py
+ERROR tests/test_research_loop_minimal.py
+ERROR tests/test_shotlist_robustness.py
+ERROR tests/test_statement_of_facts_normalizer.py
+ERROR tests/api/test_draft_endpoints.py
+ERROR tests/claims/test_claims_matrix.py
+ERROR tests/claims/test_claims_matrix_core.py
+ERROR tests/cli/test_kanban.py
+ERROR tests/compose/test_ai_document_integration.py
+ERROR tests/compose/test_comprehensive_integration.py
+ERROR tests/compose/test_enhanced_integration.py
+ERROR tests/compose/test_integration_runner.py
+ERROR tests/compose/test_orchestration.py
+ERROR tests/compose/test_statement_of_facts_system.py
+ERROR tests/compose/test_workflow.py
+ERROR tests/evidence/test_shotlist.py
+ERROR tests/ingest/test_assessor.py
+ERROR tests/kg/test_knowledge_graph_integration.py
+ERROR tests/research/test_legal_research_integration.py
+ERROR tests/research/test_research_bot.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 33 errors during collection !!!!!!!!!!!!!!!!!!!
+1 warning, 33 errors in 4.56s

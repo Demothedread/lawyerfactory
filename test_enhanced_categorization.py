@@ -127,10 +127,12 @@ def test_document_categorization():
         print(f"   {'✅ CORRECT' if result['correct'] else '❌ INCORRECT'}")
 
     # Summary
-    print("
-📊 Test Summary:"    print(f"   Total documents tested: {len(results)}")
-    print(f"   Correct categorizations: {sum(1 for r in results if r['correct'])}")
-    print(".1%")
+    print("📊 Test Summary:"    
+          print(f"   Total documents tested: {len(results)}")
+          print(f"   Correct categorizations: {sum(1 for r in results if r['correct'])}")
+          print(".1%")
+          print(f"   Incorrect categorizations: {sum(1 for r in results if not r['correct'])}")
+    )
 
     return results
 

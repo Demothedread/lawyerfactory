@@ -71,10 +71,10 @@ STREAMLINED_MIGRATION = {
     "src/lawyerfactory/compose/maestro/compat_wrappers.py": "src/lawyerfactory/phases/07_orchestration/compatibility.py",
 
     # Phase-specific improvements - keep the good structure, improve organization
-    "src/lawyerfactory/phases/01_intake/evidence/table.py": "src/lawyerfactory/phases/01_intake/evidence_table.py",
-    "src/lawyerfactory/phases/01_intake/ingestion/assessor.py": "src/lawyerfactory/phases/01_intake/assessor.py",
-    "src/lawyerfactory/phases/01_intake/ingestion/knowledge_graph_extensions.py": "src/lawyerfactory/phases/01_intake/kg_extensions.py",
-    "src/lawyerfactory/phases/01_intake/ingestion/server.py": "src/lawyerfactory/phases/01_intake/intake_server.py",
+    "src/lawyerfactory/phases/phaseA01_intake/evidence/table.py": "src/lawyerfactory/phases/phaseA01_intake/evidence_table.py",
+    "src/lawyerfactory/phases/phaseA01_intake/ingestion/assessor.py": "src/lawyerfactory/phases/phaseA01_intake/assessor.py",
+    "src/lawyerfactory/phases/phaseA01_intake/ingestion/knowledge_graph_extensions.py": "src/lawyerfactory/phases/phaseA01_intake/kg_extensions.py",
+    "src/lawyerfactory/phases/phaseA01_intake/ingestion/server.py": "src/lawyerfactory/phases/phaseA01_intake/intake_server.py",
 
     "src/lawyerfactory/phases/02_research/agents/research_bot.py": "src/lawyerfactory/phases/02_research/research_bot.py",
     "src/lawyerfactory/phases/02_research/retrievers/cache.py": "src/lawyerfactory/phases/02_research/cache.py",
@@ -104,9 +104,9 @@ STREAMLINED_MIGRATION = {
 
     # UI and API reorganization
     "apps/ui/templates/attorney_review_interface.py": "src/lawyerfactory/phases/04_human_review/attorney_review_interface.py",
-    "src/lawyerfactory/ui/legal_intake_form.py": "src/lawyerfactory/phases/01_intake/legal_intake_form.py",
+    "src/lawyerfactory/ui/legal_intake_form.py": "src/lawyerfactory/phases/phaseA01_intake/legal_intake_form.py",
     "src/lawyerfactory/ui/orchestration_dashboard.py": "src/lawyerfactory/phases/07_orchestration/orchestration_dashboard.py",
-    "apps/api/routes/evidence.py": "src/lawyerfactory/phases/01_intake/evidence_routes.py",
+    "apps/api/routes/evidence.py": "src/lawyerfactory/phases/phaseA01_intake/evidence_routes.py",
 }
 
 def create_directories_for_file(filepath: Path):

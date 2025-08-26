@@ -4,8 +4,6 @@ document_generator
 ingestion
 knowledge_graph
 lawyerfactory
-research
 shared
-skeletal_outline
 storage
 workflow

@@ -56,11 +56,11 @@ MIGRATION_MAPPING = {
     "src/lawyerfactory/compose/maestro/compat_wrappers.py": "src/lawyerfactory/phases/07_orchestration/services/compatibility.py",
 
     # Phase-specific reorganization
-    "src/lawyerfactory/phases/01_intake/evidence/table.py": "src/lawyerfactory/phases/01_intake/services/evidence_table.py",
-    "src/lawyerfactory/phases/01_intake/ingestion/assessor.py": "src/lawyerfactory/phases/01_intake/services/assessor.py",
-    "src/lawyerfactory/phases/01_intake/ingestion/knowledge_graph_extensions.py": "src/lawyerfactory/phases/01_intake/services/kg_extensions.py",
-    "src/lawyerfactory/phases/01_intake/ingestion/server.py": "src/lawyerfactory/phases/01_intake/services/intake_server.py",
-    "src/lawyerfactory/phases/01_intake/intake_processor.py": "src/lawyerfactory/phases/01_intake/services/intake_processor.py",
+    "src/lawyerfactory/phases/phaseA01_intake/evidence/table.py": "src/lawyerfactory/phases/phaseA01_intake/services/evidence_table.py",
+    "src/lawyerfactory/phases/phaseA01_intake/ingestion/assessor.py": "src/lawyerfactory/phases/phaseA01_intake/services/assessor.py",
+    "src/lawyerfactory/phases/phaseA01_intake/ingestion/knowledge_graph_extensions.py": "src/lawyerfactory/phases/phaseA01_intake/services/kg_extensions.py",
+    "src/lawyerfactory/phases/phaseA01_intake/ingestion/server.py": "src/lawyerfactory/phases/phaseA01_intake/services/intake_server.py",
+    "src/lawyerfactory/phases/phaseA01_intake/intake_processor.py": "src/lawyerfactory/phases/phaseA01_intake/services/intake_processor.py",
 
     "src/lawyerfactory/phases/02_research/agents/research_bot.py": "src/lawyerfactory/phases/02_research/services/research_bot.py",
     "src/lawyerfactory/phases/02_research/retrievers/cache.py": "src/lawyerfactory/phases/02_research/services/cache.py",
@@ -98,18 +98,18 @@ MIGRATION_MAPPING = {
     "src/lawyerfactory/compose/bots/legal_claim_validator.py": "src/lawyerfactory/phases/03_outline/services/legal_claim_validator.py",
     "src/lawyerfactory/compose/bots/legal_validation_agent.py": "src/lawyerfactory/phases/04_human_review/services/legal_validation_agent.py",
     "src/lawyerfactory/compose/bots/procedure.py": "src/lawyerfactory/phases/05_drafting/services/procedure.py",
-    "src/lawyerfactory/compose/bots/reader.py": "src/lawyerfactory/phases/01_intake/services/reader.py",
+    "src/lawyerfactory/compose/bots/reader.py": "src/lawyerfactory/phases/phaseA01_intake/services/reader.py",
     "src/lawyerfactory/compose/bots/research.py": "src/lawyerfactory/phases/02_research/services/research.py",
     "src/lawyerfactory/compose/bots/rules_of_law.py": "src/lawyerfactory/phases/02_research/services/rules_of_law.py",
     "src/lawyerfactory/compose/bots/writer.py": "src/lawyerfactory/phases/05_drafting/services/writer.py",
 
     # UI reorganization
     "apps/ui/templates/attorney_review_interface.py": "src/lawyerfactory/phases/04_human_review/ui/attorney_review_interface.py",
-    "src/lawyerfactory/ui/legal_intake_form.py": "src/lawyerfactory/phases/01_intake/ui/legal_intake_form.py",
+    "src/lawyerfactory/ui/legal_intake_form.py": "src/lawyerfactory/phases/phaseA01_intake/ui/legal_intake_form.py",
     "src/lawyerfactory/ui/orchestration_dashboard.py": "src/lawyerfactory/phases/07_orchestration/ui/orchestration_dashboard.py",
 
     # API reorganization
-    "apps/api/routes/evidence.py": "src/lawyerfactory/phases/01_intake/api/evidence_routes.py",
+    "apps/api/routes/evidence.py": "src/lawyerfactory/phases/phaseA01_intake/api/evidence_routes.py",
 }
 
 def create_directories_for_file(filepath: Path):
