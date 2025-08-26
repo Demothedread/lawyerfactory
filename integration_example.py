@@ -73,7 +73,7 @@ def integrate_with_phase_5_drafting():
     print("=" * 60)
 
     integration_code = '''
-# In src/lawyerfactory/phases/05_drafting/drafting_validator.py
+# In src/lawyerfactory/phases/phaseB02_drafting/drafting_validator.py
 
 # Add imports
 from drafting_validator import DraftingValidator

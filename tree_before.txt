@@ -115,9 +115,9 @@
 ./src/lawyerfactory/phases/phaseB01_review
 ./src/lawyerfactory/phases/phaseB01_review/io
 ./src/lawyerfactory/phases/phaseB01_review/ui
-./src/lawyerfactory/phases/05_drafting
-./src/lawyerfactory/phases/05_drafting/generator
-./src/lawyerfactory/phases/05_drafting/promptkits
+./src/lawyerfactory/phases/phaseB02_drafting
+./src/lawyerfactory/phases/phaseB02_drafting/generator
+./src/lawyerfactory/phases/phaseB02_drafting/promptkits
 ./src/lawyerfactory/phases/06_post_production
 ./src/lawyerfactory/phases/06_post_production/formatters
 ./src/lawyerfactory/phases/06_post_production/validators

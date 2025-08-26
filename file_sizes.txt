@@ -42,8 +42,8 @@
        1 ./src/lawyerfactory/phases/phaseA03_outline/shotlist/__init__.py
        1 ./src/lawyerfactory/phases/phaseB01_review/io/__init__.py
        1 ./src/lawyerfactory/phases/phaseB01_review/ui/__init__.py
-       1 ./src/lawyerfactory/phases/05_drafting/generator/__init__.py
-       1 ./src/lawyerfactory/phases/05_drafting/promptkits/__init__.py
+       1 ./src/lawyerfactory/phases/phaseB02_drafting/generator/__init__.py
+       1 ./src/lawyerfactory/phases/phaseB02_drafting/promptkits/__init__.py
        1 ./src/lawyerfactory/phases/06_post_production/formatters/__init__.py
        1 ./src/lawyerfactory/phases/06_post_production/validators/__init__.py
        1 ./src/lawyerfactory/phases/07_orchestration/maestro/__init__.py
@@ -87,9 +87,9 @@
        5 ./src/lawyerfactory/phases/phaseA03_outline/outline/generator.py
        5 ./src/lawyerfactory/phases/phaseA03_outline/outline/integration.py
        5 ./src/lawyerfactory/phases/phaseB01_review/io/file_storage.py
-       5 ./src/lawyerfactory/phases/05_drafting/generator/editor_bot.py
-       5 ./src/lawyerfactory/phases/05_drafting/generator/procedure_bot.py
-       5 ./src/lawyerfactory/phases/05_drafting/generator/writer_bot.py
+       5 ./src/lawyerfactory/phases/phaseB02_drafting/generator/editor_bot.py
+       5 ./src/lawyerfactory/phases/phaseB02_drafting/generator/procedure_bot.py
+       5 ./src/lawyerfactory/phases/phaseB02_drafting/generator/writer_bot.py
        5 ./src/lawyerfactory/phases/06_post_production/validators/legal_authority_validator.py
        5 ./src/lawyerfactory/phases/07_orchestration/maestro/enhanced_maestro.py
        5 ./src/lawyerfactory/phases/07_orchestration/maestro/errors.py
@@ -200,7 +200,7 @@
      309 ./src/lawyerfactory/evidence/shotlist.py
      311 ./docs/architecture/architecture.md
      316 ./src/lawyerfactory/compose/bots/citation_formatter.py
-     319 ./src/lawyerfactory/phases/05_drafting/promptkits/prompt_integration.py
+     319 ./src/lawyerfactory/phases/phaseB02_drafting/promptkits/prompt_integration.py
      319 ./trash/staged_for_evaluation/prompt_integration.py
      323 ./src/lawyerfactory/infra/file_storage_api.py
      325 ./src/lawyerfactory/compose/bots/issuespotter.py
@@ -263,7 +263,7 @@
      542 ./src/lawyerfactory/compose/maestro/prompt_chain_orchestrator.py
      561 ./apps/ui/static/js/harvard-workflow-app.js
      562 ./src/lawyerfactory/post_production/pdf_generator.py
-     564 ./src/lawyerfactory/phases/05_drafting/promptkits/prompt_deconstruction.py
+     564 ./src/lawyerfactory/phases/phaseB02_drafting/promptkits/prompt_deconstruction.py
      564 ./trash/staged_for_evaluation/prompt_deconstruction.py
      572 ./src/lawyerfactory/compose/bots/legal_validation_agent.py
      576 ./src/lawyerfactory/phases/06_post_production/formatters/legal_document_templates.py
@@ -287,7 +287,7 @@
      700 ./src/lawyerfactory/outline/generator.py
      717 ./src/lawyerfactory/ui/legal_intake_form.py
      719 ./src/lawyerfactory/export/renderers/legacy/modules/field_mapper.py
-     722 ./src/lawyerfactory/phases/05_drafting/generator/enhanced_draft_processor.py
+     722 ./src/lawyerfactory/phases/phaseB02_drafting/generator/enhanced_draft_processor.py
      731 ./src/lawyerfactory/compose/maestro/workflow_enhanced.py
      763 ./src/lawyerfactory/phases/07_orchestration/maestro/deploy_lawyerfactory.py
      805 ./src/lawyerfactory/kg/graph_api.py
