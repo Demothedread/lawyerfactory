@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from ...agents.research.court_authority_helper import CourtAuthorityHelper, JurisdictionContext
-from ...phases.intake.enhanced_intake_processor import EnhancedIntakeContext
+from .enhanced_intake_processor import EnhancedIntakeProcessor, EnhancedIntakeContext
 
 logger = logging.getLogger(__name__)
 

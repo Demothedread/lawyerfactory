@@ -27,6 +27,30 @@ logger = logging.getLogger(__name__)
 class LegalDefinition:
     """Comprehensive legal definition with authorities and clickable terms"""
     definition_id: str
+# Import LLM integration functions
+try:
+    from .llm_outline_integration import (
+        llm_detect_causes_of_action,
+        llm_analyze_legal_elements,
+        llm_generate_document_outline,
+        llm_generate_provable_questions,
+        llm_enhance_legal_definition,
+        llm_build_decision_tree
+    )
+
+    LLM_OUTLINE_AVAILABLE = True
+except Exception:
+    LLM_OUTLINE_AVAILABLE = False
+    logger.warning("LLM outline integration functions not available")
+
+# try to import new LLM service
+try:
+    from ...lf_core.llm import LLMService
+
+    LLM_SERVICE_AVAILABLE = True
+except Exception:
+    LLM_SERVICE_AVAILABLE = False
+    logger.warning("LLM service not available - using fallback categorization")
     cause_of_action: str
     jurisdiction: str
     primary_definition: str
@@ -1021,6 +1045,160 @@ if __name__ == "__main__":
         
         # Test California negligence definition
         if jurisdiction_manager.select_jurisdiction('ca_state'):
+    # --- LLM-Enhanced Methods ---
+
+    def llm_enhanced_generate_definition(self, cause_of_action: str, jurisdiction: str) -> Optional[LegalDefinition]:
+        """Generate enhanced legal definition using LLM for better context and examples."""
+        if not LLM_OUTLINE_AVAILABLE:
+            logger.warning("LLM outline integration not available, using traditional definition")
+            return self.generate_comprehensive_definition(cause_of_action, jurisdiction)
+
+        try:
+            # Get traditional definition first
+            traditional_def = self.generate_comprehensive_definition(cause_of_action, jurisdiction)
+
+            if not traditional_def:
+                return None
+
+            # Use LLM to enhance the definition
+            enhanced_data = llm_enhance_legal_definition(
+                cause_of_action,
+                jurisdiction,
+                traditional_def.primary_definition
+            )
+
+            if enhanced_data.get("enhancement_method") == "llm":
+                # Create enhanced definition
+                enhanced_def = LegalDefinition(
+                    definition_id=f"llm_{traditional_def.definition_id}",
+                    cause_of_action=cause_of_action,
+                    jurisdiction=jurisdiction,
+                    primary_definition=enhanced_data.get("enhanced_definition", traditional_def.primary_definition),
+                    authority_citations=traditional_def.authority_citations,
+                    clickable_terms=enhanced_data.get("clickable_terms", traditional_def.clickable_terms),
+                    alternative_definitions=traditional_def.alternative_definitions,
+                    jury_instructions=traditional_def.jury_instructions,
+                    case_law_examples=enhanced_data.get("case_law_examples", traditional_def.case_law_examples),
+                    statutory_references=traditional_def.statutory_references
+                )
+                return enhanced_def
+            else:
+                return traditional_def
+
+        except Exception as e:
+            logger.error("LLM-enhanced definition generation failed: %s", e)
+            return self.generate_comprehensive_definition(cause_of_action, jurisdiction)
+
+    def llm_enhanced_generate_provable_questions(self, cause_of_action: str, element_name: str,
+                                               case_facts: str = "") -> List[ProvableQuestion]:
+        """Generate enhanced provable questions using LLM for better context and practice guidance."""
+        if not LLM_OUTLINE_AVAILABLE:
+            logger.warning("LLM outline integration not available, using traditional questions")
+            return self.generate_provable_questions(cause_of_action, element_name)
+
+        try:
+            # Use LLM to generate enhanced questions
+            llm_questions = llm_generate_provable_questions(cause_of_action, element_name, case_facts)
+
+            if llm_questions and llm_questions[0].get("generation_method") == "llm":
+                # Convert LLM results to ProvableQuestion format
+                questions = []
+                for q_data in llm_questions:
+                    question = ProvableQuestion(
+                        question_id=q_data.get("question_id", f"{element_name}_llm_001"),
+                        question_text=q_data.get("question_text", ""),
+                        element_name=element_name,
+                        question_type=q_data.get("question_type", "factual"),
+                        evidence_types=q_data.get("evidence_types", []),
+                        proof_methods=q_data.get("proof_methods", []),
+                        common_challenges=q_data.get("common_challenges", []),
+                        practice_tips=q_data.get("practice_tips", []),
+                        sub_questions=q_data.get("sub_questions", [])
+                    )
+                    questions.append(question)
+                return questions
+            else:
+                return self.generate_provable_questions(cause_of_action, element_name)
+
+        except Exception as e:
+            logger.error("LLM-enhanced provable question generation failed: %s", e)
+            return self.generate_provable_questions(cause_of_action, element_name)
+
+    def llm_enhanced_build_decision_tree(self, cause_of_action: str, element_name: str,
+                                        case_facts: str = "") -> List[DecisionTreeNode]:
+        """Build enhanced decision tree using LLM for better legal analysis structure."""
+        if not LLM_OUTLINE_AVAILABLE:
+            logger.warning("LLM outline integration not available, using traditional decision tree")
+            return self.build_decision_tree(cause_of_action, element_name)
+
+        try:
+            # Use LLM to build decision tree
+            tree_data = llm_build_decision_tree(cause_of_action, element_name, case_facts)
+
+            if tree_data.get("building_method") == "llm":
+                # Convert LLM results to DecisionTreeNode format
+                nodes = []
+                for node_data in tree_data.get("nodes", []):
+                    node = DecisionTreeNode(
+                        node_id=node_data.get("node_id", f"{element_name}_llm_001"),
+                        condition=node_data.get("condition", ""),
+                        true_path=node_data.get("true_path"),
+                        false_path=node_data.get("false_path"),
+                        outcome=node_data.get("outcome"),
+                        legal_standard=node_data.get("legal_standard", ""),
+                        authority_citation=node_data.get("authority_citation", ""),
+                        practice_notes=node_data.get("practice_notes", [])
+                    )
+                    nodes.append(node)
+                return nodes
+            else:
+                return self.build_decision_tree(cause_of_action, element_name)
+
+        except Exception as e:
+            logger.error("LLM-enhanced decision tree building failed: %s", e)
+            return self.build_decision_tree(cause_of_action, element_name)
+
+    def llm_enhanced_generate_element_breakdown(self, cause_of_action: str, element_name: str,
+                                              jurisdiction: str, case_facts: str = "") -> Optional[ElementBreakdown]:
+        """Generate enhanced element breakdown using LLM for better legal analysis."""
+        if not LLM_OUTLINE_AVAILABLE:
+            logger.warning("LLM outline integration not available, using traditional breakdown")
+            return self.generate_element_breakdown(cause_of_action, element_name, jurisdiction)
+
+        try:
+            # Get traditional breakdown first
+            traditional_breakdown = self.generate_element_breakdown(cause_of_action, element_name, jurisdiction)
+
+            if not traditional_breakdown:
+                return None
+
+            # Use LLM to enhance the breakdown
+            enhanced_questions = self.llm_enhanced_generate_provable_questions(
+                cause_of_action, element_name, case_facts
+            )
+
+            enhanced_tree = self.llm_enhanced_build_decision_tree(
+                cause_of_action, element_name, case_facts
+            )
+
+            # Create enhanced breakdown
+            enhanced_breakdown = ElementBreakdown(
+                element_id=f"llm_{traditional_breakdown.element_id}",
+                element_name=element_name,
+                primary_definition=traditional_breakdown.primary_definition,
+                authority_citations=traditional_breakdown.authority_citations,
+                sub_elements=traditional_breakdown.sub_elements,
+                decision_trees=enhanced_tree,
+                burden_of_proof=traditional_breakdown.burden_of_proof,
+                proof_standards=traditional_breakdown.proof_standards,
+                common_defenses=traditional_breakdown.common_defenses
+            )
+
+            return enhanced_breakdown
+
+        except Exception as e:
+            logger.error("LLM-enhanced element breakdown generation failed: %s", e)
+            return self.generate_element_breakdown(cause_of_action, element_name, jurisdiction)
             definition = definition_engine.generate_comprehensive_definition('negligence', 'ca_state')
             if definition:
                 print("Generated definition for negligence:")

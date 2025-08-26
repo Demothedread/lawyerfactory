@@ -20,6 +20,14 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
+# Import unified storage API
+try:
+    from lawyerfactory.storage.unified_storage_api import get_unified_storage_api, UnifiedStorageAPI
+    UNIFIED_STORAGE_AVAILABLE = True
+except ImportError:
+    UNIFIED_STORAGE_AVAILABLE = False
+    logger.warning("Unified storage API not available, using standalone mode")
+
 
 class EvidenceType(Enum):
     """Types of evidence for classification"""
@@ -53,6 +61,7 @@ class RelevanceLevel(Enum):
 class EvidenceEntry:
     """Enhanced evidence entry with comprehensive metadata"""
     evidence_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    object_id: Optional[str] = None  # Unified storage ObjectID
     source_document: str = ""
     page_section: str = ""
     content: str = ""
@@ -198,13 +207,168 @@ class ClaimEntry:
 
 class EnhancedEvidenceTable:
     """Enhanced evidence table manager with facts and claims integration"""
-    
+
     def __init__(self, storage_path: str = "evidence_table.json"):
         self.storage_path = Path(storage_path)
         self.evidence_entries: Dict[str, EvidenceEntry] = {}
         self.fact_assertions: Dict[str, FactAssertion] = {}
         self.claim_entries: Dict[str, ClaimEntry] = {}
+
+        # Initialize unified storage integration
+        self.unified_storage = None
+        if UNIFIED_STORAGE_AVAILABLE:
+            try:
+                self.unified_storage = get_unified_storage_api()
+                self.unified_storage.register_storage_client("evidence", self)
+                logger.info("Evidence table integrated with unified storage API")
+            except Exception as e:
+                logger.warning(f"Failed to initialize unified storage: {e}")
+                self.unified_storage = None
+
         self._load_data()
+
+    # Unified Storage API Interface Methods
+    async def store_evidence_data(self, evidence_id: str, data: Dict[str, Any]) -> bool:
+        """Store evidence data from unified storage API"""
+        try:
+            # Create evidence entry from data
+            entry = EvidenceEntry.from_dict(data)
+            entry.evidence_id = evidence_id
+            self.evidence_entries[evidence_id] = entry
+            self._save_data()
+            return True
+        except Exception as e:
+            logger.error(f"Failed to store evidence data {evidence_id}: {e}")
+            return False
+
+    async def get_evidence_data(self, evidence_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve evidence data for unified storage API"""
+        try:
+            if evidence_id in self.evidence_entries:
+                return self.evidence_entries[evidence_id].to_dict()
+            return None
+        except Exception as e:
+            logger.error(f"Failed to get evidence data {evidence_id}: {e}")
+            return None
+
+    async def search_evidence_data(self, query: str) -> List[Dict[str, Any]]:
+        """Search evidence data for unified storage API"""
+        try:
+            results = []
+            query_lower = query.lower()
+
+            for entry in self.evidence_entries.values():
+                # Simple text search in content and notes
+                if (query_lower in entry.content.lower() or
+                    query_lower in entry.notes.lower() or
+                    any(query_lower in term.lower() for term in entry.key_terms)):
+                    results.append(entry.to_dict())
+
+            return results
+        except Exception as e:
+            logger.error(f"Failed to search evidence data: {e}")
+    async def add_evidence_with_unified_storage(self, file_content: bytes, filename: str,
+                                                metadata: Optional[Dict[str, Any]] = None,
+                                                source_phase: str = "intake") -> str:
+        """Add evidence using the unified storage API"""
+        if not self.unified_storage:
+            # Fallback to regular method
+            evidence = EvidenceEntry(
+                source_document=filename,
+                content="",  # Will be populated if text extraction is available
+                created_by="system"
+            )
+            return self.add_evidence(evidence)
+
+        try:
+            # Store through unified storage API
+            result = await self.unified_storage.store_evidence(
+                file_content=file_content,
+                filename=filename,
+                metadata=metadata,
+                source_phase=source_phase
+            )
+
+            if result.success:
+                # Create evidence entry with ObjectID
+                evidence = EvidenceEntry(
+                    evidence_id=result.evidence_id or str(uuid.uuid4()),
+                    object_id=result.object_id,
+                    source_document=filename,
+                    content="",  # Will be populated by unified storage
+                    created_by="system"
+                )
+
+                # Add to local table
+                evidence_id = self.add_evidence(evidence)
+
+                # Update with ObjectID link
+                evidence.object_id = result.object_id
+                self.evidence_entries[evidence_id] = evidence
+                self._save_data()
+
+                return evidence_id
+            else:
+                logger.error(f"Unified storage failed: {result.error}")
+                # Fallback to regular method
+                evidence = EvidenceEntry(
+                    source_document=filename,
+                    content="",
+                    created_by="system"
+                )
+                return self.add_evidence(evidence)
+
+        except Exception as e:
+            logger.error(f"Failed to add evidence with unified storage: {e}")
+            # Fallback to regular method
+            evidence = EvidenceEntry(
+                source_document=filename,
+                content="",
+                created_by="system"
+            )
+            return self.add_evidence(evidence)
+
+    async def get_evidence_with_unified_storage(self, evidence_id: str) -> Optional[Dict[str, Any]]:
+        """Get evidence with unified storage data"""
+        evidence = self.evidence_entries.get(evidence_id)
+        if not evidence or not evidence.object_id:
+            return evidence.to_dict() if evidence else None
+
+        if self.unified_storage:
+            try:
+                unified_data = await self.unified_storage.get_evidence(evidence.object_id)
+                if unified_data and "error" not in unified_data:
+                    # Merge unified storage data with local evidence data
+                    result = evidence.to_dict()
+                    result["unified_storage"] = unified_data
+                    return result
+            except Exception as e:
+                logger.warning(f"Failed to get unified storage data for {evidence_id}: {e}")
+
+        return evidence.to_dict()
+
+    async def search_evidence_with_unified_storage(self, query: str) -> List[Dict[str, Any]]:
+        """Search evidence using unified storage"""
+        if self.unified_storage:
+            try:
+                unified_results = await self.unified_storage.search_evidence(query)
+                if unified_results:
+                    # Convert to evidence table format
+                    results = []
+                    for result in unified_results:
+                        evidence_id = result.get("object_id")
+                        if evidence_id in self.evidence_entries:
+                            evidence_data = self.evidence_entries[evidence_id].to_dict()
+                            evidence_data["unified_storage"] = result
+                            results.append(evidence_data)
+                    return results
+            except Exception as e:
+                logger.warning(f"Unified storage search failed: {e}")
+
+        # Fallback to local search
+        return await self.search_evidence_data(query)
+            return []</search>
+</search_and_replace>
     
     def _load_data(self):
         """Load evidence table data from storage"""

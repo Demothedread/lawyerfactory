@@ -2,9 +2,12 @@
 env312/*
 lawenv/*
 /env312/bin
-env312/bin/*
+env312/bin
+.env
+.roo
+.github         
 .env.production
-law_venv
+law_venv/
 *.log
 tests/*.json
 # Ignore Python cache files

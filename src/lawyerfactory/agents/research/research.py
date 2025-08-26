@@ -29,6 +29,32 @@ from ..workflow_models import WorkflowTask
 
 logger = logging.getLogger(__name__)
 
+# Import LLM integration functions
+try:
+    from .llm_research_integration import (
+        llm_extract_legal_issues,
+        llm_analyze_case_law,
+        llm_identify_research_gaps,
+        llm_score_citation_relevance,
+        llm_extract_legal_principles,
+        llm_generate_research_recommendations
+    )
+
+    LLM_RESEARCH_AVAILABLE = True
+except Exception:
+    LLM_RESEARCH_AVAILABLE = False
+    logger.warning("LLM research integration functions not available")
+
+# try to import new LLM service
+try:
+    from ...lf_core.llm import LLMService
+
+    LLM_SERVICE_AVAILABLE = True
+except Exception:
+    LLM_SERVICE_AVAILABLE = False
+    logger.warning("LLM service not available - using fallback categorization")
+logger = logging.getLogger(__name__)
+
 @dataclass
 class ResearchQuery:
     """Structured research query with context"""
