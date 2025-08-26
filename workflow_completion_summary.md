@@ -65,7 +65,7 @@ This document summarizes the successful implementation of the custom repo cleanu
 ├── phases/phaseB01_review/{api,services,repositories,ui}/
 ├── phases/phaseB02_drafting/{api,services,repositories,ui}/
 ├── phases/06_post_production/{api,services,repositories,ui}/
-├── phases/07_orchestration/{api,services,repositories,ui}/
+├── phases/phaseC02_orchestration/{api,services,repositories,ui}/
 ├── knowledge_graph/{api,services,repositories,ui}/
 ├── infrastructure/{api,services,repositories,ui}/
 ├── shared/

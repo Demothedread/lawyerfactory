@@ -76,7 +76,7 @@ def identify_duplicate_implementations() -> List[Dict]:
             "files": [
                 "maestro/enhanced_maestro.py",
                 "src/lawyerfactory/compose/maestro/enhanced_maestro.py",
-                "src/lawyerfactory/phases/07_orchestration/maestro/enhanced_maestro.py",
+                "src/lawyerfactory/phases/phaseC02_orchestration/maestro/enhanced_maestro.py",
             ],
             "reason": "Multiple maestro implementations - keep the main one in compose/maestro",
         },

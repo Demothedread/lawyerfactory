@@ -18,7 +18,7 @@ def restore_files():
         'trash/reader_bot.py': 'maestro/bots/reader_bot.py',
         'trash/maestro_bot.py': 'maestro/bots/maestro_bot.py',
         'trash/enhanced_maestro.py': 'src/lawyerfactory/compose/maestro/enhanced_maestro.py',
-        'trash/enhanced_maestro.py.dup.20250822051739': 'src/lawyerfactory/phases/07_orchestration/maestro/enhanced_maestro.py',
+        'trash/enhanced_maestro.py.dup.20250822051739': 'src/lawyerfactory/phases/phaseC02_orchestration/maestro/enhanced_maestro.py',
         'trash/file_storage.py': 'src/lawyerfactory/file_storage.py',
         'trash/file_storage.py.dup.20250822051739': 'src/lawyerfactory/infra/file_storage.py',
         'trash/file_storage_api.py': 'src/lawyerfactory/infra/file_storage_api.py',

@@ -27,7 +27,7 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 ├── phases/phaseB01_review/{api,services,repositories,ui}/
 ├── phases/phaseB02_drafting/{api,services,repositories,ui}/
 ├── phases/06_post_production/{api,services,repositories,ui}/
-├── phases/07_orchestration/{api,services,repositories,ui}/
+├── phases/phaseC02_orchestration/{api,services,repositories,ui}/
 ├── knowledge_graph/{api,services,repositories,ui}/
 ├── infrastructure/{api,services,repositories,ui}/
 ├── shared/
@@ -74,22 +74,22 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 #### Maestro Components
 | Current Path | New Path | Status |
 |-------------|----------|---------|
-| `src/lawyerfactory/compose/maestro/enhanced_maestro.py` | `src/lawyerfactory/phases/07_orchestration/services/maestro.py` | MIGRATE |
-| `src/lawyerfactory/phases/07_orchestration/maestro/enhanced_maestro.py` | DELETE (shim) | DELETE |
+| `src/lawyerfactory/compose/maestro/enhanced_maestro.py` | `src/lawyerfactory/phases/phaseC02_orchestration/services/maestro.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseC02_orchestration/maestro/enhanced_maestro.py` | DELETE (shim) | DELETE |
 | `maestro/enhanced_maestro.py` | DELETE (deprecated) | DELETE |
 
 #### Maestro Supporting Components
 | Current Path | New Path | Status |
 |-------------|----------|---------|
-| `src/lawyerfactory/compose/maestro/base.py` | `src/lawyerfactory/phases/07_orchestration/services/base_maestro.py` | MIGRATE |
-| `src/lawyerfactory/compose/maestro/maestro.py` | `src/lawyerfactory/phases/07_orchestration/services/workflow_engine.py` | MIGRATE |
-| `src/lawyerfactory/compose/maestro/maestro_bot.py` | `src/lawyerfactory/phases/07_orchestration/services/maestro_bot.py` | MIGRATE |
-| `src/lawyerfactory/compose/maestro/workflow_models.py` | `src/lawyerfactory/phases/07_orchestration/services/workflow_models.py` | MIGRATE |
-| `src/lawyerfactory/compose/maestro/workflow_api.py` | `src/lawyerfactory/phases/07_orchestration/api/workflow_api.py` | MIGRATE |
-| `src/lawyerfactory/compose/maestro/events.py` | `src/lawyerfactory/phases/07_orchestration/services/event_system.py` | MIGRATE |
-| `src/lawyerfactory/compose/maestro/errors.py` | `src/lawyerfactory/phases/07_orchestration/services/error_handler.py` | MIGRATE |
-| `src/lawyerfactory/compose/maestro/checkpoints.py` | `src/lawyerfactory/phases/07_orchestration/services/state_manager.py` | MIGRATE |
-| `src/lawyerfactory/compose/maestro/compat_wrappers.py` | `src/lawyerfactory/phases/07_orchestration/services/compatibility.py` | MIGRATE |
+| `src/lawyerfactory/compose/maestro/base.py` | `src/lawyerfactory/phases/phaseC02_orchestration/services/base_maestro.py` | MIGRATE |
+| `src/lawyerfactory/compose/maestro/maestro.py` | `src/lawyerfactory/phases/phaseC02_orchestration/services/workflow_engine.py` | MIGRATE |
+| `src/lawyerfactory/compose/maestro/maestro_bot.py` | `src/lawyerfactory/phases/phaseC02_orchestration/services/maestro_bot.py` | MIGRATE |
+| `src/lawyerfactory/compose/maestro/workflow_models.py` | `src/lawyerfactory/phases/phaseC02_orchestration/services/workflow_models.py` | MIGRATE |
+| `src/lawyerfactory/compose/maestro/workflow_api.py` | `src/lawyerfactory/phases/phaseC02_orchestration/api/workflow_api.py` | MIGRATE |
+| `src/lawyerfactory/compose/maestro/events.py` | `src/lawyerfactory/phases/phaseC02_orchestration/services/event_system.py` | MIGRATE |
+| `src/lawyerfactory/compose/maestro/errors.py` | `src/lawyerfactory/phases/phaseC02_orchestration/services/error_handler.py` | MIGRATE |
+| `src/lawyerfactory/compose/maestro/checkpoints.py` | `src/lawyerfactory/phases/phaseC02_orchestration/services/state_manager.py` | MIGRATE |
+| `src/lawyerfactory/compose/maestro/compat_wrappers.py` | `src/lawyerfactory/phases/phaseC02_orchestration/services/compatibility.py` | MIGRATE |
 
 ### Phase 4: Phase-Specific Reorganization
 
@@ -167,7 +167,7 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 |-------------|----------|---------|
 | `apps/ui/templates/attorney_review_interface.py` | `src/lawyerfactory/phases/phaseB01_review/ui/attorney_review_interface.py` | MIGRATE |
 | `src/lawyerfactory/ui/legal_intake_form.py` | `src/lawyerfactory/phases/phaseA01_intake/ui/legal_intake_form.py` | MIGRATE |
-| `src/lawyerfactory/ui/orchestration_dashboard.py` | `src/lawyerfactory/phases/07_orchestration/ui/orchestration_dashboard.py` | MIGRATE |
+| `src/lawyerfactory/ui/orchestration_dashboard.py` | `src/lawyerfactory/phases/phaseC02_orchestration/ui/orchestration_dashboard.py` | MIGRATE |
 
 #### API Components
 | Current Path | New Path | Status |

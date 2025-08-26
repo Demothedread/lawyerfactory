@@ -19,7 +19,7 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 
 # Import only the workflow models which should be available
-from src.lawyerfactory.phases.07_orchestration.workflow_models import (PhaseStatus,
+from src.lawyerfactory.phases.phaseC02_orchestration.workflow_models import (PhaseStatus,
                                                                TaskPriority,
                                                                WorkflowPhase,
                                                                WorkflowState,

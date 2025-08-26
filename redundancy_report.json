@@ -35,7 +35,7 @@
       "action": "stage_to_trash"
     },
     {
-      "file": "src/lawyerfactory/phases/07_orchestration/maestro/enhanced_maestro.py",
+      "file": "src/lawyerfactory/phases/phaseC02_orchestration/maestro/enhanced_maestro.py",
       "type": "duplicate_implementation",
       "reason": "Multiple maestro implementations - keep the main one in compose/maestro",
       "keep_instead": "maestro/enhanced_maestro.py",

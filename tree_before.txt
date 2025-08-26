@@ -121,9 +121,9 @@
 ./src/lawyerfactory/phases/06_post_production
 ./src/lawyerfactory/phases/06_post_production/formatters
 ./src/lawyerfactory/phases/06_post_production/validators
-./src/lawyerfactory/phases/07_orchestration
-./src/lawyerfactory/phases/07_orchestration/maestro
-./src/lawyerfactory/phases/07_orchestration/state
+./src/lawyerfactory/phases/phaseC02_orchestration
+./src/lawyerfactory/phases/phaseC02_orchestration/maestro
+./src/lawyerfactory/phases/phaseC02_orchestration/state
 ./src/lawyerfactory/post_production
 ./src/lawyerfactory/post_production/__pycache__
 ./src/lawyerfactory/research

@@ -46,8 +46,8 @@
        1 ./src/lawyerfactory/phases/phaseB02_drafting/promptkits/__init__.py
        1 ./src/lawyerfactory/phases/06_post_production/formatters/__init__.py
        1 ./src/lawyerfactory/phases/06_post_production/validators/__init__.py
-       1 ./src/lawyerfactory/phases/07_orchestration/maestro/__init__.py
-       1 ./src/lawyerfactory/phases/07_orchestration/state/__init__.py
+       1 ./src/lawyerfactory/phases/phaseC02_orchestration/maestro/__init__.py
+       1 ./src/lawyerfactory/phases/phaseC02_orchestration/state/__init__.py
        1 ./src/lawyerfactory/research/__init__.py
        1 ./src/lawyerfactory/research/retrievers/__init__.py
        1 ./src/lawyerfactory/vectors/__init__.py
@@ -91,13 +91,13 @@
        5 ./src/lawyerfactory/phases/phaseB02_drafting/generator/procedure_bot.py
        5 ./src/lawyerfactory/phases/phaseB02_drafting/generator/writer_bot.py
        5 ./src/lawyerfactory/phases/06_post_production/validators/legal_authority_validator.py
-       5 ./src/lawyerfactory/phases/07_orchestration/maestro/enhanced_maestro.py
-       5 ./src/lawyerfactory/phases/07_orchestration/maestro/errors.py
-       5 ./src/lawyerfactory/phases/07_orchestration/maestro/events.py
-       5 ./src/lawyerfactory/phases/07_orchestration/maestro/maestro.py
-       5 ./src/lawyerfactory/phases/07_orchestration/maestro/registry.py
-       5 ./src/lawyerfactory/phases/07_orchestration/maestro/workflow_models.py
-       5 ./src/lawyerfactory/phases/07_orchestration/state/checkpoints.py
+       5 ./src/lawyerfactory/phases/phaseC02_orchestration/maestro/enhanced_maestro.py
+       5 ./src/lawyerfactory/phases/phaseC02_orchestration/maestro/errors.py
+       5 ./src/lawyerfactory/phases/phaseC02_orchestration/maestro/events.py
+       5 ./src/lawyerfactory/phases/phaseC02_orchestration/maestro/maestro.py
+       5 ./src/lawyerfactory/phases/phaseC02_orchestration/maestro/registry.py
+       5 ./src/lawyerfactory/phases/phaseC02_orchestration/maestro/workflow_models.py
+       5 ./src/lawyerfactory/phases/phaseC02_orchestration/state/checkpoints.py
        5 ./src/workflow/api/enhanced_workflow.py
        5 ./src/workflow/api/workflow.py
        5 ./trash/deprecated_shims_root/evidence_api.py
@@ -159,7 +159,7 @@
      137 ./logs/validation_report_20250812_191457.json
      138 ./data/knowledge_graph.json
      138 ./logs/validation_report_20250812_191122.json
-     145 ./src/lawyerfactory/phases/07_orchestration/maestro/start_enhanced_factory.py
+     145 ./src/lawyerfactory/phases/phaseC02_orchestration/maestro/start_enhanced_factory.py
      167 ./docs/components/evidence_workflow_implementation_plan.md
      167 ./docs/development/claims_matrix_todo.md
      183 ./src/lawyerfactory/compose/bots/procedure.py
@@ -212,7 +212,7 @@
      333 ./docs/components/ai_document_generator_guide.md
      333 ./tests/test_post_production_integration.py
      334 ./tests/test_shotlist_robustness.py
-     336 ./src/lawyerfactory/phases/07_orchestration/caselaw_validator.py
+     336 ./src/lawyerfactory/phases/phaseC02_orchestration/caselaw_validator.py
      337 ./src/lawyerfactory/compose/bots/editor.py
      341 ./tests/test_research_loop_integration.py
      341 ./tests/test_research_loop_minimal.py
@@ -289,7 +289,7 @@
      719 ./src/lawyerfactory/export/renderers/legacy/modules/field_mapper.py
      722 ./src/lawyerfactory/phases/phaseB02_drafting/generator/enhanced_draft_processor.py
      731 ./src/lawyerfactory/compose/maestro/workflow_enhanced.py
-     763 ./src/lawyerfactory/phases/07_orchestration/maestro/deploy_lawyerfactory.py
+     763 ./src/lawyerfactory/phases/phaseC02_orchestration/maestro/deploy_lawyerfactory.py
      805 ./src/lawyerfactory/kg/graph_api.py
      810 ./src/lawyerfactory/kg/integration.py
      828 ./apps/ui/static/js/claims-matrix.js
