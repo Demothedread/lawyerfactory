@@ -23,7 +23,7 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 /src/lawyerfactory/
 ├── phases/phaseA01_intake/{api,services,repositories,ui}/
 ├── phases/phaseA02_research/{api,services,repositories,ui}/
-├── phases/03_outline/{api,services,repositories,ui}/
+├── phases/phaseA03_outline/{api,services,repositories,ui}/
 ├── phases/04_human_review/{api,services,repositories,ui}/
 ├── phases/05_drafting/{api,services,repositories,ui}/
 ├── phases/06_post_production/{api,services,repositories,ui}/
@@ -112,14 +112,14 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 #### Outline Phase (03_outline)
 | Current Path | New Path | Status |
 |-------------|----------|---------|
-| `src/lawyerfactory/claims/matrix.py` | `src/lawyerfactory/phases/03_outline/services/claims_matrix.py` | MIGRATE |
-| `src/lawyerfactory/phases/03_outline/claims/cause_of_action_definition_engine.py` | `src/lawyerfactory/phases/03_outline/services/cause_of_action_engine.py` | MIGRATE |
-| `src/lawyerfactory/phases/03_outline/claims/detect.py` | `src/lawyerfactory/phases/03_outline/services/claims_detector.py` | MIGRATE |
-| `src/lawyerfactory/phases/03_outline/claims/matrix.py` | MERGE with claims_matrix.py | MERGE |
-| `src/lawyerfactory/phases/03_outline/claims/research_api.py` | `src/lawyerfactory/phases/03_outline/api/research_api.py` | MIGRATE |
-| `src/lawyerfactory/phases/03_outline/outline/generator.py` | `src/lawyerfactory/phases/03_outline/services/outline_generator.py` | MIGRATE |
-| `src/lawyerfactory/phases/03_outline/outline/integration.py` | `src/lawyerfactory/phases/03_outline/services/outline_integration.py` | MIGRATE |
-| `src/lawyerfactory/phases/03_outline/shotlist/shotlist.py` | `src/lawyerfactory/phases/03_outline/services/shotlist_generator.py` | MIGRATE |
+| `src/lawyerfactory/claims/matrix.py` | `src/lawyerfactory/phases/phaseA03_outline/services/claims_matrix.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA03_outline/claims/cause_of_action_definition_engine.py` | `src/lawyerfactory/phases/phaseA03_outline/services/cause_of_action_engine.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA03_outline/claims/detect.py` | `src/lawyerfactory/phases/phaseA03_outline/services/claims_detector.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA03_outline/claims/matrix.py` | MERGE with claims_matrix.py | MERGE |
+| `src/lawyerfactory/phases/phaseA03_outline/claims/research_api.py` | `src/lawyerfactory/phases/phaseA03_outline/api/research_api.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA03_outline/outline/generator.py` | `src/lawyerfactory/phases/phaseA03_outline/services/outline_generator.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA03_outline/outline/integration.py` | `src/lawyerfactory/phases/phaseA03_outline/services/outline_integration.py` | MIGRATE |
+| `src/lawyerfactory/phases/phaseA03_outline/shotlist/shotlist.py` | `src/lawyerfactory/phases/phaseA03_outline/services/shotlist_generator.py` | MIGRATE |
 
 #### Drafting Phase (05_drafting)
 | Current Path | New Path | Status |
@@ -150,9 +150,9 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 | `src/lawyerfactory/compose/bots/citation_formatter.py` | `src/lawyerfactory/phases/phaseA02_research/services/citation_formatter.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/civil_procedure_specialist.py` | `src/lawyerfactory/phases/05_drafting/services/civil_procedure_specialist.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/editor.py` | `src/lawyerfactory/phases/05_drafting/services/editor.py` | MIGRATE |
-| `src/lawyerfactory/compose/bots/fact_objectivity_agent.py` | `src/lawyerfactory/phases/03_outline/services/fact_objectivity_agent.py` | MIGRATE |
-| `src/lawyerfactory/compose/bots/issuespotter.py` | `src/lawyerfactory/phases/03_outline/services/issuespotter.py` | MIGRATE |
-| `src/lawyerfactory/compose/bots/legal_claim_validator.py` | `src/lawyerfactory/phases/03_outline/services/legal_claim_validator.py` | MIGRATE |
+| `src/lawyerfactory/compose/bots/fact_objectivity_agent.py` | `src/lawyerfactory/phases/phaseA03_outline/services/fact_objectivity_agent.py` | MIGRATE |
+| `src/lawyerfactory/compose/bots/issuespotter.py` | `src/lawyerfactory/phases/phaseA03_outline/services/issuespotter.py` | MIGRATE |
+| `src/lawyerfactory/compose/bots/legal_claim_validator.py` | `src/lawyerfactory/phases/phaseA03_outline/services/legal_claim_validator.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/legal_validation_agent.py` | `src/lawyerfactory/phases/04_human_review/services/legal_validation_agent.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/procedure.py` | `src/lawyerfactory/phases/05_drafting/services/procedure.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/reader.py` | `src/lawyerfactory/phases/phaseA01_intake/services/reader.py` | MIGRATE |

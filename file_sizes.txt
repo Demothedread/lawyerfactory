@@ -37,9 +37,9 @@
        1 ./src/lawyerfactory/phases/phaseA01_intake/ingestion/__init__.py
        1 ./src/lawyerfactory/phases/phaseA02_research/agents/__init__.py
        1 ./src/lawyerfactory/phases/phaseA02_research/retrievers/__init__.py
-       1 ./src/lawyerfactory/phases/03_outline/claims/__init__.py
-       1 ./src/lawyerfactory/phases/03_outline/outline/__init__.py
-       1 ./src/lawyerfactory/phases/03_outline/shotlist/__init__.py
+       1 ./src/lawyerfactory/phases/phaseA03_outline/claims/__init__.py
+       1 ./src/lawyerfactory/phases/phaseA03_outline/outline/__init__.py
+       1 ./src/lawyerfactory/phases/phaseA03_outline/shotlist/__init__.py
        1 ./src/lawyerfactory/phases/04_human_review/io/__init__.py
        1 ./src/lawyerfactory/phases/04_human_review/ui/__init__.py
        1 ./src/lawyerfactory/phases/05_drafting/generator/__init__.py
@@ -82,10 +82,10 @@
        5 ./src/lawyerfactory/phases/phaseA02_research/agents/research_bot.py
        5 ./src/lawyerfactory/phases/phaseA02_research/retrievers/cache.py
        5 ./src/lawyerfactory/phases/phaseA02_research/retrievers/integration.py
-       5 ./src/lawyerfactory/phases/03_outline/claims/matrix.py
-       5 ./src/lawyerfactory/phases/03_outline/claims/research_api.py
-       5 ./src/lawyerfactory/phases/03_outline/outline/generator.py
-       5 ./src/lawyerfactory/phases/03_outline/outline/integration.py
+       5 ./src/lawyerfactory/phases/phaseA03_outline/claims/matrix.py
+       5 ./src/lawyerfactory/phases/phaseA03_outline/claims/research_api.py
+       5 ./src/lawyerfactory/phases/phaseA03_outline/outline/generator.py
+       5 ./src/lawyerfactory/phases/phaseA03_outline/outline/integration.py
        5 ./src/lawyerfactory/phases/04_human_review/io/file_storage.py
        5 ./src/lawyerfactory/phases/05_drafting/generator/editor_bot.py
        5 ./src/lawyerfactory/phases/05_drafting/generator/procedure_bot.py
@@ -174,7 +174,7 @@
      211 ./src/lawyerfactory/compose/maestro/checkpoints.py
      217 ./src/lawyerfactory/compose/maestro/maestro_bot.py
      226 ./src/lawyerfactory/phases/phaseA01_intake/ingestion/knowledge_graph_extensions.py
-     226 ./src/lawyerfactory/phases/03_outline/shotlist/shotlist.py
+     226 ./src/lawyerfactory/phases/phaseA03_outline/shotlist/shotlist.py
      227 ./tests/research/test_research_bot.py
      227 ./trash/move_script.py
      233 ./configs/deployment.yml
@@ -256,7 +256,7 @@
      520 ./apps/ui/static/js/harvard-progress-tracker.js
      525 ./src/lawyerfactory/export/renderers/legacy/modules/form_selector.py
      526 ./src/lawyerfactory/compose/maestro/registry.py
-     528 ./src/lawyerfactory/phases/03_outline/claims/detect.py
+     528 ./src/lawyerfactory/phases/phaseA03_outline/claims/detect.py
      529 ./src/lawyerfactory/compose/strategies/document_validator.py
      532 ./docs/api/orchestration_maestro_spec.md
      538 ./tests/compose/test_statement_of_facts_system.py
@@ -299,7 +299,7 @@
      941 ./trash/LEGAL_RESEARCH_INTEGRATION_README.md
      956 ./tests/validate_system_integration.py
     1040 ./src/lawyerfactory/compose/bots/research.py
-    1041 ./src/lawyerfactory/phases/03_outline/claims/cause_of_action_definition_engine.py
+    1041 ./src/lawyerfactory/phases/phaseA03_outline/claims/cause_of_action_definition_engine.py
     1041 ./trash/staged_for_evaluation/cause_of_action_definition_engine.py
     1045 ./src/lawyerfactory/phases/06_post_production/validators/cascading_decision_tree_engine.py
     1045 ./trash/staged_for_evaluation/cascading_decision_tree_engine.py
