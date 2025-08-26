@@ -19,7 +19,7 @@ from typing import List, Dict, Any, Optional
 
 # Import the workflow components
 from src.lawyerfactory.compose.maestro.enhanced_maestro import EnhancedMaestro
-from src.lawyerfactory.phases.07_orchestration.workflow_models import (
+from src.lawyerfactory.phases.phaseC02_orchestration.workflow_models import (
     WorkflowState, WorkflowTask, WorkflowPhase, PhaseStatus, TaskStatus
 )
 

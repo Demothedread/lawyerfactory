@@ -252,7 +252,7 @@
         "14: ",
         "15: from src.lawyerfactory.phases.one_intake.intake_processor import IntakeProcessor, IntakeData",
         "16: from src.lawyerfactory.kg.legal_authorities import LegalAuthorityManager, AuthorityCitationManager",
-        "17: from src.lawyerfactory.phases.07_orchestration.caselaw_validator import CaselawValidationAgent, ValidationReport",
+        "17: from src.lawyerfactory.phases.phaseC02_orchestration.caselaw_validator import CaselawValidationAgent, ValidationReport",
         "18: from src.lawyerfactory.compose.strategies.statement_of_facts import StatementOfFactsGenerator",
         "19: ",
         "20: "

@@ -44,16 +44,16 @@ MIGRATION_MAPPING = {
     "src/lawyerfactory/kg/integration.py": "src/lawyerfactory/knowledge_graph/services/integration.py",
 
     # Maestro consolidation
-    "src/lawyerfactory/compose/maestro/enhanced_maestro.py": "src/lawyerfactory/phases/07_orchestration/services/maestro.py",
-    "src/lawyerfactory/compose/maestro/base.py": "src/lawyerfactory/phases/07_orchestration/services/base_maestro.py",
-    "src/lawyerfactory/compose/maestro/maestro.py": "src/lawyerfactory/phases/07_orchestration/services/workflow_engine.py",
-    "src/lawyerfactory/compose/maestro/maestro_bot.py": "src/lawyerfactory/phases/07_orchestration/services/maestro_bot.py",
-    "src/lawyerfactory/compose/maestro/workflow_models.py": "src/lawyerfactory/phases/07_orchestration/services/workflow_models.py",
-    "src/lawyerfactory/compose/maestro/workflow_api.py": "src/lawyerfactory/phases/07_orchestration/api/workflow_api.py",
-    "src/lawyerfactory/compose/maestro/events.py": "src/lawyerfactory/phases/07_orchestration/services/event_system.py",
-    "src/lawyerfactory/compose/maestro/errors.py": "src/lawyerfactory/phases/07_orchestration/services/error_handler.py",
-    "src/lawyerfactory/compose/maestro/checkpoints.py": "src/lawyerfactory/phases/07_orchestration/services/state_manager.py",
-    "src/lawyerfactory/compose/maestro/compat_wrappers.py": "src/lawyerfactory/phases/07_orchestration/services/compatibility.py",
+    "src/lawyerfactory/compose/maestro/enhanced_maestro.py": "src/lawyerfactory/phases/phaseC02_orchestration/services/maestro.py",
+    "src/lawyerfactory/compose/maestro/base.py": "src/lawyerfactory/phases/phaseC02_orchestration/services/base_maestro.py",
+    "src/lawyerfactory/compose/maestro/maestro.py": "src/lawyerfactory/phases/phaseC02_orchestration/services/workflow_engine.py",
+    "src/lawyerfactory/compose/maestro/maestro_bot.py": "src/lawyerfactory/phases/phaseC02_orchestration/services/maestro_bot.py",
+    "src/lawyerfactory/compose/maestro/workflow_models.py": "src/lawyerfactory/phases/phaseC02_orchestration/services/workflow_models.py",
+    "src/lawyerfactory/compose/maestro/workflow_api.py": "src/lawyerfactory/phases/phaseC02_orchestration/api/workflow_api.py",
+    "src/lawyerfactory/compose/maestro/events.py": "src/lawyerfactory/phases/phaseC02_orchestration/services/event_system.py",
+    "src/lawyerfactory/compose/maestro/errors.py": "src/lawyerfactory/phases/phaseC02_orchestration/services/error_handler.py",
+    "src/lawyerfactory/compose/maestro/checkpoints.py": "src/lawyerfactory/phases/phaseC02_orchestration/services/state_manager.py",
+    "src/lawyerfactory/compose/maestro/compat_wrappers.py": "src/lawyerfactory/phases/phaseC02_orchestration/services/compatibility.py",
 
     # Phase-specific reorganization
     "src/lawyerfactory/phases/phaseA01_intake/evidence/table.py": "src/lawyerfactory/phases/phaseA01_intake/services/evidence_table.py",
@@ -106,7 +106,7 @@ MIGRATION_MAPPING = {
     # UI reorganization
     "apps/ui/templates/attorney_review_interface.py": "src/lawyerfactory/phases/phaseB01_review/ui/attorney_review_interface.py",
     "src/lawyerfactory/ui/legal_intake_form.py": "src/lawyerfactory/phases/phaseA01_intake/ui/legal_intake_form.py",
-    "src/lawyerfactory/ui/orchestration_dashboard.py": "src/lawyerfactory/phases/07_orchestration/ui/orchestration_dashboard.py",
+    "src/lawyerfactory/ui/orchestration_dashboard.py": "src/lawyerfactory/phases/phaseC02_orchestration/ui/orchestration_dashboard.py",
 
     # API reorganization
     "apps/api/routes/evidence.py": "src/lawyerfactory/phases/phaseA01_intake/api/evidence_routes.py",
