@@ -40,8 +40,8 @@
        1 ./src/lawyerfactory/phases/phaseA03_outline/claims/__init__.py
        1 ./src/lawyerfactory/phases/phaseA03_outline/outline/__init__.py
        1 ./src/lawyerfactory/phases/phaseA03_outline/shotlist/__init__.py
-       1 ./src/lawyerfactory/phases/04_human_review/io/__init__.py
-       1 ./src/lawyerfactory/phases/04_human_review/ui/__init__.py
+       1 ./src/lawyerfactory/phases/phaseB01_review/io/__init__.py
+       1 ./src/lawyerfactory/phases/phaseB01_review/ui/__init__.py
        1 ./src/lawyerfactory/phases/05_drafting/generator/__init__.py
        1 ./src/lawyerfactory/phases/05_drafting/promptkits/__init__.py
        1 ./src/lawyerfactory/phases/06_post_production/formatters/__init__.py
@@ -86,7 +86,7 @@
        5 ./src/lawyerfactory/phases/phaseA03_outline/claims/research_api.py
        5 ./src/lawyerfactory/phases/phaseA03_outline/outline/generator.py
        5 ./src/lawyerfactory/phases/phaseA03_outline/outline/integration.py
-       5 ./src/lawyerfactory/phases/04_human_review/io/file_storage.py
+       5 ./src/lawyerfactory/phases/phaseB01_review/io/file_storage.py
        5 ./src/lawyerfactory/phases/05_drafting/generator/editor_bot.py
        5 ./src/lawyerfactory/phases/05_drafting/generator/procedure_bot.py
        5 ./src/lawyerfactory/phases/05_drafting/generator/writer_bot.py
@@ -304,7 +304,7 @@
     1045 ./src/lawyerfactory/phases/06_post_production/validators/cascading_decision_tree_engine.py
     1045 ./trash/staged_for_evaluation/cascading_decision_tree_engine.py
     1051 ./src/lawyerfactory/research/retrievers/integration.py
-    1060 ./src/lawyerfactory/phases/04_human_review/ui/api_app_main.py
+    1060 ./src/lawyerfactory/phases/phaseB01_review/ui/api_app_main.py
     1128 ./examples/tesla_case_validation.py
     1137 ./src/lawyerfactory/compose/strategies/statement_of_facts.py
     1161 ./tests/compose/test_comprehensive_integration.py

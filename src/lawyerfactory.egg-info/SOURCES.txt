@@ -183,11 +183,11 @@ src/lawyerfactory/phases/phaseA03_outline/outline/generator.py
 src/lawyerfactory/phases/phaseA03_outline/outline/integration.py
 src/lawyerfactory/phases/phaseA03_outline/shotlist/__init__.py
 src/lawyerfactory/phases/phaseA03_outline/shotlist/shotlist.py
-src/lawyerfactory/phases/04_human_review/attorney_review_interface.py
-src/lawyerfactory/phases/04_human_review/io/__init__.py
-src/lawyerfactory/phases/04_human_review/io/file_storage.py
-src/lawyerfactory/phases/04_human_review/ui/__init__.py
-src/lawyerfactory/phases/04_human_review/ui/api_app_main.py
+src/lawyerfactory/phases/phaseB01_review/attorney_review_interface.py
+src/lawyerfactory/phases/phaseB01_review/io/__init__.py
+src/lawyerfactory/phases/phaseB01_review/io/file_storage.py
+src/lawyerfactory/phases/phaseB01_review/ui/__init__.py
+src/lawyerfactory/phases/phaseB01_review/ui/api_app_main.py
 src/lawyerfactory/phases/05_drafting/drafting_validator.py
 src/lawyerfactory/phases/05_drafting/editor_bot.py
 src/lawyerfactory/phases/05_drafting/mcp_memory_integration.py

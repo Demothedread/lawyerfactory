@@ -103,7 +103,7 @@ STREAMLINED_MIGRATION = {
     "src/lawyerfactory/phases/06_post_production/validators/legal_authority_validator.py": "src/lawyerfactory/phases/06_post_production/legal_authority_validator.py",
 
     # UI and API reorganization
-    "apps/ui/templates/attorney_review_interface.py": "src/lawyerfactory/phases/04_human_review/attorney_review_interface.py",
+    "apps/ui/templates/attorney_review_interface.py": "src/lawyerfactory/phases/phaseB01_review/attorney_review_interface.py",
     "src/lawyerfactory/ui/legal_intake_form.py": "src/lawyerfactory/phases/phaseA01_intake/legal_intake_form.py",
     "src/lawyerfactory/ui/orchestration_dashboard.py": "src/lawyerfactory/phases/07_orchestration/orchestration_dashboard.py",
     "apps/api/routes/evidence.py": "src/lawyerfactory/phases/phaseA01_intake/evidence_routes.py",

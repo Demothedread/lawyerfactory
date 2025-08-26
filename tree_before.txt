@@ -112,9 +112,9 @@
 ./src/lawyerfactory/phases/phaseA03_outline/claims
 ./src/lawyerfactory/phases/phaseA03_outline/outline
 ./src/lawyerfactory/phases/phaseA03_outline/shotlist
-./src/lawyerfactory/phases/04_human_review
-./src/lawyerfactory/phases/04_human_review/io
-./src/lawyerfactory/phases/04_human_review/ui
+./src/lawyerfactory/phases/phaseB01_review
+./src/lawyerfactory/phases/phaseB01_review/io
+./src/lawyerfactory/phases/phaseB01_review/ui
 ./src/lawyerfactory/phases/05_drafting
 ./src/lawyerfactory/phases/05_drafting/generator
 ./src/lawyerfactory/phases/05_drafting/promptkits
