@@ -24,7 +24,7 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 ├── phases/phaseA01_intake/{api,services,repositories,ui}/
 ├── phases/phaseA02_research/{api,services,repositories,ui}/
 ├── phases/phaseA03_outline/{api,services,repositories,ui}/
-├── phases/04_human_review/{api,services,repositories,ui}/
+├── phases/phaseB01_review/{api,services,repositories,ui}/
 ├── phases/05_drafting/{api,services,repositories,ui}/
 ├── phases/06_post_production/{api,services,repositories,ui}/
 ├── phases/07_orchestration/{api,services,repositories,ui}/
@@ -153,7 +153,7 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 | `src/lawyerfactory/compose/bots/fact_objectivity_agent.py` | `src/lawyerfactory/phases/phaseA03_outline/services/fact_objectivity_agent.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/issuespotter.py` | `src/lawyerfactory/phases/phaseA03_outline/services/issuespotter.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/legal_claim_validator.py` | `src/lawyerfactory/phases/phaseA03_outline/services/legal_claim_validator.py` | MIGRATE |
-| `src/lawyerfactory/compose/bots/legal_validation_agent.py` | `src/lawyerfactory/phases/04_human_review/services/legal_validation_agent.py` | MIGRATE |
+| `src/lawyerfactory/compose/bots/legal_validation_agent.py` | `src/lawyerfactory/phases/phaseB01_review/services/legal_validation_agent.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/procedure.py` | `src/lawyerfactory/phases/05_drafting/services/procedure.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/reader.py` | `src/lawyerfactory/phases/phaseA01_intake/services/reader.py` | MIGRATE |
 | `src/lawyerfactory/compose/bots/research.py` | `src/lawyerfactory/phases/phaseA02_research/services/research.py` | MIGRATE |
@@ -165,7 +165,7 @@ This plan outlines the systematic reorganization of the LawyerFactory codebase f
 #### UI Components
 | Current Path | New Path | Status |
 |-------------|----------|---------|
-| `apps/ui/templates/attorney_review_interface.py` | `src/lawyerfactory/phases/04_human_review/ui/attorney_review_interface.py` | MIGRATE |
+| `apps/ui/templates/attorney_review_interface.py` | `src/lawyerfactory/phases/phaseB01_review/ui/attorney_review_interface.py` | MIGRATE |
 | `src/lawyerfactory/ui/legal_intake_form.py` | `src/lawyerfactory/phases/phaseA01_intake/ui/legal_intake_form.py` | MIGRATE |
 | `src/lawyerfactory/ui/orchestration_dashboard.py` | `src/lawyerfactory/phases/07_orchestration/ui/orchestration_dashboard.py` | MIGRATE |
 

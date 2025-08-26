@@ -8,7 +8,7 @@ set -e  # Exit on any error
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEFAULT_PORT=8000
-ENHANCED_FACTORY_PATH="src/lawyerfactory/phases/04_human_review/ui/enhanced_factory.html"
+ENHANCED_FACTORY_PATH="src/lawyerfactory/phases/phaseB01_review/ui/enhanced_factory.html"
 SIMPLE_FACTORY_PATH="apps/ui/templates/factory.html"
 LOG_FILE="$SCRIPT_DIR/website-launch.log"
 

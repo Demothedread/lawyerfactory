@@ -62,7 +62,7 @@ This document summarizes the successful implementation of the custom repo cleanu
 ├── phases/phaseA01_intake/{api,services,repositories,ui}/
 ├── phases/phaseA02_research/{api,services,repositories,ui}/
 ├── phases/phaseA03_outline/{api,services,repositories,ui}/
-├── phases/04_human_review/{api,services,repositories,ui}/
+├── phases/phaseB01_review/{api,services,repositories,ui}/
 ├── phases/05_drafting/{api,services,repositories,ui}/
 ├── phases/06_post_production/{api,services,repositories,ui}/
 ├── phases/07_orchestration/{api,services,repositories,ui}/
