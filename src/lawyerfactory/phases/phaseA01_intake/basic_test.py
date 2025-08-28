@@ -5,12 +5,13 @@ Basic Test Script for LLM Integration Functions
 This script tests the core functionality without complex imports.
 """
 
-import sys
 import os
 from pathlib import Path
+import sys
 
 # Add the current directory to the path
 sys.path.insert(0, str(Path(__file__).parent))
+
 
 def test_simple_categorize():
     """Test the enhanced simple_categorize function directly."""
@@ -32,7 +33,7 @@ def test_simple_categorize():
         ("Medical treatment records", "medical"),
         ("This is a general document", "general"),
         ("", "general"),
-        ("No specific legal keywords here", "general")
+        ("No specific legal keywords here", "general"),
     ]
 
     passed = 0
@@ -50,15 +51,16 @@ def test_simple_categorize():
     print(f"simple_categorize: {passed} passed, {failed} failed")
     return failed == 0
 
+
 def test_llm_functions():
     """Test LLM functions and their fallback mechanisms."""
     print("\n🧪 Testing LLM functions...")
 
     from assessor_consolidated import (
+        LLM_INTEGRATION_AVAILABLE,
         llm_categorize_document,
         llm_extract_document_metadata,
         llm_generate_summary,
-        LLM_INTEGRATION_AVAILABLE
     )
 
     test_text = "This is a sample legal document for testing purposes."
@@ -111,6 +113,7 @@ def test_llm_functions():
 
     return tests_failed == 0
 
+
 def main():
     """Run all tests."""
     print("🚀 Starting Basic LLM Integration Tests")
@@ -133,6 +136,7 @@ def main():
     else:
         print("⚠️  Some tests failed. Check the output above.")
         return 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

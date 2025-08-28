@@ -14,12 +14,14 @@ Features:
 """
 
 import asyncio
-import logging
 from datetime import datetime
+import logging
 from typing import Any, Dict, List, Optional, Set
 
 from .enhanced_vector_store import (
-    EnhancedVectorStoreManager, VectorStoreType, ValidationType
+    EnhancedVectorStoreManager,
+    ValidationType,
+    VectorStoreType,
 )
 
 logger = logging.getLogger(__name__)
@@ -48,25 +50,33 @@ class ResearchRound:
             "content": finding,
             "source": source,
             "confidence": confidence,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat(),
         }
 
-    def add_citation(self, citation: str, authority_level: str = "secondary",
-                    relevance_score: float = 0.7):
+    def add_citation(
+        self,
+        citation: str,
+        authority_level: str = "secondary",
+        relevance_score: float = 0.7,
+    ):
         """Add a legal citation"""
-        self.citations.append({
-            "citation": citation,
-            "authority_level": authority_level,
-            "relevance_score": relevance_score,
-            "added_in_round": self.round_number
-        })
+        self.citations.append(
+            {
+                "citation": citation,
+                "authority_level": authority_level,
+                "relevance_score": relevance_score,
+                "added_in_round": self.round_number,
+            }
+        )
 
     def synthesize_content(self) -> str:
         """Synthesize all findings into a comprehensive research summary"""
         if not self.findings:
             return f"Research Round {self.round_number}: No findings recorded."
 
-        synthesis = f"Research Round {self.round_number} - {self.research_type.upper()}\n\n"
+        synthesis = (
+            f"Research Round {self.round_number} - {self.research_type.upper()}\n\n"
+        )
 
         synthesis += "Key Findings:\n"
         for i, finding in enumerate(self.findings, 1):
@@ -75,7 +85,9 @@ class ResearchRound:
         if self.citations:
             synthesis += f"\nSupporting Authorities ({len(self.citations)}):\n"
             for citation in self.citations:
-                synthesis += f"- {citation['citation']} ({citation['authority_level']})\n"
+                synthesis += (
+                    f"- {citation['citation']} ({citation['authority_level']})\n"
+                )
 
         if self.questions_answered:
             synthesis += f"\nQuestions Answered ({len(self.questions_answered)}):\n"
@@ -96,7 +108,9 @@ class ResearchRoundsManager:
     Manages research rounds integration with vector storage system
     """
 
-    def __init__(self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None):
+    def __init__(
+        self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None
+    ):
         self.vector_store = vector_store_manager or EnhancedVectorStoreManager()
         self.active_research_rounds: Dict[str, ResearchRound] = {}
         self.completed_rounds: Dict[str, List[ResearchRound]] = {}
@@ -107,11 +121,15 @@ class ResearchRoundsManager:
             "total_rounds_completed": 0,
             "average_confidence_score": 0.0,
             "total_findings_accumulated": 0,
-            "total_citations_collected": 0
+            "total_citations_collected": 0,
         }
 
-    async def start_research_round(self, case_id: str, round_number: int,
-                                 research_type: str = "general_legal_research") -> str:
+    async def start_research_round(
+        self,
+        case_id: str,
+        round_number: int,
+        research_type: str = "general_legal_research",
+    ) -> str:
         """
         Start a new research round
 
@@ -135,14 +153,15 @@ class ResearchRoundsManager:
                 "total_citations": 0,
                 "research_types_completed": set(),
                 "knowledge_synthesis": "",
-                "last_updated": datetime.now().isoformat()
+                "last_updated": datetime.now().isoformat(),
             }
 
         logger.info(f"Started research round {round_id} for case {case_id}")
         return round_id
 
-    async def add_research_finding(self, round_id: str, finding: str,
-                                 source: str = "", confidence: float = 0.8):
+    async def add_research_finding(
+        self, round_id: str, finding: str, source: str = "", confidence: float = 0.8
+    ):
         """
         Add a finding to the current research round
 
@@ -167,9 +186,13 @@ class ResearchRoundsManager:
         logger.info(f"Added finding to research round {round_id}")
         return True
 
-    async def add_research_citation(self, round_id: str, citation: str,
-                                  authority_level: str = "secondary",
-                                  relevance_score: float = 0.7):
+    async def add_research_citation(
+        self,
+        round_id: str,
+        citation: str,
+        authority_level: str = "secondary",
+        relevance_score: float = 0.7,
+    ):
         """
         Add a citation to the current research round
 
@@ -194,9 +217,12 @@ class ResearchRoundsManager:
         logger.info(f"Added citation to research round {round_id}")
         return True
 
-    async def complete_research_round(self, round_id: str,
-                                    questions_answered: List[str] = None,
-                                    new_questions: List[str] = None) -> bool:
+    async def complete_research_round(
+        self,
+        round_id: str,
+        questions_answered: List[str] = None,
+        new_questions: List[str] = None,
+    ) -> bool:
         """
         Complete a research round and store in vector system
 
@@ -221,7 +247,9 @@ class ResearchRoundsManager:
             research_round.new_questions_raised.extend(new_questions)
 
         # Calculate confidence score
-        research_round.confidence_score = self._calculate_round_confidence(research_round)
+        research_round.confidence_score = self._calculate_round_confidence(
+            research_round
+        )
 
         # Synthesize content
         synthesized_content = research_round.synthesize_content()
@@ -238,9 +266,9 @@ class ResearchRoundsManager:
                 "citations_count": len(research_round.citations),
                 "questions_answered": research_round.questions_answered,
                 "new_questions": research_round.new_questions_raised,
-                "round_id": round_id
+                "round_id": round_id,
             },
-            round_number=research_round.round_number
+            round_number=research_round.round_number,
         )
 
         research_round.vector_document_ids.append(doc_id)
@@ -252,22 +280,33 @@ class ResearchRoundsManager:
         self.completed_rounds[case_id].append(research_round)
 
         # Update accumulator
-        self.research_accumulator[case_id]["research_types_completed"].add(research_round.research_type)
-        self.research_accumulator[case_id]["knowledge_synthesis"] = await self._update_knowledge_synthesis(case_id)
+        self.research_accumulator[case_id]["research_types_completed"].add(
+            research_round.research_type
+        )
+        self.research_accumulator[case_id]["knowledge_synthesis"] = (
+            await self._update_knowledge_synthesis(case_id)
+        )
 
         # Remove from active
         del self.active_research_rounds[round_id]
 
         # Update metrics
         self.quality_metrics["total_rounds_completed"] += 1
-        self.quality_metrics["total_findings_accumulated"] += len(research_round.findings)
-        self.quality_metrics["total_citations_collected"] += len(research_round.citations)
+        self.quality_metrics["total_findings_accumulated"] += len(
+            research_round.findings
+        )
+        self.quality_metrics["total_citations_collected"] += len(
+            research_round.citations
+        )
 
-        logger.info(f"Completed research round {round_id} with confidence {research_round.confidence_score:.2f}")
+        logger.info(
+            f"Completed research round {round_id} with confidence {research_round.confidence_score:.2f}"
+        )
         return True
 
-    async def get_research_context(self, case_id: str, query: str = "",
-                                 max_contexts: int = 5) -> Dict[str, Any]:
+    async def get_research_context(
+        self, case_id: str, query: str = "", max_contexts: int = 5
+    ) -> Dict[str, Any]:
         """
         Get accumulated research context for a case
 
@@ -290,14 +329,16 @@ class ResearchRoundsManager:
             relevant_docs = await self.vector_store.semantic_search(
                 query=query,
                 store_type=VectorStoreType.GENERAL_RAG,
-                top_k=max_contexts * 2
+                top_k=max_contexts * 2,
             )
 
             # Filter to only research documents for this case
             relevant_research = []
             for doc, score in relevant_docs:
-                if (doc.metadata.get("case_id") == case_id and
-                    doc.metadata.get("content_type") == "research_findings"):
+                if (
+                    doc.metadata.get("case_id") == case_id
+                    and doc.metadata.get("content_type") == "research_findings"
+                ):
                     relevant_research.append((doc, score))
         else:
             # Get all research documents for this case
@@ -315,23 +356,29 @@ class ResearchRoundsManager:
         context = {
             "case_id": case_id,
             "total_rounds": len(completed_rounds),
-            "research_types": list(self.research_accumulator[case_id]["research_types_completed"]),
+            "research_types": list(
+                self.research_accumulator[case_id]["research_types_completed"]
+            ),
             "total_findings": self.research_accumulator[case_id]["total_findings"],
             "total_citations": self.research_accumulator[case_id]["total_citations"],
             "relevant_findings": [],
             "supporting_citations": [],
-            "research_summary": self.research_accumulator[case_id]["knowledge_synthesis"]
+            "research_summary": self.research_accumulator[case_id][
+                "knowledge_synthesis"
+            ],
         }
 
         # Extract findings and citations from relevant research
         for doc, score in relevant_research[:max_contexts]:
-            context["relevant_findings"].append({
-                "content": doc.content,
-                "confidence": doc.metadata.get("confidence_score", 0.8),
-                "round_number": doc.metadata.get("round_number", 0),
-                "research_type": doc.metadata.get("research_type", "unknown"),
-                "relevance_score": score
-            })
+            context["relevant_findings"].append(
+                {
+                    "content": doc.content,
+                    "confidence": doc.metadata.get("confidence_score", 0.8),
+                    "round_number": doc.metadata.get("round_number", 0),
+                    "research_type": doc.metadata.get("research_type", "unknown"),
+                    "relevance_score": score,
+                }
+            )
 
             # Extract citations if available
             citations = doc.metadata.get("citations", [])
@@ -339,7 +386,9 @@ class ResearchRoundsManager:
 
         return context
 
-    async def get_research_quality_metrics(self, case_id: Optional[str] = None) -> Dict[str, Any]:
+    async def get_research_quality_metrics(
+        self, case_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Get research quality metrics"""
         if case_id:
             if case_id not in self.research_accumulator:
@@ -354,8 +403,9 @@ class ResearchRoundsManager:
                 "research_types": list(accumulator["research_types_completed"]),
                 "total_findings": accumulator["total_findings"],
                 "total_citations": accumulator["total_citations"],
-                "average_confidence": sum(r.confidence_score for r in rounds) / max(len(rounds), 1),
-                "last_updated": accumulator["last_updated"]
+                "average_confidence": sum(r.confidence_score for r in rounds)
+                / max(len(rounds), 1),
+                "last_updated": accumulator["last_updated"],
             }
         else:
             # Overall metrics
@@ -378,7 +428,11 @@ class ResearchRoundsManager:
                 authority_boost += 0.1
 
         # Relevance boost
-        relevance_boost = sum(c["relevance_score"] for c in research_round.citations) / max(len(research_round.citations), 1) * 0.1
+        relevance_boost = (
+            sum(c["relevance_score"] for c in research_round.citations)
+            / max(len(research_round.citations), 1)
+            * 0.1
+        )
 
         total_confidence = min(1.0, base_confidence + authority_boost + relevance_boost)
         return total_confidence
@@ -414,7 +468,9 @@ class ResearchRoundsManager:
             return
 
         # Sort by round number and keep most recent
-        sorted_rounds = sorted(completed_rounds, key=lambda r: r.round_number, reverse=True)
+        sorted_rounds = sorted(
+            completed_rounds, key=lambda r: r.round_number, reverse=True
+        )
         rounds_to_keep = sorted_rounds[:keep_rounds]
         rounds_to_remove = sorted_rounds[keep_rounds:]
 
@@ -429,7 +485,9 @@ class ResearchRoundsManager:
         # Update completed rounds
         self.completed_rounds[case_id] = rounds_to_keep
 
-        logger.info(f"Cleaned up {len(rounds_to_remove)} old research rounds for case {case_id}")
+        logger.info(
+            f"Cleaned up {len(rounds_to_remove)} old research rounds for case {case_id}"
+        )
 
 
 # Global instance for easy access

@@ -9,8 +9,8 @@ Event system for workflow coordination and monitoring.
 """
 
 import asyncio
-import logging
 from datetime import datetime
+import logging
 from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
@@ -27,16 +27,16 @@ class EventBus:
     async def emit(self, event_type: str, data: Dict[str, Any]):
         """Emit an event to all subscribers"""
         event = {
-            'type': event_type,
-            'data': data,
-            'timestamp': datetime.now().isoformat()
+            "type": event_type,
+            "data": data,
+            "timestamp": datetime.now().isoformat(),
         }
-        
+
         # Add to history
         self.event_history.append(event)
         if len(self.event_history) > self.max_history_size:
             self.event_history.pop(0)
-        
+
         # Notify subscribers
         if event_type in self.subscribers:
             for callback in self.subscribers[event_type]:
@@ -66,13 +66,15 @@ class EventBus:
             except ValueError:
                 logger.warning(f"Callback not found for event type: {event_type}")
 
-    def get_event_history(self, event_type: Optional[str] = None, limit: int = 100) -> List[Dict[str, Any]]:
+    def get_event_history(
+        self, event_type: Optional[str] = None, limit: int = 100
+    ) -> List[Dict[str, Any]]:
         """Get event history, optionally filtered by type"""
         if event_type:
-            events = [e for e in self.event_history if e['type'] == event_type]
+            events = [e for e in self.event_history if e["type"] == event_type]
         else:
             events = self.event_history
-        
+
         return events[-limit:] if limit else events
 
     def clear_history(self):

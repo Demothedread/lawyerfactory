@@ -3,10 +3,10 @@ LLM Configuration Manager for LawyerFactory
 Integrates with the existing models_shared.py system for centralized configuration.
 """
 
+import inspect
 import json
 import logging
 import os
-import inspect
 from pathlib import Path
 from typing import Any, Dict, Optional
 

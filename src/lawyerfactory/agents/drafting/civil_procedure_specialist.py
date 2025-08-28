@@ -19,11 +19,11 @@ The agent ensures that all procedural requirements are properly addressed
 in the legal documents and filings.
 """
 
-import logging
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
+import logging
+from typing import Any, Dict, List, Optional
 
-from ...compose.maestro.registry import AgentInterface, AgentCapability
+from ...compose.maestro.registry import AgentCapability, AgentInterface
 from ...compose.maestro.workflow_models import WorkflowTask
 
 logger = logging.getLogger(__name__)
@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ProceduralRequirement:
     """Represents a civil procedure requirement"""
+
     requirement_type: str  # jurisdiction, venue, service, pleading, etc.
     description: str
     legal_basis: str
@@ -44,7 +45,10 @@ class CivilProcedureSpecialistAgent(AgentInterface):
 
     def __init__(self, knowledge_graph=None):
         self.knowledge_graph = knowledge_graph
-        self.capabilities = [AgentCapability.LEGAL_RESEARCH, AgentCapability.CASE_ANALYSIS]
+        self.capabilities = [
+            AgentCapability.LEGAL_RESEARCH,
+            AgentCapability.CASE_ANALYSIS,
+        ]
 
         # Load procedural rules and requirements
         self._load_procedural_rules()
@@ -56,24 +60,24 @@ class CivilProcedureSpecialistAgent(AgentInterface):
                 "personal": "Defendant must have sufficient contacts with the forum state",
                 "subject_matter": "Court must have authority to hear the type of case",
                 "diversity": "Complete diversity of citizenship and amount in controversy > $75,000",
-                "federal_question": "Case arises under federal law"
+                "federal_question": "Case arises under federal law",
             },
             "venue": {
                 "general": "Where defendant resides or where events occurred",
                 "specific": "Statutory venue requirements for specific claim types",
-                "transfer": "Change of venue standards and procedures"
+                "transfer": "Change of venue standards and procedures",
             },
             "service_of_process": {
                 "personal_service": "Direct delivery to defendant",
                 "substituted_service": "Delivery to agent or family member",
                 "service_by_mail": "Certified mail with return receipt",
-                "publication": "When defendant cannot be located"
+                "publication": "When defendant cannot be located",
             },
             "pleading_standards": {
                 "complaint": "Must state claim showing entitlement to relief",
                 "twelve_b": "Specific defenses and motions to dismiss",
-                "amendment": "Relation back and timing requirements"
-            }
+                "amendment": "Relation back and timing requirements",
+            },
         }
 
     async def process(self, message: str) -> str:
@@ -83,7 +87,9 @@ class CivilProcedureSpecialistAgent(AgentInterface):
             procedural_issues = self._analyze_procedural_request(message)
 
             # Generate procedural analysis
-            analysis = await self.analyze_civil_procedure_requirements(procedural_issues)
+            analysis = await self.analyze_civil_procedure_requirements(
+                procedural_issues
+            )
 
             return analysis
 
@@ -91,7 +97,9 @@ class CivilProcedureSpecialistAgent(AgentInterface):
             logger.error(f"Error processing civil procedure request: {e}")
             return f"Error analyzing civil procedure requirements: {str(e)}"
 
-    async def execute_task(self, task: WorkflowTask, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_task(
+        self, task: WorkflowTask, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute a workflow task related to civil procedure"""
         try:
             # Extract case information from context
@@ -108,7 +116,7 @@ class CivilProcedureSpecialistAgent(AgentInterface):
                 "requirements_analyzed": len(requirements),
                 "requirements": [req.__dict__ for req in requirements],
                 "recommendations": recommendations,
-                "compliance_status": self._assess_compliance(requirements)
+                "compliance_status": self._assess_compliance(requirements),
             }
 
         except Exception as e:
@@ -119,14 +127,16 @@ class CivilProcedureSpecialistAgent(AgentInterface):
                 "requirements_analyzed": 0,
                 "requirements": [],
                 "recommendations": [],
-                "compliance_status": "unknown"
+                "compliance_status": "unknown",
             }
 
     async def health_check(self) -> bool:
         """Check if the agent is functioning properly"""
         try:
             # Test basic functionality
-            test_requirements = await self.analyze_procedural_requirements({"case_type": "contract_dispute"})
+            test_requirements = await self.analyze_procedural_requirements(
+                {"case_type": "contract_dispute"}
+            )
             return len(test_requirements) > 0
         except Exception as e:
             logger.error(f"Health check failed: {e}")
@@ -146,11 +156,21 @@ class CivilProcedureSpecialistAgent(AgentInterface):
     async def can_handle_task(self, task: WorkflowTask) -> bool:
         """Check if this agent can handle the given task"""
         task_text = f"{task.description} {task.agent_type}".lower()
-        return any(keyword in task_text for keyword in [
-            "jurisdiction", "venue", "procedure", "service", "pleading", "filing"
-        ])
+        return any(
+            keyword in task_text
+            for keyword in [
+                "jurisdiction",
+                "venue",
+                "procedure",
+                "service",
+                "pleading",
+                "filing",
+            ]
+        )
 
-    async def analyze_procedural_requirements(self, case_info: Dict[str, Any]) -> List[ProceduralRequirement]:
+    async def analyze_procedural_requirements(
+        self, case_info: Dict[str, Any]
+    ) -> List[ProceduralRequirement]:
         """Analyze civil procedure requirements for a case"""
         requirements = []
 
@@ -181,8 +201,12 @@ class CivilProcedureSpecialistAgent(AgentInterface):
                 analysis += "JURISDICTION:\n"
                 analysis += "- Personal Jurisdiction: Defendant must have sufficient contacts with the forum state\n"
                 analysis += "- Subject Matter Jurisdiction: Court must have authority to hear this type of case\n"
-                analysis += "- For federal court: Diversity jurisdiction or federal question\n"
-                analysis += "- Amount in controversy must exceed $75,000 for diversity\n\n"
+                analysis += (
+                    "- For federal court: Diversity jurisdiction or federal question\n"
+                )
+                analysis += (
+                    "- Amount in controversy must exceed $75,000 for diversity\n\n"
+                )
 
             elif "venue" in issue.lower():
                 analysis += "VENUE:\n"
@@ -214,17 +238,21 @@ class CivilProcedureSpecialistAgent(AgentInterface):
             "defendant_location": context.get("defendant_location", "unknown"),
             "amount_in_controversy": context.get("amount_in_controversy", 0),
             "federal_question": context.get("federal_question", False),
-            "parties": context.get("parties", [])
+            "parties": context.get("parties", []),
         }
 
         # Extract from claims if available
         claims = context.get("claims_matrix", {}).get("claims", [])
         if claims:
-            case_info["claims"] = [claim.get("title", "") for claim in claims if isinstance(claim, dict)]
+            case_info["claims"] = [
+                claim.get("title", "") for claim in claims if isinstance(claim, dict)
+            ]
 
         return case_info
 
-    async def _analyze_jurisdiction(self, case_info: Dict[str, Any]) -> List[ProceduralRequirement]:
+    async def _analyze_jurisdiction(
+        self, case_info: Dict[str, Any]
+    ) -> List[ProceduralRequirement]:
         """Analyze jurisdiction requirements"""
         requirements = []
 
@@ -232,101 +260,136 @@ class CivilProcedureSpecialistAgent(AgentInterface):
 
         if jurisdiction == "federal":
             # Federal court requirements
-            requirements.append(ProceduralRequirement(
-                requirement_type="jurisdiction",
-                description="Federal Subject Matter Jurisdiction",
-                legal_basis="28 U.S.C. § 1332 (diversity) or § 1331 (federal question)",
-                status="pending",
-                details={"type": "federal_question" if case_info.get("federal_question") else "diversity"}
-            ))
+            requirements.append(
+                ProceduralRequirement(
+                    requirement_type="jurisdiction",
+                    description="Federal Subject Matter Jurisdiction",
+                    legal_basis="28 U.S.C. § 1332 (diversity) or § 1331 (federal question)",
+                    status="pending",
+                    details={
+                        "type": (
+                            "federal_question"
+                            if case_info.get("federal_question")
+                            else "diversity"
+                        )
+                    },
+                )
+            )
 
             # Amount in controversy for diversity
             amount = case_info.get("amount_in_controversy", 0)
             if amount < 75000:
-                requirements.append(ProceduralRequirement(
-                    requirement_type="jurisdiction",
-                    description="Amount in Controversy Requirement",
-                    legal_basis="28 U.S.C. § 1332",
-                    status="issue",
-                    details={"required": 75000, "actual": amount}
-                ))
+                requirements.append(
+                    ProceduralRequirement(
+                        requirement_type="jurisdiction",
+                        description="Amount in Controversy Requirement",
+                        legal_basis="28 U.S.C. § 1332",
+                        status="issue",
+                        details={"required": 75000, "actual": amount},
+                    )
+                )
 
         else:
             # State court requirements
-            requirements.append(ProceduralRequirement(
-                requirement_type="jurisdiction",
-                description="State Court Jurisdiction",
-                legal_basis="State long-arm statute and due process",
-                status="pending",
-                details={"type": "general_jurisdiction"}
-            ))
+            requirements.append(
+                ProceduralRequirement(
+                    requirement_type="jurisdiction",
+                    description="State Court Jurisdiction",
+                    legal_basis="State long-arm statute and due process",
+                    status="pending",
+                    details={"type": "general_jurisdiction"},
+                )
+            )
 
         return requirements
 
-    async def _analyze_venue(self, case_info: Dict[str, Any]) -> List[ProceduralRequirement]:
+    async def _analyze_venue(
+        self, case_info: Dict[str, Any]
+    ) -> List[ProceduralRequirement]:
         """Analyze venue requirements"""
         requirements = []
 
         defendant_location = case_info.get("defendant_location", "unknown")
 
-        requirements.append(ProceduralRequirement(
-            requirement_type="venue",
-            description="Proper Venue Determination",
-            legal_basis="28 U.S.C. § 1391 (federal) or state venue statutes",
-            status="pending",
-            details={"defendant_location": defendant_location}
-        ))
+        requirements.append(
+            ProceduralRequirement(
+                requirement_type="venue",
+                description="Proper Venue Determination",
+                legal_basis="28 U.S.C. § 1391 (federal) or state venue statutes",
+                status="pending",
+                details={"defendant_location": defendant_location},
+            )
+        )
 
         return requirements
 
-    async def _analyze_service_requirements(self, case_info: Dict[str, Any]) -> List[ProceduralRequirement]:
+    async def _analyze_service_requirements(
+        self, case_info: Dict[str, Any]
+    ) -> List[ProceduralRequirement]:
         """Analyze service of process requirements"""
         requirements = []
 
-        requirements.append(ProceduralRequirement(
-            requirement_type="service",
-            description="Service of Process Requirements",
-            legal_basis="Fed. R. Civ. P. 4 (federal) or state rules",
-            status="pending",
-            details={"methods": ["personal", "substituted", "mail", "publication"]}
-        ))
+        requirements.append(
+            ProceduralRequirement(
+                requirement_type="service",
+                description="Service of Process Requirements",
+                legal_basis="Fed. R. Civ. P. 4 (federal) or state rules",
+                status="pending",
+                details={"methods": ["personal", "substituted", "mail", "publication"]},
+            )
+        )
 
         return requirements
 
-    async def _analyze_pleading_requirements(self, case_info: Dict[str, Any]) -> List[ProceduralRequirement]:
+    async def _analyze_pleading_requirements(
+        self, case_info: Dict[str, Any]
+    ) -> List[ProceduralRequirement]:
         """Analyze pleading requirements"""
         requirements = []
 
-        requirements.append(ProceduralRequirement(
-            requirement_type="pleading",
-            description="Complaint Pleading Standards",
-            legal_basis="Bell Atlantic Corp. v. Twombly, 550 U.S. 544 (2007)",
-            status="pending",
-            details={"standard": "plausibility", "rule_12b6": "failure_to_state_claim"}
-        ))
+        requirements.append(
+            ProceduralRequirement(
+                requirement_type="pleading",
+                description="Complaint Pleading Standards",
+                legal_basis="Bell Atlantic Corp. v. Twombly, 550 U.S. 544 (2007)",
+                status="pending",
+                details={
+                    "standard": "plausibility",
+                    "rule_12b6": "failure_to_state_claim",
+                },
+            )
+        )
 
         return requirements
 
-    def _generate_procedural_recommendations(self, requirements: List[ProceduralRequirement]) -> List[str]:
+    def _generate_procedural_recommendations(
+        self, requirements: List[ProceduralRequirement]
+    ) -> List[str]:
         """Generate recommendations based on procedural requirements"""
         recommendations = []
 
         for req in requirements:
             if req.status == "issue":
                 if "amount" in req.description.lower():
-                    recommendations.append("Consider amending complaint to meet amount in controversy requirement")
+                    recommendations.append(
+                        "Consider amending complaint to meet amount in controversy requirement"
+                    )
                 elif "jurisdiction" in req.requirement_type:
-                    recommendations.append("Verify defendant's contacts with forum state")
+                    recommendations.append(
+                        "Verify defendant's contacts with forum state"
+                    )
                 elif "venue" in req.requirement_type:
                     recommendations.append("Consider alternative venue options")
 
         # General recommendations
-        recommendations.extend([
-            "File proof of service with court",
-            "Comply with local court rules for formatting",
-            "Consider requesting waiver of service to save costs",
-            "Keep copies of all filed documents"
-        ])
+        recommendations.extend(
+            [
+                "File proof of service with court",
+                "Comply with local court rules for formatting",
+                "Consider requesting waiver of service to save costs",
+                "Keep copies of all filed documents",
+            ]
+        )
 
         return recommendations
 

@@ -9,17 +9,23 @@ Cause of Action Detection Engine
 Identifies legal claims from case facts and builds element breakdown for Claims Matrix
 """
 
-import logging
-import re
 from dataclasses import dataclass
 from datetime import datetime
+import logging
+import re
 from typing import Any, Dict, List, Optional
 
-from enhanced_knowledge_graph import (CauseOfAction, ElementQuestion,
-                                      EnhancedKnowledgeGraph, LegalElement,
-                                      LegalEntityType)
+from enhanced_knowledge_graph import (
+    CauseOfAction,
+    ElementQuestion,
+    EnhancedKnowledgeGraph,
+    LegalElement,
+    LegalEntityType,
+)
 
-from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import JurisdictionManager
+from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
+    JurisdictionManager,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +36,12 @@ class CauseDetectionResult:
 # Import LLM integration functions
 try:
     from .llm_outline_integration import (
-        llm_detect_causes_of_action,
         llm_analyze_legal_elements,
+        llm_build_decision_tree,
+        llm_detect_causes_of_action,
+        llm_enhance_legal_definition,
         llm_generate_document_outline,
         llm_generate_provable_questions,
-        llm_enhance_legal_definition,
-        llm_build_decision_tree
     )
 
     LLM_OUTLINE_AVAILABLE = True
@@ -508,8 +514,9 @@ if __name__ == "__main__":
     
     from enhanced_knowledge_graph import EnhancedKnowledgeGraph
 
-    from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import \
-        JurisdictionManager
+    from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
+        JurisdictionManager,
+    )
     
     kg = EnhancedKnowledgeGraph("test_cause_detector.db")
     jurisdiction_manager = JurisdictionManager(kg)

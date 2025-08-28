@@ -11,19 +11,20 @@ Manages binding vs persuasive authority based on jurisdiction and court hierarch
 Implements authority precedence rules and citation validation.
 """
 
-import re
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
 import json
 import logging
-from datetime import datetime
-from typing import Dict, List, Any, Optional
-from dataclasses import dataclass, field
-from enum import Enum
+import re
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
 
 class AuthorityType(Enum):
     """Types of legal authority"""
+
     BINDING = "binding"
     PERSUASIVE = "persuasive"
     OBSOLETE = "obsolete"
@@ -32,6 +33,7 @@ class AuthorityType(Enum):
 
 class CourtLevel(Enum):
     """Court hierarchy levels"""
+
     SUPREME_COURT = "supreme_court"
     APPELLATE = "appellate"
     DISTRICT = "district"
@@ -43,6 +45,7 @@ class CourtLevel(Enum):
 @dataclass
 class LegalAuthority:
     """Represents a legal authority with jurisdiction and precedence information"""
+
     title: str
     section: str
     court: str
@@ -123,7 +126,7 @@ class LegalAuthorityManager:
     def _load_authorities(self):
         """Load authorities from data file"""
         try:
-            with open(self.data_path, 'r') as f:
+            with open(self.data_path, "r") as f:
                 data = json.load(f)
                 for item in data.get("authorities", []):
                     authority = LegalAuthority(**item)
@@ -148,7 +151,7 @@ class LegalAuthorityManager:
                 decision_date="2023-01-15",
                 authority_type=AuthorityType.PERSUASIVE,
                 tags=["contract", "breach"],
-                content="District court held that email communications can constitute binding contract"
+                content="District court held that email communications can constitute binding contract",
             ),
             LegalAuthority(
                 title="California Supreme Court Contract Case",
@@ -159,7 +162,7 @@ class LegalAuthorityManager:
                 decision_date="2022-06-10",
                 authority_type=AuthorityType.BINDING,
                 tags=["contract", "consideration"],
-                content="California Supreme Court established rules for digital contract formation"
+                content="California Supreme Court established rules for digital contract formation",
             ),
             LegalAuthority(
                 title="Federal Circuit Authority",
@@ -170,8 +173,8 @@ class LegalAuthorityManager:
                 decision_date="2021-03-20",
                 authority_type=AuthorityType.BINDING,
                 tags=["patent", "infringement"],
-                content="Ninth Circuit clarified standards for patent infringement claims"
-            )
+                content="Ninth Circuit clarified standards for patent infringement claims",
+            ),
         ]
 
         for authority in default_authorities:
@@ -184,10 +187,12 @@ class LegalAuthorityManager:
         """Save authorities to data file"""
         try:
             data = {
-                "authorities": [authority.__dict__ for authority in self.authorities.values()],
-                "last_updated": datetime.now().isoformat()
+                "authorities": [
+                    authority.__dict__ for authority in self.authorities.values()
+                ],
+                "last_updated": datetime.now().isoformat(),
             }
-            with open(self.data_path, 'w') as f:
+            with open(self.data_path, "w") as f:
                 json.dump(data, f, indent=2, default=str)
         except Exception as e:
             logger.error(f"Error saving legal authorities: {e}")
@@ -205,7 +210,12 @@ class LegalAuthorityManager:
                 results.append(authority)
 
         # Sort by relevance (simple keyword matching for now)
-        results.sort(key=lambda x: len([word for word in query_lower.split() if word in searchable_text]), reverse=True)
+        results.sort(
+            key=lambda x: len(
+                [word for word in query_lower.split() if word in searchable_text]
+            ),
+            reverse=True,
+        )
 
         return results[:limit]
 
@@ -213,7 +223,9 @@ class LegalAuthorityManager:
         """Get authority by citation"""
         return self.authorities.get(citation)
 
-    def validate_citation_for_jurisdiction(self, citation: str, target_jurisdiction: str) -> Dict[str, Any]:
+    def validate_citation_for_jurisdiction(
+        self, citation: str, target_jurisdiction: str
+    ) -> Dict[str, Any]:
         """Validate if a citation is appropriate for the target jurisdiction"""
         authority = self.get_authority_by_citation(citation)
 
@@ -221,7 +233,7 @@ class LegalAuthorityManager:
             return {
                 "valid": False,
                 "reason": "Citation not found in authority database",
-                "suggested_alternatives": []
+                "suggested_alternatives": [],
             }
 
         is_binding = authority.is_binding_in_jurisdiction(target_jurisdiction)
@@ -232,33 +244,48 @@ class LegalAuthorityManager:
             "authority_type": authority.authority_type.value,
             "precedence_score": precedence_score,
             "court_level": authority.court_level.value,
-            "reason": ""
+            "reason": "",
         }
 
         if authority.authority_type == AuthorityType.OBSOLETE:
-            result["reason"] = f"This authority was superseded by {authority.superseded_by}"
-            result["suggested_alternatives"] = self._find_superseding_authority(authority)
+            result["reason"] = (
+                f"This authority was superseded by {authority.superseded_by}"
+            )
+            result["suggested_alternatives"] = self._find_superseding_authority(
+                authority
+            )
         elif not is_binding:
-            result["reason"] = f"This {authority.court_level.value} decision is not binding in {target_jurisdiction}"
-            result["suggested_alternatives"] = self._find_binding_authorities(target_jurisdiction, authority.tags)
+            result["reason"] = (
+                f"This {authority.court_level.value} decision is not binding in {target_jurisdiction}"
+            )
+            result["suggested_alternatives"] = self._find_binding_authorities(
+                target_jurisdiction, authority.tags
+            )
 
         return result
 
-    def _find_superseding_authority(self, obsolete_authority: LegalAuthority) -> List[str]:
+    def _find_superseding_authority(
+        self, obsolete_authority: LegalAuthority
+    ) -> List[str]:
         """Find authorities that superseded the given obsolete authority"""
         if obsolete_authority.superseded_by:
-            superseding = self.get_authority_by_citation(obsolete_authority.superseded_by)
+            superseding = self.get_authority_by_citation(
+                obsolete_authority.superseded_by
+            )
             if superseding:
                 return [superseding.section]
         return []
 
-    def _find_binding_authorities(self, jurisdiction: str, tags: List[str]) -> List[str]:
+    def _find_binding_authorities(
+        self, jurisdiction: str, tags: List[str]
+    ) -> List[str]:
         """Find binding authorities in the jurisdiction with matching tags"""
         binding_authorities = []
 
         for authority in self.authorities.values():
-            if (authority.is_binding_in_jurisdiction(jurisdiction) and
-                any(tag in authority.tags for tag in tags)):
+            if authority.is_binding_in_jurisdiction(jurisdiction) and any(
+                tag in authority.tags for tag in tags
+            ):
                 binding_authorities.append(authority.section)
 
         return binding_authorities[:3]  # Return top 3
@@ -269,7 +296,12 @@ class LegalAuthorityManager:
         self._save_authorities()
         logger.info(f"Added new authority: {authority.section}")
 
-    def update_authority_status(self, citation: str, new_status: AuthorityType, superseded_by: Optional[str] = None):
+    def update_authority_status(
+        self,
+        citation: str,
+        new_status: AuthorityType,
+        superseded_by: Optional[str] = None,
+    ):
         """Update the status of an existing authority"""
         if citation in self.authorities:
             self.authorities[citation].authority_type = new_status
@@ -288,7 +320,9 @@ class AuthorityCitationManager:
 
     def format_citation(self, citation: str, jurisdiction: str) -> str:
         """Format citation with appropriate signals based on jurisdiction"""
-        validation = self.authority_manager.validate_citation_for_jurisdiction(citation, jurisdiction)
+        validation = self.authority_manager.validate_citation_for_jurisdiction(
+            citation, jurisdiction
+        )
 
         if validation["valid"]:
             return citation  # No signal needed for binding authority
@@ -317,31 +351,39 @@ class AuthorityCitationManager:
 
         return "\n".join(table_lines)
 
-    def validate_document_citations(self, document_text: str, jurisdiction: str) -> Dict[str, Any]:
+    def validate_document_citations(
+        self, document_text: str, jurisdiction: str
+    ) -> Dict[str, Any]:
         """Validate all citations in a document for the given jurisdiction"""
         # Simple regex to find citations (this would need to be more sophisticated)
-        citation_pattern = r'\d+\s+[A-Za-z\.]+\s+\d+'
+        citation_pattern = r"\d+\s+[A-Za-z\.]+\s+\d+"
         citations = re.findall(citation_pattern, document_text)
 
         validation_results = {}
         issues = []
 
         for citation in citations:
-            validation = self.authority_manager.validate_citation_for_jurisdiction(citation, jurisdiction)
+            validation = self.authority_manager.validate_citation_for_jurisdiction(
+                citation, jurisdiction
+            )
             validation_results[citation] = validation
 
             if not validation["valid"]:
-                issues.append({
-                    "citation": citation,
-                    "issue": validation["reason"],
-                    "suggested_alternatives": validation.get("suggested_alternatives", [])
-                })
+                issues.append(
+                    {
+                        "citation": citation,
+                        "issue": validation["reason"],
+                        "suggested_alternatives": validation.get(
+                            "suggested_alternatives", []
+                        ),
+                    }
+                )
 
         return {
             "total_citations": len(citations),
             "validation_results": validation_results,
             "issues": issues,
-            "recommendations": self._generate_recommendations(issues)
+            "recommendations": self._generate_recommendations(issues),
         }
 
     def _generate_recommendations(self, issues: List[Dict[str, Any]]) -> List[str]:
@@ -349,14 +391,24 @@ class AuthorityCitationManager:
         recommendations = []
 
         if issues:
-            recommendations.append(f"Found {len(issues)} citation issues that need attention")
+            recommendations.append(
+                f"Found {len(issues)} citation issues that need attention"
+            )
 
-            obsolete_count = sum(1 for issue in issues if "superseded" in issue["issue"].lower())
+            obsolete_count = sum(
+                1 for issue in issues if "superseded" in issue["issue"].lower()
+            )
             if obsolete_count > 0:
-                recommendations.append(f"Update {obsolete_count} obsolete citations with current authority")
+                recommendations.append(
+                    f"Update {obsolete_count} obsolete citations with current authority"
+                )
 
-            non_binding_count = sum(1 for issue in issues if "not binding" in issue["issue"].lower())
+            non_binding_count = sum(
+                1 for issue in issues if "not binding" in issue["issue"].lower()
+            )
             if non_binding_count > 0:
-                recommendations.append(f"Replace {non_binding_count} non-binding citations with jurisdiction-appropriate authority")
+                recommendations.append(
+                    f"Replace {non_binding_count} non-binding citations with jurisdiction-appropriate authority"
+                )
 
         return recommendations

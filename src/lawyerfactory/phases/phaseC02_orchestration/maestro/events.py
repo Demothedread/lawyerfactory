@@ -6,5 +6,9 @@
 #   - Group Tags: orchestration
 import warnings as _w
 
-_w.warn("Module maestro/event_system.py is deprecated; import lawyerfactory.compose.maestro.events instead.", DeprecationWarning, stacklevel=2)
+_w.warn(
+    "Module maestro/event_system.py is deprecated; import lawyerfactory.compose.maestro.events instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 from lawyerfactory.compose.maestro.events import *  # noqa: F401,F403

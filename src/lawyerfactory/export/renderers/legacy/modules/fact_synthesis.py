@@ -8,6 +8,7 @@
 Module for synthesizing a compelling narrative from structured case facts.
 This module ensures facts are presented in a clear, chronological order.
 """
+
 from datetime import datetime
 
 
@@ -24,7 +25,7 @@ def synthesize_facts(case_facts):
     """
     # Sort facts by date, if available
     try:
-        case_facts.sort(key=lambda x: datetime.fromisoformat(x.get('date', '')))
+        case_facts.sort(key=lambda x: datetime.fromisoformat(x.get("date", "")))
     except (ValueError, TypeError):
         # Handle cases where date is missing or malformed
         pass
@@ -33,5 +34,5 @@ def synthesize_facts(case_facts):
     for i, fact in enumerate(case_facts, 1):
         # More sophisticated narrative construction can be added here
         narrative.append(f"    {i}. {fact['text']}")
-    
+
     return "\\n".join(narrative)

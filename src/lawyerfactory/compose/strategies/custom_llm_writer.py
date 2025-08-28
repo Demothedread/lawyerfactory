@@ -11,11 +11,11 @@ Uses skeletal outline as foundation to generate comprehensive legal documents
 with proper jurisdiction-specific formatting and citation management.
 """
 
-import logging
-import json
-from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
+import json
+import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SkeletalOutline:
     """Skeletal outline structure for document generation"""
+
     case_name: str
     jurisdiction: str
     venue: str
@@ -34,16 +35,15 @@ class SkeletalOutline:
 
     def add_section(self, title: str, content: str = "", subsections: List[str] = None):
         """Add a section to the outline"""
-        self.sections.append({
-            "title": title,
-            "content": content,
-            "subsections": subsections or []
-        })
+        self.sections.append(
+            {"title": title, "content": content, "subsections": subsections or []}
+        )
 
 
 @dataclass
 class WritingContext:
     """Context for LLM writing including intake data and research results"""
+
     intake_data: Dict[str, Any]
     research_results: List[Dict[str, Any]]
     jurisdiction_rules: Dict[str, Any]
@@ -145,10 +145,12 @@ Respectfully submitted,
 
 [ATTORNEY NAME]
 Attorney for Plaintiff
-"""
+""",
         }
 
-    def generate_complaint_from_outline(self, outline: SkeletalOutline, context: WritingContext) -> str:
+    def generate_complaint_from_outline(
+        self, outline: SkeletalOutline, context: WritingContext
+    ) -> str:
         """
         Generate complete complaint from skeletal outline using LLM
 
@@ -187,7 +189,9 @@ Attorney for Plaintiff
             document = "\n\n".join(sections)
 
             # Apply jurisdiction-specific formatting
-            document = self._apply_jurisdiction_formatting(document, outline.jurisdiction)
+            document = self._apply_jurisdiction_formatting(
+                document, outline.jurisdiction
+            )
 
             # Validate against similar cases
             document = self._validate_and_adjust(document, context)
@@ -199,7 +203,9 @@ Attorney for Plaintiff
             logger.exception(f"Failed to generate complaint: {e}")
             return f"Error generating complaint: {str(e)}"
 
-    def _generate_caption(self, outline: SkeletalOutline, context: WritingContext) -> str:
+    def _generate_caption(
+        self, outline: SkeletalOutline, context: WritingContext
+    ) -> str:
         """Generate case caption"""
         template = self.templates["complaint_header"]
 
@@ -208,10 +214,12 @@ Attorney for Plaintiff
             plaintiff_name=context.intake_data.get("client_name", "Plaintiff"),
             defendant_name=context.intake_data.get("opposing_party_names", "Defendant"),
             defendant_type="corporation",
-            defendant_jurisdiction="Delaware"
+            defendant_jurisdiction="Delaware",
         )
 
-    def _generate_background(self, outline: SkeletalOutline, context: WritingContext) -> str:
+    def _generate_background(
+        self, outline: SkeletalOutline, context: WritingContext
+    ) -> str:
         """Generate background/factual allegations section"""
         facts = context.intake_data.get("claim_description", "")
         location = context.intake_data.get("events_location", "")
@@ -233,7 +241,9 @@ FACTUAL ALLEGATIONS
 
         return background
 
-    def _generate_jurisdiction_venue(self, outline: SkeletalOutline, context: WritingContext) -> str:
+    def _generate_jurisdiction_venue(
+        self, outline: SkeletalOutline, context: WritingContext
+    ) -> str:
         """Generate jurisdiction and venue allegations"""
         template = self.templates["jurisdiction_venue_allegations"]
 
@@ -245,7 +255,9 @@ FACTUAL ALLEGATIONS
             venue_reason = "a substantial part of the events giving rise to the claim occurred in this district"
         else:
             jurisdiction_statute = "California Code of Civil Procedure § 410.10"
-            jurisdiction_reason = "this action arises from events occurring within California"
+            jurisdiction_reason = (
+                "this action arises from events occurring within California"
+            )
             venue_statute = "California Code of Civil Procedure § 395"
             venue_reason = "the events occurred in this county"
 
@@ -257,10 +269,12 @@ FACTUAL ALLEGATIONS
             jurisdiction_reason=jurisdiction_reason,
             venue_statute=venue_statute,
             venue_reason=venue_reason,
-            personal_jurisdiction_reason=personal_jurisdiction_reason
+            personal_jurisdiction_reason=personal_jurisdiction_reason,
         )
 
-    def _generate_causes_of_action(self, outline: SkeletalOutline, context: WritingContext) -> str:
+    def _generate_causes_of_action(
+        self, outline: SkeletalOutline, context: WritingContext
+    ) -> str:
         """Generate causes of action section"""
         causes = []
         paragraph_counter = 9  # Starting after jurisdiction/venue paragraphs
@@ -277,7 +291,7 @@ FACTUAL ALLEGATIONS
                 paragraph_number=paragraph_counter,
                 previous_paragraph=paragraph_counter - 1,
                 cause_specific_allegations=cause_allegations,
-                minimum_damages=context.intake_data.get("claim_amount", 0)
+                minimum_damages=context.intake_data.get("claim_amount", 0),
             )
 
             causes.append(cause_section)
@@ -290,35 +304,37 @@ FACTUAL ALLEGATIONS
         allegation_templates = {
             "breach_contract": """
 Defendant breached the contract by failing to deliver goods as agreed. Specifically, Defendant failed to deliver the contracted goods by the agreed-upon deadline despite Plaintiff's repeated requests and reminders. This breach was material and substantial, depriving Plaintiff of the benefit of the bargain.""",
-
             "negligence": """
 Defendant owed Plaintiff a duty of care to act reasonably and avoid foreseeable harm. Defendant breached this duty by failing to exercise ordinary care in their actions. This breach was the proximate cause of Plaintiff's injuries and damages.""",
-
             "fraud": """
 Defendant made intentional misrepresentations of material facts to Plaintiff. These misrepresentations were made with knowledge of their falsity or with reckless disregard for the truth. Plaintiff reasonably relied on these misrepresentations to their detriment.""",
-
             "products_liability": """
 Defendant designed, manufactured, and/or distributed a defective product that caused Plaintiff's injuries. The product was defective in design, manufacture, or warnings, making it unreasonably dangerous when used as intended.""",
-
             "motor_vehicle": """
 Defendant operated their motor vehicle negligently and recklessly, causing a collision with Plaintiff's vehicle. Defendant's negligent operation included excessive speed, failure to yield, and/or other traffic violations.""",
-
             "landlord_tenant": """
-Defendant, as landlord, breached their duty to maintain the premises in habitable condition. Defendant failed to make necessary repairs, ignored maintenance requests, and allowed dangerous conditions to persist on the property."""
+Defendant, as landlord, breached their duty to maintain the premises in habitable condition. Defendant failed to make necessary repairs, ignored maintenance requests, and allowed dangerous conditions to persist on the property.""",
         }
 
-        return allegation_templates.get(cause.lower(), f"Defendant engaged in {cause.lower()}, causing harm to Plaintiff.")
+        return allegation_templates.get(
+            cause.lower(),
+            f"Defendant engaged in {cause.lower()}, causing harm to Plaintiff.",
+        )
 
-    def _generate_prayer_for_relief(self, outline: SkeletalOutline, context: WritingContext) -> str:
+    def _generate_prayer_for_relief(
+        self, outline: SkeletalOutline, context: WritingContext
+    ) -> str:
         """Generate prayer for relief"""
         return self.templates["prayer_for_relief"]
 
-    def _generate_verification_and_service(self, outline: SkeletalOutline, context: WritingContext) -> str:
+    def _generate_verification_and_service(
+        self, outline: SkeletalOutline, context: WritingContext
+    ) -> str:
         """Generate verification and certificate of service"""
         verification = self.templates["verification"].format(
             plaintiff_name=context.intake_data.get("client_name", "Plaintiff"),
             date=datetime.now().strftime("%B %d, %Y"),
-            location=context.intake_data.get("events_location", "Unknown Location")
+            location=context.intake_data.get("events_location", "Unknown Location"),
         )
 
         certificate = self.templates["certificate_of_service"].format(
@@ -332,13 +348,20 @@ Defendant, as landlord, breached their duty to maintain the premises in habitabl
         # California-specific formatting
         if "california" in jurisdiction.lower():
             # Add California-specific language
-            document = document.replace("Plaintiff respectfully requests", "Plaintiff prays")
-            document = document.replace("WHEREFORE, Plaintiff respectfully requests", "WHEREFORE, Plaintiff demands")
+            document = document.replace(
+                "Plaintiff respectfully requests", "Plaintiff prays"
+            )
+            document = document.replace(
+                "WHEREFORE, Plaintiff respectfully requests",
+                "WHEREFORE, Plaintiff demands",
+            )
 
         # Federal court formatting
         elif "federal" in jurisdiction.lower():
             # Add federal court specific language
-            document = document.replace("Plaintiff prays", "Plaintiff respectfully requests")
+            document = document.replace(
+                "Plaintiff prays", "Plaintiff respectfully requests"
+            )
 
         return document
 
@@ -359,7 +382,9 @@ Defendant, as landlord, breached their duty to maintain the premises in habitabl
         logger.info("Document validation and adjustment completed")
         return document
 
-    def create_skeletal_outline_from_intake(self, intake_data: Dict[str, Any]) -> SkeletalOutline:
+    def create_skeletal_outline_from_intake(
+        self, intake_data: Dict[str, Any]
+    ) -> SkeletalOutline:
         """Create skeletal outline from intake data"""
         outline = SkeletalOutline(
             case_name=intake_data.get("case_name", "Plaintiff v. Defendant"),
@@ -368,18 +393,22 @@ Defendant, as landlord, breached their duty to maintain the premises in habitabl
             court_type=intake_data.get("court_type", "state"),
             causes_of_action=intake_data.get("causes_of_action", []),
             key_facts=[intake_data.get("claim_description", "")],
-            legal_authorities=[]  # Would be populated from research
+            legal_authorities=[],  # Would be populated from research
         )
 
         # Add standard sections
         outline.add_section("Caption", "Case caption and parties")
         outline.add_section("Introduction", "Brief introduction to the case")
-        outline.add_section("Jurisdiction and Venue", "Allegations supporting court's authority")
+        outline.add_section(
+            "Jurisdiction and Venue", "Allegations supporting court's authority"
+        )
         outline.add_section("Factual Allegations", "Detailed facts supporting claims")
 
         # Add cause-specific sections
         for cause in outline.causes_of_action:
-            outline.add_section(f"Cause of Action: {cause.title()}", f"Allegations for {cause}")
+            outline.add_section(
+                f"Cause of Action: {cause.title()}", f"Allegations for {cause}"
+            )
 
         outline.add_section("Prayer for Relief", "Requested relief from the court")
         outline.add_section("Verification", "Plaintiff's verification of allegations")

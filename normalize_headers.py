@@ -14,8 +14,8 @@ Description:
 
 import argparse
 import os
-import re
 from pathlib import Path
+import re
 from typing import Dict, List, Optional, Tuple
 
 # Standard header template

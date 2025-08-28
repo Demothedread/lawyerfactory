@@ -9,16 +9,18 @@ Cause of Action Definition and Element Breakdown Engine - Phase 3.3
 Comprehensive legal definition system with California-specific authorities and provable question generation
 """
 
-import logging
 from dataclasses import dataclass, field
 from datetime import datetime
+import logging
 from typing import Any, Dict, List, Optional
 
 from enhanced_knowledge_graph import EnhancedKnowledgeGraph
 from legal_authority_validator import LegalAuthorityValidator
 from legal_research_integration import LegalResearchAPIIntegration
 
-from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import JurisdictionManager
+from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
+    JurisdictionManager,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +32,12 @@ class LegalDefinition:
 # Import LLM integration functions
 try:
     from .llm_outline_integration import (
-        llm_detect_causes_of_action,
         llm_analyze_legal_elements,
+        llm_build_decision_tree,
+        llm_detect_causes_of_action,
+        llm_enhance_legal_definition,
         llm_generate_document_outline,
         llm_generate_provable_questions,
-        llm_enhance_legal_definition,
-        llm_build_decision_tree
     )
 
     LLM_OUTLINE_AVAILABLE = True
@@ -1031,8 +1033,9 @@ if __name__ == "__main__":
     
     from enhanced_knowledge_graph import EnhancedKnowledgeGraph
 
-    from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import \
-        JurisdictionManager
+    from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
+        JurisdictionManager,
+    )
     
     try:
         kg = EnhancedKnowledgeGraph("test_definition_engine.db")

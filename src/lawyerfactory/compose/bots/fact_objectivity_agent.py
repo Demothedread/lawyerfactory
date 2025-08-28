@@ -20,11 +20,11 @@ The agent ensures that while facts must be accurate and complete,
 they are presented in a manner most advantageous to the client's case.
 """
 
-import logging
-from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
+import logging
+from typing import Any, Dict, List, Optional, Set
 
-from ...compose.maestro.registry import AgentInterface, AgentCapability
+from ...compose.maestro.registry import AgentCapability, AgentInterface
 from ...compose.maestro.workflow_models import WorkflowTask
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class FactAssessment:
     """Assessment of a fact's objectivity and framing"""
+
     fact_text: str
     objectivity_score: float  # 0.0 to 1.0
     framing_issues: List[str] = field(default_factory=list)
@@ -46,7 +47,10 @@ class FactObjectivityAgent(AgentInterface):
 
     def __init__(self, knowledge_graph=None):
         self.knowledge_graph = knowledge_graph
-        self.capabilities = [AgentCapability.LEGAL_RESEARCH, AgentCapability.CASE_ANALYSIS]
+        self.capabilities = [
+            AgentCapability.LEGAL_RESEARCH,
+            AgentCapability.CASE_ANALYSIS,
+        ]
 
         # Load objectivity guidelines and patterns
         self._load_objectivity_guidelines()
@@ -55,21 +59,37 @@ class FactObjectivityAgent(AgentInterface):
         """Load guidelines for factual objectivity"""
         self.objectivity_patterns = {
             "biased_language": [
-                "clearly", "obviously", "undoubtedly", "without question",
-                "obviously", "clearly", "definitely", "certainly"
+                "clearly",
+                "obviously",
+                "undoubtedly",
+                "without question",
+                "obviously",
+                "clearly",
+                "definitely",
+                "certainly",
             ],
             "conclusionary_statements": [
-                "was negligent", "breached the contract", "committed fraud",
-                "was careless", "acted intentionally"
+                "was negligent",
+                "breached the contract",
+                "committed fraud",
+                "was careless",
+                "acted intentionally",
             ],
             "unsupported_claims": [
-                "knew or should have known", "failed to properly",
-                "negligent behavior", "reckless actions"
+                "knew or should have known",
+                "failed to properly",
+                "negligent behavior",
+                "reckless actions",
             ],
             "favorable_adjectives": [
-                "reasonable", "prudent", "careful", "professional",
-                "competent", "qualified", "experienced"
-            ]
+                "reasonable",
+                "prudent",
+                "careful",
+                "professional",
+                "competent",
+                "qualified",
+                "experienced",
+            ],
         }
 
         self.objectivity_guidelines = {
@@ -77,7 +97,7 @@ class FactObjectivityAgent(AgentInterface):
             "accuracy": "Facts must be accurate and verifiable",
             "relevance": "Only facts relevant to claims should be included",
             "objectivity": "Present facts objectively, not as conclusions",
-            "favorable_framing": "Frame facts favorably to client while maintaining truth"
+            "favorable_framing": "Frame facts favorably to client while maintaining truth",
         }
 
     async def process(self, message: str) -> str:
@@ -93,7 +113,9 @@ class FactObjectivityAgent(AgentInterface):
             response = "Fact Objectivity Analysis:\n\n"
             for i, assessment in enumerate(assessments, 1):
                 response += f"{i}. **Fact:** {assessment.fact_text[:100]}...\n"
-                response += f"   Objectivity Score: {assessment.objectivity_score:.2f}/1.0\n"
+                response += (
+                    f"   Objectivity Score: {assessment.objectivity_score:.2f}/1.0\n"
+                )
 
                 if assessment.framing_issues:
                     response += f"   Issues: {', '.join(assessment.framing_issues)}\n"
@@ -109,7 +131,9 @@ class FactObjectivityAgent(AgentInterface):
             logger.error(f"Error processing fact objectivity request: {e}")
             return f"Error analyzing fact objectivity: {str(e)}"
 
-    async def execute_task(self, task: WorkflowTask, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_task(
+        self, task: WorkflowTask, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute a workflow task related to fact objectivity"""
         try:
             # Extract facts from context
@@ -130,7 +154,7 @@ class FactObjectivityAgent(AgentInterface):
                 "assessments": [assessment.__dict__ for assessment in assessments],
                 "improved_facts": improved_facts,
                 "missing_facts": missing_facts,
-                "overall_objectivity_score": self._calculate_overall_score(assessments)
+                "overall_objectivity_score": self._calculate_overall_score(assessments),
             }
 
         except Exception as e:
@@ -142,7 +166,7 @@ class FactObjectivityAgent(AgentInterface):
                 "assessments": [],
                 "improved_facts": [],
                 "missing_facts": [],
-                "overall_objectivity_score": 0.0
+                "overall_objectivity_score": 0.0,
             }
 
     async def health_check(self) -> bool:
@@ -170,9 +194,10 @@ class FactObjectivityAgent(AgentInterface):
     async def can_handle_task(self, task: WorkflowTask) -> bool:
         """Check if this agent can handle the given task"""
         task_text = f"{task.description} {task.agent_type}".lower()
-        return any(keyword in task_text for keyword in [
-            "fact", "objectivity", "bias", "framing", "statement"
-        ])
+        return any(
+            keyword in task_text
+            for keyword in ["fact", "objectivity", "bias", "framing", "statement"]
+        )
 
     async def analyze_fact_objectivity(self, facts: List[str]) -> List[FactAssessment]:
         """Analyze the objectivity of given facts"""
@@ -184,7 +209,9 @@ class FactObjectivityAgent(AgentInterface):
 
         return assessments
 
-    async def identify_missing_facts(self, existing_facts: List[str], context: Dict[str, Any]) -> List[str]:
+    async def identify_missing_facts(
+        self, existing_facts: List[str], context: Dict[str, Any]
+    ) -> List[str]:
         """Identify facts that should be included but are missing"""
         missing_facts = []
 
@@ -202,14 +229,16 @@ class FactObjectivityAgent(AgentInterface):
                 # Check if facts supporting these elements exist
                 for element in required_elements:
                     if not self._fact_exists_for_element(element, existing_facts):
-                        missing_facts.append(f"Missing fact for {element} in {claim_title}")
+                        missing_facts.append(
+                            f"Missing fact for {element} in {claim_title}"
+                        )
 
         return missing_facts
 
     def _extract_facts_from_text(self, text: str) -> List[str]:
         """Extract facts from natural language text"""
         # Simple sentence-based extraction
-        sentences = text.replace('?', '.').replace('!', '.').split('.')
+        sentences = text.replace("?", ".").replace("!", ".").split(".")
         facts = [s.strip() for s in sentences if len(s.strip()) > 10]
         return facts
 
@@ -276,7 +305,7 @@ class FactObjectivityAgent(AgentInterface):
             framing_issues=issues,
             suggested_reframing=suggested_reframing,
             source_verification=self._can_verify_source(fact),
-            completeness_check=completeness
+            completeness_check=completeness,
         )
 
     def _generate_neutral_alternative(self, fact: str, biased_phrase: str) -> str:
@@ -286,7 +315,7 @@ class FactObjectivityAgent(AgentInterface):
             "breached the contract": "did not fulfill contractual obligations",
             "committed fraud": "made material misrepresentations",
             "was careless": "did not act with appropriate caution",
-            "acted intentionally": "acted with specific purpose"
+            "acted intentionally": "acted with specific purpose",
         }
 
         for biased, neutral in replacements.items():
@@ -298,9 +327,15 @@ class FactObjectivityAgent(AgentInterface):
     def _assess_fact_completeness(self, fact: str) -> bool:
         """Assess if a fact is complete and provides necessary context"""
         # Check for key elements: who, what, when, where, why, how
-        has_who = any(word in fact.lower() for word in ["plaintiff", "defendant", "party", "person", "company"])
+        has_who = any(
+            word in fact.lower()
+            for word in ["plaintiff", "defendant", "party", "person", "company"]
+        )
         has_what = len(fact.split()) > 3  # Basic check for sufficient detail
-        has_when = any(word in fact.lower() for word in ["on", "date", "time", "during", "after", "before"])
+        has_when = any(
+            word in fact.lower()
+            for word in ["on", "date", "time", "during", "after", "before"]
+        )
 
         # Fact is considered complete if it has at least 2 of 3 key elements
         return sum([has_who, has_what, has_when]) >= 2
@@ -309,7 +344,9 @@ class FactObjectivityAgent(AgentInterface):
         """Check if the fact's source can be verified"""
         # Look for verifiable elements like dates, names, specific details
         has_date = any(word.isdigit() and len(word) == 4 for word in fact.split())
-        has_specific_name = any(word.istitle() and len(word) > 3 for word in fact.split())
+        has_specific_name = any(
+            word.istitle() and len(word) > 3 for word in fact.split()
+        )
         has_specific_detail = len(fact.split()) > 5
 
         return has_date or (has_specific_name and has_specific_detail)
@@ -318,9 +355,15 @@ class FactObjectivityAgent(AgentInterface):
         """Get the factual elements required to support a claim"""
         elements_map = {
             "negligence": ["duty", "breach", "causation", "damages"],
-            "breach of contract": ["offer", "acceptance", "consideration", "breach", "damages"],
+            "breach of contract": [
+                "offer",
+                "acceptance",
+                "consideration",
+                "breach",
+                "damages",
+            ],
             "fraud": ["misrepresentation", "materiality", "reliance", "damages"],
-            "products liability": ["defect", "causation", "damages"]
+            "products liability": ["defect", "causation", "damages"],
         }
 
         claim_lower = claim_title.lower()
@@ -339,7 +382,7 @@ class FactObjectivityAgent(AgentInterface):
             "damages": ["damages", "harm", "injury", "loss", "cost"],
             "offer": ["offer", "proposal", "agreement"],
             "acceptance": ["accept", "agree", "consent"],
-            "consideration": ["payment", "value", "exchange"]
+            "consideration": ["payment", "value", "exchange"],
         }
 
         keywords = element_keywords.get(element.lower(), [element.lower()])

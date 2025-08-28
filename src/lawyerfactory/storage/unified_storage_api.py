@@ -16,13 +16,13 @@ Key Features:
 """
 
 import asyncio
-import json
-import logging
-import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
+import json
+import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class StorageResult:
     """Result of a storage operation"""
+
     success: bool
     object_id: str
     s3_url: Optional[str] = None
@@ -42,6 +43,7 @@ class StorageResult:
 @dataclass
 class EvidenceMetadata:
     """Enhanced metadata for evidence storage"""
+
     object_id: str
     original_filename: str
     content_type: str
@@ -84,7 +86,7 @@ class UnifiedStorageAPI:
         """Load the object registry from disk"""
         if self.object_registry_path.exists():
             try:
-                with open(self.object_registry_path, 'r', encoding='utf-8') as f:
+                with open(self.object_registry_path, "r", encoding="utf-8") as f:
                     return json.load(f)
             except Exception as e:
                 logger.warning(f"Failed to load object registry: {e}")
@@ -93,7 +95,7 @@ class UnifiedStorageAPI:
     def _save_object_registry(self):
         """Save the object registry to disk"""
         try:
-            with open(self.object_registry_path, 'w', encoding='utf-8') as f:
+            with open(self.object_registry_path, "w", encoding="utf-8") as f:
                 json.dump(self.object_registry, f, indent=2, ensure_ascii=False)
         except Exception as e:
             logger.error(f"Failed to save object registry: {e}")
@@ -109,9 +111,13 @@ class UnifiedStorageAPI:
         else:
             logger.warning(f"Unknown client type: {client_type}")
 
-    async def store_evidence(self, file_content: bytes, filename: str,
-                           metadata: Optional[Dict[str, Any]] = None,
-                           source_phase: str = "intake") -> StorageResult:
+    async def store_evidence(
+        self,
+        file_content: bytes,
+        filename: str,
+        metadata: Optional[Dict[str, Any]] = None,
+        source_phase: str = "intake",
+    ) -> StorageResult:
         """
         Store evidence through the unified pipeline
 
@@ -136,13 +142,17 @@ class UnifiedStorageAPI:
                 file_size=len(file_content),
                 upload_timestamp=datetime.now(),
                 source_phase=source_phase,
-                custom_metadata=metadata or {}
+                custom_metadata=metadata or {},
             )
 
             # Process through all three storage tiers
             s3_result = await self._store_in_s3(file_content, evidence_metadata)
-            evidence_result = await self._store_in_evidence_table(file_content, evidence_metadata)
-            vector_result = await self._store_in_vector_store(file_content, evidence_metadata)
+            evidence_result = await self._store_in_evidence_table(
+                file_content, evidence_metadata
+            )
+            vector_result = await self._store_in_vector_store(
+                file_content, evidence_metadata
+            )
 
             # Register the object
             self.object_registry[object_id] = {
@@ -151,7 +161,7 @@ class UnifiedStorageAPI:
                 "evidence_id": evidence_result.get("evidence_id"),
                 "vector_ids": vector_result.get("vector_ids", []),
                 "created_at": datetime.now().isoformat(),
-                "source_phase": source_phase
+                "source_phase": source_phase,
             }
             self._save_object_registry()
 
@@ -163,7 +173,7 @@ class UnifiedStorageAPI:
                 s3_url=s3_result.get("url"),
                 evidence_id=evidence_result.get("evidence_id"),
                 vector_ids=vector_result.get("vector_ids", []),
-                processing_time=processing_time
+                processing_time=processing_time,
             )
 
         except Exception as e:
@@ -172,10 +182,12 @@ class UnifiedStorageAPI:
                 success=False,
                 object_id=object_id,
                 error=str(e),
-                processing_time=(datetime.now() - start_time).total_seconds()
+                processing_time=(datetime.now() - start_time).total_seconds(),
             )
 
-    async def get_evidence(self, object_id: str, target_tier: Optional[str] = None) -> Dict[str, Any]:
+    async def get_evidence(
+        self, object_id: str, target_tier: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Retrieve evidence from the unified storage system
 
@@ -194,7 +206,7 @@ class UnifiedStorageAPI:
         result = {
             "object_id": object_id,
             "metadata": registry_entry.get("metadata", {}),
-            "available_tiers": []
+            "available_tiers": [],
         }
 
         try:
@@ -207,14 +219,18 @@ class UnifiedStorageAPI:
 
             if target_tier == "evidence" or target_tier is None:
                 if self.evidence_table and registry_entry.get("evidence_id"):
-                    evidence_data = await self._get_from_evidence_table(registry_entry["evidence_id"])
+                    evidence_data = await self._get_from_evidence_table(
+                        registry_entry["evidence_id"]
+                    )
                     if evidence_data:
                         result["evidence_data"] = evidence_data
                         result["available_tiers"].append("evidence")
 
             if target_tier == "vector" or target_tier is None:
                 if self.vector_store and registry_entry.get("vector_ids"):
-                    vector_data = await self._get_from_vector_store(registry_entry["vector_ids"])
+                    vector_data = await self._get_from_vector_store(
+                        registry_entry["vector_ids"]
+                    )
                     if vector_data:
                         result["vector_data"] = vector_data
                         result["available_tiers"].append("vector")
@@ -225,7 +241,9 @@ class UnifiedStorageAPI:
 
         return result
 
-    async def search_evidence(self, query: str, search_tier: str = "vector") -> List[Dict[str, Any]]:
+    async def search_evidence(
+        self, query: str, search_tier: str = "vector"
+    ) -> List[Dict[str, Any]]:
         """
         Search for evidence across storage tiers
 
@@ -246,12 +264,14 @@ class UnifiedStorageAPI:
                     # Find ObjectID from vector_id
                     for obj_id, registry_entry in self.object_registry.items():
                         if vector_id in registry_entry.get("vector_ids", []):
-                            results.append({
-                                "object_id": obj_id,
-                                "metadata": registry_entry.get("metadata", {}),
-                                "relevance_score": vector_result.get("score", 0.0),
-                                "vector_data": vector_result
-                            })
+                            results.append(
+                                {
+                                    "object_id": obj_id,
+                                    "metadata": registry_entry.get("metadata", {}),
+                                    "relevance_score": vector_result.get("score", 0.0),
+                                    "vector_data": vector_result,
+                                }
+                            )
                             break
 
             elif search_tier == "evidence" and self.evidence_table:
@@ -261,11 +281,13 @@ class UnifiedStorageAPI:
                     # Find ObjectID from evidence_id
                     for obj_id, registry_entry in self.object_registry.items():
                         if registry_entry.get("evidence_id") == evidence_id:
-                            results.append({
-                                "object_id": obj_id,
-                                "metadata": registry_entry.get("metadata", {}),
-                                "evidence_data": evidence_result
-                            })
+                            results.append(
+                                {
+                                    "object_id": obj_id,
+                                    "metadata": registry_entry.get("metadata", {}),
+                                    "evidence_data": evidence_result,
+                                }
+                            )
                             break
 
         except Exception as e:
@@ -276,27 +298,34 @@ class UnifiedStorageAPI:
     def _guess_content_type(self, filename: str) -> str:
         """Guess content type from filename"""
         import mimetypes
+
         content_type, _ = mimetypes.guess_type(filename)
         return content_type or "application/octet-stream"
 
     # Placeholder methods for storage tier operations
     # These will be implemented when integrating with actual storage clients
 
-    async def _store_in_s3(self, file_content: bytes, metadata: EvidenceMetadata) -> Dict[str, Any]:
+    async def _store_in_s3(
+        self, file_content: bytes, metadata: EvidenceMetadata
+    ) -> Dict[str, Any]:
         """Store file in S3 tier"""
         if not self.s3_client:
             return {"error": "S3 client not registered"}
         # Implementation will call actual S3 client
         return {"url": f"s3://bucket/{metadata.object_id}/{metadata.original_filename}"}
 
-    async def _store_in_evidence_table(self, file_content: bytes, metadata: EvidenceMetadata) -> Dict[str, Any]:
+    async def _store_in_evidence_table(
+        self, file_content: bytes, metadata: EvidenceMetadata
+    ) -> Dict[str, Any]:
         """Store structured data in evidence table"""
         if not self.evidence_table:
             return {"error": "Evidence table client not registered"}
         # Implementation will call actual evidence table client
         return {"evidence_id": f"evidence_{metadata.object_id}"}
 
-    async def _store_in_vector_store(self, file_content: bytes, metadata: EvidenceMetadata) -> Dict[str, Any]:
+    async def _store_in_vector_store(
+        self, file_content: bytes, metadata: EvidenceMetadata
+    ) -> Dict[str, Any]:
         """Store vectorized content in vector store"""
         if not self.vector_store:
             return {"error": "Vector store client not registered"}
@@ -310,14 +339,18 @@ class UnifiedStorageAPI:
         # Implementation will call actual S3 client
         return b"file_content_from_s3"
 
-    async def _get_from_evidence_table(self, evidence_id: str) -> Optional[Dict[str, Any]]:
+    async def _get_from_evidence_table(
+        self, evidence_id: str
+    ) -> Optional[Dict[str, Any]]:
         """Retrieve structured data from evidence table"""
         if not self.evidence_table:
             return None
         # Implementation will call actual evidence table client
         return {"evidence_data": "from_table"}
 
-    async def _get_from_vector_store(self, vector_ids: List[str]) -> Optional[Dict[str, Any]]:
+    async def _get_from_vector_store(
+        self, vector_ids: List[str]
+    ) -> Optional[Dict[str, Any]]:
         """Retrieve vectorized content from vector store"""
         if not self.vector_store:
             return None
@@ -341,6 +374,7 @@ class UnifiedStorageAPI:
 
 # Global instance for easy access
 _unified_storage_instance = None
+
 
 def get_unified_storage_api() -> UnifiedStorageAPI:
     """Get the global unified storage API instance"""

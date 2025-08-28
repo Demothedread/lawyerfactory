@@ -6,6 +6,7 @@
 #   - Directory Group: Backend
 #   - Group Tags: orchestration, api
 """
+
 from typing import List
 
 from .knowledge_graph import add_observation
@@ -35,9 +36,7 @@ class TaskBoard:
             msg = f"Task {task.id} added at {task.stage.value}"
             add_observation(graph, msg)
 
-    def assign_task(
-        self, task_id: int, agent: str, graph: dict | None = None
-    ) -> None:
+    def assign_task(self, task_id: int, agent: str, graph: dict | None = None) -> None:
         for task in self.tasks:
             if task.id == task_id:
                 task.assign(agent)

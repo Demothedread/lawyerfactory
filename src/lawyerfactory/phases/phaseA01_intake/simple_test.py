@@ -5,22 +5,23 @@ Simple Test Script for LLM Integration Functions
 This script tests the LLM integration functions without requiring pytest.
 """
 
-import sys
 import os
 from pathlib import Path
+import sys
 
 # Add the src directory to the path so we can import our modules
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 try:
-    from lawyerfactory.phases.assessor_consolidated import (
-        simple_categorize,
+    from lawyerfactory.phases.phaseA01_intake.ingest_consolidated.assessor_consolidated import (
+        LLM_INTEGRATION_AVAILABLE,
         llm_categorize_document,
+        llm_enhanced_ingest_files,
         llm_extract_document_metadata,
         llm_generate_summary,
-        llm_enhanced_ingest_files,
-        LLM_INTEGRATION_AVAILABLE
+        simple_categorize,
     )
+
     print("✅ Successfully imported all functions from assessor_consolidated")
 except ImportError as e:
     print(f"❌ Failed to import functions: {e}")
@@ -44,7 +45,7 @@ def test_simple_categorize():
         ("Medical treatment records", "medical"),
         ("This is a general document", "general"),
         ("", "general"),
-        ("No specific legal keywords here", "general")
+        ("No specific legal keywords here", "general"),
     ]
 
     passed = 0

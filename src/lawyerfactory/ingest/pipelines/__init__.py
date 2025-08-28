@@ -1,4 +1,3 @@
-"""
 # Script Name: __init__.py
 # Description: Handles   init   functionality in the LawyerFactory system.
 # Relationships:

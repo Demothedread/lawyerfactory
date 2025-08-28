@@ -4,6 +4,4 @@
 #   - Entity Type: Module
 #   - Directory Group: Core
 #   - Group Tags: null
-"""
-Package initialization file
-"""
+

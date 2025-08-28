@@ -16,13 +16,13 @@ This agent extracts and applies legal rules from authoritative sources including
 It provides rule-based analysis for claims and helps ensure legal accuracy.
 """
 
-import logging
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
+import logging
+from typing import Any, Dict, List, Optional
 
-from ...compose.maestro.registry import AgentInterface, AgentCapability
+from ...compose.maestro.registry import AgentCapability, AgentInterface
 from ...compose.maestro.workflow_models import WorkflowTask
-from ...kg.legal_authorities import LegalAuthorityManager, LegalAuthority
+from ...kg.legal_authorities import LegalAuthority, LegalAuthorityManager
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class LegalRule:
     """Represents a legal rule extracted from authorities"""
+
     rule_text: str
     source: str
     section: str
@@ -46,7 +47,10 @@ class RulesOfLawAgent(AgentInterface):
     def __init__(self, knowledge_graph=None):
         self.knowledge_graph = knowledge_graph
         self.authority_manager = LegalAuthorityManager()
-        self.capabilities = [AgentCapability.LEGAL_RESEARCH, AgentCapability.CASE_ANALYSIS]
+        self.capabilities = [
+            AgentCapability.LEGAL_RESEARCH,
+            AgentCapability.CASE_ANALYSIS,
+        ]
 
     async def process(self, message: str) -> str:
         """Process a natural language request for legal rules"""
@@ -58,7 +62,9 @@ class RulesOfLawAgent(AgentInterface):
                 return "No relevant legal rules found for the given query."
 
             # Format the response
-            response = "Based on authoritative legal sources, here are the relevant rules:\n\n"
+            response = (
+                "Based on authoritative legal sources, here are the relevant rules:\n\n"
+            )
             for i, rule in enumerate(rules, 1):
                 response += f"{i}. **{rule.rule_text}**\n"
                 response += f"   - Source: {rule.source} {rule.section}\n"
@@ -74,7 +80,9 @@ class RulesOfLawAgent(AgentInterface):
             logger.error(f"Error processing rules request: {e}")
             return f"Error retrieving legal rules: {str(e)}"
 
-    async def execute_task(self, task: WorkflowTask, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_task(
+        self, task: WorkflowTask, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute a workflow task related to legal rules"""
         try:
             # Extract legal issues from the task
@@ -97,7 +105,7 @@ class RulesOfLawAgent(AgentInterface):
                 "rules_found": len(unique_rules),
                 "rules": [rule.__dict__ for rule in unique_rules],
                 "analysis": analysis,
-                "legal_issues_identified": legal_issues
+                "legal_issues_identified": legal_issues,
             }
 
         except Exception as e:
@@ -108,7 +116,7 @@ class RulesOfLawAgent(AgentInterface):
                 "rules_found": 0,
                 "rules": [],
                 "analysis": "",
-                "legal_issues_identified": []
+                "legal_issues_identified": [],
             }
 
     async def health_check(self) -> bool:
@@ -126,6 +134,7 @@ class RulesOfLawAgent(AgentInterface):
         try:
             # Ensure the legal authority database is populated
             from ...kg.legal_authorities import populate_default_authorities
+
             populate_default_authorities(self.authority_manager)
             logger.info("Rules of Law Agent initialized successfully")
         except Exception as e:
@@ -140,9 +149,10 @@ class RulesOfLawAgent(AgentInterface):
         """Check if this agent can handle the given task"""
         # Can handle tasks related to legal rules, analysis, or authority research
         task_text = f"{task.description} {task.agent_type}".lower()
-        return any(keyword in task_text for keyword in [
-            "rule", "law", "authority", "legal", "analysis", "irac"
-        ])
+        return any(
+            keyword in task_text
+            for keyword in ["rule", "law", "authority", "legal", "analysis", "irac"]
+        )
 
     async def find_relevant_rules(self, query: str) -> List[LegalRule]:
         """Find legal rules relevant to the given query"""
@@ -162,7 +172,9 @@ class RulesOfLawAgent(AgentInterface):
             logger.error(f"Error finding relevant rules: {e}")
             return []
 
-    def _extract_legal_issues(self, task: WorkflowTask, context: Dict[str, Any]) -> List[str]:
+    def _extract_legal_issues(
+        self, task: WorkflowTask, context: Dict[str, Any]
+    ) -> List[str]:
         """Extract legal issues from task and context"""
         issues = []
 
@@ -188,7 +200,9 @@ class RulesOfLawAgent(AgentInterface):
 
         return list(set(issues))  # Remove duplicates
 
-    def _extract_rules_from_authority(self, authority: LegalAuthority, query: str) -> List[LegalRule]:
+    def _extract_rules_from_authority(
+        self, authority: LegalAuthority, query: str
+    ) -> List[LegalRule]:
         """Extract specific rules from a legal authority"""
         rules = []
 
@@ -196,13 +210,15 @@ class RulesOfLawAgent(AgentInterface):
         content = authority.content
 
         # Look for rule-like patterns
-        if "is" in content and ("shall" in content or "must" in content or "may" in content):
+        if "is" in content and (
+            "shall" in content or "must" in content or "may" in content
+        ):
             rule = LegalRule(
                 rule_text=content[:500] + "..." if len(content) > 500 else content,
                 source=authority.source,
                 section=authority.section,
                 category=authority.category,
-                jurisdiction=authority.jurisdiction
+                jurisdiction=authority.jurisdiction,
             )
             rules.append(rule)
 
@@ -221,7 +237,9 @@ class RulesOfLawAgent(AgentInterface):
 
         return unique_rules
 
-    async def _apply_rules_to_facts(self, rules: List[LegalRule], context: Dict[str, Any]) -> str:
+    async def _apply_rules_to_facts(
+        self, rules: List[LegalRule], context: Dict[str, Any]
+    ) -> str:
         """Apply legal rules to the facts in context"""
         analysis = "Legal Rule Analysis:\n\n"
 
@@ -236,7 +254,9 @@ class RulesOfLawAgent(AgentInterface):
 
         analysis += "Applicable Rules:\n"
         for i, rule in enumerate(rules[:3], 1):  # Limit to first 3 rules
-            analysis += f"{i}. {rule.source} {rule.section}: {rule.rule_text[:200]}...\n"
+            analysis += (
+                f"{i}. {rule.source} {rule.section}: {rule.rule_text[:200]}...\n"
+            )
             analysis += f"   Category: {rule.category}\n"
             if rule.conditions:
                 analysis += f"   Conditions: {', '.join(rule.conditions[:2])}\n"
@@ -244,6 +264,8 @@ class RulesOfLawAgent(AgentInterface):
 
         analysis += "Preliminary Analysis:\n"
         analysis += "The above rules may apply to the facts depending on jurisdiction and specific circumstances. "
-        analysis += "Further analysis would be required to determine exact application.\n"
+        analysis += (
+            "Further analysis would be required to determine exact application.\n"
+        )
 
         return analysis

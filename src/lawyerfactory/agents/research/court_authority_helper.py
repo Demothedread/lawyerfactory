@@ -17,29 +17,31 @@ It provides:
 - Integration with legal intake form data for event location context
 """
 
-import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Tuple, Any
-from pathlib import Path
 import json
+import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
 
 class AuthorityLevel(Enum):
     """Authority levels from highest to lowest"""
-    BINDING_SUPREME = 6      # U.S. Supreme Court, State Supreme Court
-    BINDING_HIGH = 5         # Circuit Courts of Appeals, State Appellate Courts
-    BINDING_DISTRICT = 4     # Federal District Courts, State Trial Courts
-    PERSUASIVE_STRONG = 3    # Same circuit/other high courts
-    PERSUASIVE_MEDIUM = 2    # Other circuits/same state
-    PERSUASIVE_WEAK = 1      # Other states/dissimilar jurisdictions
-    NO_AUTHORITY = 0         # No precedential value
+
+    BINDING_SUPREME = 6  # U.S. Supreme Court, State Supreme Court
+    BINDING_HIGH = 5  # Circuit Courts of Appeals, State Appellate Courts
+    BINDING_DISTRICT = 4  # Federal District Courts, State Trial Courts
+    PERSUASIVE_STRONG = 3  # Same circuit/other high courts
+    PERSUASIVE_MEDIUM = 2  # Other circuits/same state
+    PERSUASIVE_WEAK = 1  # Other states/dissimilar jurisdictions
+    NO_AUTHORITY = 0  # No precedential value
 
 
 class LegalQuestionType(Enum):
     """Type of legal question being researched"""
+
     PROCEDURAL = "procedural"
     SUBSTANTIVE_FEDERAL = "substantive_federal"
     SUBSTANTIVE_STATE = "substantive_state"
@@ -49,6 +51,7 @@ class LegalQuestionType(Enum):
 @dataclass
 class JurisdictionContext:
     """Context information for jurisdiction determination"""
+
     primary_jurisdiction: str  # e.g., "federal", "california", "new_york"
     court_type: str  # e.g., "district", "circuit", "supreme"
     event_location: Optional[str] = None  # From intake form
@@ -59,6 +62,7 @@ class JurisdictionContext:
 @dataclass
 class AuthorityRule:
     """Rule for determining authority level"""
+
     jurisdiction_type: str
     court_hierarchy: List[str]
     binding_courts: List[str]
@@ -69,6 +73,7 @@ class AuthorityRule:
 @dataclass
 class CaselawAuthority:
     """Authority assessment for a specific case"""
+
     case_name: str
     citation: str
     court: str
@@ -102,7 +107,7 @@ class CourtAuthorityHelper:
                     "U.S. Supreme Court",
                     "Controlling Circuit (en banc > panel)",
                     "Local circuit rules, district local rules, judge standing orders",
-                    "Law-of-the-case/mandate within same litigation"
+                    "Law-of-the-case/mandate within same litigation",
                 ],
                 binding_courts=[
                     "U.S. Supreme Court",
@@ -110,81 +115,78 @@ class CourtAuthorityHelper:
                     "Controlling Circuit (panel)",
                     "Local circuit rules",
                     "District local rules",
-                    "Judge standing orders"
+                    "Judge standing orders",
                 ],
                 persuasive_courts=[
                     "Other circuits' decisions",
                     "Other districts' decisions",
                     "Advisory Committee Notes",
                     "Leading treatises (Wright & Miller)",
-                    "State law analogies"
+                    "State law analogies",
                 ],
-                notes="Federal procedural questions follow strict hierarchy"
+                notes="Federal procedural questions follow strict hierarchy",
             ),
-
             "federal_substantive": AuthorityRule(
                 jurisdiction_type="federal_substantive",
                 court_hierarchy=[
                     "U.S. Supreme Court on federal law",
                     "Controlling Circuit",
-                    "Agency rules/precedents in circuit"
+                    "Agency rules/precedents in circuit",
                 ],
                 binding_courts=[
                     "U.S. Supreme Court",
                     "Controlling Circuit (en banc)",
-                    "Controlling Circuit (panel)"
+                    "Controlling Circuit (panel)",
                 ],
                 persuasive_courts=[
                     "Other circuits and districts",
                     "Non-controlling agency views",
                     "Restatements",
-                    "Scholarly work"
+                    "Scholarly work",
                 ],
-                notes="Federal substantive law requires event location for diversity jurisdiction"
+                notes="Federal substantive law requires event location for diversity jurisdiction",
             ),
-
             "state_procedural": AuthorityRule(
                 jurisdiction_type="state_procedural",
                 court_hierarchy=[
                     "State supreme court",
                     "State intermediate appellate precedent",
-                    "State trial courts (binding on same level)"
+                    "State trial courts (binding on same level)",
                 ],
                 binding_courts=[
                     "State supreme court",
                     "State intermediate appellate courts",
-                    "State trial courts (horizontal binding)"
+                    "State trial courts (horizontal binding)",
                 ],
                 persuasive_courts=[
                     "Other states' decisions",
                     "Federal cases by analogy",
                     "Treatises",
-                    "Court administration guidance"
+                    "Court administration guidance",
                 ],
-                notes="State procedural rules vary by jurisdiction"
+                notes="State procedural rules vary by jurisdiction",
             ),
-
             "state_substantive": AuthorityRule(
                 jurisdiction_type="state_substantive",
                 court_hierarchy=[
                     "State's highest court",
                     "State constitution & statutes",
-                    "State intermediate appellate precedent"
+                    "State intermediate appellate precedent",
                 ],
                 binding_courts=[
                     "State supreme court",
                     "State constitution",
                     "State statutes",
-                    "State intermediate appellate courts"
+                    "State intermediate appellate courts",
                 ],
                 persuasive_courts=[
                     "Other states' courts",
                     "Federal courts applying state law",
                     "Restatements",
-                    "Scholarship"
+                    "Scholarship",
                 ],
-                notes="State substantive law is binding within state boundaries"
-            )
+                notes="State substantive law is binding within state boundaries",
+            ),
         }
 
     def determine_jurisdiction_context(
@@ -192,7 +194,7 @@ class CourtAuthorityHelper:
         jurisdiction: str,
         question_type: str = "substantive",
         event_location: Optional[str] = None,
-        venue: Optional[str] = None
+        venue: Optional[str] = None,
     ) -> JurisdictionContext:
         """
         Determine jurisdiction context from input parameters.
@@ -238,10 +240,12 @@ class CourtAuthorityHelper:
             court_type=court_type,
             event_location=event_location,
             venue=venue,
-            question_type=legal_q_type
+            question_type=legal_q_type,
         )
 
-    def get_search_hierarchy(self, context: JurisdictionContext) -> List[Dict[str, Any]]:
+    def get_search_hierarchy(
+        self, context: JurisdictionContext
+    ) -> List[Dict[str, Any]]:
         """
         Get search hierarchy for jurisdiction - binding first, then persuasive.
 
@@ -255,28 +259,93 @@ class CourtAuthorityHelper:
             if context.primary_jurisdiction.lower() == "federal":
                 # Federal procedural hierarchy
                 hierarchy = [
-                    {"jurisdiction": "federal", "court": "supreme_court", "authority": "binding", "priority": 1},
-                    {"jurisdiction": "federal", "court": "circuit_court", "authority": "binding", "priority": 2},
-                    {"jurisdiction": "federal", "court": "district_court", "authority": "binding", "priority": 3},
-                    {"jurisdiction": "federal", "court": "other_circuits", "authority": "persuasive", "priority": 4},
-                    {"jurisdiction": "federal", "court": "other_districts", "authority": "persuasive", "priority": 5},
+                    {
+                        "jurisdiction": "federal",
+                        "court": "supreme_court",
+                        "authority": "binding",
+                        "priority": 1,
+                    },
+                    {
+                        "jurisdiction": "federal",
+                        "court": "circuit_court",
+                        "authority": "binding",
+                        "priority": 2,
+                    },
+                    {
+                        "jurisdiction": "federal",
+                        "court": "district_court",
+                        "authority": "binding",
+                        "priority": 3,
+                    },
+                    {
+                        "jurisdiction": "federal",
+                        "court": "other_circuits",
+                        "authority": "persuasive",
+                        "priority": 4,
+                    },
+                    {
+                        "jurisdiction": "federal",
+                        "court": "other_districts",
+                        "authority": "persuasive",
+                        "priority": 5,
+                    },
                 ]
             else:
                 # State procedural hierarchy
                 hierarchy = [
-                    {"jurisdiction": context.primary_jurisdiction, "court": "supreme_court", "authority": "binding", "priority": 1},
-                    {"jurisdiction": context.primary_jurisdiction, "court": "appellate_court", "authority": "binding", "priority": 2},
-                    {"jurisdiction": context.primary_jurisdiction, "court": "trial_court", "authority": "binding", "priority": 3},
-                    {"jurisdiction": "other_states", "court": "any", "authority": "persuasive", "priority": 4},
+                    {
+                        "jurisdiction": context.primary_jurisdiction,
+                        "court": "supreme_court",
+                        "authority": "binding",
+                        "priority": 1,
+                    },
+                    {
+                        "jurisdiction": context.primary_jurisdiction,
+                        "court": "appellate_court",
+                        "authority": "binding",
+                        "priority": 2,
+                    },
+                    {
+                        "jurisdiction": context.primary_jurisdiction,
+                        "court": "trial_court",
+                        "authority": "binding",
+                        "priority": 3,
+                    },
+                    {
+                        "jurisdiction": "other_states",
+                        "court": "any",
+                        "authority": "persuasive",
+                        "priority": 4,
+                    },
                 ]
 
         elif context.question_type == LegalQuestionType.SUBSTANTIVE_FEDERAL:
             # Federal substantive (federal question)
             hierarchy = [
-                {"jurisdiction": "federal", "court": "supreme_court", "authority": "binding", "priority": 1},
-                {"jurisdiction": "federal", "court": "circuit_court", "authority": "binding", "priority": 2},
-                {"jurisdiction": "federal", "court": "other_circuits", "authority": "persuasive", "priority": 3},
-                {"jurisdiction": "federal", "court": "district_courts", "authority": "persuasive", "priority": 4},
+                {
+                    "jurisdiction": "federal",
+                    "court": "supreme_court",
+                    "authority": "binding",
+                    "priority": 1,
+                },
+                {
+                    "jurisdiction": "federal",
+                    "court": "circuit_court",
+                    "authority": "binding",
+                    "priority": 2,
+                },
+                {
+                    "jurisdiction": "federal",
+                    "court": "other_circuits",
+                    "authority": "persuasive",
+                    "priority": 3,
+                },
+                {
+                    "jurisdiction": "federal",
+                    "court": "district_courts",
+                    "authority": "persuasive",
+                    "priority": 4,
+                },
             ]
 
         elif context.question_type == LegalQuestionType.SUBSTANTIVE_FEDERAL_DIVERSITY:
@@ -284,27 +353,87 @@ class CourtAuthorityHelper:
             if context.event_location:
                 state = self._extract_state_from_location(context.event_location)
                 hierarchy = [
-                    {"jurisdiction": state, "court": "supreme_court", "authority": "binding", "priority": 1},
-                    {"jurisdiction": state, "court": "appellate_court", "authority": "binding", "priority": 2},
-                    {"jurisdiction": state, "court": "trial_court", "authority": "persuasive", "priority": 3},
-                    {"jurisdiction": "federal", "court": "supreme_court", "authority": "persuasive", "priority": 4},
-                    {"jurisdiction": "federal", "court": "circuit_court", "authority": "persuasive", "priority": 5},
+                    {
+                        "jurisdiction": state,
+                        "court": "supreme_court",
+                        "authority": "binding",
+                        "priority": 1,
+                    },
+                    {
+                        "jurisdiction": state,
+                        "court": "appellate_court",
+                        "authority": "binding",
+                        "priority": 2,
+                    },
+                    {
+                        "jurisdiction": state,
+                        "court": "trial_court",
+                        "authority": "persuasive",
+                        "priority": 3,
+                    },
+                    {
+                        "jurisdiction": "federal",
+                        "court": "supreme_court",
+                        "authority": "persuasive",
+                        "priority": 4,
+                    },
+                    {
+                        "jurisdiction": "federal",
+                        "court": "circuit_court",
+                        "authority": "persuasive",
+                        "priority": 5,
+                    },
                 ]
             else:
                 # Fallback to general federal
                 hierarchy = [
-                    {"jurisdiction": "federal", "court": "supreme_court", "authority": "binding", "priority": 1},
-                    {"jurisdiction": "federal", "court": "circuit_court", "authority": "binding", "priority": 2},
+                    {
+                        "jurisdiction": "federal",
+                        "court": "supreme_court",
+                        "authority": "binding",
+                        "priority": 1,
+                    },
+                    {
+                        "jurisdiction": "federal",
+                        "court": "circuit_court",
+                        "authority": "binding",
+                        "priority": 2,
+                    },
                 ]
 
         else:  # SUBSTANTIVE_STATE
             # State substantive law
             hierarchy = [
-                {"jurisdiction": context.primary_jurisdiction, "court": "supreme_court", "authority": "binding", "priority": 1},
-                {"jurisdiction": context.primary_jurisdiction, "court": "appellate_court", "authority": "binding", "priority": 2},
-                {"jurisdiction": context.primary_jurisdiction, "court": "trial_court", "authority": "persuasive", "priority": 3},
-                {"jurisdiction": "other_states", "court": "supreme_court", "authority": "persuasive", "priority": 4},
-                {"jurisdiction": "federal", "court": "supreme_court", "authority": "persuasive", "priority": 5},
+                {
+                    "jurisdiction": context.primary_jurisdiction,
+                    "court": "supreme_court",
+                    "authority": "binding",
+                    "priority": 1,
+                },
+                {
+                    "jurisdiction": context.primary_jurisdiction,
+                    "court": "appellate_court",
+                    "authority": "binding",
+                    "priority": 2,
+                },
+                {
+                    "jurisdiction": context.primary_jurisdiction,
+                    "court": "trial_court",
+                    "authority": "persuasive",
+                    "priority": 3,
+                },
+                {
+                    "jurisdiction": "other_states",
+                    "court": "supreme_court",
+                    "authority": "persuasive",
+                    "priority": 4,
+                },
+                {
+                    "jurisdiction": "federal",
+                    "court": "supreme_court",
+                    "authority": "persuasive",
+                    "priority": 5,
+                },
             ]
 
         return hierarchy
@@ -314,7 +443,7 @@ class CourtAuthorityHelper:
         case_citation: str,
         case_court: str,
         case_jurisdiction: str,
-        context: JurisdictionContext
+        context: JurisdictionContext,
     ) -> CaselawAuthority:
         """
         Assess the authority level of a specific case.
@@ -353,14 +482,11 @@ class CourtAuthorityHelper:
             star_rating=star_rating,
             is_binding=is_binding,
             reasoning=reasoning,
-            search_priority=search_priority
+            search_priority=search_priority,
         )
 
     def _calculate_authority_level(
-        self,
-        case_court: str,
-        case_jurisdiction: str,
-        context: JurisdictionContext
+        self, case_court: str, case_jurisdiction: str, context: JurisdictionContext
     ) -> AuthorityLevel:
         """Calculate authority level based on court hierarchy"""
 
@@ -381,7 +507,9 @@ class CourtAuthorityHelper:
             return AuthorityLevel.BINDING_HIGH
 
         # State Appellate Courts
-        if ("appeal" in case_court_lower or "appellate" in case_court_lower) and case_jur_lower == context_jur_lower:
+        if (
+            "appeal" in case_court_lower or "appellate" in case_court_lower
+        ) and case_jur_lower == context_jur_lower:
             return AuthorityLevel.BINDING_HIGH
 
         # Federal District Courts
@@ -408,7 +536,7 @@ class CourtAuthorityHelper:
         case_court: str,
         case_jurisdiction: str,
         context: JurisdictionContext,
-        authority_level: AuthorityLevel
+        authority_level: AuthorityLevel,
     ) -> str:
         """Generate reasoning for authority assessment"""
 
@@ -433,14 +561,14 @@ class CourtAuthorityHelper:
         location_lower = location.lower()
 
         state_map = {
-            'california': 'california',
-            'ca': 'california',
-            'new york': 'new_york',
-            'ny': 'new_york',
-            'texas': 'texas',
-            'tx': 'texas',
-            'florida': 'florida',
-            'fl': 'florida',
+            "california": "california",
+            "ca": "california",
+            "new york": "new_york",
+            "ny": "new_york",
+            "texas": "texas",
+            "tx": "texas",
+            "florida": "florida",
+            "fl": "florida",
             # Add more states as needed
         }
 
@@ -451,10 +579,7 @@ class CourtAuthorityHelper:
         return location  # Fallback to original
 
     def optimize_search_parameters(
-        self,
-        context: JurisdictionContext,
-        found_cases: int,
-        min_cases_needed: int = 2
+        self, context: JurisdictionContext, found_cases: int, min_cases_needed: int = 2
     ) -> List[Dict[str, Any]]:
         """
         Optimize search parameters based on results.
@@ -474,7 +599,7 @@ class CourtAuthorityHelper:
     def add_authority_rating_to_evidence_table(
         self,
         evidence_table_path: str,
-        intake_form_data: Optional[Dict[str, Any]] = None
+        intake_form_data: Optional[Dict[str, Any]] = None,
     ) -> bool:
         """
         Add authority rating column to evidence table.
@@ -489,23 +614,28 @@ class CourtAuthorityHelper:
 
         try:
             # Load evidence table
-            with open(evidence_table_path, 'r', encoding='utf-8') as f:
+            with open(evidence_table_path, "r", encoding="utf-8") as f:
                 table_data = json.load(f)
 
             # Extract jurisdiction context from intake form
-            jurisdiction = intake_form_data.get('jurisdiction', 'federal') if intake_form_data else 'federal'
-            event_location = intake_form_data.get('event_location') if intake_form_data else None
+            jurisdiction = (
+                intake_form_data.get("jurisdiction", "federal")
+                if intake_form_data
+                else "federal"
+            )
+            event_location = (
+                intake_form_data.get("event_location") if intake_form_data else None
+            )
 
             context = self.determine_jurisdiction_context(
-                jurisdiction=jurisdiction,
-                event_location=event_location
+                jurisdiction=jurisdiction, event_location=event_location
             )
 
             # Process each evidence entry
-            for entry in table_data.get('evidence_entries', []):
+            for entry in table_data.get("evidence_entries", []):
                 # Extract case information from content or citation
-                content = entry.get('content', '')
-                citation = entry.get('bluebook_citation', '')
+                content = entry.get("content", "")
+                citation = entry.get("bluebook_citation", "")
 
                 if citation:
                     # Parse citation to extract court and jurisdiction
@@ -520,23 +650,25 @@ class CourtAuthorityHelper:
                         case_citation=citation,
                         case_court=court,
                         case_jurisdiction=case_jurisdiction,
-                        context=context
+                        context=context,
                     )
 
                     # Add authority information to entry
-                    entry['authority_rating'] = {
-                        'stars': authority.star_rating,
-                        'level': authority.authority_level.name,
-                        'is_binding': authority.is_binding,
-                        'reasoning': authority.reasoning,
-                        'color_code': self._get_color_code(authority.star_rating)
+                    entry["authority_rating"] = {
+                        "stars": authority.star_rating,
+                        "level": authority.authority_level.name,
+                        "is_binding": authority.is_binding,
+                        "reasoning": authority.reasoning,
+                        "color_code": self._get_color_code(authority.star_rating),
                     }
 
             # Save updated table
-            with open(evidence_table_path, 'w', encoding='utf-8') as f:
+            with open(evidence_table_path, "w", encoding="utf-8") as f:
                 json.dump(table_data, f, indent=2, ensure_ascii=False)
 
-            logger.info(f"Added authority ratings to {len(table_data.get('evidence_entries', []))} evidence entries")
+            logger.info(
+                f"Added authority ratings to {len(table_data.get('evidence_entries', []))} evidence entries"
+            )
             return True
 
         except Exception as e:
@@ -549,26 +681,26 @@ class CourtAuthorityHelper:
         citation_lower = citation.lower()
 
         # Federal courts
-        if 'u.s.' in citation_lower or 's. ct.' in citation_lower:
+        if "u.s." in citation_lower or "s. ct." in citation_lower:
             return "U.S. Supreme Court", "federal"
-        elif 'f.' in citation_lower and 'circ' in citation_lower:
+        elif "f." in citation_lower and "circ" in citation_lower:
             return "Federal Circuit Court", "federal"
-        elif 'f. supp.' in citation_lower:
+        elif "f. supp." in citation_lower:
             return "Federal District Court", "federal"
 
         # State courts - simplified
         state_indicators = {
-            'cal.': 'california',
-            'n.y.': 'new_york',
-            'tex.': 'texas',
-            'fla.': 'florida'
+            "cal.": "california",
+            "n.y.": "new_york",
+            "tex.": "texas",
+            "fla.": "florida",
         }
 
         for indicator, state in state_indicators.items():
             if indicator in citation_lower:
-                if 'supreme' in citation_lower:
+                if "supreme" in citation_lower:
                     return f"{state.title()} Supreme Court", state
-                elif 'app.' in citation_lower or 'appeal' in citation_lower:
+                elif "app." in citation_lower or "appeal" in citation_lower:
                     return f"{state.title()} Appellate Court", state
                 else:
                     return f"{state.title()} Trial Court", state
@@ -580,16 +712,16 @@ class CourtAuthorityHelper:
         content_lower = content.lower()
 
         # Look for court names in content
-        if 'supreme court' in content_lower:
-            if 'u.s.' in content_lower or 'united states' in content_lower:
+        if "supreme court" in content_lower:
+            if "u.s." in content_lower or "united states" in content_lower:
                 return "U.S. Supreme Court", "federal"
             else:
                 return "State Supreme Court", "unknown"
 
-        if 'circuit' in content_lower and 'court' in content_lower:
+        if "circuit" in content_lower and "court" in content_lower:
             return "Circuit Court", "federal"
 
-        if 'district' in content_lower and 'court' in content_lower:
+        if "district" in content_lower and "court" in content_lower:
             return "District Court", "federal"
 
         return "Unknown Court", "unknown"
@@ -707,21 +839,22 @@ if __name__ == "__main__":
 
     # Example: Federal procedural question
     context = helper.determine_jurisdiction_context(
-        jurisdiction="federal",
-        question_type="procedural"
+        jurisdiction="federal", question_type="procedural"
     )
 
     hierarchy = helper.get_search_hierarchy(context)
     print("Search Hierarchy for Federal Procedural:")
     for item in hierarchy:
-        print(f"  Priority {item['priority']}: {item['jurisdiction']} {item['court']} ({item['authority']})")
+        print(
+            f"  Priority {item['priority']}: {item['jurisdiction']} {item['court']} ({item['authority']})"
+        )
 
     # Example authority assessment
     authority = helper.assess_caselaw_authority(
         case_citation="123 F.3d 456 (2023)",
         case_court="U.S. Court of Appeals",
         case_jurisdiction="federal",
-        context=context
+        context=context,
     )
 
     print(f"\nAuthority Assessment: {authority.star_rating} stars")

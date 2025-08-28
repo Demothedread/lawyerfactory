@@ -17,11 +17,11 @@ The agent analyzes:
 - Potential causes of action based on jurisdiction and facts
 """
 
-import logging
-from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
+import logging
+from typing import Any, Dict, List, Optional, Set
 
-from ...compose.maestro.registry import AgentInterface, AgentCapability
+from ...compose.maestro.registry import AgentCapability, AgentInterface
 from ...compose.maestro.workflow_models import WorkflowTask
 from ...kg.legal_authorities import LegalAuthorityManager
 
@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class LegalIssue:
     """Represents a spotted legal issue"""
+
     title: str
     description: str
     potential_claims: List[str] = field(default_factory=list)
@@ -46,7 +47,10 @@ class IssuespotterAgent(AgentInterface):
     def __init__(self, knowledge_graph=None):
         self.knowledge_graph = knowledge_graph
         self.authority_manager = LegalAuthorityManager()
-        self.capabilities = [AgentCapability.LEGAL_RESEARCH, AgentCapability.CASE_ANALYSIS]
+        self.capabilities = [
+            AgentCapability.LEGAL_RESEARCH,
+            AgentCapability.CASE_ANALYSIS,
+        ]
 
         # Common legal patterns for issue spotting
         self._load_issue_patterns()
@@ -57,28 +61,59 @@ class IssuespotterAgent(AgentInterface):
             "negligence": {
                 "keywords": ["duty", "breach", "care", "reasonable", "harm", "injury"],
                 "claims": ["negligence", "negligent infliction of emotional distress"],
-                "elements": ["duty of care", "breach", "causation", "damages"]
+                "elements": ["duty of care", "breach", "causation", "damages"],
             },
             "contract_breach": {
-                "keywords": ["contract", "agreement", "breach", "promise", "obligation"],
+                "keywords": [
+                    "contract",
+                    "agreement",
+                    "breach",
+                    "promise",
+                    "obligation",
+                ],
                 "claims": ["breach of contract", "specific performance", "restitution"],
-                "elements": ["offer", "acceptance", "consideration", "breach", "damages"]
+                "elements": [
+                    "offer",
+                    "acceptance",
+                    "consideration",
+                    "breach",
+                    "damages",
+                ],
             },
             "warranty": {
-                "keywords": ["warranty", "merchantable", "fitness", "quality", "defect"],
-                "claims": ["breach of warranty", "implied warranty", "express warranty"],
-                "elements": ["warranty", "breach", "reliance", "damages"]
+                "keywords": [
+                    "warranty",
+                    "merchantable",
+                    "fitness",
+                    "quality",
+                    "defect",
+                ],
+                "claims": [
+                    "breach of warranty",
+                    "implied warranty",
+                    "express warranty",
+                ],
+                "elements": ["warranty", "breach", "reliance", "damages"],
             },
             "products_liability": {
                 "keywords": ["product", "defect", "design", "manufacturing", "warning"],
                 "claims": ["strict liability", "negligence", "breach of warranty"],
-                "elements": ["defect", "causation", "damages"]
+                "elements": ["defect", "causation", "damages"],
             },
             "fraud": {
-                "keywords": ["misrepresentation", "fraud", "deceit", "false", "material"],
-                "claims": ["fraudulent misrepresentation", "negligent misrepresentation"],
-                "elements": ["misrepresentation", "materiality", "reliance", "damages"]
-            }
+                "keywords": [
+                    "misrepresentation",
+                    "fraud",
+                    "deceit",
+                    "false",
+                    "material",
+                ],
+                "claims": [
+                    "fraudulent misrepresentation",
+                    "negligent misrepresentation",
+                ],
+                "elements": ["misrepresentation", "materiality", "reliance", "damages"],
+            },
         }
 
     async def process(self, message: str) -> str:
@@ -98,7 +133,9 @@ class IssuespotterAgent(AgentInterface):
             for i, issue in enumerate(issues, 1):
                 response += f"{i}. **{issue.title}**\n"
                 response += f"   {issue.description}\n"
-                response += f"   Potential Claims: {', '.join(issue.potential_claims)}\n"
+                response += (
+                    f"   Potential Claims: {', '.join(issue.potential_claims)}\n"
+                )
                 response += f"   Confidence: {issue.confidence_score:.2f}\n"
                 response += f"   Priority: {issue.priority}\n\n"
 
@@ -108,7 +145,9 @@ class IssuespotterAgent(AgentInterface):
             logger.error(f"Error processing issue spotting request: {e}")
             return f"Error identifying legal issues: {str(e)}"
 
-    async def execute_task(self, task: WorkflowTask, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_task(
+        self, task: WorkflowTask, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute a workflow task related to issue spotting"""
         try:
             # Extract facts from context
@@ -128,7 +167,7 @@ class IssuespotterAgent(AgentInterface):
                 "issues_found": len(issues),
                 "issues": [issue.__dict__ for issue in issues],
                 "analysis": analysis,
-                "facts_analyzed": len(facts)
+                "facts_analyzed": len(facts),
             }
 
         except Exception as e:
@@ -139,7 +178,7 @@ class IssuespotterAgent(AgentInterface):
                 "issues_found": 0,
                 "issues": [],
                 "analysis": "",
-                "facts_analyzed": 0
+                "facts_analyzed": 0,
             }
 
     async def health_check(self) -> bool:
@@ -167,11 +206,14 @@ class IssuespotterAgent(AgentInterface):
     async def can_handle_task(self, task: WorkflowTask) -> bool:
         """Check if this agent can handle the given task"""
         task_text = f"{task.description} {task.agent_type}".lower()
-        return any(keyword in task_text for keyword in [
-            "issue", "spot", "identify", "legal", "claim", "analysis"
-        ])
+        return any(
+            keyword in task_text
+            for keyword in ["issue", "spot", "identify", "legal", "claim", "analysis"]
+        )
 
-    async def spot_issues(self, facts: List[str], context: Dict[str, Any]) -> List[LegalIssue]:
+    async def spot_issues(
+        self, facts: List[str], context: Dict[str, Any]
+    ) -> List[LegalIssue]:
         """Main issue spotting logic"""
         issues = []
 
@@ -193,7 +235,7 @@ class IssuespotterAgent(AgentInterface):
     def _extract_facts_from_text(self, text: str) -> List[str]:
         """Extract facts from natural language text"""
         # Simple sentence-based extraction
-        sentences = text.replace('?', '.').replace('!', '.').split('.')
+        sentences = text.replace("?", ".").replace("!", ".").split(".")
         facts = [s.strip() for s in sentences if len(s.strip()) > 10]
         return facts
 
@@ -219,7 +261,9 @@ class IssuespotterAgent(AgentInterface):
 
         return list(set(facts))  # Remove duplicates
 
-    def _analyze_fact_for_issues(self, fact: str, context: Dict[str, Any]) -> List[LegalIssue]:
+    def _analyze_fact_for_issues(
+        self, fact: str, context: Dict[str, Any]
+    ) -> List[LegalIssue]:
         """Analyze a single fact for potential legal issues"""
         issues = []
         fact_lower = fact.lower()
@@ -242,42 +286,56 @@ class IssuespotterAgent(AgentInterface):
                     relevant_facts=[fact],
                     confidence_score=min(confidence, 1.0),
                     jurisdiction=context.get("jurisdiction"),
-                    priority="high" if confidence > 0.7 else "medium"
+                    priority="high" if confidence > 0.7 else "medium",
                 )
                 issues.append(issue)
 
         return issues
 
-    def _analyze_cross_fact_patterns(self, facts: List[str], context: Dict[str, Any]) -> List[LegalIssue]:
+    def _analyze_cross_fact_patterns(
+        self, facts: List[str], context: Dict[str, Any]
+    ) -> List[LegalIssue]:
         """Analyze patterns across multiple facts"""
         issues = []
 
         # Look for combinations that suggest specific claims
-        fact_text = ' '.join(facts).lower()
+        fact_text = " ".join(facts).lower()
 
         # Check for product liability patterns
-        if ("product" in fact_text or "defect" in fact_text) and ("injury" in fact_text or "harm" in fact_text):
-            issues.append(LegalIssue(
-                title="Potential Products Liability Issue",
-                description="Multiple facts suggest product defect causing harm",
-                potential_claims=["strict liability", "negligence", "breach of warranty"],
-                relevant_facts=facts,
-                confidence_score=0.8,
-                jurisdiction=context.get("jurisdiction"),
-                priority="high"
-            ))
+        if ("product" in fact_text or "defect" in fact_text) and (
+            "injury" in fact_text or "harm" in fact_text
+        ):
+            issues.append(
+                LegalIssue(
+                    title="Potential Products Liability Issue",
+                    description="Multiple facts suggest product defect causing harm",
+                    potential_claims=[
+                        "strict liability",
+                        "negligence",
+                        "breach of warranty",
+                    ],
+                    relevant_facts=facts,
+                    confidence_score=0.8,
+                    jurisdiction=context.get("jurisdiction"),
+                    priority="high",
+                )
+            )
 
         # Check for contract patterns
-        if ("contract" in fact_text or "agreement" in fact_text) and ("breach" in fact_text or "fail" in fact_text):
-            issues.append(LegalIssue(
-                title="Potential Breach of Contract Issue",
-                description="Facts indicate contractual relationship and failure to perform",
-                potential_claims=["breach of contract", "specific performance"],
-                relevant_facts=facts,
-                confidence_score=0.7,
-                jurisdiction=context.get("jurisdiction"),
-                priority="high"
-            ))
+        if ("contract" in fact_text or "agreement" in fact_text) and (
+            "breach" in fact_text or "fail" in fact_text
+        ):
+            issues.append(
+                LegalIssue(
+                    title="Potential Breach of Contract Issue",
+                    description="Facts indicate contractual relationship and failure to perform",
+                    potential_claims=["breach of contract", "specific performance"],
+                    relevant_facts=facts,
+                    confidence_score=0.7,
+                    jurisdiction=context.get("jurisdiction"),
+                    priority="high",
+                )
+            )
 
         return issues
 
@@ -299,7 +357,9 @@ class IssuespotterAgent(AgentInterface):
         """Rank issues by confidence score"""
         return sorted(issues, key=lambda x: x.confidence_score, reverse=True)
 
-    def _generate_issue_analysis(self, issues: List[LegalIssue], facts: List[str]) -> str:
+    def _generate_issue_analysis(
+        self, issues: List[LegalIssue], facts: List[str]
+    ) -> str:
         """Generate analysis of spotted issues"""
         analysis = "Issue Spotting Analysis:\n\n"
 
@@ -316,15 +376,21 @@ class IssuespotterAgent(AgentInterface):
         if high_priority:
             analysis += f"High Priority ({len(high_priority)}):\n"
             for issue in high_priority:
-                analysis += f"  - {issue.title} (Confidence: {issue.confidence_score:.2f})\n"
+                analysis += (
+                    f"  - {issue.title} (Confidence: {issue.confidence_score:.2f})\n"
+                )
 
         if medium_priority:
             analysis += f"Medium Priority ({len(medium_priority)}):\n"
             for issue in medium_priority:
-                analysis += f"  - {issue.title} (Confidence: {issue.confidence_score:.2f})\n"
+                analysis += (
+                    f"  - {issue.title} (Confidence: {issue.confidence_score:.2f})\n"
+                )
 
         analysis += "\nRecommendations:\n"
-        analysis += "1. Prioritize high-confidence issues for immediate legal analysis\n"
+        analysis += (
+            "1. Prioritize high-confidence issues for immediate legal analysis\n"
+        )
         analysis += "2. Consider jurisdiction-specific rules and precedents\n"
         analysis += "3. Evaluate potential counterarguments and defenses\n"
         analysis += "4. Assess damages and remedies for each potential claim\n"

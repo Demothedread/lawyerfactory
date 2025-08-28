@@ -14,15 +14,21 @@ Features:
 """
 
 import asyncio
-import logging
-import re
 from datetime import datetime
-from .cloud_storage_integration import CloudStorageManager, IntegratedEvidenceIngestion, StorageTier
+import logging
 from pathlib import Path
+import re
 from typing import Any, Dict, List, Optional, Set
 
+from .cloud_storage_integration import (
+    CloudStorageManager,
+    IntegratedEvidenceIngestion,
+    StorageTier,
+)
 from .enhanced_vector_store import (
-    EnhancedVectorStoreManager, VectorStoreType, ValidationType
+    EnhancedVectorStoreManager,
+    ValidationType,
+    VectorStoreType,
 )
 
 logger = logging.getLogger(__name__)
@@ -33,10 +39,14 @@ class EvidenceIngestionPipeline:
     Automated pipeline for ingesting evidence and storing as vectors
     """
 
-    def __init__(self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None):
+    def __init__(
+        self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None
+    ):
         self.vector_store = vector_store_manager or EnhancedVectorStoreManager()
         self.cloud_storage = CloudStorageManager(vector_store_manager)
-        self.integrated_ingestion = IntegratedEvidenceIngestion(vector_store_manager, self.cloud_storage)
+        self.integrated_ingestion = IntegratedEvidenceIngestion(
+            vector_store_manager, self.cloud_storage
+        )
 
         # Document type patterns for classification
         self.document_patterns = self._initialize_document_patterns()
@@ -49,7 +59,7 @@ class EvidenceIngestionPipeline:
             "documents_processed": 0,
             "vectors_created": 0,
             "errors": 0,
-            "processing_time": 0
+            "processing_time": 0,
         }
 
     def _initialize_document_patterns(self) -> Dict[str, Dict[str, Any]]:
@@ -57,69 +67,120 @@ class EvidenceIngestionPipeline:
         return {
             "complaint": {
                 "patterns": [
-                    r"complaint", r"petition", r"claim", r"lawsuit",
-                    r"plaintiff.*v.*defendant", r"case.*no\."
+                    r"complaint",
+                    r"petition",
+                    r"claim",
+                    r"lawsuit",
+                    r"plaintiff.*v.*defendant",
+                    r"case.*no\.",
                 ],
                 "store_type": VectorStoreType.PRIMARY_EVIDENCE,
-                "validation_types": [ValidationType.COMPLAINTS_AGAINST_TESLA]
+                "validation_types": [ValidationType.COMPLAINTS_AGAINST_TESLA],
             },
             "contract": {
                 "patterns": [
-                    r"contract", r"agreement", r"terms", r"conditions",
-                    r"parties", r"hereby", r"whereas", r"shall"
+                    r"contract",
+                    r"agreement",
+                    r"terms",
+                    r"conditions",
+                    r"parties",
+                    r"hereby",
+                    r"whereas",
+                    r"shall",
                 ],
                 "store_type": VectorStoreType.PRIMARY_EVIDENCE,
-                "validation_types": [ValidationType.CONTRACT_DISPUTES]
+                "validation_types": [ValidationType.CONTRACT_DISPUTES],
             },
             "case_opinion": {
                 "patterns": [
-                    r"opinion", r"holding", r"precedent", r"court.*opinion",
-                    r"appellate", r"supreme", r"district.*court"
+                    r"opinion",
+                    r"holding",
+                    r"precedent",
+                    r"court.*opinion",
+                    r"appellate",
+                    r"supreme",
+                    r"district.*court",
                 ],
                 "store_type": VectorStoreType.CASE_OPINIONS,
-                "validation_types": []
+                "validation_types": [],
             },
             "deposition": {
                 "patterns": [
-                    r"deposition", r"testimony", r"witness", r"transcript",
-                    r"q\.", r"a\.", r"examination"
+                    r"deposition",
+                    r"testimony",
+                    r"witness",
+                    r"transcript",
+                    r"q\.",
+                    r"a\.",
+                    r"examination",
                 ],
                 "store_type": VectorStoreType.PRIMARY_EVIDENCE,
-                "validation_types": []
+                "validation_types": [],
             },
             "expert_report": {
                 "patterns": [
-                    r"expert.*report", r"analysis", r"findings", r"conclusion",
-                    r"methodology", r"credentials"
+                    r"expert.*report",
+                    r"analysis",
+                    r"findings",
+                    r"conclusion",
+                    r"methodology",
+                    r"credentials",
                 ],
                 "store_type": VectorStoreType.PRIMARY_EVIDENCE,
-                "validation_types": []
-            }
+                "validation_types": [],
+            },
         }
 
     def _initialize_validation_keywords(self) -> Dict[ValidationType, List[str]]:
         """Initialize keywords for validation type classification"""
         return {
             ValidationType.COMPLAINTS_AGAINST_TESLA: [
-                "tesla", "elon musk", "autonomous vehicle", "self-driving",
-                "electric vehicle", "automotive", "vehicle defect"
+                "tesla",
+                "elon musk",
+                "autonomous vehicle",
+                "self-driving",
+                "electric vehicle",
+                "automotive",
+                "vehicle defect",
             ],
             ValidationType.CONTRACT_DISPUTES: [
-                "breach", "contract", "agreement", "terms", "violation",
-                "performance", "obligation", "consideration"
+                "breach",
+                "contract",
+                "agreement",
+                "terms",
+                "violation",
+                "performance",
+                "obligation",
+                "consideration",
             ],
             ValidationType.PERSONAL_INJURY: [
-                "injury", "accident", "negligence", "damages", "pain",
-                "suffering", "medical", "treatment"
+                "injury",
+                "accident",
+                "negligence",
+                "damages",
+                "pain",
+                "suffering",
+                "medical",
+                "treatment",
             ],
             ValidationType.EMPLOYMENT_CLAIMS: [
-                "employment", "wrongful termination", "discrimination",
-                "harassment", "wage", "overtime", "retaliation"
+                "employment",
+                "wrongful termination",
+                "discrimination",
+                "harassment",
+                "wage",
+                "overtime",
+                "retaliation",
             ],
             ValidationType.INTELLECTUAL_PROPERTY: [
-                "patent", "copyright", "trademark", "trade secret",
-                "infringement", "license", "intellectual property"
-            ]
+                "patent",
+                "copyright",
+                "trademark",
+                "trade secret",
+                "infringement",
+                "license",
+                "intellectual property",
+            ],
         }
 
     async def process_intake_form(self, intake_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -139,12 +200,14 @@ class EvidenceIngestionPipeline:
             case_info = {
                 "case_name": intake_data.get("claim_description", "Unknown Case"),
                 "plaintiff_name": intake_data.get("user_name", "Unknown Plaintiff"),
-                "defendant_name": intake_data.get("opposing_party_names", "Unknown Defendant"),
+                "defendant_name": intake_data.get(
+                    "opposing_party_names", "Unknown Defendant"
+                ),
                 "case_number": intake_data.get("case_number", ""),
                 "jurisdiction": intake_data.get("jurisdiction", "general"),
                 "claim_amount": intake_data.get("claim_amount", 0),
                 "events_location": intake_data.get("events_location", ""),
-                "events_date": intake_data.get("events_date", "")
+                "events_date": intake_data.get("events_date", ""),
             }
 
             # Create comprehensive case description
@@ -157,10 +220,10 @@ class EvidenceIngestionPipeline:
                     **case_info,
                     "source": "intake_form",
                     "content_type": "case_summary",
-                    "processing_stage": "intake"
+                    "processing_stage": "intake",
                 },
                 store_type=VectorStoreType.PRIMARY_EVIDENCE,
-                validation_types=self._classify_validation_types(case_description)
+                validation_types=self._classify_validation_types(case_description),
             )
 
             processing_time = (datetime.now() - start_time).total_seconds()
@@ -172,20 +235,20 @@ class EvidenceIngestionPipeline:
                 "document_id": doc_id,
                 "case_info": case_info,
                 "processing_time": processing_time,
-                "vector_stores_updated": ["primary_evidence", "general_rag"]
+                "vector_stores_updated": ["primary_evidence", "general_rag"],
             }
 
         except Exception as e:
             logger.error(f"Error processing intake form: {e}")
             self.stats["errors"] += 1
-            return {
-                "success": False,
-                "error": str(e),
-                "case_info": {}
-            }
+            return {"success": False, "error": str(e), "case_info": {}}
 
-    async def process_document_evidence(self, file_path: str, metadata: Dict[str, Any],
-                                          storage_tier: StorageTier = StorageTier.HOT) -> Dict[str, Any]:
+    async def process_document_evidence(
+        self,
+        file_path: str,
+        metadata: Dict[str, Any],
+        storage_tier: StorageTier = StorageTier.HOT,
+    ) -> Dict[str, Any]:
         """
         Process document evidence with integrated cloud storage
 
@@ -204,10 +267,7 @@ class EvidenceIngestionPipeline:
             content = await self._read_document_content(file_path)
 
             if not content:
-                return {
-                    "success": False,
-                    "error": "Could not read document content"
-                }
+                return {"success": False, "error": "Could not read document content"}
 
             # Classify document type
             doc_type_info = self._classify_document_type(content)
@@ -221,15 +281,17 @@ class EvidenceIngestionPipeline:
                 "processing_stage": "evidence_ingestion",
                 "word_count": len(content.split()),
                 "character_count": len(content),
-                "storage_tier": storage_tier.value
+                "storage_tier": storage_tier.value,
             }
 
             # Store with integrated cloud storage
-            storage_result = await self.integrated_ingestion.process_evidence_with_storage(
-                content=content,
-                metadata=enhanced_metadata,
-                store_type=doc_type_info["store_type"],
-                storage_tier=storage_tier
+            storage_result = (
+                await self.integrated_ingestion.process_evidence_with_storage(
+                    content=content,
+                    metadata=enhanced_metadata,
+                    store_type=doc_type_info["store_type"],
+                    storage_tier=storage_tier,
+                )
             )
 
             processing_time = (datetime.now() - start_time).total_seconds()
@@ -244,11 +306,13 @@ class EvidenceIngestionPipeline:
                     "storage_id": storage_result.get("storage_id"),
                     "document_type": doc_type_info["type"],
                     "vector_store": doc_type_info["store_type"].value,
-                    "validation_types": [vt.value for vt in doc_type_info["validation_types"]],
+                    "validation_types": [
+                        vt.value for vt in doc_type_info["validation_types"]
+                    ],
                     "local_path": storage_result.get("local_path"),
                     "cloud_url": storage_result.get("cloud_url"),
                     "storage_tier": storage_result.get("storage_tier"),
-                    "processing_time": processing_time
+                    "processing_time": processing_time,
                 }
             else:
                 raise Exception(storage_result.get("error", "Storage failed"))
@@ -256,13 +320,11 @@ class EvidenceIngestionPipeline:
         except Exception as e:
             logger.error(f"Error processing document evidence: {e}")
             self.stats["errors"] += 1
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
-    async def process_research_round(self, research_content: str, round_number: int,
-                                   case_context: Dict[str, Any]) -> Dict[str, Any]:
+    async def process_research_round(
+        self, research_content: str, round_number: int, case_context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Process research round content and accumulate in vector stores
 
@@ -284,9 +346,9 @@ class EvidenceIngestionPipeline:
                     **case_context,
                     "research_round": round_number,
                     "content_type": "research_findings",
-                    "processing_stage": "research"
+                    "processing_stage": "research",
                 },
-                round_number=round_number
+                round_number=round_number,
             )
 
             processing_time = (datetime.now() - start_time).total_seconds()
@@ -297,18 +359,17 @@ class EvidenceIngestionPipeline:
                 "success": True,
                 "document_id": doc_id,
                 "research_round": round_number,
-                "processing_time": processing_time
+                "processing_time": processing_time,
             }
 
         except Exception as e:
             logger.error(f"Error processing research round: {e}")
             self.stats["errors"] += 1
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
-    async def batch_process_evidence(self, evidence_list: List[Dict[str, Any]]) -> Dict[str, Any]:
+    async def batch_process_evidence(
+        self, evidence_list: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
         """
         Batch process multiple evidence items
 
@@ -328,19 +389,18 @@ class EvidenceIngestionPipeline:
                     result = await self.process_intake_form(evidence.get("data", {}))
                 elif evidence.get("type") == "document":
                     result = await self.process_document_evidence(
-                        evidence.get("file_path", ""),
-                        evidence.get("metadata", {})
+                        evidence.get("file_path", ""), evidence.get("metadata", {})
                     )
                 elif evidence.get("type") == "research":
                     result = await self.process_research_round(
                         evidence.get("content", ""),
                         evidence.get("round_number", 1),
-                        evidence.get("case_context", {})
+                        evidence.get("case_context", {}),
                     )
                 else:
                     result = {
                         "success": False,
-                        "error": f"Unknown evidence type: {evidence.get('type')}"
+                        "error": f"Unknown evidence type: {evidence.get('type')}",
                     }
 
                 results.append(result)
@@ -357,7 +417,7 @@ class EvidenceIngestionPipeline:
                 "successful": successful,
                 "failed": failed,
                 "results": results,
-                "batch_processing_time": processing_time
+                "batch_processing_time": processing_time,
             }
 
         except Exception as e:
@@ -367,10 +427,12 @@ class EvidenceIngestionPipeline:
                 "error": str(e),
                 "total_processed": 0,
                 "successful": 0,
-                "failed": 0
+                "failed": 0,
             }
 
-    def _create_case_description(self, intake_data: Dict[str, Any], case_info: Dict[str, Any]) -> str:
+    def _create_case_description(
+        self, intake_data: Dict[str, Any], case_info: Dict[str, Any]
+    ) -> str:
         """Create comprehensive case description from intake data"""
         description_parts = []
 
@@ -379,7 +441,7 @@ class EvidenceIngestionPipeline:
         description_parts.append(f"Plaintiff: {case_info['plaintiff_name']}")
         description_parts.append(f"Defendant: {case_info['defendant_name']}")
 
-        if case_info.get('case_number'):
+        if case_info.get("case_number"):
             description_parts.append(f"Case Number: {case_info['case_number']}")
 
         # Claim details
@@ -387,18 +449,18 @@ class EvidenceIngestionPipeline:
         if claim_description:
             description_parts.append(f"Claim Description: {claim_description}")
 
-        if case_info.get('claim_amount'):
+        if case_info.get("claim_amount"):
             description_parts.append(f"Claim Amount: ${case_info['claim_amount']:,}")
 
         # Location and timing
-        if case_info.get('events_location'):
+        if case_info.get("events_location"):
             description_parts.append(f"Location: {case_info['events_location']}")
 
-        if case_info.get('events_date'):
+        if case_info.get("events_date"):
             description_parts.append(f"Date of Events: {case_info['events_date']}")
 
         # Jurisdiction
-        if case_info.get('jurisdiction'):
+        if case_info.get("jurisdiction"):
             description_parts.append(f"Jurisdiction: {case_info['jurisdiction']}")
 
         # Additional details
@@ -422,14 +484,14 @@ class EvidenceIngestionPipeline:
                     return {
                         "type": doc_type,
                         "store_type": info["store_type"],
-                        "validation_types": info["validation_types"]
+                        "validation_types": info["validation_types"],
                     }
 
         # Default classification
         return {
             "type": "general_document",
             "store_type": VectorStoreType.GENERAL_RAG,
-            "validation_types": []
+            "validation_types": [],
         }
 
     def _classify_validation_types(self, content: str) -> List[ValidationType]:
@@ -451,8 +513,8 @@ class EvidenceIngestionPipeline:
             if path.exists():
                 # In production, this would use proper document parsers
                 # (PDF, DOCX, TXT, etc.)
-                if path.suffix.lower() in ['.txt', '.md']:
-                    return path.read_text(encoding='utf-8')
+                if path.suffix.lower() in [".txt", ".md"]:
+                    return path.read_text(encoding="utf-8")
                 else:
                     # Placeholder for binary document processing
                     return f"Document content from {path.name} (binary file - needs parser)"
@@ -467,8 +529,9 @@ class EvidenceIngestionPipeline:
         return {
             **self.stats,
             "average_processing_time": (
-                self.stats["processing_time"] / max(self.stats["documents_processed"], 1)
-            )
+                self.stats["processing_time"]
+                / max(self.stats["documents_processed"], 1)
+            ),
         }
 
     async def cleanup_processing_artifacts(self):
@@ -482,8 +545,10 @@ class EvidenceIngestionPipeline:
 
 
 # Integration function for existing intake processor
-async def integrate_with_intake_processor(intake_data: Dict[str, Any],
-                                        vector_store_manager: Optional[EnhancedVectorStoreManager] = None) -> Dict[str, Any]:
+async def integrate_with_intake_processor(
+    intake_data: Dict[str, Any],
+    vector_store_manager: Optional[EnhancedVectorStoreManager] = None,
+) -> Dict[str, Any]:
     """
     Integration function to add vector ingestion to existing intake processing
 
@@ -499,10 +564,7 @@ async def integrate_with_intake_processor(intake_data: Dict[str, Any],
         return await pipeline.process_intake_form(intake_data)
     except Exception as e:
         logger.error(f"Error integrating with intake processor: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
+        return {"success": False, "error": str(e)}
 
 
 # Global pipeline instance

@@ -7,23 +7,25 @@
 #   - Group Tags: llm, configuration, shared
 """
 
-import os
-import json
-import logging
+from abc import ABC, abstractmethod
 import asyncio
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+import json
+import logging
+import os
 from pathlib import Path
-from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional, Union
 
 logger = logging.getLogger(__name__)
 
 
 # ===== LLM PROVIDER ENUMS =====
 
+
 class LLMProvider(Enum):
     """Supported LLM providers"""
+
     OPENAI = "openai"
     OLLAMA = "ollama"
     GOOGLE_GEMINI = "google_gemini"
@@ -31,6 +33,7 @@ class LLMProvider(Enum):
 
 class ModelCapability(Enum):
     """LLM model capabilities"""
+
     TEXT_GENERATION = "text_generation"
     EMBEDDINGS = "embeddings"
     VISION = "vision"
@@ -39,9 +42,11 @@ class ModelCapability(Enum):
 
 # ===== LLM CONFIGURATION =====
 
+
 @dataclass
 class LLMConfig:
     """Centralized LLM configuration"""
+
     provider: LLMProvider = LLMProvider.OPENAI
     model_name: str = "gpt-4o-mini"
     api_key: Optional[str] = None
@@ -50,7 +55,9 @@ class LLMConfig:
     max_tokens: int = 4000
     embedding_model: str = "text-embedding-3-small"
     vector_store_enabled: bool = True
-    capabilities: List[ModelCapability] = field(default_factory=lambda: [ModelCapability.TEXT_GENERATION])
+    capabilities: List[ModelCapability] = field(
+        default_factory=lambda: [ModelCapability.TEXT_GENERATION]
+    )
 
     # Provider-specific settings
     openai_settings: Dict[str, Any] = field(default_factory=dict)
@@ -58,54 +65,64 @@ class LLMConfig:
     gemini_settings: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_environment(cls) -> 'LLMConfig':
+    def from_environment(cls) -> "LLMConfig":
         """Create configuration from environment variables"""
         return cls(
-            provider=LLMProvider(os.getenv('LAWYERFACTORY_LLM_PROVIDER', 'openai')),
-            model_name=os.getenv('LAWYERFACTORY_LLM_MODEL', 'gpt-4o-mini'),
-            api_key=os.getenv('LAWYERFACTORY_LLM_API_KEY') or os.getenv('OPENAI_API_KEY'),
-            base_url=os.getenv('LAWYERFACTORY_LLM_BASE_URL'),
-            temperature=float(os.getenv('LAWYERFACTORY_LLM_TEMPERATURE', '0.7')),
-            max_tokens=int(os.getenv('LAWYERFACTORY_LLM_MAX_TOKENS', '4000')),
-            embedding_model=os.getenv('LAWYERFACTORY_EMBEDDING_MODEL', 'text-embedding-3-small'),
-            vector_store_enabled=os.getenv('LAWYERFACTORY_VECTOR_STORE_ENABLED', 'true').lower() == 'true'
+            provider=LLMProvider(os.getenv("LAWYERFACTORY_LLM_PROVIDER", "openai")),
+            model_name=os.getenv("LAWYERFACTORY_LLM_MODEL", "gpt-4o-mini"),
+            api_key=os.getenv("LAWYERFACTORY_LLM_API_KEY")
+            or os.getenv("OPENAI_API_KEY"),
+            base_url=os.getenv("LAWYERFACTORY_LLM_BASE_URL"),
+            temperature=float(os.getenv("LAWYERFACTORY_LLM_TEMPERATURE", "0.7")),
+            max_tokens=int(os.getenv("LAWYERFACTORY_LLM_MAX_TOKENS", "4000")),
+            embedding_model=os.getenv(
+                "LAWYERFACTORY_EMBEDDING_MODEL", "text-embedding-3-small"
+            ),
+            vector_store_enabled=os.getenv(
+                "LAWYERFACTORY_VECTOR_STORE_ENABLED", "true"
+            ).lower()
+            == "true",
         )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization"""
         return {
-            'provider': self.provider.value,
-            'model_name': self.model_name,
-            'base_url': self.base_url,
-            'temperature': self.temperature,
-            'max_tokens': self.max_tokens,
-            'embedding_model': self.embedding_model,
-            'vector_store_enabled': self.vector_store_enabled,
-            'capabilities': [cap.value for cap in self.capabilities],
-            'openai_settings': self.openai_settings,
-            'ollama_settings': self.ollama_settings,
-            'gemini_settings': self.gemini_settings
+            "provider": self.provider.value,
+            "model_name": self.model_name,
+            "base_url": self.base_url,
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
+            "embedding_model": self.embedding_model,
+            "vector_store_enabled": self.vector_store_enabled,
+            "capabilities": [cap.value for cap in self.capabilities],
+            "openai_settings": self.openai_settings,
+            "ollama_settings": self.ollama_settings,
+            "gemini_settings": self.gemini_settings,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'LLMConfig':
+    def from_dict(cls, data: Dict[str, Any]) -> "LLMConfig":
         """Create from dictionary"""
         config = cls()
-        config.provider = LLMProvider(data.get('provider', 'openai'))
-        config.model_name = data.get('model_name', 'gpt-4o-mini')
-        config.base_url = data.get('base_url')
-        config.temperature = data.get('temperature', 0.7)
-        config.max_tokens = data.get('max_tokens', 4000)
-        config.embedding_model = data.get('embedding_model', 'text-embedding-3-small')
-        config.vector_store_enabled = data.get('vector_store_enabled', True)
-        config.capabilities = [ModelCapability(cap) for cap in data.get('capabilities', ['text_generation'])]
-        config.openai_settings = data.get('openai_settings', {})
-        config.ollama_settings = data.get('ollama_settings', {})
-        config.gemini_settings = data.get('gemini_settings', {})
+        config.provider = LLMProvider(data.get("provider", "openai"))
+        config.model_name = data.get("model_name", "gpt-4o-mini")
+        config.base_url = data.get("base_url")
+        config.temperature = data.get("temperature", 0.7)
+        config.max_tokens = data.get("max_tokens", 4000)
+        config.embedding_model = data.get("embedding_model", "text-embedding-3-small")
+        config.vector_store_enabled = data.get("vector_store_enabled", True)
+        config.capabilities = [
+            ModelCapability(cap)
+            for cap in data.get("capabilities", ["text_generation"])
+        ]
+        config.openai_settings = data.get("openai_settings", {})
+        config.ollama_settings = data.get("ollama_settings", {})
+        config.gemini_settings = data.get("gemini_settings", {})
         return config
 
 
 # ===== LLM SERVICE ABSTRACTION =====
+
 
 class LLMServiceInterface(ABC):
     """Abstract interface for LLM services"""
@@ -143,9 +160,9 @@ class OpenAIService(LLMServiceInterface):
         """Initialize OpenAI client"""
         try:
             import openai
+
             self.client = openai.AsyncOpenAI(
-                api_key=self.config.api_key,
-                base_url=self.config.base_url
+                api_key=self.config.api_key, base_url=self.config.base_url
             )
         except ImportError:
             logger.warning("OpenAI library not available")
@@ -161,8 +178,8 @@ class OpenAIService(LLMServiceInterface):
             response = await self.client.chat.completions.create(
                 model=self.config.model_name,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=kwargs.get('temperature', self.config.temperature),
-                max_tokens=kwargs.get('max_tokens', self.config.max_tokens)
+                temperature=kwargs.get("temperature", self.config.temperature),
+                max_tokens=kwargs.get("max_tokens", self.config.max_tokens),
             )
             return response.choices[0].message.content
         except Exception as e:
@@ -176,8 +193,7 @@ class OpenAIService(LLMServiceInterface):
 
         try:
             response = await self.client.embeddings.create(
-                model=self.config.embedding_model,
-                input=texts
+                model=self.config.embedding_model, input=texts
             )
             return [data.embedding for data in response.data]
         except Exception as e:
@@ -219,15 +235,19 @@ class OllamaService(LLMServiceInterface):
                     "prompt": prompt,
                     "stream": False,
                     "options": {
-                        "temperature": kwargs.get('temperature', self.config.temperature),
-                        "num_predict": kwargs.get('max_tokens', self.config.max_tokens)
-                    }
+                        "temperature": kwargs.get(
+                            "temperature", self.config.temperature
+                        ),
+                        "num_predict": kwargs.get("max_tokens", self.config.max_tokens),
+                    },
                 }
 
-                async with session.post(f"{self.base_url}/api/generate", json=payload) as response:
+                async with session.post(
+                    f"{self.base_url}/api/generate", json=payload
+                ) as response:
                     if response.status == 200:
                         result = await response.json()
-                        return result.get('response', '')
+                        return result.get("response", "")
                     else:
                         raise RuntimeError(f"Ollama API error: {response.status}")
         except Exception as e:
@@ -268,6 +288,7 @@ class GoogleGeminiService(LLMServiceInterface):
         """Initialize Google Gemini client"""
         try:
             import google.generativeai as genai
+
             genai.configure(api_key=self.config.api_key)
             self.client = genai.GenerativeModel(self.config.model_name)
         except ImportError:
@@ -282,8 +303,7 @@ class GoogleGeminiService(LLMServiceInterface):
 
         try:
             response = await asyncio.get_event_loop().run_in_executor(
-                None,
-                lambda: self.client.generate_content(prompt).text
+                None, lambda: self.client.generate_content(prompt).text
             )
             return response
         except Exception as e:
@@ -304,8 +324,7 @@ class GoogleGeminiService(LLMServiceInterface):
         try:
             # Simple availability check
             await asyncio.get_event_loop().run_in_executor(
-                None,
-                lambda: self.client.generate_content("Hello").text
+                None, lambda: self.client.generate_content("Hello").text
             )
             return True
         except Exception:
@@ -317,6 +336,7 @@ class GoogleGeminiService(LLMServiceInterface):
 
 
 # ===== LLM SERVICE FACTORY =====
+
 
 class LLMServiceFactory:
     """Factory for creating LLM services"""
@@ -336,6 +356,7 @@ class LLMServiceFactory:
 
 # ===== LLM CONFIGURATION MANAGER =====
 
+
 class LLMConfigurationManager:
     """Centralized LLM configuration management"""
 
@@ -349,7 +370,7 @@ class LLMConfigurationManager:
         """Load configuration from file"""
         if self.config_path.exists():
             try:
-                with open(self.config_path, 'r') as f:
+                with open(self.config_path, "r") as f:
                     data = json.load(f)
                     self.current_config = LLMConfig.from_dict(data)
             except Exception as e:
@@ -358,7 +379,7 @@ class LLMConfigurationManager:
     def save_config(self):
         """Save current configuration to file"""
         try:
-            with open(self.config_path, 'w') as f:
+            with open(self.config_path, "w") as f:
                 json.dump(self.current_config.to_dict(), f, indent=2)
         except Exception as e:
             logger.error(f"Failed to save LLM config: {e}")
@@ -381,26 +402,28 @@ class LLMConfigurationManager:
 
     async def validate_config(self) -> Dict[str, Any]:
         """Validate current configuration"""
-        results = {
-            'valid': False,
-            'errors': [],
-            'warnings': [],
-            'capabilities': []
-        }
+        results = {"valid": False, "errors": [], "warnings": [], "capabilities": []}
 
         try:
             service = self.get_service()
-            results['valid'] = await service.is_available()
-            results['capabilities'] = [cap.value for cap in await service.get_capabilities()]
+            results["valid"] = await service.is_available()
+            results["capabilities"] = [
+                cap.value for cap in await service.get_capabilities()
+            ]
 
-            if not results['valid']:
-                results['errors'].append(f"{self.current_config.provider.value} service not available")
+            if not results["valid"]:
+                results["errors"].append(
+                    f"{self.current_config.provider.value} service not available"
+                )
 
-            if not self.current_config.api_key and self.current_config.provider != LLMProvider.OLLAMA:
-                results['errors'].append("API key required for this provider")
+            if (
+                not self.current_config.api_key
+                and self.current_config.provider != LLMProvider.OLLAMA
+            ):
+                results["errors"].append("API key required for this provider")
 
         except Exception as e:
-            results['errors'].append(f"Configuration validation failed: {e}")
+            results["errors"].append(f"Configuration validation failed: {e}")
 
         return results
 
@@ -412,17 +435,22 @@ class LLMConfigurationManager:
             config = LLMConfig(provider=provider)
             service = LLMServiceFactory.create_service(config)
 
-            providers.append({
-                'name': provider.value,
-                'display_name': provider.value.replace('_', ' ').title(),
-                'available': asyncio.run(service.is_available()),
-                'capabilities': [cap.value for cap in asyncio.run(service.get_capabilities())]
-            })
+            providers.append(
+                {
+                    "name": provider.value,
+                    "display_name": provider.value.replace("_", " ").title(),
+                    "available": asyncio.run(service.is_available()),
+                    "capabilities": [
+                        cap.value for cap in asyncio.run(service.get_capabilities())
+                    ],
+                }
+            )
 
         return providers
 
 
 # ===== BACKWARD COMPATIBILITY =====
+
 
 # Keep existing Stage and Task classes for backward compatibility
 class Stage(Enum):
@@ -474,13 +502,16 @@ class Task:
 # Global instance for easy access
 llm_manager = LLMConfigurationManager()
 
+
 def get_llm_service() -> LLMServiceInterface:
     """Get the global LLM service instance"""
     return llm_manager.get_service()
 
+
 def update_llm_config(**kwargs):
     """Update global LLM configuration"""
     llm_manager.update_config(**kwargs)
+
 
 def get_llm_config() -> LLMConfig:
     """Get current LLM configuration"""

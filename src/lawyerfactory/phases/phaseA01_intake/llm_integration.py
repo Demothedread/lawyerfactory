@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 # Try to import LLM service
 try:
     from ...lf_core.llm import LLMService
+
     LLM_SERVICE_AVAILABLE = True
 except Exception:
     LLM_SERVICE_AVAILABLE = False
@@ -18,11 +19,13 @@ except Exception:
 
 
 def llm_classify_evidence(
-    content: str, filename: str = None, defendant_hint: str = None
+    content: str, filename: Optional[str] = None, defendant_hint: Optional[str] = None
 ) -> Dict[str, Any]:
     """Use LLM service to classify evidence as primary/secondary with detailed categorization."""
     if not LLM_SERVICE_AVAILABLE:
-        logger.warning("LLM service not available, falling back to basic categorization")
+        logger.warning(
+            "LLM service not available, falling back to basic categorization"
+        )
         return _fallback_classify_evidence(content, filename, defendant_hint)
 
     try:
@@ -30,7 +33,8 @@ def llm_classify_evidence(
         llm_service = LLMService()
 
         # Use LLM to classify evidence
-        result = llm_service.classify_evidence(content, filename)
+        # ensure filename is a str when passed to llm service
+        result = llm_service.classify_evidence(content, filename or "")
 
         if result.get("success", False):
             classification = result.get("classification", {})
@@ -41,15 +45,21 @@ def llm_classify_evidence(
                 "reasoning": classification.get("reasoning", ""),
                 "key_characteristics": classification.get("key_characteristics", []),
                 "document_type": classification.get("specific_category", "general"),
-                "authority_level": "primary" if classification.get("evidence_type") == "PRIMARY" else "secondary",
+                "authority_level": (
+                    "primary"
+                    if classification.get("evidence_type") == "PRIMARY"
+                    else "secondary"
+                ),
                 "defendant_name": defendant_hint,
                 "extracted_entities": [],
                 "key_legal_issues": [],
                 "cluster_id": None,
-                "classification_method": "llm"
+                "classification_method": "llm",
             }
         else:
-            logger.warning("LLM classification failed: %s", result.get("error", "Unknown error"))
+            logger.warning(
+                "LLM classification failed: %s", result.get("error", "Unknown error")
+            )
             return _fallback_classify_evidence(content, filename, defendant_hint)
 
     except Exception as e:
@@ -58,7 +68,7 @@ def llm_classify_evidence(
 
 
 def llm_extract_metadata(
-    content: str, filename: str = None
+    content: str, filename: Optional[str] = None
 ) -> Dict[str, Any]:
     """Use LLM service to extract metadata from document content."""
     if not LLM_SERVICE_AVAILABLE:
@@ -70,7 +80,7 @@ def llm_extract_metadata(
         llm_service = LLMService()
 
         # Use LLM to extract metadata
-        result = llm_service.extract_metadata(content, filename)
+        result = llm_service.extract_metadata(content, filename or "")
 
         if result.get("success", False):
             metadata = result.get("metadata", {})
@@ -83,10 +93,13 @@ def llm_extract_metadata(
                 "summary": metadata.get("summary", _basic_summarize(content)),
                 "relevance_score": metadata.get("relevance_score", 0.5),
                 "legal_context": metadata.get("legal_context", ""),
-                "extraction_method": "llm"
+                "extraction_method": "llm",
             }
         else:
-            logger.warning("LLM metadata extraction failed: %s", result.get("error", "Unknown error"))
+            logger.warning(
+                "LLM metadata extraction failed: %s",
+                result.get("error", "Unknown error"),
+            )
             return _fallback_extract_metadata(content, filename)
 
     except Exception as e:
@@ -94,9 +107,7 @@ def llm_extract_metadata(
         return _fallback_extract_metadata(content, filename)
 
 
-def llm_summarize_text(
-    content: str, max_length: int = 200
-) -> str:
+def llm_summarize_text(content: str, max_length: int = 200) -> str:
     """Use LLM service to generate intelligent summaries."""
     if not LLM_SERVICE_AVAILABLE:
         logger.warning("LLM service not available for summarization")
@@ -112,7 +123,9 @@ def llm_summarize_text(
         if result.get("success", False):
             return result.get("text", _basic_summarize(content, max_sentences=3))
         else:
-            logger.warning("LLM summarization failed: %s", result.get("error", "Unknown error"))
+            logger.warning(
+                "LLM summarization failed: %s", result.get("error", "Unknown error")
+            )
             return _basic_summarize(content, max_sentences=3)
 
     except Exception as e:
@@ -120,26 +133,47 @@ def llm_summarize_text(
         return _basic_summarize(content, max_sentences=3)
 
 
-def _fallback_classify_evidence(content: str, filename: str = None, defendant_hint: str = None) -> Dict[str, Any]:
+def _fallback_classify_evidence(
+    content: str, filename: Optional[str] = None, defendant_hint: Optional[str] = None
+) -> Dict[str, Any]:
     """Fallback evidence classification when LLM is not available."""
     # Simple keyword-based classification
     content_lower = (content or "").lower()
 
     # Primary evidence indicators
     primary_keywords = [
-        "original", "first-hand", "witness", "statement", "testimony",
-        "photograph", "video", "audio", "recording", "contract",
-        "agreement", "police report", "medical record"
+        "original",
+        "first-hand",
+        "witness",
+        "statement",
+        "testimony",
+        "photograph",
+        "video",
+        "audio",
+        "recording",
+        "contract",
+        "agreement",
+        "police report",
+        "medical record",
     ]
 
     # Secondary evidence indicators
     secondary_keywords = [
-        "news", "article", "report", "blog", "social media",
-        "press release", "journal", "academic paper", "website"
+        "news",
+        "article",
+        "report",
+        "blog",
+        "social media",
+        "press release",
+        "journal",
+        "academic paper",
+        "website",
     ]
 
     primary_score = sum(1 for keyword in primary_keywords if keyword in content_lower)
-    secondary_score = sum(1 for keyword in secondary_keywords if keyword in content_lower)
+    secondary_score = sum(
+        1 for keyword in secondary_keywords if keyword in content_lower
+    )
 
     if primary_score > secondary_score:
         evidence_type = "PRIMARY"
@@ -163,11 +197,13 @@ def _fallback_classify_evidence(content: str, filename: str = None, defendant_hi
         "extracted_entities": [],
         "key_legal_issues": [],
         "cluster_id": None,
-        "classification_method": "fallback"
+        "classification_method": "fallback",
     }
 
 
-def _fallback_extract_metadata(content: str, filename: str = None) -> Dict[str, Any]:
+def _fallback_extract_metadata(
+    content: str, filename: Optional[str] = None
+) -> Dict[str, Any]:
     """Fallback metadata extraction when LLM is not available."""
     return {
         "title": filename or "Unknown",
@@ -178,7 +214,7 @@ def _fallback_extract_metadata(content: str, filename: str = None) -> Dict[str, 
         "summary": _basic_summarize(content),
         "relevance_score": 0.5,
         "legal_context": "",
-        "extraction_method": "fallback"
+        "extraction_method": "fallback",
     }
 
 
@@ -189,7 +225,8 @@ def _basic_summarize(text: str, max_sentences: int = 2) -> str:
 
     # Simple sentence splitting
     import re
-    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+
+    sentences = re.split(r"(?<=[.!?])\s+", text.strip())
     sentences = [s for s in sentences if s]
 
     return " ".join(sentences[:max_sentences]) if sentences else text[:200]

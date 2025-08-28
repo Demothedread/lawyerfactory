@@ -12,12 +12,16 @@ the Court Authority Helper's jurisdiction-aware search optimization with
 the Caselaw Researcher's search capabilities.
 """
 
-import logging
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
+import logging
+from typing import Any, Dict, List, Optional
 
-from .court_authority_helper import CourtAuthorityHelper, JurisdictionContext, CaselawAuthority
 from ...compose.bots.caselaw_researcher import CaselawResearcherAgent, CaseLawResult
+from .court_authority_helper import (
+    CaselawAuthority,
+    CourtAuthorityHelper,
+    JurisdictionContext,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +29,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EnhancedCaselawResult:
     """Enhanced caselaw result with authority rating"""
+
     original_case: CaseLawResult
     authority_assessment: CaselawAuthority
     enhanced_relevance_score: float
@@ -52,7 +57,7 @@ class EnhancedCaselawResearcher:
         jurisdiction: str,
         question_type: str = "substantive",
         event_location: Optional[str] = None,
-        venue: Optional[str] = None
+        venue: Optional[str] = None,
     ):
         """
         Set jurisdiction context for authority-aware searching.
@@ -63,19 +68,19 @@ class EnhancedCaselawResearcher:
             event_location: Where events occurred (from intake form)
             venue: Court where case is filed
         """
-        self.jurisdiction_context = self.authority_helper.determine_jurisdiction_context(
-            jurisdiction=jurisdiction,
-            question_type=question_type,
-            event_location=event_location,
-            venue=venue
+        self.jurisdiction_context = (
+            self.authority_helper.determine_jurisdiction_context(
+                jurisdiction=jurisdiction,
+                question_type=question_type,
+                event_location=event_location,
+                venue=venue,
+            )
         )
 
         logger.info(f"Set jurisdiction context: {self.jurisdiction_context}")
 
     async def search_caselaw_with_authority(
-        self,
-        legal_issues: List[str],
-        intake_form_data: Optional[Dict[str, Any]] = None
+        self, legal_issues: List[str], intake_form_data: Optional[Dict[str, Any]] = None
     ) -> List[EnhancedCaselawResult]:
         """
         Enhanced caselaw search with authority ranking.
@@ -90,17 +95,18 @@ class EnhancedCaselawResearcher:
 
         # Set jurisdiction context from intake form if available
         if intake_form_data and not self.jurisdiction_context:
-            jurisdiction = intake_form_data.get('jurisdiction', 'federal')
-            event_location = intake_form_data.get('event_location')
+            jurisdiction = intake_form_data.get("jurisdiction", "federal")
+            event_location = intake_form_data.get("event_location")
             self.set_jurisdiction_context(
-                jurisdiction=jurisdiction,
-                event_location=event_location
+                jurisdiction=jurisdiction, event_location=event_location
             )
 
         # Get search hierarchy for optimization
         search_hierarchy = []
         if self.jurisdiction_context:
-            search_hierarchy = self.authority_helper.get_search_hierarchy(self.jurisdiction_context)
+            search_hierarchy = self.authority_helper.get_search_hierarchy(
+                self.jurisdiction_context
+            )
             logger.info(f"Using search hierarchy with {len(search_hierarchy)} levels")
 
         # Perform base search
@@ -115,20 +121,19 @@ class EnhancedCaselawResearcher:
                     case_citation=case.citation,
                     case_court=case.court,
                     case_jurisdiction=case.jurisdiction,
-                    context=self.jurisdiction_context
+                    context=self.jurisdiction_context,
                 )
 
                 # Calculate enhanced relevance score
                 enhanced_score = self._calculate_enhanced_relevance(
-                    case.relevance_score,
-                    authority.star_rating
+                    case.relevance_score, authority.star_rating
                 )
 
                 enhanced_result = EnhancedCaselawResult(
                     original_case=case,
                     authority_assessment=authority,
                     enhanced_relevance_score=enhanced_score,
-                    search_priority=authority.search_priority
+                    search_priority=authority.search_priority,
                 )
 
                 enhanced_results.append(enhanced_result)
@@ -140,34 +145,42 @@ class EnhancedCaselawResearcher:
                     court=case.court,
                     jurisdiction=case.jurisdiction,
                     authority_level=self.authority_helper._calculate_authority_level(
-                        case.court, case.jurisdiction,
-                        JurisdictionContext(primary_jurisdiction="federal")
+                        case.court,
+                        case.jurisdiction,
+                        JurisdictionContext(primary_jurisdiction="federal"),
                     ),
                     star_rating=1,  # Conservative fallback
                     is_binding=False,
                     reasoning="No jurisdiction context available",
-                    search_priority=5
+                    search_priority=5,
                 )
 
                 enhanced_result = EnhancedCaselawResult(
                     original_case=case,
                     authority_assessment=fallback_authority,
                     enhanced_relevance_score=case.relevance_score,
-                    search_priority=fallback_authority.search_priority
+                    search_priority=fallback_authority.search_priority,
                 )
 
                 enhanced_results.append(enhanced_result)
 
         # Sort by enhanced relevance and authority level
         enhanced_results.sort(
-            key=lambda x: (x.enhanced_relevance_score, x.authority_assessment.star_rating),
-            reverse=True
+            key=lambda x: (
+                x.enhanced_relevance_score,
+                x.authority_assessment.star_rating,
+            ),
+            reverse=True,
         )
 
-        logger.info(f"Enhanced search completed: {len(enhanced_results)} results with authority ratings")
+        logger.info(
+            f"Enhanced search completed: {len(enhanced_results)} results with authority ratings"
+        )
         return enhanced_results
 
-    def _calculate_enhanced_relevance(self, base_relevance: float, authority_stars: int) -> float:
+    def _calculate_enhanced_relevance(
+        self, base_relevance: float, authority_stars: int
+    ) -> float:
         """
         Calculate enhanced relevance score combining base relevance with authority level.
 
@@ -188,9 +201,7 @@ class EnhancedCaselawResearcher:
         return min(enhanced_score, 1.0)  # Cap at 1.0
 
     async def get_search_recommendations(
-        self,
-        found_cases: int,
-        min_cases_needed: int = 2
+        self, found_cases: int, min_cases_needed: int = 2
     ) -> List[Dict[str, Any]]:
         """
         Get search recommendations based on results.
@@ -209,10 +220,12 @@ class EnhancedCaselawResearcher:
         return self.authority_helper.optimize_search_parameters(
             context=self.jurisdiction_context,
             found_cases=found_cases,
-            min_cases_needed=min_cases_needed
+            min_cases_needed=min_cases_needed,
         )
 
-    def generate_authority_report(self, enhanced_results: List[EnhancedCaselawResult]) -> str:
+    def generate_authority_report(
+        self, enhanced_results: List[EnhancedCaselawResult]
+    ) -> str:
         """
         Generate a report on the authority levels of found cases.
 
@@ -229,8 +242,12 @@ class EnhancedCaselawResearcher:
         report = "=== CASELAW AUTHORITY ANALYSIS ===\n\n"
 
         # Group by authority level
-        binding_cases = [r for r in enhanced_results if r.authority_assessment.is_binding]
-        persuasive_cases = [r for r in enhanced_results if not r.authority_assessment.is_binding]
+        binding_cases = [
+            r for r in enhanced_results if r.authority_assessment.is_binding
+        ]
+        persuasive_cases = [
+            r for r in enhanced_results if not r.authority_assessment.is_binding
+        ]
 
         report += f"TOTAL CASES FOUND: {len(enhanced_results)}\n"
         report += f"BINDING AUTHORITY: {len(binding_cases)}\n"
@@ -259,9 +276,7 @@ class EnhancedCaselawResearcher:
         return report
 
     async def add_authority_to_evidence_table(
-        self,
-        evidence_table_path: str,
-        enhanced_results: List[EnhancedCaselawResult]
+        self, evidence_table_path: str, enhanced_results: List[EnhancedCaselawResult]
     ) -> bool:
         """
         Add authority ratings to evidence table entries.
@@ -276,7 +291,7 @@ class EnhancedCaselawResearcher:
 
         try:
             # Load evidence table
-            with open(evidence_table_path, 'r', encoding='utf-8') as f:
+            with open(evidence_table_path, "r", encoding="utf-8") as f:
                 table_data = json.load(f)
 
             # Create mapping from citations to authority data
@@ -284,23 +299,25 @@ class EnhancedCaselawResearcher:
             for result in enhanced_results:
                 citation = result.original_case.citation
                 authority_map[citation] = {
-                    'stars': result.authority_assessment.star_rating,
-                    'level': result.authority_assessment.authority_level.name,
-                    'is_binding': result.authority_assessment.is_binding,
-                    'reasoning': result.authority_assessment.reasoning,
-                    'color_code': self._get_color_code(result.authority_assessment.star_rating)
+                    "stars": result.authority_assessment.star_rating,
+                    "level": result.authority_assessment.authority_level.name,
+                    "is_binding": result.authority_assessment.is_binding,
+                    "reasoning": result.authority_assessment.reasoning,
+                    "color_code": self._get_color_code(
+                        result.authority_assessment.star_rating
+                    ),
                 }
 
             # Update evidence entries with authority data
             updated_count = 0
-            for entry in table_data.get('evidence_entries', []):
-                citation = entry.get('bluebook_citation', '')
+            for entry in table_data.get("evidence_entries", []):
+                citation = entry.get("bluebook_citation", "")
                 if citation in authority_map:
-                    entry['authority_rating'] = authority_map[citation]
+                    entry["authority_rating"] = authority_map[citation]
                     updated_count += 1
 
             # Save updated table
-            with open(evidence_table_path, 'w', encoding='utf-8') as f:
+            with open(evidence_table_path, "w", encoding="utf-8") as f:
                 json.dump(table_data, f, indent=2, ensure_ascii=False)
 
             logger.info(f"Added authority ratings to {updated_count} evidence entries")
@@ -313,11 +330,11 @@ class EnhancedCaselawResearcher:
     def _get_color_code(self, star_rating: int) -> str:
         """Get color code for star rating display"""
         if star_rating == 0:
-            return "gray"      # No authority
+            return "gray"  # No authority
         elif star_rating <= 3:
-            return "copper"    # Persuasive (least to most)
+            return "copper"  # Persuasive (least to most)
         else:
-            return "jade"      # Binding (least to most)
+            return "jade"  # Binding (least to most)
 
     # Delegate other methods to base researcher
     async def process(self, message: str) -> str:
@@ -341,9 +358,7 @@ class EnhancedCaselawResearcher:
 
 # Integration example for evidence table processing
 async def process_evidence_with_authority(
-    evidence_table_path: str,
-    intake_form_data: Dict[str, Any],
-    legal_issues: List[str]
+    evidence_table_path: str, intake_form_data: Dict[str, Any], legal_issues: List[str]
 ) -> Dict[str, Any]:
     """
     Complete workflow for processing evidence with authority ratings.
@@ -357,32 +372,32 @@ async def process_evidence_with_authority(
 
     # Set jurisdiction context from intake form
     researcher.set_jurisdiction_context(
-        jurisdiction=intake_form_data.get('jurisdiction', 'federal'),
-        event_location=intake_form_data.get('event_location'),
-        question_type="substantive"  # Could be determined from context
+        jurisdiction=intake_form_data.get("jurisdiction", "federal"),
+        event_location=intake_form_data.get("event_location"),
+        question_type="substantive",  # Could be determined from context
     )
 
     # Search for caselaw with authority enhancement
     enhanced_results = await researcher.search_caselaw_with_authority(
-        legal_issues=legal_issues,
-        intake_form_data=intake_form_data
+        legal_issues=legal_issues, intake_form_data=intake_form_data
     )
 
     # Add authority ratings to evidence table
     success = await researcher.add_authority_to_evidence_table(
-        evidence_table_path=evidence_table_path,
-        enhanced_results=enhanced_results
+        evidence_table_path=evidence_table_path, enhanced_results=enhanced_results
     )
 
     # Generate authority report
     report = researcher.generate_authority_report(enhanced_results)
 
     return {
-        'success': success,
-        'results_count': len(enhanced_results),
-        'binding_cases': len([r for r in enhanced_results if r.authority_assessment.is_binding]),
-        'authority_report': report,
-        'enhanced_results': [r.__dict__ for r in enhanced_results]
+        "success": success,
+        "results_count": len(enhanced_results),
+        "binding_cases": len(
+            [r for r in enhanced_results if r.authority_assessment.is_binding]
+        ),
+        "authority_report": report,
+        "enhanced_results": [r.__dict__ for r in enhanced_results],
     }
 
 
@@ -397,16 +412,16 @@ if __name__ == "__main__":
         researcher.set_jurisdiction_context(
             jurisdiction="federal",
             question_type="substantive",
-            event_location="California"  # From intake form
+            event_location="California",  # From intake form
         )
 
         # Search with authority enhancement
         results = await researcher.search_caselaw_with_authority(
             legal_issues=["negligence", "duty of care"],
             intake_form_data={
-                'jurisdiction': 'federal',
-                'event_location': 'California'
-            }
+                "jurisdiction": "federal",
+                "event_location": "California",
+            },
         )
 
         # Print results with authority ratings

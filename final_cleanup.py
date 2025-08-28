@@ -10,9 +10,10 @@ This script performs the final cleanup tasks:
 """
 
 import os
-import shutil
 from pathlib import Path
-from typing import List, Dict
+import shutil
+from typing import Dict, List
+
 
 def find_backup_files() -> List[Path]:
     """Find all .bak files in the codebase"""

@@ -1,7 +1,8 @@
+import argparse
 import os
 import sys
-import argparse
 from typing import List
+
 
 def fix_headers_in_file(path: str, backup: bool = True, apply_changes: bool = True) -> bool:
     """Ensure triple quote at start if file contains a docstring later.

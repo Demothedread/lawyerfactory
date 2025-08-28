@@ -9,11 +9,11 @@ Agent registry and coordination system for the LawyerFactory orchestration.
 Manages specialized bots and their lifecycle.
 """
 
-import asyncio
-import logging
 from abc import ABC, abstractmethod
+import asyncio
 from dataclasses import dataclass
 from enum import Enum
+import logging
 from typing import Any, Dict, List, Optional, Type
 
 from .workflow_models import PhaseStatus, WorkflowPhase, WorkflowTask
@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 
 class AgentCapability(Enum):
     """Agent capabilities for task assignment"""
+
     DOCUMENT_INGESTION = "document_ingestion"
     TEXT_EXTRACTION = "text_extraction"
     LEGAL_RESEARCH = "legal_research"
@@ -41,6 +42,7 @@ class AgentCapability(Enum):
 @dataclass
 class AgentConfig:
     """Configuration for agent instances"""
+
     agent_type: str
     max_concurrent: int = 1
     timeout_seconds: int = 300
@@ -77,10 +79,12 @@ class AgentInterface(ABC):
                     if extra:
                         if config.config is None:
                             config.config = {}
-                        meta = config.config.get('meta', {})
+                        meta = config.config.get("meta", {})
                         meta.update(extra)
-                        config.config['meta'] = meta
-                        logger.debug(f"AgentInterface received extra config keys and stored under config.meta: {list(extra.keys())}")
+                        config.config["meta"] = meta
+                        logger.debug(
+                            f"AgentInterface received extra config keys and stored under config.meta: {list(extra.keys())}"
+                        )
             except Exception as e:
                 raise TypeError(f"Invalid config dict for AgentInterface: {e}")
 
@@ -90,7 +94,9 @@ class AgentInterface(ABC):
         self.current_task_id: Optional[str] = None
 
     @abstractmethod
-    async def execute_task(self, task: WorkflowTask, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_task(
+        self, task: WorkflowTask, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute a specific task with given context"""
         pass
 
@@ -128,20 +134,34 @@ class AgentInterface(ABC):
             WorkflowPhase.EDITING: AgentCapability.DOCUMENT_REVIEW,
             WorkflowPhase.ORCHESTRATION: AgentCapability.ORCHESTRATION,
         }
-        
+
         # Check for AI-specific task types
-        task_description = task.description.lower() if hasattr(task, 'description') else ""
-        task_input_data = getattr(task, 'input_data', {})
-        task_type = task_input_data.get('task_type', '')
-        
+        task_description = (
+            task.description.lower() if hasattr(task, "description") else ""
+        )
+        task_input_data = getattr(task, "input_data", {})
+        task_type = task_input_data.get("task_type", "")
+
         # Map AI-specific tasks to capabilities
-        if 'ai_case_classification' in task_description or task_type == 'ai_case_classification':
+        if (
+            "ai_case_classification" in task_description
+            or task_type == "ai_case_classification"
+        ):
             return AgentCapability.AI_CASE_CLASSIFICATION
-        elif 'pdf_form_processing' in task_description or task_type == 'pdf_form_processing':
+        elif (
+            "pdf_form_processing" in task_description
+            or task_type == "pdf_form_processing"
+        ):
             return AgentCapability.PDF_FORM_PROCESSING
-        elif 'automated_field_mapping' in task_description or task_type == 'automated_field_mapping':
+        elif (
+            "automated_field_mapping" in task_description
+            or task_type == "automated_field_mapping"
+        ):
             return AgentCapability.AUTOMATED_FIELD_MAPPING
-        elif 'court_form_generation' in task_description or task_type == 'court_form_generation':
+        elif (
+            "court_form_generation" in task_description
+            or task_type == "court_form_generation"
+        ):
             return AgentCapability.COURT_FORM_GENERATION
         return capability_map.get(task.phase, AgentCapability.ORCHESTRATION)
 
@@ -149,16 +169,24 @@ class AgentInterface(ABC):
 class MockAgentInterface(AgentInterface):
     """Mock agent implementation for testing and development"""
 
-    async def execute_task(self, task: WorkflowTask, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_task(
+        self, task: WorkflowTask, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Mock task execution - returns a simulated result"""
-        logger.info(f"Mock {self.agent_type} executing task {task.id}: {task.description}")
-        
+        logger.info(
+            f"Mock {self.agent_type} executing task {task.id}: {task.description}"
+        )
+
         # Simulate variable processing time depending on priority
         try:
             base_delay = 0.5
             if getattr(task, "priority", None) is not None:
                 # map priority enum/int to delays conservatively
-                base_delay += 0.2 * (getattr(task, "priority").value if hasattr(task.priority, "value") else 1)
+                base_delay += 0.2 * (
+                    getattr(task, "priority").value
+                    if hasattr(task.priority, "value")
+                    else 1
+                )
         except Exception:
             base_delay = 1.0
 
@@ -171,12 +199,22 @@ class MockAgentInterface(AgentInterface):
             description = (getattr(task, "description", "") or "").lower()
 
             # AI-specific behaviors
-            if task_type == "ai_case_classification" or "ai case classification" in description:
+            if (
+                task_type == "ai_case_classification"
+                or "ai case classification" in description
+            ):
                 result = {
                     "classification": "contract_dispute",
                     "confidence": 0.87,
                     "context_updates": {"case_type": "contract_dispute"},
-                    "entities": [{"id": "e1", "type": "LEGAL_ISSUE", "name": "Breach of Contract", "confidence": 0.92}]
+                    "entities": [
+                        {
+                            "id": "e1",
+                            "type": "LEGAL_ISSUE",
+                            "name": "Breach of Contract",
+                            "confidence": 0.92,
+                        }
+                    ],
                 }
                 return result
 
@@ -185,23 +223,31 @@ class MockAgentInterface(AgentInterface):
                     "forms_found": ["civil_complaint_form.pdf"],
                     "pages_processed": 3,
                     "context_updates": {"forms_detected": True},
-                    "entities": []
+                    "entities": [],
                 }
                 return result
 
             if task_type == "automated_field_mapping" or "field mapping" in description:
                 result = {
-                    "field_mappings": {"plaintiff_name": "John Doe", "defendant_name": "Acme LLC"},
+                    "field_mappings": {
+                        "plaintiff_name": "John Doe",
+                        "defendant_name": "Acme LLC",
+                    },
                     "confidence": 0.78,
-                    "context_updates": {"field_mapping_complete": True}
+                    "context_updates": {"field_mapping_complete": True},
                 }
                 return result
 
-            if task_type == "court_form_generation" or "court form generation" in description:
+            if (
+                task_type == "court_form_generation"
+                or "court form generation" in description
+            ):
                 result = {
-                    "generated_forms": [{"filename": "filled_complaint.pdf", "size_bytes": 123456}],
+                    "generated_forms": [
+                        {"filename": "filled_complaint.pdf", "size_bytes": 123456}
+                    ],
                     "requires_human_review": True,
-                    "context_updates": {"forms_ready_for_review": True}
+                    "context_updates": {"forms_ready_for_review": True},
                 }
                 return result
 
@@ -209,38 +255,55 @@ class MockAgentInterface(AgentInterface):
             if task.phase == WorkflowPhase.INTAKE:
                 return {
                     "entities": [
-                        {"id": "p1", "type": "PERSON", "name": "Jane Plaintiff", "confidence": 0.95},
-                        {"id": "o1", "type": "ORGANIZATION", "name": "Doe & Co", "confidence": 0.88}
+                        {
+                            "id": "p1",
+                            "type": "PERSON",
+                            "name": "Jane Plaintiff",
+                            "confidence": 0.95,
+                        },
+                        {
+                            "id": "o1",
+                            "type": "ORGANIZATION",
+                            "name": "Doe & Co",
+                            "confidence": 0.88,
+                        },
                     ],
                     "relationships": [],
                     "stats": {"pages": 10, "entities_extracted": 2},
-                    "context_updates": {"intake_processed": True}
+                    "context_updates": {"intake_processed": True},
                 }
 
             if task.phase == WorkflowPhase.RESEARCH:
                 return {
                     "research_results": [
-                        {"source": "CaseLawDB", "snippet": "Relevant ruling ...", "score": 0.82}
+                        {
+                            "source": "CaseLawDB",
+                            "snippet": "Relevant ruling ...",
+                            "score": 0.82,
+                        }
                     ],
-                    "context_updates": {"research_collected": True}
+                    "context_updates": {"research_collected": True},
                 }
 
             if task.phase == WorkflowPhase.DRAFTING:
                 return {
                     "document_text": "DRAFT: Plaintiff alleges ...",
                     "tokens_used": 512,
-                    "context_updates": {"draft_ready": True}
+                    "context_updates": {"draft_ready": True},
                 }
 
             if task.phase in (WorkflowPhase.LEGAL_REVIEW, WorkflowPhase.EDITING):
                 return {
                     "issues_found": [],
                     "suggestions": ["Minor citation fix"],
-                    "context_updates": {"review_passed": True}
+                    "context_updates": {"review_passed": True},
                 }
 
             # Default fallback
-            return {"result": f"Mock execution completed for {task.id}", "context_updates": {}}
+            return {
+                "result": f"Mock execution completed for {task.id}",
+                "context_updates": {},
+            }
 
         except Exception as e:
             logger.error(f"MockAgent execution error for task {task.id}: {e}")
@@ -277,7 +340,9 @@ class AgentLoadBalancer:
             return min(agents, key=lambda a: self.usage_metrics.get(a.agent_type, 0))
 
         # Return the least used available agent
-        return min(available_agents, key=lambda a: self.usage_metrics.get(a.agent_type, 0))
+        return min(
+            available_agents, key=lambda a: self.usage_metrics.get(a.agent_type, 0)
+        )
 
     def record_usage(self, agent_type: str):
         """Record agent usage for load balancing"""
@@ -298,53 +363,62 @@ class AgentRegistry:
         default_agents = [
             AgentConfig(
                 agent_type="ReaderBot",
-                capabilities=[AgentCapability.DOCUMENT_INGESTION, AgentCapability.TEXT_EXTRACTION],
-                max_concurrent=2
+                capabilities=[
+                    AgentCapability.DOCUMENT_INGESTION,
+                    AgentCapability.TEXT_EXTRACTION,
+                ],
+                max_concurrent=2,
             ),
             AgentConfig(
                 agent_type="ParalegalBot",
-                capabilities=[AgentCapability.CASE_ANALYSIS, AgentCapability.DOCUMENT_REVIEW],
-                max_concurrent=3
+                capabilities=[
+                    AgentCapability.CASE_ANALYSIS,
+                    AgentCapability.DOCUMENT_REVIEW,
+                ],
+                max_concurrent=3,
             ),
             AgentConfig(
                 agent_type="OutlinerBot",
                 capabilities=[AgentCapability.CASE_ANALYSIS],
-                max_concurrent=1
+                max_concurrent=1,
             ),
             AgentConfig(
                 agent_type="ResearchBot",
                 capabilities=[AgentCapability.LEGAL_RESEARCH],
-                max_concurrent=2
+                max_concurrent=2,
             ),
             AgentConfig(
                 agent_type="LegalResearcherBot",
                 capabilities=[AgentCapability.LEGAL_RESEARCH],
-                max_concurrent=2
+                max_concurrent=2,
             ),
             AgentConfig(
                 agent_type="WriterBot",
                 capabilities=[AgentCapability.LEGAL_WRITING],
-                max_concurrent=1
+                max_concurrent=1,
             ),
             AgentConfig(
                 agent_type="LegalFormatterBot",
-                capabilities=[AgentCapability.FORMATTING, AgentCapability.DOCUMENT_REVIEW],
-                max_concurrent=2
+                capabilities=[
+                    AgentCapability.FORMATTING,
+                    AgentCapability.DOCUMENT_REVIEW,
+                ],
+                max_concurrent=2,
             ),
             AgentConfig(
                 agent_type="LegalProcedureBot",
                 capabilities=[AgentCapability.DOCUMENT_REVIEW],
-                max_concurrent=1
+                max_concurrent=1,
             ),
             AgentConfig(
                 agent_type="EditorBot",
                 capabilities=[AgentCapability.DOCUMENT_REVIEW],
-                max_concurrent=1
+                max_concurrent=1,
             ),
             AgentConfig(
                 agent_type="MaestroBot",
                 capabilities=[AgentCapability.ORCHESTRATION],
-                max_concurrent=1
+                max_concurrent=1,
             ),
             AgentConfig(
                 agent_type="AIDocumentAgent",
@@ -353,76 +427,108 @@ class AgentRegistry:
                     AgentCapability.PDF_FORM_PROCESSING,
                     AgentCapability.AUTOMATED_FIELD_MAPPING,
                     AgentCapability.COURT_FORM_GENERATION,
-                    AgentCapability.LEGAL_WRITING
+                    AgentCapability.LEGAL_WRITING,
                 ],
                 max_concurrent=2,
                 timeout_seconds=600,
                 config={
-                    'forms_directory': 'docs/Court_files',
-                    'output_directory': 'output',
-                    'max_retries': 3,
-                    'processing_timeout': 300
-                }
+                    "forms_directory": "docs/Court_files",
+                    "output_directory": "output",
+                    "max_retries": 3,
+                    "processing_timeout": 300,
+                },
             ),
         ]
 
         # Register real agents when available, fallback to mock agents
         for config in default_agents:
             real_agent_class = None
-            
+
             # Try to import and use real agents
             try:
                 if config.agent_type == "AIDocumentAgent":
                     from .bots.ai_document_agent import AIDocumentAgent
+
                     real_agent_class = AIDocumentAgent
-                    logger.info(f"✓ AIDocumentAgent properly inherits from AgentInterface: {issubclass(AIDocumentAgent, AgentInterface)}")
+                    logger.info(
+                        f"✓ AIDocumentAgent properly inherits from AgentInterface: {issubclass(AIDocumentAgent, AgentInterface)}"
+                    )
                 elif config.agent_type == "ResearchBot":
                     from .bots.research_bot import ResearchBot
+
                     real_agent_class = ResearchBot
-                    logger.info(f"✓ ResearchBot properly inherits from AgentInterface: {issubclass(ResearchBot, AgentInterface)}")
+                    logger.info(
+                        f"✓ ResearchBot properly inherits from AgentInterface: {issubclass(ResearchBot, AgentInterface)}"
+                    )
                 elif config.agent_type == "WriterBot":
                     from .bots.writer_bot import WriterBot
+
                     real_agent_class = WriterBot
-                    logger.warning(f"⚠ WriterBot inheritance check - inherits from AgentInterface: {issubclass(WriterBot, AgentInterface)}")
+                    logger.warning(
+                        f"⚠ WriterBot inheritance check - inherits from AgentInterface: {issubclass(WriterBot, AgentInterface)}"
+                    )
                     logger.warning(f"⚠ WriterBot MRO: {WriterBot.__mro__}")
-                elif config.agent_type == "EditorBot" or config.agent_type == "LegalFormatterBot":
+                elif (
+                    config.agent_type == "EditorBot"
+                    or config.agent_type == "LegalFormatterBot"
+                ):
                     from .bots.legal_editor import LegalEditorBot
+
                     real_agent_class = LegalEditorBot
-                    logger.warning(f"⚠ LegalEditorBot inheritance check - inherits from AgentInterface: {issubclass(LegalEditorBot, AgentInterface)}")
+                    logger.warning(
+                        f"⚠ LegalEditorBot inheritance check - inherits from AgentInterface: {issubclass(LegalEditorBot, AgentInterface)}"
+                    )
                     logger.warning(f"⚠ LegalEditorBot MRO: {LegalEditorBot.__mro__}")
                 elif config.agent_type == "LegalProcedureBot":
                     from .bots.legal_procedure_bot import LegalProcedureBot
+
                     real_agent_class = LegalProcedureBot
-                    logger.info(f"✓ LegalProcedureBot properly inherits from AgentInterface: {issubclass(LegalProcedureBot, AgentInterface)}")
+                    logger.info(
+                        f"✓ LegalProcedureBot properly inherits from AgentInterface: {issubclass(LegalProcedureBot, AgentInterface)}"
+                    )
                 elif config.agent_type == "MaestroBot":
                     from .bots.maestro_bot import MaestroBot
+
                     real_agent_class = MaestroBot
-                    logger.info(f"✓ MaestroBot properly inherits from AgentInterface: {issubclass(MaestroBot, AgentInterface)}")
+                    logger.info(
+                        f"✓ MaestroBot properly inherits from AgentInterface: {issubclass(MaestroBot, AgentInterface)}"
+                    )
                 elif config.agent_type == "ReaderBot":
                     from .bots.reader_bot import ReaderBot
+
                     real_agent_class = ReaderBot
-                    logger.info(f"✓ ReaderBot properly inherits from AgentInterface: {issubclass(ReaderBot, AgentInterface)}")
-                
+                    logger.info(
+                        f"✓ ReaderBot properly inherits from AgentInterface: {issubclass(ReaderBot, AgentInterface)}"
+                    )
+
                 if real_agent_class and issubclass(real_agent_class, AgentInterface):
                     self.register_agent(config.agent_type, real_agent_class, config)
-                    logger.info(f"✅ Registered real {config.agent_type} agent (proper AgentInterface)")
+                    logger.info(
+                        f"✅ Registered real {config.agent_type} agent (proper AgentInterface)"
+                    )
                 else:
                     # Use mock agent for agent types without real implementations or improper inheritance
                     self.register_agent(config.agent_type, MockAgentInterface, config)
-                    logger.error(f"❌ Using mock agent for {config.agent_type} - does not inherit from AgentInterface properly")
-                    
+                    logger.error(
+                        f"❌ Using mock agent for {config.agent_type} - does not inherit from AgentInterface properly"
+                    )
+
             except ImportError as e:
-                logger.warning(f"{config.agent_type} not available ({e}), using mock agent")
+                logger.warning(
+                    f"{config.agent_type} not available ({e}), using mock agent"
+                )
                 self.register_agent(config.agent_type, MockAgentInterface, config)
 
-    def register_agent(self, agent_type: str, agent_class: Type[AgentInterface], config: AgentConfig):
+    def register_agent(
+        self, agent_type: str, agent_class: Type[AgentInterface], config: AgentConfig
+    ):
         """Register a new agent type"""
         self.agent_configs[agent_type] = config
         self.agents[agent_type] = {
-            'class': agent_class,
-            'instances': [],
-            'max_concurrent': config.max_concurrent,
-            'current_load': 0
+            "class": agent_class,
+            "instances": [],
+            "max_concurrent": config.max_concurrent,
+            "current_load": 0,
         }
         logger.info(f"Registered agent type: {agent_type}")
 
@@ -435,15 +541,15 @@ class AgentRegistry:
         config = self.agent_configs[agent_type]
 
         # Check if we can create a new instance
-        if len(agent_info['instances']) < agent_info['max_concurrent']:
-            instance = agent_info['class'](config)
+        if len(agent_info["instances"]) < agent_info["max_concurrent"]:
+            instance = agent_info["class"](config)
             await instance.initialize()
-            agent_info['instances'].append(instance)
+            agent_info["instances"].append(instance)
             logger.info(f"Created new {agent_type} instance")
             return instance
 
         # Use load balancer to select best instance
-        agent = self.load_balancer.select_agent(agent_info['instances'])
+        agent = self.load_balancer.select_agent(agent_info["instances"])
         self.load_balancer.record_usage(agent_type)
         return agent
 
@@ -455,12 +561,12 @@ class AgentRegistry:
     async def shutdown_all_agents(self):
         """Shutdown all agent instances"""
         for agent_type, agent_info in self.agents.items():
-            for instance in agent_info['instances']:
+            for instance in agent_info["instances"]:
                 try:
                     await instance.cleanup()
                 except Exception as e:
                     logger.error(f"Error cleaning up {agent_type}: {e}")
-            agent_info['instances'].clear()
+            agent_info["instances"].clear()
         logger.info("All agents shut down")
 
     def get_agent_status(self) -> Dict[str, Any]:
@@ -468,10 +574,12 @@ class AgentRegistry:
         status = {}
         for agent_type, agent_info in self.agents.items():
             status[agent_type] = {
-                'instances': len(agent_info['instances']),
-                'max_concurrent': agent_info['max_concurrent'],
-                'current_load': agent_info['current_load'],
-                'busy_instances': sum(1 for instance in agent_info['instances'] if instance.is_busy)
+                "instances": len(agent_info["instances"]),
+                "max_concurrent": agent_info["max_concurrent"],
+                "current_load": agent_info["current_load"],
+                "busy_instances": sum(
+                    1 for instance in agent_info["instances"] if instance.is_busy
+                ),
             }
         return status
 
@@ -479,13 +587,13 @@ class AgentRegistry:
         """Get list of agent types suitable for a specific phase"""
         # Agent assignment rules as defined in the specification
         phase_assignments = {
-            WorkflowPhase.INTAKE: ['ReaderBot', 'ParalegalBot', 'AIDocumentAgent'],
-            WorkflowPhase.OUTLINE: ['OutlinerBot', 'ParalegalBot'],
-            WorkflowPhase.RESEARCH: ['ResearchBot', 'LegalResearcherBot'],
-            WorkflowPhase.DRAFTING: ['WriterBot', 'ParalegalBot', 'AIDocumentAgent'],
-            WorkflowPhase.LEGAL_REVIEW: ['LegalFormatterBot', 'LegalProcedureBot'],
-            WorkflowPhase.EDITING: ['EditorBot'],
-            WorkflowPhase.ORCHESTRATION: ['MaestroBot']
+            WorkflowPhase.INTAKE: ["ReaderBot", "ParalegalBot", "AIDocumentAgent"],
+            WorkflowPhase.OUTLINE: ["OutlinerBot", "ParalegalBot"],
+            WorkflowPhase.RESEARCH: ["ResearchBot", "LegalResearcherBot"],
+            WorkflowPhase.DRAFTING: ["WriterBot", "ParalegalBot", "AIDocumentAgent"],
+            WorkflowPhase.LEGAL_REVIEW: ["LegalFormatterBot", "LegalProcedureBot"],
+            WorkflowPhase.EDITING: ["EditorBot"],
+            WorkflowPhase.ORCHESTRATION: ["MaestroBot"],
         }
         return phase_assignments.get(phase, [])
 
@@ -498,9 +606,9 @@ class TaskScheduler:
 
     def get_ready_tasks(self, workflow_state) -> List:
         """Get tasks that are ready to execute"""
-        
+
         ready_tasks = []
-        
+
         for task in workflow_state.tasks.values():
             if task.status == PhaseStatus.PENDING:
                 if self._are_dependencies_satisfied(task, workflow_state):
@@ -509,7 +617,7 @@ class TaskScheduler:
 
         # Sort by priority and phase order
         ready_tasks.sort(key=lambda t: (t.phase.value, -t.priority.value))
-        
+
         return ready_tasks
 
     def _are_dependencies_satisfied(self, task, workflow_state) -> bool:
@@ -527,7 +635,7 @@ class TaskScheduler:
         suitable_agents = self.agent_registry.get_agents_for_phase(task.phase)
         if not suitable_agents:
             return False
-        
+
         # For now, assume resources are available if agents exist
         # In a more sophisticated implementation, this would check actual availability
         return True

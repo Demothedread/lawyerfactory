@@ -4,19 +4,20 @@ Advanced document classification that goes beyond primary/secondary determinatio
 Creates specialized vector clusters for different legal document types.
 """
 
-import logging
-import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+import logging
 from pathlib import Path
+import re
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
 
 class DocumentType(Enum):
     """Types of legal documents that can be categorized"""
+
     JUDGE_OPINION = "judge_opinion"
     PLAINTIFF_COMPLAINT = "plaintiff_complaint"
     DEFENDANT_ANSWER = "defendant_answer"
@@ -33,6 +34,7 @@ class DocumentType(Enum):
 
 class DocumentAuthority(Enum):
     """Authority level of legal documents"""
+
     BINDING_PRECEDENT = "binding_precedent"
     PERSUASIVE_PRECEDENT = "persuasive_precedent"
     SECONDARY_SOURCE = "secondary_source"
@@ -43,6 +45,7 @@ class DocumentAuthority(Enum):
 @dataclass
 class DocumentMetadata:
     """Enhanced metadata for legal documents"""
+
     document_id: str
     document_type: DocumentType
     authority_level: DocumentAuthority
@@ -63,6 +66,7 @@ class DocumentMetadata:
 @dataclass
 class DocumentCluster:
     """A cluster of related legal documents"""
+
     cluster_id: str
     cluster_type: str  # e.g., "tesla_complaints", "negligence_opinions"
     documents: List[DocumentMetadata] = field(default_factory=list)
@@ -95,76 +99,77 @@ class EnhancedDocumentCategorizer:
         """Initialize regex patterns for document type detection"""
         return {
             DocumentType.JUDGE_OPINION: [
-                r'(?:opinion|memorandum|decision|order).*?(?:judge|court|justice)',
-                r'(?:this\s+court|we\s+find|the\s+court\s+holds)',
-                r'(?:affirm|reverse|remand|dismiss).*?(?:case|action|complaint)',
-                r'case\s+no\.|cv-\d+|civil\s+action\s+no\.',
-                r'(?:slip\s+opinion|unpublished\s+opinion|published\s+opinion)'
+                r"(?:opinion|memorandum|decision|order).*?(?:judge|court|justice)",
+                r"(?:this\s+court|we\s+find|the\s+court\s+holds)",
+                r"(?:affirm|reverse|remand|dismiss).*?(?:case|action|complaint)",
+                r"case\s+no\.|cv-\d+|civil\s+action\s+no\.",
+                r"(?:slip\s+opinion|unpublished\s+opinion|published\s+opinion)",
             ],
             DocumentType.PLAINTIFF_COMPLAINT: [
-                r'complaint\s+for|complaint\s+against',
-                r'plaintiff.*?(?:alleges|claims|complains)',
-                r'count\s+(?:one|two|three|four|five|\d+)',
-                r'(?:breach|negligence|fraud|defamation).*?(?:claim|cause|action)',
-                r'wherefore.*?(?:plaintiff|petitioner).*?(?:prays|demands)'
+                r"complaint\s+for|complaint\s+against",
+                r"plaintiff.*?(?:alleges|claims|complains)",
+                r"count\s+(?:one|two|three|four|five|\d+)",
+                r"(?:breach|negligence|fraud|defamation).*?(?:claim|cause|action)",
+                r"wherefore.*?(?:plaintiff|petitioner).*?(?:prays|demands)",
             ],
             DocumentType.DEFENDANT_ANSWER: [
-                r'answer\s+to.*?(?:complaint|petition)',
-                r'defendant.*?(?:admits|denies|alleges)',
-                r'affirmative\s+defenses?|defenses\s+to.*?(?:complaint|claim)',
-                r'(?:general|special).*?(?:denial|denials)',
-                r'come\s+now.*?(?:defendant|respondent)'
+                r"answer\s+to.*?(?:complaint|petition)",
+                r"defendant.*?(?:admits|denies|alleges)",
+                r"affirmative\s+defenses?|defenses\s+to.*?(?:complaint|claim)",
+                r"(?:general|special).*?(?:denial|denials)",
+                r"come\s+now.*?(?:defendant|respondent)",
             ],
             DocumentType.DEFENDANT_MOTION: [
-                r'motion\s+to.*?(?:dismiss|strike|compel|exclude)',
-                r'defendant.*?(?:moves|requests).*?(?:court|judgment)',
-                r'pursuant\s+to.*?(?:rule|code).*?(?:motion|request)',
-                r'(?:notice|memorandum).*?(?:motion|points?\s+and\s+authorities)'
+                r"motion\s+to.*?(?:dismiss|strike|compel|exclude)",
+                r"defendant.*?(?:moves|requests).*?(?:court|judgment)",
+                r"pursuant\s+to.*?(?:rule|code).*?(?:motion|request)",
+                r"(?:notice|memorandum).*?(?:motion|points?\s+and\s+authorities)",
             ],
             DocumentType.COUNTERCLAIM: [
-                r'counterclaim|counter-claim|cross-claim',
-                r'(?:defendant|respondent).*?(?:counterclaims|alleges)',
-                r'reciprocal.*?(?:claim|action)|set-off|offset'
+                r"counterclaim|counter-claim|cross-claim",
+                r"(?:defendant|respondent).*?(?:counterclaims|alleges)",
+                r"reciprocal.*?(?:claim|action)|set-off|offset",
             ],
             DocumentType.COURT_ORDER: [
-                r'order\s+granting|order\s+denying|court\s+order',
-                r'(?:this|the)\s+court\s+orders?|ordered.*?as\s+follows',
-                r'judgment\s+entered|final\s+judgment|summary\s+judgment'
+                r"order\s+granting|order\s+denying|court\s+order",
+                r"(?:this|the)\s+court\s+orders?|ordered.*?as\s+follows",
+                r"judgment\s+entered|final\s+judgment|summary\s+judgment",
             ],
             DocumentType.BRIEF: [
-                r'(?:opening|answering|reply|amicus).*?(?:brief|memorandum)',
-                r'points?\s+and\s+authorities|statement\s+of\s+facts',
-                r'(?:appellant|appellee|petitioner|respondent).*?(?:brief|memorandum)'
-            ]
+                r"(?:opening|answering|reply|amicus).*?(?:brief|memorandum)",
+                r"points?\s+and\s+authorities|statement\s+of\s+facts",
+                r"(?:appellant|appellee|petitioner|respondent).*?(?:brief|memorandum)",
+            ],
         }
 
     def _initialize_authority_patterns(self) -> Dict[DocumentAuthority, List[str]]:
         """Initialize patterns for determining document authority"""
         return {
             DocumentAuthority.BINDING_PRECEDENT: [
-                r'(?:supreme\s+court|appellate\s+court|court\s+of\s+appeals)',
-                r'published\s+opinion|official\s+reporter',
-                r'(?:en\s+banc|full\s+court).*?(?:decision|opinion)'
+                r"(?:supreme\s+court|appellate\s+court|court\s+of\s+appeals)",
+                r"published\s+opinion|official\s+reporter",
+                r"(?:en\s+banc|full\s+court).*?(?:decision|opinion)",
             ],
             DocumentAuthority.PERSUASIVE_PRECEDENT: [
-                r'(?:district\s+court|trial\s+court|unpublished\s+opinion)',
-                r'(?:memorandum\s+opinion|slip\s+opinion)',
-                r'other\s+jurisdiction|foreign\s+court'
+                r"(?:district\s+court|trial\s+court|unpublished\s+opinion)",
+                r"(?:memorandum\s+opinion|slip\s+opinion)",
+                r"other\s+jurisdiction|foreign\s+court",
             ],
             DocumentAuthority.SECONDARY_SOURCE: [
-                r'(?:law\s+review|legal\s+commentary|annotation)',
-                r'(?:treatise|hornbook|restatement)',
-                r'legal\s+encyclopedia|american\s+jurisprudence'
+                r"(?:law\s+review|legal\s+commentary|annotation)",
+                r"(?:treatise|hornbook|restatement)",
+                r"legal\s+encyclopedia|american\s+jurisprudence",
             ],
             DocumentAuthority.FACT_EVIDENCE: [
-                r'(?:deposition|affidavit|declaration)',
-                r'expert\s+report|witness\s+statement',
-                r'(?:exhibit|attachment|documentary\s+evidence)'
-            ]
+                r"(?:deposition|affidavit|declaration)",
+                r"expert\s+report|witness\s+statement",
+                r"(?:exhibit|attachment|documentary\s+evidence)",
+            ],
         }
 
-    def categorize_document(self, text: str, filename: str = "",
-                          defendant_hint: Optional[str] = None) -> DocumentMetadata:
+    def categorize_document(
+        self, text: str, filename: str = "", defendant_hint: Optional[str] = None
+    ) -> DocumentMetadata:
         """
         Categorize a legal document with enhanced metadata extraction
 
@@ -210,7 +215,7 @@ class EnhancedDocumentCategorizer:
                 plaintiff_name=plaintiff_name,
                 confidence_score=confidence,
                 extracted_entities=entities,
-                key_legal_issues=legal_issues
+                key_legal_issues=legal_issues,
             )
 
         except Exception as e:
@@ -219,7 +224,7 @@ class EnhancedDocumentCategorizer:
                 document_id=self._generate_document_id(filename, text),
                 document_type=DocumentType.UNKNOWN,
                 authority_level=DocumentAuthority.SECONDARY_SOURCE,
-                confidence_score=0.0
+                confidence_score=0.0,
             )
 
     def _detect_document_type(self, text: str, filename: str = "") -> DocumentType:
@@ -229,14 +234,14 @@ class EnhancedDocumentCategorizer:
 
         # Check filename first (often more reliable)
         filename_indicators = {
-            DocumentType.PLAINTIFF_COMPLAINT: ['complaint', 'claim', 'petition'],
-            DocumentType.DEFENDANT_ANSWER: ['answer', 'response'],
-            DocumentType.DEFENDANT_MOTION: ['motion', 'demurrer'],
-            DocumentType.COUNTERCLAIM: ['counterclaim', 'crossclaim'],
-            DocumentType.BRIEF: ['brief', 'memorandum'],
-            DocumentType.JUDGE_OPINION: ['opinion', 'decision', 'order'],
-            DocumentType.DEPOSITION: ['deposition', 'transcript'],
-            DocumentType.EXPERT_REPORT: ['expert', 'report']
+            DocumentType.PLAINTIFF_COMPLAINT: ["complaint", "claim", "petition"],
+            DocumentType.DEFENDANT_ANSWER: ["answer", "response"],
+            DocumentType.DEFENDANT_MOTION: ["motion", "demurrer"],
+            DocumentType.COUNTERCLAIM: ["counterclaim", "crossclaim"],
+            DocumentType.BRIEF: ["brief", "memorandum"],
+            DocumentType.JUDGE_OPINION: ["opinion", "decision", "order"],
+            DocumentType.DEPOSITION: ["deposition", "transcript"],
+            DocumentType.EXPERT_REPORT: ["expert", "report"],
         }
 
         for doc_type, indicators in filename_indicators.items():
@@ -255,7 +260,9 @@ class EnhancedDocumentCategorizer:
 
         return DocumentType.UNKNOWN
 
-    def _detect_authority_level(self, text: str, doc_type: DocumentType) -> DocumentAuthority:
+    def _detect_authority_level(
+        self, text: str, doc_type: DocumentType
+    ) -> DocumentAuthority:
         """Detect the authority level of the document"""
         text_lower = text.lower()
 
@@ -266,7 +273,7 @@ class EnhancedDocumentCategorizer:
             DocumentType.DEFENDANT_ANSWER: DocumentAuthority.FACT_EVIDENCE,
             DocumentType.BRIEF: DocumentAuthority.SECONDARY_SOURCE,
             DocumentType.EXPERT_REPORT: DocumentAuthority.FACT_EVIDENCE,
-            DocumentType.DEPOSITION: DocumentAuthority.FACT_EVIDENCE
+            DocumentType.DEPOSITION: DocumentAuthority.FACT_EVIDENCE,
         }
 
         if doc_type in type_authority_map:
@@ -284,7 +291,9 @@ class EnhancedDocumentCategorizer:
 
         return DocumentAuthority.SECONDARY_SOURCE
 
-    def _extract_defendant_name(self, text: str, defendant_hint: Optional[str] = None) -> Optional[str]:
+    def _extract_defendant_name(
+        self, text: str, defendant_hint: Optional[str] = None
+    ) -> Optional[str]:
         """Extract defendant name from document"""
         if defendant_hint:
             # If we have a hint, look for it in the text
@@ -293,10 +302,10 @@ class EnhancedDocumentCategorizer:
 
         # Look for common defendant patterns
         patterns = [
-            r'defendant\s+([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)',
-            r'against\s+([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)',
-            r'v\.?\s*([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)',
-            r'sued\s+([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)'
+            r"defendant\s+([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)",
+            r"against\s+([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)",
+            r"v\.?\s*([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)",
+            r"sued\s+([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)",
         ]
 
         for pattern in patterns:
@@ -310,9 +319,9 @@ class EnhancedDocumentCategorizer:
     def _extract_plaintiff_name(self, text: str) -> Optional[str]:
         """Extract plaintiff name from document"""
         patterns = [
-            r'plaintiff\s+([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)',
-            r'petitioner\s+([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)',
-            r'by\s+([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)'
+            r"plaintiff\s+([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)",
+            r"petitioner\s+([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)",
+            r"by\s+([A-Z][a-zA-Z\s,&]+?)(?:\s|$|,|\.)",
         ]
 
         for pattern in patterns:
@@ -326,11 +335,24 @@ class EnhancedDocumentCategorizer:
         """Extract key legal issues from document"""
         # Common legal issue keywords
         issue_keywords = [
-            'negligence', 'breach of contract', 'fraud', 'defamation',
-            'intentional infliction', 'premises liability', 'product liability',
-            'professional malpractice', 'civil rights', 'discrimination',
-            'wrongful termination', 'harassment', 'assault', 'battery',
-            'false imprisonment', 'conversion', 'trespass', 'nuisance'
+            "negligence",
+            "breach of contract",
+            "fraud",
+            "defamation",
+            "intentional infliction",
+            "premises liability",
+            "product liability",
+            "professional malpractice",
+            "civil rights",
+            "discrimination",
+            "wrongful termination",
+            "harassment",
+            "assault",
+            "battery",
+            "false imprisonment",
+            "conversion",
+            "trespass",
+            "nuisance",
         ]
 
         found_issues = []
@@ -346,8 +368,8 @@ class EnhancedDocumentCategorizer:
         """Extract named entities from document"""
         # Simple entity extraction - look for capitalized words/phrases
         entity_patterns = [
-            r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)',  # Person/Company names
-            r'([A-Z][A-Z\s]+(?:Inc|Corp|Ltd|LLC|Company))'  # Company suffixes
+            r"([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)",  # Person/Company names
+            r"([A-Z][A-Z\s]+(?:Inc|Corp|Ltd|LLC|Company))",  # Company suffixes
         ]
 
         entities = set()
@@ -360,9 +382,9 @@ class EnhancedDocumentCategorizer:
     def _clean_text(self, text: str) -> str:
         """Clean and normalize text for processing"""
         # Remove extra whitespace
-        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r"\s+", " ", text)
         # Remove special characters but keep basic punctuation
-        text = re.sub(r'[^\w\s.,;:!?-]', ' ', text)
+        text = re.sub(r"[^\w\s.,;:!?-]", " ", text)
         return text.strip()
 
     def _calculate_confidence(self, text: str, doc_type: DocumentType) -> float:
@@ -380,8 +402,10 @@ class EnhancedDocumentCategorizer:
             base_confidence += 0.1
 
         # Boost confidence for documents with clear legal structure
-        legal_indicators = ['court', 'judge', 'law', 'case', 'plaintiff', 'defendant']
-        indicator_count = sum(1 for indicator in legal_indicators if indicator in text.lower())
+        legal_indicators = ["court", "judge", "law", "case", "plaintiff", "defendant"]
+        indicator_count = sum(
+            1 for indicator in legal_indicators if indicator in text.lower()
+        )
         base_confidence += min(0.3, indicator_count * 0.05)
 
         return min(1.0, base_confidence)
@@ -389,6 +413,7 @@ class EnhancedDocumentCategorizer:
     def _generate_document_id(self, filename: str, text: str) -> str:
         """Generate unique document ID"""
         import hashlib
+
         content_hash = hashlib.md5(text.encode()).hexdigest()[:8]
         filename_part = Path(filename).stem if filename else "unknown"
         return f"{filename_part}_{content_hash}"
@@ -399,7 +424,7 @@ class EnhancedDocumentCategorizer:
         cluster = DocumentCluster(
             cluster_id=cluster_id,
             cluster_type=f"{defendant_name}_complaints",
-            defendant_name=defendant_name
+            defendant_name=defendant_name,
         )
         self.clusters[cluster_id] = cluster
         return cluster
@@ -414,8 +439,9 @@ class EnhancedDocumentCategorizer:
         self.clusters[cluster_id].documents.append(document)
         return True
 
-    def find_similar_documents(self, document: DocumentMetadata,
-                             similarity_threshold: float = 0.6) -> List[DocumentMetadata]:
+    def find_similar_documents(
+        self, document: DocumentMetadata, similarity_threshold: float = 0.6
+    ) -> List[DocumentMetadata]:
         """Find similar documents in the same cluster"""
         if not document.cluster_id or document.cluster_id not in self.clusters:
             return []
@@ -428,11 +454,19 @@ class EnhancedDocumentCategorizer:
                 continue
 
             # Simple similarity calculation based on shared entities and legal issues
-            shared_entities = set(document.extracted_entities) & set(existing_doc.extracted_entities)
-            shared_issues = set(document.key_legal_issues) & set(existing_doc.key_legal_issues)
+            shared_entities = set(document.extracted_entities) & set(
+                existing_doc.extracted_entities
+            )
+            shared_issues = set(document.key_legal_issues) & set(
+                existing_doc.key_legal_issues
+            )
 
-            entity_similarity = len(shared_entities) / max(len(document.extracted_entities), 1)
-            issue_similarity = len(shared_issues) / max(len(document.key_legal_issues), 1)
+            entity_similarity = len(shared_entities) / max(
+                len(document.extracted_entities), 1
+            )
+            issue_similarity = len(shared_issues) / max(
+                len(document.key_legal_issues), 1
+            )
 
             overall_similarity = (entity_similarity + issue_similarity) / 2
 
