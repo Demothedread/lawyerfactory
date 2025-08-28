@@ -18,6 +18,7 @@
         "list_directory_with_Sizes",
         "list_directory",
         "search_files",
+        "search_folders",
         "directory_tree",
         "get_file_info",
         "read_file",

@@ -10,12 +10,13 @@ Merged from root knowledge_graph.py and lawyerfactory/knowledge_graph.py
 """
 
 import json
+
 # === Content from root knowledge_graph.py ===
 import logging
-import re
-import uuid
 from pathlib import Path
+import re
 from typing import Any, Dict, List, Optional
+import uuid
 
 # Configure logging first
 logging.basicConfig(level=logging.INFO)
@@ -26,18 +27,23 @@ try:
     from pysqlcipher3 import dbapi2 as sqlite3
 except ImportError:
     import sqlite3
+
     logger.warning("pysqlcipher3 not available, using standard sqlite3")
 
 try:
     import numpy as np
     from sentence_transformers import SentenceTransformer
+
     HAS_EMBEDDINGS = True
 except ImportError:
     HAS_EMBEDDINGS = False
-    logger.warning("sentence-transformers or numpy not available, semantic search disabled")
+    logger.warning(
+        "sentence-transformers or numpy not available, semantic search disabled"
+    )
 
 try:
     import spacy
+
     HAS_SPACY = True
 except ImportError:
     HAS_SPACY = False
@@ -48,23 +54,23 @@ class KnowledgeGraph:
     """
     SQLite-based encrypted knowledge graph database handler.
     """
-    
-    def __init__(self, db_path: str = 'knowledge_graph.db', key: str = ''):
+
+    def __init__(self, db_path: str = "knowledge_graph.db", key: str = ""):
         """Initialize an encrypted SQLCipher database."""
         self.db_path = Path(db_path)
         self.key = key
         self.conn = sqlite3.connect(str(self.db_path))
-        
+
         try:
             self._configure_encryption()
             self._initialize_schema()
-            
+
             # Initialize embedder for semantic search if available
             if HAS_EMBEDDINGS:
-                self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
+                self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
             else:
                 self.embedder = None
-                
+
             logger.info("Knowledge graph database initialized at %s", self.db_path)
         except Exception as e:
             logger.exception("Failed to initialize knowledge graph: %s", e)
@@ -154,7 +160,7 @@ class KnowledgeGraph:
         CREATE INDEX IF NOT EXISTS idx_document_sources_entity ON document_sources(entity_id);
         CREATE INDEX IF NOT EXISTS idx_document_sources_document ON document_sources(document_id);
         """
-        
+
         try:
             cursor = self.conn.cursor()
             cursor.executescript(sql)
@@ -200,30 +206,38 @@ class KnowledgeGraph:
         if not self.embedder:
             logger.warning("Semantic search not available - embeddings disabled")
             return []
-            
+
         try:
             q_emb = self.embedder.encode([query])[0]
-            rows = self._fetchall("SELECT id, type, name, embeddings FROM entities WHERE embeddings IS NOT NULL")
+            rows = self._fetchall(
+                "SELECT id, type, name, embeddings FROM entities WHERE embeddings IS NOT NULL"
+            )
             sims = []
-            
+
             for eid, etype, name, emb_blob in rows:
                 emb = np.frombuffer(emb_blob, dtype=np.float32)
-                score = np.dot(q_emb, emb) / (np.linalg.norm(q_emb) * np.linalg.norm(emb))
+                score = np.dot(q_emb, emb) / (
+                    np.linalg.norm(q_emb) * np.linalg.norm(emb)
+                )
                 sims.append((score, eid, etype, name))
-                
+
             sims.sort(reverse=True, key=lambda x: x[0])
-            return [{"id": eid, "type": etype, "name": name, "score": float(score)} 
-                   for score, eid, etype, name in sims[:top_k]]
+            return [
+                {"id": eid, "type": etype, "name": name, "score": float(score)}
+                for score, eid, etype, name in sims[:top_k]
+            ]
         except Exception as e:
             logger.exception("Semantic search failed for query '%s': %s", query, e)
             return []
 
-    def query_entities(self, entity_type: Optional[str] = None, name: Optional[str] = None):
+    def query_entities(
+        self, entity_type: Optional[str] = None, name: Optional[str] = None
+    ):
         """Retrieve entities filtered by type and/or name."""
         try:
             sql = "SELECT * FROM entities"
             params = []
-            
+
             if entity_type and name:
                 sql += " WHERE type = ? AND name LIKE ?"
                 params = [entity_type, f"%{name}%"]
@@ -233,7 +247,7 @@ class KnowledgeGraph:
             elif name:
                 sql += " WHERE name LIKE ?"
                 params = [f"%{name}%"]
-                
+
             rows = self._fetchall(sql, tuple(params))
             return [dict(id=r[0], type=r[1], name=r[2], source_text=r[5]) for r in rows]
         except Exception as e:
@@ -243,21 +257,32 @@ class KnowledgeGraph:
     def get_case_facts(self, document_id: str):
         """Retrieve all entities associated with a document and their relationships."""
         try:
-            srcs = self._fetchall("SELECT entity_id FROM document_sources WHERE document_id = ?", (document_id,))
+            srcs = self._fetchall(
+                "SELECT entity_id FROM document_sources WHERE document_id = ?",
+                (document_id,),
+            )
             entity_ids = {row[0] for row in srcs}
             entities = []
-            
+
             for eid in entity_ids:
                 ent = self._fetchone("SELECT * FROM entities WHERE id = ?", (eid,))
                 if ent:
-                    entities.append(dict(id=ent[0], type=ent[1], name=ent[2], source_text=ent[5]))
-                    
-            rels = self._fetchall("SELECT * FROM relationships WHERE supporting_text = ?", (document_id,))
-            relationships = [{"id": r[0], "from": r[1], "to": r[2], "type": r[3]} for r in rels]
-            
+                    entities.append(
+                        dict(id=ent[0], type=ent[1], name=ent[2], source_text=ent[5])
+                    )
+
+            rels = self._fetchall(
+                "SELECT * FROM relationships WHERE supporting_text = ?", (document_id,)
+            )
+            relationships = [
+                {"id": r[0], "from": r[1], "to": r[2], "type": r[3]} for r in rels
+            ]
+
             return {"entities": entities, "relationships": relationships}
         except Exception as e:
-            logger.exception("Get case facts failed for document '%s': %s", document_id, e)
+            logger.exception(
+                "Get case facts failed for document '%s': %s", document_id, e
+            )
             return {}
 
     def close(self):
@@ -270,10 +295,10 @@ class KnowledgeGraph:
 
 class DocumentIngestionPipeline:
     """Handles document processing for multiple file formats."""
-    
+
     def __init__(self, kg: KnowledgeGraph):
         self.kg = kg
-        
+
         # Initialize spaCy NLP if available
         if HAS_SPACY:
             try:
@@ -289,72 +314,72 @@ class DocumentIngestionPipeline:
         ext = Path(file_path).suffix.lower()
         document_id = Path(file_path).name
         logger.info("Ingesting document %s of type %s", document_id, ext)
-        
+
         try:
             # Extract text based on file type
-            if ext == '.pdf':
+            if ext == ".pdf":
                 text = self._extract_pdf(file_path)
-            elif ext in ('.docx', '.doc'):
+            elif ext in (".docx", ".doc"):
                 text = self._extract_docx(file_path)
-            elif ext in ('.txt', '.md'):
+            elif ext in (".txt", ".md"):
                 text = self._extract_txt(file_path)
-            elif ext in ('.eml', '.msg'):
+            elif ext in (".eml", ".msg"):
                 text = self._extract_email(file_path)
-            elif ext == '.csv':
+            elif ext == ".csv":
                 text = self._extract_csv(file_path)
             else:
                 logger.error("Unsupported file type: %s", ext)
                 return
-                
+
             # Perform NER and extract entities
             entities = self._perform_ner(text)
-            
+
             # Generate embeddings if available
             if self.kg.embedder and entities:
-                texts = [ent['text'] for ent in entities]
+                texts = [ent["text"] for ent in entities]
                 embeddings = self.kg.embedder.encode(texts)
             else:
                 embeddings = [None] * len(entities)
-                
+
             # Insert entities into database
             for ent, emb in zip(entities, embeddings):
                 emb_blob = emb.tobytes() if emb is not None else None
                 self.kg._execute(
                     "INSERT OR IGNORE INTO entities(id, type, name, source_text, embeddings) VALUES (?, ?, ?, ?, ?)",
-                    (ent['id'], ent['label'], ent['text'], text, emb_blob)
+                    (ent["id"], ent["label"], ent["text"], text, emb_blob),
                 )
                 self.kg._execute(
                     "INSERT INTO document_sources(entity_id, document_id) VALUES (?, ?)",
-                    (ent['id'], document_id)
+                    (ent["id"], document_id),
                 )
-                
+
             # Map relationships
             self._map_relationships(entities, document_id)
             logger.info("Completed ingestion for document %s", document_id)
-            
+
         except Exception as e:
             logger.exception("Ingestion failed for document %s: %s", document_id, e)
 
     def _extract_pdf(self, file_path: str) -> str:
         """Extract text from PDF with OCR fallback."""
         try:
+            from pdf2image import convert_from_path
             import pdfplumber
             import pytesseract
-            from pdf2image import convert_from_path
-            
-            text = ''
+
+            text = ""
             with pdfplumber.open(file_path) as pdf:
                 for page in pdf.pages:
                     page_text = page.extract_text()
                     if page_text:
                         text += page_text
-                        
+
             # OCR fallback if no text extracted
             if not text.strip():
                 logger.info("No text found, using OCR for %s", file_path)
                 for img in convert_from_path(file_path):
                     text += pytesseract.image_to_string(img)
-                    
+
             return text
         except ImportError:
             logger.error("PDF processing libraries not available")
@@ -367,8 +392,9 @@ class DocumentIngestionPipeline:
         """Extract text from DOCX files."""
         try:
             from docx import Document as DocxDocument
+
             doc = DocxDocument(file_path)
-            return '\n'.join([para.text for para in doc.paragraphs])
+            return "\n".join([para.text for para in doc.paragraphs])
         except ImportError:
             logger.error("python-docx library not available")
             return ""
@@ -380,15 +406,16 @@ class DocumentIngestionPipeline:
         """Extract text from TXT files with encoding detection."""
         try:
             import chardet
+
             raw = Path(file_path).read_bytes()
-            encoding = chardet.detect(raw)['encoding'] or 'utf-8'
-            return raw.decode(encoding, errors='ignore')
+            encoding = chardet.detect(raw)["encoding"] or "utf-8"
+            return raw.decode(encoding, errors="ignore")
         except ImportError:
             # Fallback without chardet
             try:
-                return Path(file_path).read_text(encoding='utf-8')
+                return Path(file_path).read_text(encoding="utf-8")
             except UnicodeDecodeError:
-                return Path(file_path).read_text(encoding='latin1', errors='ignore')
+                return Path(file_path).read_text(encoding="latin1", errors="ignore")
         except Exception as e:
             logger.exception("TXT extraction failed for %s: %s", file_path, e)
             return ""
@@ -398,10 +425,10 @@ class DocumentIngestionPipeline:
         try:
             from email import policy
             from email.parser import BytesParser
-            
-            with open(file_path, 'rb') as f:
+
+            with open(file_path, "rb") as f:
                 msg = BytesParser(policy=policy.default).parse(f)
-            body = msg.get_body(preferencelist=('plain',))
+            body = msg.get_body(preferencelist=("plain",))
             return body.get_content() if body else ""
         except Exception as e:
             logger.exception("Email extraction failed for %s: %s", file_path, e)
@@ -411,11 +438,12 @@ class DocumentIngestionPipeline:
         """Extract text from CSV files."""
         try:
             import csv
+
             rows = []
-            with open(file_path, newline='', encoding='utf-8') as f:
+            with open(file_path, newline="", encoding="utf-8") as f:
                 for row in csv.reader(f):
-                    rows.append(' '.join(row))
-            return '\n'.join(rows)
+                    rows.append(" ".join(row))
+            return "\n".join(rows)
         except Exception as e:
             logger.exception("CSV extraction failed for %s: %s", file_path, e)
             return ""
@@ -423,223 +451,238 @@ class DocumentIngestionPipeline:
     def _perform_ner(self, text: str) -> List[Dict[str, str]]:
         """Perform Named Entity Recognition using spaCy and custom patterns."""
         entities = []
-        
+
         try:
             # spaCy NER
             if self.nlp:
                 doc = self.nlp(text)
                 for ent in doc.ents:
                     if ent.label_ in {"PERSON", "ORG", "DATE", "MONEY", "GPE"}:
-                        entities.append({
-                            "id": str(uuid.uuid4()),
-                            "label": ent.label_,
-                            "text": ent.text
-                        })
-            
+                        entities.append(
+                            {
+                                "id": str(uuid.uuid4()),
+                                "label": ent.label_,
+                                "text": ent.text,
+                            }
+                        )
+
             # Custom legal entity patterns
             # Case numbers
             for match in re.finditer(r"Case(?: No\.?\s*)?\d+", text, re.IGNORECASE):
-                entities.append({
-                    "id": str(uuid.uuid4()),
-                    "label": "CASE_NUMBER",
-                    "text": match.group()
-                })
-                
+                entities.append(
+                    {
+                        "id": str(uuid.uuid4()),
+                        "label": "CASE_NUMBER",
+                        "text": match.group(),
+                    }
+                )
+
             # Statutes and regulations
             for match in re.finditer(r"§\s*\d+[A-Za-z0-9\-]*", text):
-                entities.append({
-                    "id": str(uuid.uuid4()),
-                    "label": "STATUTE",
-                    "text": match.group()
-                })
-                
+                entities.append(
+                    {"id": str(uuid.uuid4()), "label": "STATUTE", "text": match.group()}
+                )
+
         except Exception as e:
             logger.exception("NER failed: %s", e)
-            
+
         return entities
 
     def _map_relationships(self, entities: List[Dict], document_id: str):
         """Create co-occurrence relationships between sequential entities."""
         try:
             for i in range(len(entities) - 1):
-                from_id = entities[i]['id']
-                to_id = entities[i + 1]['id']
+                from_id = entities[i]["id"]
+                to_id = entities[i + 1]["id"]
                 self.kg._execute(
                     "INSERT INTO relationships(from_entity, to_entity, relationship_type, supporting_text) VALUES (?, ?, ?, ?)",
-                    (from_id, to_id, 'co_occurrence', document_id)
+                    (from_id, to_id, "co_occurrence", document_id),
                 )
         except Exception as e:
-            logger.exception("Failed to map relationships for document %s: %s", document_id, e)
+            logger.exception(
+                "Failed to map relationships for document %s: %s", document_id, e
+            )
+
 
 class KnowledgeGraphExtensions:
     """Extensions for the KnowledgeGraph class to support web interface features"""
-    
+
     def __init__(self, kg):
         self.kg = kg
-    
+
     def get_entity_relationships(self, entity_id: str) -> List[Dict[str, Any]]:
         """Get all relationships for a specific entity"""
         try:
             # Get relationships where entity is the source
             from_relationships = self.kg._fetchall(
-                "SELECT * FROM relationships WHERE from_entity = ?", 
-                (entity_id,)
+                "SELECT * FROM relationships WHERE from_entity = ?", (entity_id,)
             )
-            
+
             # Get relationships where entity is the target
             to_relationships = self.kg._fetchall(
-                "SELECT * FROM relationships WHERE to_entity = ?", 
-                (entity_id,)
+                "SELECT * FROM relationships WHERE to_entity = ?", (entity_id,)
             )
-            
+
             relationships = []
-            
+
             # Process from relationships
             for rel in from_relationships:
-                relationships.append({
-                    'id': rel[0],
-                    'from_entity': rel[1],
-                    'to_entity': rel[2],
-                    'relationship_type': rel[3],
-                    'confidence': rel[4],
-                    'direction': 'outgoing'
-                })
-            
+                relationships.append(
+                    {
+                        "id": rel[0],
+                        "from_entity": rel[1],
+                        "to_entity": rel[2],
+                        "relationship_type": rel[3],
+                        "confidence": rel[4],
+                        "direction": "outgoing",
+                    }
+                )
+
             # Process to relationships
             for rel in to_relationships:
-                relationships.append({
-                    'id': rel[0],
-                    'from_entity': rel[1],
-                    'to_entity': rel[2],
-                    'relationship_type': rel[3],
-                    'confidence': rel[4],
-                    'direction': 'incoming'
-                })
-            
+                relationships.append(
+                    {
+                        "id": rel[0],
+                        "from_entity": rel[1],
+                        "to_entity": rel[2],
+                        "relationship_type": rel[3],
+                        "confidence": rel[4],
+                        "direction": "incoming",
+                    }
+                )
+
             return relationships
-            
+
         except Exception as e:
             logger.error(f"Failed to get entity relationships for {entity_id}: {e}")
             return []
-    
+
     def get_all_relationships(self, limit: int = 100) -> List[Dict[str, Any]]:
         """Get all relationships with optional limit"""
         try:
             relationships = self.kg._fetchall(
-                "SELECT * FROM relationships ORDER BY id DESC LIMIT ?", 
-                (limit,)
+                "SELECT * FROM relationships ORDER BY id DESC LIMIT ?", (limit,)
             )
-            
-            return [{
-                'id': rel[0],
-                'from_entity': rel[1],
-                'to_entity': rel[2],
-                'relationship_type': rel[3],
-                'confidence': rel[4],
-                'extraction_method': rel[5],
-                'verified': rel[6],
-                'supporting_text': rel[7]
-            } for rel in relationships]
-            
+
+            return [
+                {
+                    "id": rel[0],
+                    "from_entity": rel[1],
+                    "to_entity": rel[2],
+                    "relationship_type": rel[3],
+                    "confidence": rel[4],
+                    "extraction_method": rel[5],
+                    "verified": rel[6],
+                    "supporting_text": rel[7],
+                }
+                for rel in relationships
+            ]
+
         except Exception as e:
             logger.error(f"Failed to get all relationships: {e}")
             return []
-    
+
     def get_entity_by_id(self, entity_id: str) -> Optional[Dict[str, Any]]:
         """Get a specific entity by ID"""
         try:
             entity = self.kg._fetchone(
-                "SELECT * FROM entities WHERE id = ?", 
-                (entity_id,)
+                "SELECT * FROM entities WHERE id = ?", (entity_id,)
             )
-            
+
             if entity:
                 return {
-                    'id': entity[0],
-                    'type': entity[1],
-                    'name': entity[2],
-                    'canonical_name': entity[3],
-                    'description': entity[4],
-                    'source_text': entity[5],
-                    'context_window': entity[6],
-                    'confidence': entity[7],
-                    'extraction_method': entity[8],
-                    'created_at': entity[9],
-                    'updated_at': entity[10],
-                    'legal_attributes': entity[11],
-                    'verified': entity[13],
-                    'verification_source': entity[14]
+                    "id": entity[0],
+                    "type": entity[1],
+                    "name": entity[2],
+                    "canonical_name": entity[3],
+                    "description": entity[4],
+                    "source_text": entity[5],
+                    "context_window": entity[6],
+                    "confidence": entity[7],
+                    "extraction_method": entity[8],
+                    "created_at": entity[9],
+                    "updated_at": entity[10],
+                    "legal_attributes": entity[11],
+                    "verified": entity[13],
+                    "verification_source": entity[14],
                 }
-            
+
             return None
-            
+
         except Exception as e:
             logger.error(f"Failed to get entity {entity_id}: {e}")
             return None
-    
+
     def add_entity_dict(self, entity_data: Dict[str, Any]) -> str:
         """Add an entity from a dictionary"""
         import uuid
+
         try:
-            entity_id = entity_data.get('id') or str(uuid.uuid4())
-            
-            self.kg._execute("""
+            entity_id = entity_data.get("id") or str(uuid.uuid4())
+
+            self.kg._execute(
+                """
                 INSERT OR REPLACE INTO entities 
                 (id, type, name, canonical_name, description, source_text, 
                  context_window, confidence, extraction_method, legal_attributes, 
                  verified, verification_source)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                entity_id,
-                entity_data.get('type', 'UNKNOWN'),
-                entity_data.get('name', ''),
-                entity_data.get('canonical_name'),
-                entity_data.get('description'),
-                entity_data.get('source_text'),
-                entity_data.get('context_window'),
-                entity_data.get('confidence', 1.0),
-                entity_data.get('extraction_method', 'manual'),
-                entity_data.get('legal_attributes'),
-                entity_data.get('verified', False),
-                entity_data.get('verification_source')
-            ))
-            
+            """,
+                (
+                    entity_id,
+                    entity_data.get("type", "UNKNOWN"),
+                    entity_data.get("name", ""),
+                    entity_data.get("canonical_name"),
+                    entity_data.get("description"),
+                    entity_data.get("source_text"),
+                    entity_data.get("context_window"),
+                    entity_data.get("confidence", 1.0),
+                    entity_data.get("extraction_method", "manual"),
+                    entity_data.get("legal_attributes"),
+                    entity_data.get("verified", False),
+                    entity_data.get("verification_source"),
+                ),
+            )
+
             return entity_id
-            
+
         except Exception as e:
             logger.error(f"Failed to add entity: {e}")
             raise
-    
+
     def add_relationship_dict(self, relationship_data: Dict[str, Any]) -> int:
         """Add a relationship from a dictionary"""
         try:
             cursor = self.kg.conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO relationships 
                 (from_entity, to_entity, relationship_type, confidence, 
                  extraction_method, verified, supporting_text, temporal_context)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                relationship_data.get('from_entity'),
-                relationship_data.get('to_entity'),
-                relationship_data.get('relationship_type', 'related_to'),
-                relationship_data.get('confidence', 1.0),
-                relationship_data.get('extraction_method', 'manual'),
-                relationship_data.get('verified', False),
-                relationship_data.get('supporting_text'),
-                relationship_data.get('temporal_context')
-            ))
-            
+            """,
+                (
+                    relationship_data.get("from_entity"),
+                    relationship_data.get("to_entity"),
+                    relationship_data.get("relationship_type", "related_to"),
+                    relationship_data.get("confidence", 1.0),
+                    relationship_data.get("extraction_method", "manual"),
+                    relationship_data.get("verified", False),
+                    relationship_data.get("supporting_text"),
+                    relationship_data.get("temporal_context"),
+                ),
+            )
+
             relationship_id = cursor.lastrowid
             self.kg.conn.commit()
             cursor.close()
-            
+
             return relationship_id
-            
+
         except Exception as e:
             logger.error(f"Failed to add relationship: {e}")
             raise
-    
+
     def get_entity_statistics(self) -> Dict[str, Any]:
         """Get statistics about the knowledge graph"""
         try:
@@ -647,30 +690,36 @@ class KnowledgeGraphExtensions:
             entity_counts = self.kg._fetchall(
                 "SELECT type, COUNT(*) FROM entities GROUP BY type ORDER BY COUNT(*) DESC"
             )
-            
+
             # Relationship counts by type
             relationship_counts = self.kg._fetchall(
                 "SELECT relationship_type, COUNT(*) FROM relationships GROUP BY relationship_type ORDER BY COUNT(*) DESC"
             )
-            
+
             # Total counts
             total_entities = self.kg._fetchone("SELECT COUNT(*) FROM entities")[0]
-            total_relationships = self.kg._fetchone("SELECT COUNT(*) FROM relationships")[0]
-            
+            total_relationships = self.kg._fetchone(
+                "SELECT COUNT(*) FROM relationships"
+            )[0]
+
             return {
-                'total_entities': total_entities,
-                'total_relationships': total_relationships,
-                'entity_types': [{'type': row[0], 'count': row[1]} for row in entity_counts],
-                'relationship_types': [{'type': row[0], 'count': row[1]} for row in relationship_counts]
+                "total_entities": total_entities,
+                "total_relationships": total_relationships,
+                "entity_types": [
+                    {"type": row[0], "count": row[1]} for row in entity_counts
+                ],
+                "relationship_types": [
+                    {"type": row[0], "count": row[1]} for row in relationship_counts
+                ],
             }
-            
+
         except Exception as e:
             logger.error(f"Failed to get entity statistics: {e}")
             return {
-                'total_entities': 0,
-                'total_relationships': 0,
-                'entity_types': [],
-                'relationship_types': []
+                "total_entities": 0,
+                "total_relationships": 0,
+                "entity_types": [],
+                "relationship_types": [],
             }
 
 
@@ -678,7 +727,7 @@ class KnowledgeGraphExtensions:
 def extend_knowledge_graph(kg):
     """Extend a KnowledgeGraph instance with web interface methods"""
     extensions = KnowledgeGraphExtensions(kg)
-    
+
     # Add methods to the knowledge graph instance
     kg.get_entity_relationships = extensions.get_entity_relationships
     kg.get_all_relationships = extensions.get_all_relationships
@@ -686,15 +735,22 @@ def extend_knowledge_graph(kg):
     kg.add_entity_dict = extensions.add_entity_dict
     kg.add_relationship_dict = extensions.add_relationship_dict
     kg.get_entity_statistics = extensions.get_entity_statistics
-    
+
     return kg
+
 
 if __name__ == "__main__":
     import argparse
     from pathlib import Path
 
-    parser = argparse.ArgumentParser(description="Initialize, ingest, or query the encrypted knowledge graph.")
-    parser.add_argument("--db", default="knowledge_graph.db", help="Path to the encrypted database file.")
+    parser = argparse.ArgumentParser(
+        description="Initialize, ingest, or query the encrypted knowledge graph."
+    )
+    parser.add_argument(
+        "--db",
+        default="knowledge_graph.db",
+        help="Path to the encrypted database file.",
+    )
     parser.add_argument("--key", default="", help="Encryption key for the database.")
     parser.add_argument("--ingest-dir", help="Directory of documents to ingest")
     parser.add_argument("--query-type", help="Entity type to query")
@@ -708,29 +764,31 @@ if __name__ == "__main__":
         if args.ingest_dir:
             pipeline = DocumentIngestionPipeline(kg)
             ingest_path = Path(args.ingest_dir)
-            
+
             if ingest_path.is_dir():
                 for file_path in ingest_path.rglob("*.*"):
                     if file_path.is_file():
                         pipeline.ingest(str(file_path))
             else:
                 pipeline.ingest(str(ingest_path))
-                
+
             logger.info("Completed ingestion for %s", args.ingest_dir)
-            
+
         elif args.query_type or args.query_name:
-            results = kg.query_entities(entity_type=args.query_type, name=args.query_name)
+            results = kg.query_entities(
+                entity_type=args.query_type, name=args.query_name
+            )
             logger.info("Query results: %s", results)
-            
+
         elif args.case_facts:
             facts = kg.get_case_facts(args.case_facts)
             logger.info("Case facts for %s: %s", args.case_facts, facts)
-            
+
         else:
             count_result = kg._fetchone("SELECT COUNT(*) FROM entities")
             count = count_result[0] if count_result else 0
             logger.info("Existing entities count: %d", count)
-            
+
     except Exception as e:
         logger.exception("Operation failed: %s", e)
     finally:
@@ -786,13 +844,18 @@ def save_graph(graph: Dict[str, Any]) -> None:
 def add_observation(graph: Dict[str, Any], observation: str) -> None:
     graph.setdefault("observations", []).append(observation)
 
+
 # Guarded compatibility for query_relationships
 # If the KnowledgeGraph class does not implement `query_relationships`,
 # provide a safe fallback that returns an empty relationships list.
 try:
-    if 'KnowledgeGraph' in globals() and not hasattr(KnowledgeGraph, 'query_relationships'):
+    if "KnowledgeGraph" in globals() and not hasattr(
+        KnowledgeGraph, "query_relationships"
+    ):
+
         def query_relationships(self, *args, **kwargs):
             return {"success": True, "relationships": []}
+
         KnowledgeGraph.query_relationships = query_relationships
 except Exception:
     # Best-effort fallback: if the real implementation is present, this will be overridden.
@@ -802,10 +865,13 @@ except Exception:
 # If the KnowledgeGraph class does not implement `query_relationships`,
 # provide a safe fallback that returns an empty relationships list.
 try:
-    if 'KnowledgeGraph' in globals() and not hasattr(KnowledgeGraph, 'query_relationships'):
+    if "KnowledgeGraph" in globals() and not hasattr(
+        KnowledgeGraph, "query_relationships"
+    ):
+
         def _fallback_query_relationships(self, *args, **kwargs):
             return {"success": True, "relationships": []}
+
         KnowledgeGraph.query_relationships = _fallback_query_relationships
 except Exception:
     pass
-

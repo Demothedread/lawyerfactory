@@ -19,18 +19,18 @@ from jinja2 import Environment, FileSystemLoader
 
 # Handle both relative and absolute imports
 try:
-    from .modules import (compliance_checker, fact_synthesis,
-                          legal_theory_mapping)
+    from .modules import compliance_checker, fact_synthesis, legal_theory_mapping
 except ImportError:
     # Add the current directory to the Python path for standalone execution
     sys.path.insert(0, os.path.dirname(__file__))
-    from modules import (compliance_checker, fact_synthesis,
-                         legal_theory_mapping)
+    from modules import compliance_checker, fact_synthesis, legal_theory_mapping
+
 
 class DocumentGenerator:
     """
     Coordinates the generation of a complete lawsuit document.
     """
+
     def __init__(self, case_data, research_findings):
         """
         Initializes the DocumentGenerator.
@@ -41,10 +41,10 @@ class DocumentGenerator:
         """
         self.case_data = case_data
         self.research_findings = research_findings
-        template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+        template_dir = os.path.join(os.path.dirname(__file__), "templates")
         self.env = Environment(loader=FileSystemLoader(template_dir))
 
-    def generate(self, document_type='complaint'):
+    def generate(self, document_type="complaint"):
         """
         Generates the specified legal document.
 
@@ -55,11 +55,11 @@ class DocumentGenerator:
             str: The rendered document content.
         """
         # 1. Synthesize facts into a narrative
-        statement_of_facts = fact_synthesis.synthesize_facts(self.case_data['facts'])
+        statement_of_facts = fact_synthesis.synthesize_facts(self.case_data["facts"])
 
         # 2. Map facts to legal elements and integrate citations
         causes_of_action = legal_theory_mapping.map_facts_to_elements(
-            self.case_data['causes_of_action'], self.case_data['facts']
+            self.case_data["causes_of_action"], self.case_data["facts"]
         )
         causes_of_action = legal_theory_mapping.integrate_citations(
             causes_of_action, self.research_findings
@@ -78,15 +78,15 @@ class DocumentGenerator:
 
         # 4. Prepare context for the template
         context = {
-            'case': self.case_data,
-            'research': self.research_findings,
-            'statement_of_facts': statement_of_facts,
-            'causes_of_action': causes_of_action,
-            'compliance_issues': compliance_issues
+            "case": self.case_data,
+            "research": self.research_findings,
+            "statement_of_facts": statement_of_facts,
+            "causes_of_action": causes_of_action,
+            "compliance_issues": compliance_issues,
         }
 
         # 5. Render the document
-        template = self.env.get_template(f'{document_type}.jinja2')
+        template = self.env.get_template(f"{document_type}.jinja2")
         rendered_doc = template.render(context)
         return rendered_doc
 
@@ -98,44 +98,51 @@ class DocumentGenerator:
             content (str): The document content to save.
             filename (str): The name of the output file.
         """
-        output_path = os.path.join(os.path.dirname(__file__), 'output', filename)
-        with open(output_path, 'w') as f:
+        output_path = os.path.join(os.path.dirname(__file__), "output", filename)
+        with open(output_path, "w") as f:
             f.write(content)
         print(f"Document saved to {output_path}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     # Example usage (for testing purposes)
     # In a real scenario, this would be called by the orchestration system.
     mock_case_data = {
-        'case_caption': {
-            'court': 'UNITED STATES DISTRICT COURT',
-            'district': 'NORTHERN DISTRICT OF CALIFORNIA',
-            'plaintiff': 'Jane Doe',
-            'defendant': 'Acme Corporation',
-            'case_number': '3:24-cv-01234'
+        "case_caption": {
+            "court": "UNITED STATES DISTRICT COURT",
+            "district": "NORTHERN DISTRICT OF CALIFORNIA",
+            "plaintiff": "Jane Doe",
+            "defendant": "Acme Corporation",
+            "case_number": "3:24-cv-01234",
         },
-        'facts': [
-            {'id': 'fact_01', 'text': 'On January 1, 2024, Plaintiff purchased a defective product.'},
-            {'id': 'fact_02', 'text': 'The product exploded, causing injury.'}
-        ],
-        'causes_of_action': [
+        "facts": [
             {
-                'name': 'Negligence',
-                'elements': [
-                    {'name': 'Duty', 'facts': ['fact_01']},
-                    {'name': 'Breach', 'facts': ['fact_02']},
-                    {'name': 'Causation', 'facts': ['fact_02']},
-                    {'name': 'Damages', 'facts': ['fact_02']}
-                ]
+                "id": "fact_01",
+                "text": "On January 1, 2024, Plaintiff purchased a defective product.",
+            },
+            {"id": "fact_02", "text": "The product exploded, causing injury."},
+        ],
+        "causes_of_action": [
+            {
+                "name": "Negligence",
+                "elements": [
+                    {"name": "Duty", "facts": ["fact_01"]},
+                    {"name": "Breach", "facts": ["fact_02"]},
+                    {"name": "Causation", "facts": ["fact_02"]},
+                    {"name": "Damages", "facts": ["fact_02"]},
+                ],
             }
-        ]
+        ],
     }
     mock_research = {
-        'citations': [
-            {'cite': 'Marbury v. Madison, 5 U.S. 137 (1803)', 'relevance': 'Establishes judicial review.'}
+        "citations": [
+            {
+                "cite": "Marbury v. Madison, 5 U.S. 137 (1803)",
+                "relevance": "Establishes judicial review.",
+            }
         ]
     }
 
     generator = DocumentGenerator(mock_case_data, mock_research)
     document_content = generator.generate()
-    generator.save_document(document_content, 'complaint_output.txt')
+    generator.save_document(document_content, "complaint_output.txt")

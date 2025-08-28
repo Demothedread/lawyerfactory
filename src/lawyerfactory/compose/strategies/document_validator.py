@@ -12,12 +12,13 @@ ensuring consistency with successful litigation patterns and compliance with
 jurisdiction-specific requirements.
 """
 
-import logging
-import json
-import re
-from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
+import json
+import logging
+import re
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ValidationResult:
     """Result of document validation"""
+
     overall_score: float = 0.0
     structural_similarity: float = 0.0
     language_similarity: float = 0.0
@@ -39,6 +41,7 @@ class ValidationResult:
 @dataclass
 class DocumentStructure:
     """Analyzed structure of a legal document"""
+
     sections: List[str] = field(default_factory=list)
     word_count: int = 0
     paragraph_count: int = 0
@@ -56,9 +59,9 @@ class VectorStoreClient:
     def __init__(self, base_url: str = "http://localhost:6333"):
         self.base_url = base_url
 
-    async def search_similar_cases(self, query_embedding: List[float],
-                                 filters: Dict[str, Any],
-                                 limit: int = 10) -> List[Dict[str, Any]]:
+    async def search_similar_cases(
+        self, query_embedding: List[float], filters: Dict[str, Any], limit: int = 10
+    ) -> List[Dict[str, Any]]:
         """Search for similar cases in vector store"""
         try:
             # This would make actual API calls to the vector store
@@ -70,8 +73,15 @@ class VectorStoreClient:
                     "jurisdiction": filters.get("jurisdiction", "california"),
                     "outcome": "successful" if i < 3 else "mixed",
                     "word_count": 2500 + (i * 200),
-                    "sections": ["Caption", "Introduction", "Jurisdiction", "Factual Allegations", "Prayer for Relief"]
-                } for i in range(min(limit, 5))
+                    "sections": [
+                        "Caption",
+                        "Introduction",
+                        "Jurisdiction",
+                        "Factual Allegations",
+                        "Prayer for Relief",
+                    ],
+                }
+                for i in range(min(limit, 5))
             ]
         except Exception as e:
             logger.error(f"Vector store search failed: {e}")
@@ -96,27 +106,35 @@ class DocumentValidator:
         return {
             "california": {
                 "required_sections": [
-                    "caption", "introduction", "jurisdiction_venue",
-                    "factual_allegations", "prayer_for_relief"
+                    "caption",
+                    "introduction",
+                    "jurisdiction_venue",
+                    "factual_allegations",
+                    "prayer_for_relief",
                 ],
                 "preferred_word_count": {"min": 1500, "max": 5000},
                 "paragraph_numbering": "required",
                 "verification": "required_for_complaints",
-                "certificate_of_service": "required"
+                "certificate_of_service": "required",
             },
             "federal": {
                 "required_sections": [
-                    "caption", "introduction", "jurisdiction_venue",
-                    "factual_allegations", "prayer_for_relief"
+                    "caption",
+                    "introduction",
+                    "jurisdiction_venue",
+                    "factual_allegations",
+                    "prayer_for_relief",
                 ],
                 "preferred_word_count": {"min": 2000, "max": 10000},
                 "paragraph_numbering": "required",
                 "verification": "not_required",
-                "certificate_of_service": "required"
-            }
+                "certificate_of_service": "required",
+            },
         }
 
-    async def validate_document(self, document: str, context: Dict[str, Any]) -> ValidationResult:
+    async def validate_document(
+        self, document: str, context: Dict[str, Any]
+    ) -> ValidationResult:
         """
         Validate document against similar cases and compliance rules
 
@@ -139,16 +157,24 @@ class DocumentValidator:
             similar_cases = await self._get_similar_cases(document, context)
 
             # Calculate similarity scores
-            structural_similarity = self._calculate_structural_similarity(doc_structure, similar_cases)
-            language_similarity = await self._calculate_language_similarity(document, similar_cases)
+            structural_similarity = self._calculate_structural_similarity(
+                doc_structure, similar_cases
+            )
+            language_similarity = await self._calculate_language_similarity(
+                document, similar_cases
+            )
 
             # Check compliance
-            compliance_score = self._check_compliance(document, context.get("jurisdiction", "california"))
+            compliance_score = self._check_compliance(
+                document, context.get("jurisdiction", "california")
+            )
 
             # Calculate overall score
-            result.overall_score = (structural_similarity * 0.4 +
-                                  language_similarity * 0.3 +
-                                  compliance_score * 0.3)
+            result.overall_score = (
+                structural_similarity * 0.4
+                + language_similarity * 0.3
+                + compliance_score * 0.3
+            )
 
             result.structural_similarity = structural_similarity
             result.language_similarity = language_similarity
@@ -165,16 +191,20 @@ class DocumentValidator:
                 "document_word_count": doc_structure.word_count,
                 "document_sections": len(doc_structure.sections),
                 "similar_cases_found": len(similar_cases),
-                "validation_timestamp": datetime.now().isoformat()
+                "validation_timestamp": datetime.now().isoformat(),
             }
 
-            logger.info(f"Document validation completed. Score: {result.overall_score:.2f}")
+            logger.info(
+                f"Document validation completed. Score: {result.overall_score:.2f}"
+            )
             return result
 
         except Exception as e:
             logger.exception(f"Document validation failed: {e}")
             result.issues.append(f"Validation error: {str(e)}")
-            result.recommendations.append("Manual review recommended due to validation error")
+            result.recommendations.append(
+                "Manual review recommended due to validation error"
+            )
             return result
 
     def _analyze_document_structure(self, document: str) -> DocumentStructure:
@@ -182,31 +212,39 @@ class DocumentValidator:
         structure = DocumentStructure()
 
         # Split into sections (basic heuristic)
-        sections = re.split(r'\n\s*\n\s*(?=[A-Z][A-Z\s]+)', document)
+        sections = re.split(r"\n\s*\n\s*(?=[A-Z][A-Z\s]+)", document)
         structure.sections = [s.strip() for s in sections if s.strip()]
         structure.word_count = len(document.split())
-        structure.paragraph_count = len([p for p in document.split('\n') if p.strip()])
+        structure.paragraph_count = len([p for p in document.split("\n") if p.strip()])
 
         if structure.paragraph_count > 0:
-            structure.average_paragraph_length = structure.word_count / structure.paragraph_count
+            structure.average_paragraph_length = (
+                structure.word_count / structure.paragraph_count
+            )
 
         # Count citations (basic regex)
-        citation_pattern = r'\d+\s+[A-Za-z\.]+\s+\d+'
+        citation_pattern = r"\d+\s+[A-Za-z\.]+\s+\d+"
         structure.citation_count = len(re.findall(citation_pattern, document))
 
         # Count numbered paragraphs
-        numbered_pattern = r'^\d+\.\s'
-        structure.numbered_paragraphs = len(re.findall(numbered_pattern, document, re.MULTILINE))
+        numbered_pattern = r"^\d+\.\s"
+        structure.numbered_paragraphs = len(
+            re.findall(numbered_pattern, document, re.MULTILINE)
+        )
 
         # Check for key sections
         doc_lower = document.lower()
-        structure.has_prayer_for_relief = "prayer for relief" in doc_lower or "wherefore" in doc_lower
+        structure.has_prayer_for_relief = (
+            "prayer for relief" in doc_lower or "wherefore" in doc_lower
+        )
         structure.has_verification = "verification" in doc_lower
         structure.has_certificate_of_service = "certificate of service" in doc_lower
 
         return structure
 
-    async def _get_similar_cases(self, document: str, context: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def _get_similar_cases(
+        self, document: str, context: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """Get similar cases from vector store"""
         try:
             # Create embedding for document
@@ -216,7 +254,7 @@ class DocumentValidator:
             filters = {
                 "jurisdiction": context.get("jurisdiction", "california"),
                 "case_type": context.get("case_type", "complaint"),
-                "defendant_type": context.get("defendant_type", "corporation")
+                "defendant_type": context.get("defendant_type", "corporation"),
             }
 
             # Search for similar cases
@@ -230,8 +268,9 @@ class DocumentValidator:
             logger.error(f"Failed to get similar cases: {e}")
             return []
 
-    def _calculate_structural_similarity(self, doc_structure: DocumentStructure,
-                                       similar_cases: List[Dict[str, Any]]) -> float:
+    def _calculate_structural_similarity(
+        self, doc_structure: DocumentStructure, similar_cases: List[Dict[str, Any]]
+    ) -> float:
         """Calculate structural similarity to successful cases"""
         if not similar_cases:
             return 0.5  # Neutral score if no comparison available
@@ -243,7 +282,9 @@ class DocumentValidator:
 
             # Word count similarity (within 20% is good)
             case_word_count = case.get("word_count", 2000)
-            word_diff = abs(doc_structure.word_count - case_word_count) / case_word_count
+            word_diff = (
+                abs(doc_structure.word_count - case_word_count) / case_word_count
+            )
             if word_diff <= 0.2:
                 similarity += 0.3
 
@@ -255,15 +296,19 @@ class DocumentValidator:
             # Key elements presence
             if doc_structure.has_prayer_for_relief:
                 similarity += 0.2
-            if doc_structure.has_verification or doc_structure.has_certificate_of_service:
+            if (
+                doc_structure.has_verification
+                or doc_structure.has_certificate_of_service
+            ):
                 similarity += 0.2
 
             total_similarity += similarity
 
         return min(total_similarity / len(similar_cases), 1.0)
 
-    async def _calculate_language_similarity(self, document: str,
-                                          similar_cases: List[Dict[str, Any]]) -> float:
+    async def _calculate_language_similarity(
+        self, document: str, similar_cases: List[Dict[str, Any]]
+    ) -> float:
         """Calculate language similarity to successful cases"""
         if not similar_cases:
             return 0.5
@@ -271,7 +316,9 @@ class DocumentValidator:
         # This would use more sophisticated NLP analysis in practice
         # For now, use basic keyword matching and structure analysis
 
-        successful_cases = [case for case in similar_cases if case.get("outcome") == "successful"]
+        successful_cases = [
+            case for case in similar_cases if case.get("outcome") == "successful"
+        ]
 
         if not successful_cases:
             return 0.5
@@ -282,7 +329,9 @@ class DocumentValidator:
         total_similarity = 0.0
         for case in successful_cases:
             # In practice, this would compare embeddings or use NLP similarity
-            case_similarity = len(set(doc_phrases) & set(case.get("key_phrases", []))) / len(doc_phrases)
+            case_similarity = len(
+                set(doc_phrases) & set(case.get("key_phrases", []))
+            ) / len(doc_phrases)
             total_similarity += case_similarity
 
         return min(total_similarity / len(successful_cases), 1.0)
@@ -293,9 +342,18 @@ class DocumentValidator:
         phrases = []
 
         legal_terms = [
-            "jurisdiction", "venue", "allegations", "complaint", "defendant",
-            "plaintiff", "wherefore", "prayer for relief", "verification",
-            "certificate of service", "proximate cause", "damages"
+            "jurisdiction",
+            "venue",
+            "allegations",
+            "complaint",
+            "defendant",
+            "plaintiff",
+            "wherefore",
+            "prayer for relief",
+            "verification",
+            "certificate of service",
+            "proximate cause",
+            "damages",
         ]
 
         text_lower = text.lower()
@@ -307,7 +365,9 @@ class DocumentValidator:
 
     def _check_compliance(self, document: str, jurisdiction: str) -> float:
         """Check document compliance with jurisdiction rules"""
-        rules = self.compliance_rules.get(jurisdiction.lower(), self.compliance_rules["california"])
+        rules = self.compliance_rules.get(
+            jurisdiction.lower(), self.compliance_rules["california"]
+        )
 
         compliance_score = 0.0
         total_checks = 0
@@ -328,7 +388,7 @@ class DocumentValidator:
 
         # Check paragraph numbering
         if rules["paragraph_numbering"] == "required":
-            if re.search(r'^\d+\.\s', document, re.MULTILINE):
+            if re.search(r"^\d+\.\s", document, re.MULTILINE):
                 compliance_score += 1
             total_checks += 1
 
@@ -346,91 +406,136 @@ class DocumentValidator:
 
         return compliance_score / total_checks if total_checks > 0 else 0.5
 
-    def _identify_issues(self, document: str, structure: DocumentStructure,
-                        context: Dict[str, Any]) -> List[str]:
+    def _identify_issues(
+        self, document: str, structure: DocumentStructure, context: Dict[str, Any]
+    ) -> List[str]:
         """Identify issues in the document"""
         issues = []
 
         # Word count issues
         jurisdiction = context.get("jurisdiction", "california")
-        rules = self.compliance_rules.get(jurisdiction.lower(), self.compliance_rules["california"])
+        rules = self.compliance_rules.get(
+            jurisdiction.lower(), self.compliance_rules["california"]
+        )
         preferred_range = rules["preferred_word_count"]
 
         if structure.word_count < preferred_range["min"]:
-            issues.append(f"Document is too short ({structure.word_count} words). Recommended minimum: {preferred_range['min']}")
+            issues.append(
+                f"Document is too short ({structure.word_count} words). Recommended minimum: {preferred_range['min']}"
+            )
 
         if structure.word_count > preferred_range["max"]:
-            issues.append(f"Document is too long ({structure.word_count} words). Recommended maximum: {preferred_range['max']}")
+            issues.append(
+                f"Document is too long ({structure.word_count} words). Recommended maximum: {preferred_range['max']}"
+            )
 
         # Missing key sections
         if not structure.has_prayer_for_relief:
             issues.append("Missing Prayer for Relief section")
 
         if not structure.has_verification and jurisdiction.lower() == "california":
-            issues.append("Missing Verification section (required for California complaints)")
+            issues.append(
+                "Missing Verification section (required for California complaints)"
+            )
 
         if not structure.has_certificate_of_service:
             issues.append("Missing Certificate of Service section")
 
         # Citation issues
         if structure.citation_count == 0:
-            issues.append("No legal citations found. Consider adding relevant case law.")
+            issues.append(
+                "No legal citations found. Consider adding relevant case law."
+            )
 
         # Paragraph numbering
         if structure.numbered_paragraphs < 10:
-            issues.append("Limited numbered paragraphs. Consider expanding factual allegations.")
+            issues.append(
+                "Limited numbered paragraphs. Consider expanding factual allegations."
+            )
 
         return issues
 
-    def _generate_recommendations(self, issues: List[str], structure: DocumentStructure,
-                                similar_cases: List[Dict[str, Any]],
-                                context: Dict[str, Any]) -> List[str]:
+    def _generate_recommendations(
+        self,
+        issues: List[str],
+        structure: DocumentStructure,
+        similar_cases: List[Dict[str, Any]],
+        context: Dict[str, Any],
+    ) -> List[str]:
         """Generate recommendations based on issues and similar cases"""
         recommendations = []
 
         # Address specific issues
         for issue in issues:
             if "too short" in issue:
-                recommendations.append("Expand factual allegations with more specific details")
-                recommendations.append("Add more background information about the parties")
+                recommendations.append(
+                    "Expand factual allegations with more specific details"
+                )
+                recommendations.append(
+                    "Add more background information about the parties"
+                )
 
             elif "too long" in issue:
                 recommendations.append("Consider removing redundant allegations")
-                recommendations.append("Focus on the most important facts supporting your claims")
+                recommendations.append(
+                    "Focus on the most important facts supporting your claims"
+                )
 
             elif "Missing" in issue and "Prayer" in issue:
                 recommendations.append("Add a comprehensive Prayer for Relief section")
 
             elif "Missing" in issue and "Verification" in issue:
-                recommendations.append("Add a Verification section with plaintiff's signature")
+                recommendations.append(
+                    "Add a Verification section with plaintiff's signature"
+                )
 
             elif "Missing" in issue and "Certificate" in issue:
                 recommendations.append("Add a Certificate of Service section")
 
             elif "citations" in issue:
-                recommendations.append("Research and add relevant case law supporting your claims")
-                recommendations.append("Include binding authority from your jurisdiction")
+                recommendations.append(
+                    "Research and add relevant case law supporting your claims"
+                )
+                recommendations.append(
+                    "Include binding authority from your jurisdiction"
+                )
 
         # General recommendations based on similar cases
         if similar_cases:
-            successful_cases = [case for case in similar_cases if case.get("outcome") == "successful"]
+            successful_cases = [
+                case for case in similar_cases if case.get("outcome") == "successful"
+            ]
             if successful_cases:
-                avg_word_count = sum(case.get("word_count", 2000) for case in successful_cases) / len(successful_cases)
-                recommendations.append(f"Consider targeting around {int(avg_word_count)} words based on similar successful cases")
+                avg_word_count = sum(
+                    case.get("word_count", 2000) for case in successful_cases
+                ) / len(successful_cases)
+                recommendations.append(
+                    f"Consider targeting around {int(avg_word_count)} words based on similar successful cases"
+                )
 
         # Jurisdiction-specific recommendations
         jurisdiction = context.get("jurisdiction", "california")
         if jurisdiction.lower() == "california":
-            recommendations.append("Ensure all allegations are specific and plead ultimate facts")
-            recommendations.append("Consider adding a demand for jury trial if appropriate")
+            recommendations.append(
+                "Ensure all allegations are specific and plead ultimate facts"
+            )
+            recommendations.append(
+                "Consider adding a demand for jury trial if appropriate"
+            )
 
         elif "federal" in jurisdiction.lower():
-            recommendations.append("Ensure compliance with Federal Rule of Civil Procedure 8")
-            recommendations.append("Consider whether the case qualifies for federal jurisdiction")
+            recommendations.append(
+                "Ensure compliance with Federal Rule of Civil Procedure 8"
+            )
+            recommendations.append(
+                "Consider whether the case qualifies for federal jurisdiction"
+            )
 
         return recommendations
 
-    async def compare_with_similar_cases(self, document: str, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def compare_with_similar_cases(
+        self, document: str, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Compare document with similar cases to identify patterns and improvements"""
         similar_cases = await self._get_similar_cases(document, context)
 
@@ -440,15 +545,21 @@ class DocumentValidator:
         # Analyze patterns
         patterns = {
             "common_sections": self._analyze_common_sections(similar_cases),
-            "successful_language_patterns": self._analyze_language_patterns(similar_cases),
+            "successful_language_patterns": self._analyze_language_patterns(
+                similar_cases
+            ),
             "typical_word_counts": self._analyze_word_count_patterns(similar_cases),
-            "citation_patterns": self._analyze_citation_patterns(similar_cases)
+            "citation_patterns": self._analyze_citation_patterns(similar_cases),
         }
 
         return {
             "patterns": patterns,
-            "comparison_summary": self._generate_comparison_summary(document, similar_cases),
-            "improvement_suggestions": self._generate_improvement_suggestions(document, patterns)
+            "comparison_summary": self._generate_comparison_summary(
+                document, similar_cases
+            ),
+            "improvement_suggestions": self._generate_improvement_suggestions(
+                document, patterns
+            ),
         }
 
     def _analyze_common_sections(self, cases: List[Dict[str, Any]]) -> List[str]:
@@ -464,7 +575,9 @@ class DocumentValidator:
 
         # Return sections that appear in at least 50% of cases
         threshold = len(cases) * 0.5
-        common_sections = [section for section, count in section_counts.items() if count >= threshold]
+        common_sections = [
+            section for section, count in section_counts.items() if count >= threshold
+        ]
 
         return common_sections
 
@@ -476,16 +589,18 @@ class DocumentValidator:
             "clear and concise factual allegations",
             "specific dates and locations",
             "proper legal terminology",
-            "logical flow of allegations"
+            "logical flow of allegations",
         ]
 
-    def _analyze_word_count_patterns(self, cases: List[Dict[str, Any]]) -> Dict[str, int]:
+    def _analyze_word_count_patterns(
+        self, cases: List[Dict[str, Any]]
+    ) -> Dict[str, int]:
         """Analyze word count patterns"""
         word_counts = [case.get("word_count", 2000) for case in cases]
         return {
             "average": int(sum(word_counts) / len(word_counts)),
             "minimum": min(word_counts),
-            "maximum": max(word_counts)
+            "maximum": max(word_counts),
         }
 
     def _analyze_citation_patterns(self, cases: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -494,13 +609,17 @@ class DocumentValidator:
         return {
             "average_citations_per_case": 5,
             "common_citation_types": ["case law", "statutes"],
-            "jurisdiction_focus": "binding authority preferred"
+            "jurisdiction_focus": "binding authority preferred",
         }
 
-    def _generate_comparison_summary(self, document: str, similar_cases: List[Dict[str, Any]]) -> str:
+    def _generate_comparison_summary(
+        self, document: str, similar_cases: List[Dict[str, Any]]
+    ) -> str:
         """Generate summary of comparison with similar cases"""
         doc_word_count = len(document.split())
-        avg_similar_word_count = sum(case.get("word_count", 2000) for case in similar_cases) / len(similar_cases)
+        avg_similar_word_count = sum(
+            case.get("word_count", 2000) for case in similar_cases
+        ) / len(similar_cases)
 
         return f"""
         Document comparison summary:
@@ -510,7 +629,9 @@ class DocumentValidator:
         - Analysis complete
         """
 
-    def _generate_improvement_suggestions(self, document: str, patterns: Dict[str, Any]) -> List[str]:
+    def _generate_improvement_suggestions(
+        self, document: str, patterns: Dict[str, Any]
+    ) -> List[str]:
         """Generate improvement suggestions based on patterns"""
         suggestions = []
 
@@ -520,17 +641,25 @@ class DocumentValidator:
         avg_count = word_count_patterns.get("average", 2000)
 
         if doc_word_count < avg_count * 0.8:
-            suggestions.append(f"Consider expanding to around {avg_count} words to match similar successful cases")
+            suggestions.append(
+                f"Consider expanding to around {avg_count} words to match similar successful cases"
+            )
         elif doc_word_count > avg_count * 1.2:
-            suggestions.append(f"Consider condensing to around {avg_count} words to match similar successful cases")
+            suggestions.append(
+                f"Consider condensing to around {avg_count} words to match similar successful cases"
+            )
 
         # Section suggestions
         common_sections = patterns.get("common_sections", [])
-        suggestions.append(f"Ensure your document includes these common sections: {', '.join(common_sections)}")
+        suggestions.append(
+            f"Ensure your document includes these common sections: {', '.join(common_sections)}"
+        )
 
         # Language suggestions
         language_patterns = patterns.get("successful_language_patterns", [])
         if language_patterns:
-            suggestions.append(f"Consider using these successful language patterns: {', '.join(language_patterns)}")
+            suggestions.append(
+                f"Consider using these successful language patterns: {', '.join(language_patterns)}"
+            )
 
         return suggestions

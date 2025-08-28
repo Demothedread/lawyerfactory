@@ -6,5 +6,9 @@
 #   - Group Tags: orchestration
 import warnings as _w
 
-_w.warn("Module maestro/error_handling.py is deprecated; import lawyerfactory.compose.maestro.errors instead.", DeprecationWarning, stacklevel=2)
+_w.warn(
+    "Module maestro/error_handling.py is deprecated; import lawyerfactory.compose.maestro.errors instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
 from lawyerfactory.compose.maestro.errors import *  # noqa: F401,F403

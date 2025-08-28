@@ -6,6 +6,7 @@
 #   - Directory Group: Workflow
 #   - Group Tags: null
 """
+
 from __future__ import annotations
 
 import csv
@@ -22,12 +23,12 @@ def build_shot_list(evidence_rows: List[Dict[str, Any]], out_path: str | Path) -
     Handles missing fields gracefully with safe defaults and logging.
     """
     logger.info(f"Building shot list with {len(evidence_rows)} evidence rows")
-    
+
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     fields = ["fact_id", "source_id", "timestamp", "summary", "entities", "citations"]
-    
+
     # Track statistics for quality reporting
     stats = {
         "total_rows": len(evidence_rows),
@@ -37,19 +38,19 @@ def build_shot_list(evidence_rows: List[Dict[str, Any]], out_path: str | Path) -
         "missing_summary": 0,
         "missing_entities": 0,
         "missing_citations": 0,
-        "errors": 0
+        "errors": 0,
     }
-    
+
     with out_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fields)
         writer.writeheader()
-        
+
         for i, row in enumerate(evidence_rows, 1):
             try:
                 # Safely extract each field with defaults and error handling
                 processed_row = _process_evidence_row(row, i, stats)
                 writer.writerow(processed_row)
-                
+
             except Exception as e:
                 logger.error(f"Error processing evidence row {i}: {e}")
                 stats["errors"] += 1
@@ -60,27 +61,29 @@ def build_shot_list(evidence_rows: List[Dict[str, Any]], out_path: str | Path) -
                     "timestamp": "",
                     "summary": f"Error processing row {i}: {str(e)[:100]}",
                     "entities": "",
-                    "citations": ""
+                    "citations": "",
                 }
                 writer.writerow(fallback_row)
-    
+
     # Log processing statistics
     _log_processing_stats(stats, out_path)
-    
+
     logger.info(f"Shot list created successfully at {out_path}")
     return out_path
 
 
-def _process_evidence_row(row: Dict[str, Any], row_number: int, stats: Dict[str, int]) -> Dict[str, str]:
+def _process_evidence_row(
+    row: Dict[str, Any], row_number: int, stats: Dict[str, int]
+) -> Dict[str, str]:
     """
     Process a single evidence row with robust error handling and safe defaults.
     """
     if not isinstance(row, dict):
         logger.warning(f"Row {row_number} is not a dictionary: {type(row)}")
         row = {}
-    
+
     processed = {}
-    
+
     # Handle fact_id
     fact_id = row.get("fact_id")
     if fact_id is None or fact_id == "":
@@ -88,7 +91,7 @@ def _process_evidence_row(row: Dict[str, Any], row_number: int, stats: Dict[str,
         stats["missing_fact_id"] += 1
         logger.debug(f"Generated fact_id for row {row_number}: {fact_id}")
     processed["fact_id"] = str(fact_id)
-    
+
     # Handle source_id
     source_id = row.get("source_id")
     if source_id is None:
@@ -98,14 +101,14 @@ def _process_evidence_row(row: Dict[str, Any], row_number: int, stats: Dict[str,
         source_id = "empty_source"
         stats["missing_source_id"] += 1
     processed["source_id"] = str(source_id)
-    
+
     # Handle timestamp
     timestamp = row.get("timestamp")
     if timestamp is None:
         timestamp = ""
         stats["missing_timestamp"] += 1
     processed["timestamp"] = str(timestamp)
-    
+
     # Handle summary
     summary = row.get("summary")
     if summary is None:
@@ -115,7 +118,7 @@ def _process_evidence_row(row: Dict[str, Any], row_number: int, stats: Dict[str,
         summary = "[Empty summary]"
         stats["missing_summary"] += 1
     processed["summary"] = str(summary)
-    
+
     # Handle entities with robust list processing
     entities = row.get("entities", [])
     if entities is None:
@@ -131,11 +134,15 @@ def _process_evidence_row(row: Dict[str, Any], row_number: int, stats: Dict[str,
                 stats["missing_entities"] += 1
         else:
             entities = [str(entities)]
-    
+
     # Filter out None/empty values and convert to strings
-    entities_clean = [str(entity).strip() for entity in entities if entity is not None and str(entity).strip()]
+    entities_clean = [
+        str(entity).strip()
+        for entity in entities
+        if entity is not None and str(entity).strip()
+    ]
     processed["entities"] = "|".join(entities_clean)
-    
+
     # Handle citations with robust list processing
     citations = row.get("citations", [])
     if citations is None:
@@ -151,11 +158,15 @@ def _process_evidence_row(row: Dict[str, Any], row_number: int, stats: Dict[str,
                 stats["missing_citations"] += 1
         else:
             citations = [str(citations)]
-    
+
     # Filter out None/empty values and convert to strings
-    citations_clean = [str(citation).strip() for citation in citations if citation is not None and str(citation).strip()]
+    citations_clean = [
+        str(citation).strip()
+        for citation in citations
+        if citation is not None and str(citation).strip()
+    ]
     processed["citations"] = "|".join(citations_clean)
-    
+
     return processed
 
 
@@ -165,13 +176,15 @@ def _log_processing_stats(stats: Dict[str, int], out_path: Path) -> None:
     if total_rows == 0:
         logger.warning("No evidence rows were processed")
         return
-    
+
     logger.info(f"Shot list processing complete:")
     logger.info(f"  Total rows processed: {total_rows}")
     logger.info(f"  Errors encountered: {stats['errors']}")
-    
+
     # Log missing field statistics
-    missing_fields = {k: v for k, v in stats.items() if k.startswith("missing_") and v > 0}
+    missing_fields = {
+        k: v for k, v in stats.items() if k.startswith("missing_") and v > 0
+    }
     if missing_fields:
         logger.warning("Missing field statistics:")
         for field, count in missing_fields.items():
@@ -180,7 +193,7 @@ def _log_processing_stats(stats: Dict[str, int], out_path: Path) -> None:
             logger.warning(f"  {field_name}: {count}/{total_rows} ({percentage:.1f}%)")
     else:
         logger.info("All evidence rows had complete field data")
-    
+
     logger.info(f"Shot list saved to: {out_path}")
 
 
@@ -191,32 +204,41 @@ def validate_evidence_rows(evidence_rows: List[Dict[str, Any]]) -> Dict[str, Any
     """
     if not isinstance(evidence_rows, list):
         return {"valid": False, "error": "evidence_rows must be a list"}
-    
+
     validation_report = {
         "valid": True,
         "total_rows": len(evidence_rows),
         "quality_issues": [],
         "field_completeness": {},
-        "recommendations": []
+        "recommendations": [],
     }
-    
+
     if len(evidence_rows) == 0:
         validation_report["quality_issues"].append("No evidence rows provided")
-        validation_report["recommendations"].append("Add evidence data before building shot list")
+        validation_report["recommendations"].append(
+            "Add evidence data before building shot list"
+        )
         return validation_report
-    
-    required_fields = ["fact_id", "source_id", "timestamp", "summary", "entities", "citations"]
+
+    required_fields = [
+        "fact_id",
+        "source_id",
+        "timestamp",
+        "summary",
+        "entities",
+        "citations",
+    ]
     field_counts = {field: 0 for field in required_fields}
-    
+
     for i, row in enumerate(evidence_rows):
         if not isinstance(row, dict):
             validation_report["quality_issues"].append(f"Row {i+1} is not a dictionary")
             continue
-            
+
         for field in required_fields:
             if field in row and row[field] is not None and str(row[field]).strip():
                 field_counts[field] += 1
-    
+
     # Calculate completeness percentages
     total_rows = len(evidence_rows)
     for field, count in field_counts.items():
@@ -224,11 +246,15 @@ def validate_evidence_rows(evidence_rows: List[Dict[str, Any]]) -> Dict[str, Any
         validation_report["field_completeness"][field] = {
             "complete_count": count,
             "total_count": total_rows,
-            "completeness_percentage": completeness
+            "completeness_percentage": completeness,
         }
-        
+
         if completeness < 80:  # Less than 80% complete
-            validation_report["quality_issues"].append(f"Field '{field}' is only {completeness:.1f}% complete")
-            validation_report["recommendations"].append(f"Improve data collection for '{field}' field")
-    
+            validation_report["quality_issues"].append(
+                f"Field '{field}' is only {completeness:.1f}% complete"
+            )
+            validation_report["recommendations"].append(
+                f"Improve data collection for '{field}' field"
+            )
+
     return validation_report

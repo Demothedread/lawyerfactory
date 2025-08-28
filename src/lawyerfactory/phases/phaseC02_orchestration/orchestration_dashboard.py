@@ -18,11 +18,11 @@ Features mechanical animations, sound effects, and interactive elements
 that make the user feel like they're working with a sophisticated AI machine.
 """
 
-import logging
-from typing import Dict, List, Optional, Any, Callable
+import asyncio
 from dataclasses import dataclass, field
 import json
-import asyncio
+import logging
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class UIData:
     """Data structure for UI state management"""
+
     current_phase: str = "orchestration"
     active_agents: List[str] = field(default_factory=list)
     progress_bars: Dict[str, float] = field(default_factory=dict)
@@ -54,7 +55,7 @@ class OrchestrationDashboard:
             "research_progress": 0.0,
             "writing_progress": 0.0,
             "validation_progress": 0.0,
-            "overall_progress": 0.0
+            "overall_progress": 0.0,
         }
 
         self.ui_data.agent_status = {
@@ -64,14 +65,14 @@ class OrchestrationDashboard:
             "civil_procedure": "idle",
             "fact_objectivity": "idle",
             "claim_validator": "idle",
-            "caselaw_researcher": "idle"
+            "caselaw_researcher": "idle",
         }
 
         self.ui_data.mechanical_effects = {
             "gears_spinning": False,
             "steam_hissing": False,
             "levers_pulling": False,
-            "lights_flashing": False
+            "lights_flashing": False,
         }
 
         logger.info("Orchestration Dashboard initialized with steampunk theme")
@@ -81,7 +82,9 @@ class OrchestrationDashboard:
         if component in self.ui_data.progress_bars:
             self.ui_data.progress_bars[component] = max(0.0, min(1.0, progress))
             await self._trigger_mechanical_effects(component, progress)
-            await self._emit_event("progress_updated", {"component": component, "progress": progress})
+            await self._emit_event(
+                "progress_updated", {"component": component, "progress": progress}
+            )
 
     async def activate_agent(self, agent_name: str):
         """Activate an agent and update UI accordingly"""
@@ -101,13 +104,15 @@ class OrchestrationDashboard:
         await self._trigger_agent_animation(agent_name, "deactivate")
         await self._emit_event("agent_deactivated", {"agent": agent_name})
 
-    async def add_chat_message(self, sender: str, message: str, message_type: str = "info"):
+    async def add_chat_message(
+        self, sender: str, message: str, message_type: str = "info"
+    ):
         """Add a message to the chat interface"""
         chat_message = {
             "timestamp": asyncio.get_event_loop().time(),
             "sender": sender,
             "message": message,
-            "type": message_type
+            "type": message_type,
         }
 
         self.ui_data.chat_messages.append(chat_message)
@@ -121,7 +126,9 @@ class OrchestrationDashboard:
     async def update_document_preview(self, document_type: str, content: str):
         """Update document preview in the right panel"""
         self.ui_data.document_previews[document_type] = content
-        await self._emit_event("document_updated", {"type": document_type, "content": content})
+        await self._emit_event(
+            "document_updated", {"type": document_type, "content": content}
+        )
 
     async def add_notification(self, message: str, notification_type: str = "info"):
         """Add a notification to the UI"""
@@ -133,11 +140,15 @@ class OrchestrationDashboard:
             self.ui_data.notifications = self.ui_data.notifications[-10:]
 
         await self._trigger_notification_effect(notification_type)
-        await self._emit_event("notification_added", {"message": notification, "type": notification_type})
+        await self._emit_event(
+            "notification_added", {"message": notification, "type": notification_type}
+        )
 
     async def trigger_research_loop(self, reason: str):
         """Trigger visual effects for research loop activation"""
-        await self.add_chat_message("AI Maestro", f"Initiating research loop: {reason}", "warning")
+        await self.add_chat_message(
+            "AI Maestro", f"Initiating research loop: {reason}", "warning"
+        )
         await self._trigger_mechanical_effects("research_loop", 1.0)
         await self.update_progress("research_progress", 0.1)
 
@@ -156,7 +167,7 @@ class OrchestrationDashboard:
             "chat_messages": self.ui_data.chat_messages[-10:],  # Last 10 messages
             "document_previews": self.ui_data.document_previews,
             "agent_status": self.ui_data.agent_status,
-            "mechanical_effects": self.ui_data.mechanical_effects
+            "mechanical_effects": self.ui_data.mechanical_effects,
         }
 
     def on_event(self, event_type: str, handler: Callable):
@@ -186,14 +197,16 @@ class OrchestrationDashboard:
 
         # Reset effects when progress is low
         if progress < 0.1:
-            self.ui_data.mechanical_effects = {k: False for k in self.ui_data.mechanical_effects}
+            self.ui_data.mechanical_effects = {
+                k: False for k in self.ui_data.mechanical_effects
+            }
 
     async def _trigger_agent_animation(self, agent_name: str, action: str):
         """Trigger agent-specific animations"""
         animation_data = {
             "agent": agent_name,
             "action": action,
-            "timestamp": asyncio.get_event_loop().time()
+            "timestamp": asyncio.get_event_loop().time(),
         }
         await self._emit_event("agent_animation", animation_data)
 
@@ -211,7 +224,9 @@ class OrchestrationDashboard:
         await self._emit_event("completion_effect", {"step": step_name})
 
         # Update overall progress
-        completed_steps = sum(1 for p in self.ui_data.progress_bars.values() if p >= 1.0)
+        completed_steps = sum(
+            1 for p in self.ui_data.progress_bars.values() if p >= 1.0
+        )
         total_steps = len(self.ui_data.progress_bars)
         overall_progress = completed_steps / total_steps if total_steps > 0 else 0
         await self.update_progress("overall_progress", overall_progress)
@@ -242,10 +257,14 @@ class SteampunkChatInterface:
         message_lower = message.lower()
 
         # Handle common user interactions
-        if any(word in message_lower for word in ["help", "what can you do", "commands"]):
+        if any(
+            word in message_lower for word in ["help", "what can you do", "commands"]
+        ):
             return self._get_help_message()
 
-        elif any(word in message_lower for word in ["status", "progress", "how are we doing"]):
+        elif any(
+            word in message_lower for word in ["status", "progress", "how are we doing"]
+        ):
             return await self._get_status_message()
 
         elif any(word in message_lower for word in ["review", "check", "look at"]):

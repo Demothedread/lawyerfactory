@@ -7,6 +7,7 @@
 #   - Group Tags: null
 Module for checking legal and formatting compliance.
 """
+
 import re
 
 
@@ -22,13 +23,14 @@ def check_rule_12b6(causes_of_action):
     """
     issues = []
     for cause in causes_of_action:
-        for element in cause['elements']:
-            if not element.get('fact_text'):
+        for element in cause["elements"]:
+            if not element.get("fact_text"):
                 issues.append(
                     f"Rule 12(b)(6) Issue: Element '{element['name']}' in cause "
                     f"of action '{cause['name']}' lacks supporting facts."
                 )
     return issues
+
 
 def validate_citations(research_findings):
     """
@@ -43,8 +45,8 @@ def validate_citations(research_findings):
     issues = []
     # Simplified Bluebook format: [Case Name], [Volume] U.S. [Page] ([Year])
     bluebook_pattern = re.compile(r".+, \d+ U\.S\. \d+ \(\d{4}\)")
-    for citation in research_findings.get('citations', []):
-        if not bluebook_pattern.match(citation.get('cite', '')):
+    for citation in research_findings.get("citations", []):
+        if not bluebook_pattern.match(citation.get("cite", "")):
             issues.append(f"Citation Format Issue: '{citation.get('cite')}'")
     return issues
 

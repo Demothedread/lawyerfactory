@@ -1,5 +1,4 @@
-rc/lawyerfactory/storage/enhanced_unified_storage_api.py</path>
-<content">
+"""
 Enhanced Unified Storage API for LawyerFactory
 
 This module provides an enhanced unified storage system that incorporates:
@@ -15,23 +14,26 @@ Key Features:
 - Clean integration with existing components
 - Research loop support for new files
 - No bloat, modular design for troubleshooting
-"
+"""
 
 import asyncio
-import json
-import logging
-import uuid
-import os
 from dataclasses import dataclass, field
 from datetime import datetime
+import json
+import logging
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+import uuid
 
 # Import blob storage abstractions from enhanced vector store
 try:
     from lawyerfactory.vectors.enhanced_vector_store import (
-        BlobStore, LocalDirBlobStore, S3BlobStore,
-        VectorStoreType, ValidationType
+        BlobStore,
+        LocalDirBlobStore,
+        S3BlobStore,
+        ValidationType,
+        VectorStoreType,
     )
     BLOB_STORE_AVAILABLE = True
 except ImportError:

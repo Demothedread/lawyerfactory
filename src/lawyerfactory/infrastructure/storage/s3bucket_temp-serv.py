@@ -2,18 +2,18 @@
 # FastAPI file uploader → local tmp + S3 object
 # Requires: fastapi, uvicorn[standard], boto3, python-multipart
 
-import os
-import io
-import uuid
-import time
 import hashlib
-import mimetypes
+import io
 import logging
+import mimetypes
+import os
 from pathlib import Path
-from typing import Optional, Dict
+import time
+from typing import Dict, Optional
+import uuid
 
 import boto3
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
 logger = logging.getLogger(__name__)</search>
@@ -21,7 +21,10 @@ logger = logging.getLogger(__name__)</search>
 
 # Import unified storage API
 try:
-    from lawyerfactory.storage.unified_storage_api import get_unified_storage_api, UnifiedStorageAPI
+    from lawyerfactory.storage.unified_storage_api import (
+        UnifiedStorageAPI,
+        get_unified_storage_api,
+    )
     UNIFIED_STORAGE_AVAILABLE = True
 except ImportError:
     UNIFIED_STORAGE_AVAILABLE = False

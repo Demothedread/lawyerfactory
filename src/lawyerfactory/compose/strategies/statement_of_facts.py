@@ -10,11 +10,11 @@ Produces litigation-ready Statement of Facts documents from knowledge graph data
 with proper legal formatting, Bluebook citations, and FRCP compliance.
 """
 
-import logging
-import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+import logging
+import re
 from typing import Any, Dict, List, Optional
 
 from knowledge_graph_integration import KnowledgeGraphIntegration

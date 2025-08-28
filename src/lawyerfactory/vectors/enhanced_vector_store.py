@@ -16,15 +16,16 @@ Features:
 """
 
 import asyncio
-import json
-import logging
-import uuid
-import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+import json
+import logging
+import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Set, Protocol, runtime_checkable
+from typing import Any, Dict, List, Optional, Protocol, Set, Tuple, runtime_checkable
+import uuid
+
 import numpy as np
 
 try:
@@ -580,125 +581,13 @@ class EnhancedVectorStoreManager:
             logger.error(f"Error getting validation sub-vector: {e}")
             return []
 
-    async def add_research_round(
-        self, research_content: str, metadata: Dict[str, Any], round_number: int
+    def _extract_relevant_context(
+        self, content: str, query: str, max_length: int
     ) -> str:
-        """
-        Add research content from a research round to vector stores
-
-        Args:
-            research_content: Research findings and analysis
-            metadata: Research metadata
-            round_number: Research round number
-
-        Returns:
-            Document ID
-        """
-        enhanced_metadata = {
-            **metadata,
-            "research_round": round_number,
-            "content_type": "research_findings",
-            "timestamp": datetime.now().isoformat(),
-        }
-
-        # Determine appropriate store based on content
-        store_type = self._classify_research_content(research_content)
-
-        return await self.ingest_evidence(
-            content=research_content,
-            metadata=enhanced_metadata,
-            store_type=store_type,
-            validation_types=[
-                ValidationType.CUSTOM_FILTER
-            ],  # Research can be used for custom validation
-        )
-
-    async def semantic_search(
-        self,
-        query: str,
-        store_type: Optional[VectorStoreType] = None,
-        top_k: int = 10,
-        threshold: float = 0.5,
-    ) -> List[Tuple[VectorDocument, float]]:
-        """
-        Perform semantic search across vector stores
-
-        Args:
-            query: Search query
-            store_type: Specific store to search (None for all stores)
-            top_k: Number of top results to return
-            threshold: Similarity threshold
-
-        Returns:
-            List of (document, similarity_score) tuples
-        """
-        try:
-            # Generate query embedding
-            query_vector = await self._generate_embedding(query)
-            if not query_vector:
-                return []
-
-            results = []
-
-            # Search specified store or all stores
-            stores_to_search = [store_type] if store_type else list(VectorStoreType)
-
-            for store in stores_to_search:
-                if store in self.vector_stores:
-                    for doc in self.vector_stores[store].values():
-                        similarity = self._calculate_cosine_similarity(
-                            query_vector, doc.vector
-                        )
-                        if similarity >= threshold:
-                            results.append((doc, similarity))
-
-            # Sort by similarity and return top k
-            results.sort(key=lambda x: x[1], reverse=True)
-            return results[:top_k]
-
-        except Exception as e:
-            logger.error(f"Error in semantic search: {e}")
-            return []
-
-    async def get_validation_sub_vector(
-        self, validation_type: ValidationType, min_quality_score: float = 0.5
-    ) -> List[VectorDocument]:
-        """
-        Get filtered sub-vector for specific validation type
-
-        Args:
-            validation_type: Type of validation to filter for
-            min_quality_score: Minimum quality score for documents
-
-        Returns:
-            List of relevant documents for validation
-        """
-        try:
-            # Find or create validation sub-vector
-            sub_vector_key = f"{validation_type.value}_sub_vector"
-            if sub_vector_key not in self.validation_sub_vectors:
-                await self._create_validation_sub_vector(validation_type)
-
-            sub_vector = self.validation_sub_vectors.get(sub_vector_key)
-            if not sub_vector:
-                return []
-
-            # Get documents from sub-vector
-            documents = []
-            for doc_id in sub_vector.document_ids:
-                # Find document across all stores
-                for store in self.vector_stores.values():
-                    if doc_id in store:
-                        doc = store[doc_id]
-                        if sub_vector.quality_score >= min_quality_score:
-                            documents.append(doc)
-                        break
-
-            return documents
-
-        except Exception as e:
-            logger.error(f"Error getting validation sub-vector: {e}")
-            return []
+        """Extract relevant context window from content based on query"""
+        # Simple implementation: return first max_length characters
+        # In production, this would use more sophisticated text segmentation
+        return content[:max_length] if len(content) > max_length else content
 
     async def rag_retrieve_context(
         self, query: str, max_contexts: int = 5, context_window: int = 1000
@@ -765,171 +654,6 @@ class EnhancedVectorStoreManager:
 
         return metrics
 
-    async def _generate_embedding(self, text: str) -> Optional[List[float]]:
-        """Generate vector embedding for text"""
-        try:
-            # Check cache first
-            cache_key = f"embed_{hash(text[:100])}"
-            if cache_key in self.vector_cache:
-                return self.vector_cache[cache_key]
-
-            # Generate embedding using service or fallback
-            if self.embedding_service:
-                vector = await self.embedding_service.generate_embedding(text)
-            else:
-                # Simple fallback: generate random vector for testing
-                vector = np.random.normal(0, 1, 384).tolist()
-
-            # Cache the result
-            if len(self.vector_cache) < self.cache_max_size:
-                self.vector_cache[cache_key] = vector
-
-            return vector
-
-        except Exception as e:
-            logger.error(f"Error generating embedding: {e}")
-            return None
-
-    def _calculate_cosine_similarity(
-        self, vec1: List[float], vec2: List[float]
-    ) -> float:
-        """Calculate cosine similarity between two vectors"""
-        try:
-            dot_product = sum(a * b for a, b in zip(vec1, vec2))
-            norm1 = sum(a * a for a in vec1) ** 0.5
-            norm2 = sum(b * b for b in vec2) ** 0.5
-
-            if norm1 == 0 or norm2 == 0:
-                return 0.0
-
-            return dot_product / (norm1 * norm2)
-        except Exception:
-            return 0.0
-
-    def _classify_research_content(self, content: str) -> VectorStoreType:
-        """Classify research content to determine appropriate store"""
-        content_lower = content.lower()
-
-        # Case law and opinions
-        if any(
-            keyword in content_lower
-            for keyword in ["opinion", "holding", "precedent", "case law"]
-        ):
-            return VectorStoreType.CASE_OPINIONS
-
-        # Primary evidence
-        if any(
-            keyword in content_lower
-            for keyword in ["evidence", "fact", "testimony", "document"]
-        ):
-            return VectorStoreType.PRIMARY_EVIDENCE
-
-        # Default to general RAG
-        return VectorStoreType.GENERAL_RAG
-
-    async def _update_validation_sub_vectors(
-        self, vector_doc: VectorDocument, validation_types: List[ValidationType]
-    ):
-        """Update validation sub-vectors with new document"""
-        for validation_type in validation_types:
-            sub_vector_key = f"{validation_type.value}_sub_vector"
-
-            if sub_vector_key not in self.validation_sub_vectors:
-                self.validation_sub_vectors[sub_vector_key] = ValidationSubVector(
-                    id=sub_vector_key, validation_type=validation_type
-                )
-
-            sub_vector = self.validation_sub_vectors[sub_vector_key]
-            sub_vector.document_ids.add(vector_doc.id)
-
-            # Recalculate quality score
-            await self._calculate_sub_vector_quality(sub_vector)
-
-    async def _create_validation_sub_vector(self, validation_type: ValidationType):
-        """Create a new validation sub-vector by filtering existing documents"""
-        sub_vector_key = f"{validation_type.value}_sub_vector"
-
-        # Find documents that match the validation type
-        matching_docs = set()
-
-        for store in self.vector_stores.values():
-            for doc in store.values():
-                if validation_type in doc.validation_types:
-                    matching_docs.add(doc.id)
-
-        # Create sub-vector
-        sub_vector = ValidationSubVector(
-            id=sub_vector_key,
-            validation_type=validation_type,
-            document_ids=matching_docs,
-        )
-
-        # Calculate quality score
-        await self._calculate_sub_vector_quality(sub_vector)
-
-        self.validation_sub_vectors[sub_vector_key] = sub_vector
-
-    async def _calculate_sub_vector_quality(
-        self, sub_vector: ValidationSubVector
-    ) -> float:
-        """Calculate quality score for validation sub-vector"""
-        if not sub_vector.document_ids:
-            sub_vector.quality_score = 0.0
-            return 0.0
-
-        # Simple quality calculation based on document count and diversity
-        doc_count = len(sub_vector.document_ids)
-        quality_score = min(1.0, doc_count / 10.0)  # Scale up to 10 documents
-
-        sub_vector.quality_score = quality_score
-        return quality_score
-
-    def _extract_relevant_context(
-        self, content: str, query: str, max_length: int
-    ) -> str:
-        """Extract relevant context window from content based on query"""
-        # Simple implementation: return first max_length characters
-        # In production, this would use more sophisticated text segmentation
-        return content[:max_length] if len(content) > max_length else content
-
-    async def _store_in_memory_system(self, vector_doc: VectorDocument):
-        """Store document in memory compression system"""
-        try:
-            memory_content = {
-                "document_id": vector_doc.id,
-                "content": vector_doc.content[:1000],  # Truncate for memory
-                "metadata": vector_doc.metadata,
-                "store_type": vector_doc.store_type.value,
-                "validation_types": [vt.value for vt in vector_doc.validation_types],
-            }
-
-            await self.memory_manager.store_memory(
-                content=json.dumps(memory_content),
-                memory_type=MemoryType.DOCUMENT_SUMMARY,
-                session_id=f"vector_store_{vector_doc.store_type.value}",
-            )
-        except Exception as e:
-            logger.warning(f"Failed to store in memory system: {e}")
-
-    async def cleanup_old_data(self, days_to_keep: int = 30):
-        """Clean up old vector data"""
-        try:
-            cutoff_date = datetime.now().replace(day=datetime.now().day - days_to_keep)
-
-            for store in self.vector_stores.values():
-                docs_to_remove = [
-                    doc_id
-                    for doc_id, doc in store.items()
-                    if doc.created_at < cutoff_date
-                ]
-
-                for doc_id in docs_to_remove:
-                    del store[doc_id]
-
-            logger.info(f"Cleaned up data older than {days_to_keep} days")
-
-        except Exception as e:
-            logger.error(f"Error during cleanup: {e}")
 
 
 # Global instance for easy access

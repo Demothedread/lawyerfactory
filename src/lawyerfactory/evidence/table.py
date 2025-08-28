@@ -9,20 +9,23 @@ Enhanced Evidence Table Module for LawyerFactory
 Implements interactive, sortable, filterable evidence management with facts and claims linking.
 """
 
-import json
-import logging
-import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
+import json
+import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import uuid
 
 logger = logging.getLogger(__name__)
 
 # Import unified storage API
 try:
-    from lawyerfactory.storage.unified_storage_api import get_unified_storage_api, UnifiedStorageAPI
+    from lawyerfactory.storage.unified_storage_api import (
+        UnifiedStorageAPI,
+        get_unified_storage_api,
+    )
     UNIFIED_STORAGE_AVAILABLE = True
 except ImportError:
     UNIFIED_STORAGE_AVAILABLE = False

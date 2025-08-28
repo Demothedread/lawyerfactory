@@ -15,15 +15,18 @@ This enhanced version integrates the CourtAuthorityHelper to provide:
 - Enhanced evidence table with authority metadata
 """
 
+from dataclasses import dataclass, field
 import json
 import logging
-import re
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, field
 from pathlib import Path
+import re
+from typing import Any, Dict, List, Optional, Tuple
 
-from ...agents.research.court_authority_helper import CourtAuthorityHelper, JurisdictionContext
-from .enhanced_intake_processor import EnhancedIntakeProcessor, EnhancedIntakeContext
+from ...agents.research.court_authority_helper import (
+    CourtAuthorityHelper,
+    JurisdictionContext,
+)
+from .enhanced_intake_processor import EnhancedIntakeContext, EnhancedIntakeProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -496,7 +499,9 @@ def assess_evidence_with_authority_enhancement(
     intake_context = None
     if intake_context_path and Path(intake_context_path).exists():
         try:
-            from ...phases.intake.enhanced_intake_processor import EnhancedIntakeProcessor
+            from ...phases.intake.enhanced_intake_processor import (
+                EnhancedIntakeProcessor,
+            )
             processor = EnhancedIntakeProcessor()
             intake_context = processor.load_enhanced_context(intake_context_path)
         except Exception as e:
@@ -545,7 +550,10 @@ if __name__ == "__main__":
         json.dump(sample_evidence_table, f, indent=2)
 
     # Create sample jurisdiction context
-    from ...agents.research.court_authority_helper import JurisdictionContext, LegalQuestionType
+    from ...agents.research.court_authority_helper import (
+        JurisdictionContext,
+        LegalQuestionType,
+    )
 
     sample_context = JurisdictionContext(
         primary_jurisdiction="federal",

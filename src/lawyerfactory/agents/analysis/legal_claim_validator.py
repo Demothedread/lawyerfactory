@@ -20,11 +20,11 @@ The agent ensures that claims are properly pled and have a reasonable
 chance of success based on current law.
 """
 
-import logging
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
+import logging
+from typing import Any, Dict, List, Optional
 
-from ...compose.maestro.registry import AgentInterface, AgentCapability
+from ...compose.maestro.registry import AgentCapability, AgentInterface
 from ...compose.maestro.workflow_models import WorkflowTask
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ClaimValidation:
     """Validation result for a legal claim"""
+
     claim_title: str
     validation_status: str  # valid, invalid, needs_amendment
     rule_12b6_compliant: bool
@@ -48,7 +49,10 @@ class LegalClaimValidatorAgent(AgentInterface):
 
     def __init__(self, knowledge_graph=None):
         self.knowledge_graph = knowledge_graph
-        self.capabilities = [AgentCapability.LEGAL_RESEARCH, AgentCapability.CASE_ANALYSIS]
+        self.capabilities = [
+            AgentCapability.LEGAL_RESEARCH,
+            AgentCapability.CASE_ANALYSIS,
+        ]
 
         # Load claim validation rules
         self._load_claim_validation_rules()
@@ -59,35 +63,53 @@ class LegalClaimValidatorAgent(AgentInterface):
             "negligence": {
                 "required": ["duty", "breach", "causation", "damages"],
                 "optional": ["contributory_negligence", "assumption_of_risk"],
-                "common_defenses": ["statute_of_limitations", "immunities", "contributory_negligence"]
+                "common_defenses": [
+                    "statute_of_limitations",
+                    "immunities",
+                    "contributory_negligence",
+                ],
             },
             "breach_of_contract": {
-                "required": ["offer", "acceptance", "consideration", "breach", "damages"],
+                "required": [
+                    "offer",
+                    "acceptance",
+                    "consideration",
+                    "breach",
+                    "damages",
+                ],
                 "optional": ["conditions_precedent", "force_majeure"],
-                "common_defenses": ["statute_of_limitations", "impossibility", "frustration"]
+                "common_defenses": [
+                    "statute_of_limitations",
+                    "impossibility",
+                    "frustration",
+                ],
             },
             "fraud": {
                 "required": ["misrepresentation", "materiality", "reliance", "damages"],
                 "optional": ["scienter", "justifiable_reliance"],
-                "common_defenses": ["truth", "no_reliance", "due_diligence"]
+                "common_defenses": ["truth", "no_reliance", "due_diligence"],
             },
             "products_liability": {
                 "required": ["defect", "causation", "damages"],
                 "optional": ["manufacturing_defect", "design_defect", "warning_defect"],
-                "common_defenses": ["statute_of_limitations", "assumption_of_risk", "product_misuse"]
+                "common_defenses": [
+                    "statute_of_limitations",
+                    "assumption_of_risk",
+                    "product_misuse",
+                ],
             },
             "intentional_tort": {
                 "required": ["intent", "act", "causation", "damages"],
                 "optional": ["extreme_emotional_distress", "severe_conduct"],
-                "common_defenses": ["consent", "self-defense", "privilege"]
-            }
+                "common_defenses": ["consent", "self-defense", "privilege"],
+            },
         }
 
         self.pleading_standards = {
             "factual_pleading": "Must allege sufficient facts to state a claim",
             "plausibility": "Facts must plausibly suggest entitlement to relief",
             "particularity": "Fraud claims require particularized allegations",
-            "heightened_pleading": "Some claims require more than conclusory statements"
+            "heightened_pleading": "Some claims require more than conclusory statements",
         }
 
     async def process(self, message: str) -> str:
@@ -104,14 +126,18 @@ class LegalClaimValidatorAgent(AgentInterface):
             for i, validation in enumerate(validations, 1):
                 response += f"{i}. **{validation.claim_title}**\n"
                 response += f"   Status: {validation.validation_status}\n"
-                response += f"   Rule 12(b)(6) Compliant: {validation.rule_12b6_compliant}\n"
+                response += (
+                    f"   Rule 12(b)(6) Compliant: {validation.rule_12b6_compliant}\n"
+                )
                 response += f"   Confidence: {validation.confidence_score:.2f}/1.0\n"
 
                 if validation.issues:
                     response += f"   Issues: {', '.join(validation.issues)}\n"
 
                 if validation.recommendations:
-                    response += f"   Recommendations: {', '.join(validation.recommendations)}\n"
+                    response += (
+                        f"   Recommendations: {', '.join(validation.recommendations)}\n"
+                    )
 
                 response += "\n"
 
@@ -121,7 +147,9 @@ class LegalClaimValidatorAgent(AgentInterface):
             logger.error(f"Error processing claim validation request: {e}")
             return f"Error validating claims: {str(e)}"
 
-    async def execute_task(self, task: WorkflowTask, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_task(
+        self, task: WorkflowTask, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute a workflow task related to claim validation"""
         try:
             # Extract claims from context
@@ -138,7 +166,7 @@ class LegalClaimValidatorAgent(AgentInterface):
                 "claims_validated": len(claims),
                 "validations": [validation.__dict__ for validation in validations],
                 "summary": summary,
-                "overall_compliance": self._assess_overall_compliance(validations)
+                "overall_compliance": self._assess_overall_compliance(validations),
             }
 
         except Exception as e:
@@ -149,7 +177,7 @@ class LegalClaimValidatorAgent(AgentInterface):
                 "claims_validated": 0,
                 "validations": [],
                 "summary": "",
-                "overall_compliance": "unknown"
+                "overall_compliance": "unknown",
             }
 
     async def health_check(self) -> bool:
@@ -177,9 +205,10 @@ class LegalClaimValidatorAgent(AgentInterface):
     async def can_handle_task(self, task: WorkflowTask) -> bool:
         """Check if this agent can handle the given task"""
         task_text = f"{task.description} {task.agent_type}".lower()
-        return any(keyword in task_text for keyword in [
-            "claim", "validate", "pleading", "12(b)(6)", "sufficiency"
-        ])
+        return any(
+            keyword in task_text
+            for keyword in ["claim", "validate", "pleading", "12(b)(6)", "sufficiency"]
+        )
 
     async def validate_claims(self, claims: List[str]) -> List[ClaimValidation]:
         """Validate a list of legal claims"""
@@ -205,7 +234,7 @@ class LegalClaimValidatorAgent(AgentInterface):
             rule_12b6_compliant=False,
             required_elements=elements.get("required", []),
             missing_elements=[],
-            confidence_score=0.5
+            confidence_score=0.5,
         )
 
         # Check for required elements
@@ -222,12 +251,16 @@ class LegalClaimValidatorAgent(AgentInterface):
 
         if missing_elements:
             issues.append(f"Missing required elements: {', '.join(missing_elements)}")
-            recommendations.append("Add factual allegations supporting missing elements")
+            recommendations.append(
+                "Add factual allegations supporting missing elements"
+            )
 
         # Check for conclusory statements
         if self._has_conclusory_allegations(claim):
             issues.append("Contains conclusory allegations without factual support")
-            recommendations.append("Replace conclusory statements with specific factual allegations")
+            recommendations.append(
+                "Replace conclusory statements with specific factual allegations"
+            )
 
         # Check pleading standard
         pleading_issues = self._check_pleading_standard(claim, claim_type)
@@ -276,7 +309,7 @@ class LegalClaimValidatorAgent(AgentInterface):
             "misrepresentation": ["misrepresent", "false", "deceit", "lie"],
             "materiality": ["material", "important", "significant"],
             "reliance": ["relied", "trusted", "depended"],
-            "defect": ["defect", "flaw", "problem", "malfunction"]
+            "defect": ["defect", "flaw", "problem", "malfunction"],
         }
 
         keywords = element_keywords.get(element.lower(), [element.lower()])
@@ -285,9 +318,14 @@ class LegalClaimValidatorAgent(AgentInterface):
     def _has_conclusory_allegations(self, claim: str) -> bool:
         """Check if claim contains conclusory allegations"""
         conclusory_phrases = [
-            "was negligent", "breached the contract", "committed fraud",
-            "was careless", "acted intentionally", "was reckless",
-            "failed to properly", "negligent behavior"
+            "was negligent",
+            "breached the contract",
+            "committed fraud",
+            "was careless",
+            "acted intentionally",
+            "was reckless",
+            "failed to properly",
+            "negligent behavior",
         ]
 
         claim_lower = claim.lower()
@@ -300,7 +338,9 @@ class LegalClaimValidatorAgent(AgentInterface):
         # Fraud claims require heightened pleading
         if claim_type == "fraud":
             if not self._has_particularized_allegations(claim):
-                issues.append("Fraud claims require particularized allegations under Rule 9(b)")
+                issues.append(
+                    "Fraud claims require particularized allegations under Rule 9(b)"
+                )
 
         # Check for plausibility
         if not self._has_plausible_allegations(claim):
@@ -325,7 +365,9 @@ class LegalClaimValidatorAgent(AgentInterface):
 
         # Look for specific factual indicators
         factual_indicators = ["on", "at", "by", "with", "from", "to"]
-        has_indicators = any(indicator in claim.lower() for indicator in factual_indicators)
+        has_indicators = any(
+            indicator in claim.lower() for indicator in factual_indicators
+        )
 
         return has_facts and has_indicators
 
@@ -376,7 +418,9 @@ class LegalClaimValidatorAgent(AgentInterface):
         summary = "Claim Validation Summary:\n\n"
 
         valid_claims = [v for v in validations if v.validation_status == "valid"]
-        needs_amendment = [v for v in validations if v.validation_status == "needs_amendment"]
+        needs_amendment = [
+            v for v in validations if v.validation_status == "needs_amendment"
+        ]
         invalid_claims = [v for v in validations if v.validation_status == "invalid"]
 
         summary += f"Total Claims Validated: {len(validations)}\n"

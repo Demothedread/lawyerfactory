@@ -6,6 +6,7 @@
 #   - Directory Group: Orchestration
 #   - Group Tags: orchestration
 """
+
 import asyncio
 
 from .bots.legal_editor import LegalEditorBot
@@ -35,6 +36,7 @@ async def demo():
     maestro = Maestro()
     output = await maestro.research_and_write("contract law")
     print(output)
+
 
 if __name__ == "__main__":
     asyncio.run(demo())

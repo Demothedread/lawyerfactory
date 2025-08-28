@@ -5,20 +5,21 @@ This module tests the LLM integration functions in assessor_consolidated.py,
 including fallback mechanisms and error handling.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock
+import json
 from pathlib import Path
 import tempfile
-import json
+from unittest.mock import MagicMock, patch
+
+import pytest
 
 # Import the functions to test
 from .assessor_consolidated import (
-    simple_categorize,
+    LLM_INTEGRATION_AVAILABLE,
     llm_categorize_document,
+    llm_enhanced_ingest_files,
     llm_extract_document_metadata,
     llm_generate_summary,
-    llm_enhanced_ingest_files,
-    LLM_INTEGRATION_AVAILABLE
+    simple_categorize,
 )
 
 
@@ -32,7 +33,7 @@ class TestSimpleCategorize:
             "Terms and conditions shall apply",
             "The parties hereby agree to the following provisions",
             "Breach of contract terms",
-            "Contract amendment and modification"
+            "Contract amendment and modification",
         ]
         for text in contract_texts:
             assert simple_categorize(text) == "contract"
@@ -44,7 +45,7 @@ class TestSimpleCategorize:
             "Motion for summary judgment",
             "Discovery deposition scheduled",
             "Trial court jurisdiction",
-            "Appeal of the verdict"
+            "Appeal of the verdict",
         ]
         for text in litigation_texts:
             assert simple_categorize(text) == "litigation"
@@ -56,7 +57,7 @@ class TestSimpleCategorize:
             "Payment receipt acknowledged",
             "Financial statement balance",
             "Tax audit compliance",
-            "Accounting ledger entries"
+            "Accounting ledger entries",
         ]
         for text in financial_texts:
             assert simple_categorize(text) == "financial"
@@ -67,7 +68,7 @@ class TestSimpleCategorize:
             "Email correspondence regarding the matter",
             "Official memorandum issued",
             "Press release announcement",
-            "Business letter communication"
+            "Business letter communication",
         ]
         for text in correspondence_texts:
             assert simple_categorize(text) == "correspondence"
@@ -78,7 +79,7 @@ class TestSimpleCategorize:
             "Compliance with regulations required",
             "Policy and procedure guidelines",
             "Legal requirements mandate",
-            "Statutory compliance standards"
+            "Statutory compliance standards",
         ]
         for text in regulatory_texts:
             assert simple_categorize(text) == "regulatory"
@@ -89,7 +90,7 @@ class TestSimpleCategorize:
             "Employment contract terms",
             "Employee handbook policies",
             "Job position requirements",
-            "Salary compensation package"
+            "Salary compensation package",
         ]
         for text in employment_texts:
             assert simple_categorize(text) == "employment"
@@ -100,7 +101,7 @@ class TestSimpleCategorize:
             "Property lease agreement",
             "Real estate transaction",
             "Mortgage deed recorded",
-            "Tenant landlord relationship"
+            "Tenant landlord relationship",
         ]
         for text in real_estate_texts:
             assert simple_categorize(text) == "real_estate"
@@ -111,7 +112,7 @@ class TestSimpleCategorize:
             "Patent application filed",
             "Trademark registration",
             "Copyright infringement claim",
-            "Non-disclosure agreement"
+            "Non-disclosure agreement",
         ]
         for text in ip_texts:
             assert simple_categorize(text) == "intellectual_property"
@@ -122,7 +123,7 @@ class TestSimpleCategorize:
             "Medical treatment records",
             "Patient health information",
             "Hospital medical charts",
-            "Insurance claim processing"
+            "Insurance claim processing",
         ]
         for text in medical_texts:
             assert simple_categorize(text) == "medical"
@@ -133,7 +134,7 @@ class TestSimpleCategorize:
             "This is a general document",
             "Some random content here",
             "",
-            "No specific legal keywords"
+            "No specific legal keywords",
         ]
         for text in general_texts:
             assert simple_categorize(text) == "general"
@@ -152,9 +153,7 @@ class TestLLMIntegration:
         if not LLM_INTEGRATION_AVAILABLE:
             # Test fallback behavior
             result = llm_categorize_document(
-                "This is a contract document",
-                "contract.txt",
-                "John Doe"
+                "This is a contract document", "contract.txt", "John Doe"
             )
             assert "document_type" in result
             assert result["document_type"] == "contract"
@@ -163,8 +162,7 @@ class TestLLMIntegration:
         """Test that llm_extract_document_metadata falls back when LLM unavailable."""
         if not LLM_INTEGRATION_AVAILABLE:
             result = llm_extract_document_metadata(
-                "Sample document content",
-                "sample.txt"
+                "Sample document content", "sample.txt"
             )
             assert "title" in result
             assert "summary" in result
@@ -173,11 +171,13 @@ class TestLLMIntegration:
     def test_llm_generate_summary_fallback(self):
         """Test that llm_generate_summary falls back when LLM unavailable."""
         if not LLM_INTEGRATION_AVAILABLE:
-            result = llm_generate_summary("This is a long document with multiple sentences. It contains important information.")
+            result = llm_generate_summary(
+                "This is a long document with multiple sentences. It contains important information."
+            )
             assert isinstance(result, str)
             assert len(result) > 0
 
-    @patch('src.lawyerfactory.phases.01_intake.llm_integration.llm_classify_evidence')
+    @patch("src.lawyerfactory.phases.01_intake.llm_integration.llm_classify_evidence")
     def test_llm_categorize_with_mock(self, mock_classify):
         """Test llm_categorize_document with mocked LLM service."""
         mock_classify.return_value = {
@@ -187,14 +187,12 @@ class TestLLMIntegration:
                 "specific_category": "Witness Statement",
                 "confidence_score": 0.95,
                 "reasoning": "Document contains witness testimony",
-                "key_characteristics": ["First-hand account", "Detailed testimony"]
-            }
+                "key_characteristics": ["First-hand account", "Detailed testimony"],
+            },
         }
 
         result = llm_categorize_document(
-            "Witness testimony content",
-            "witness.txt",
-            "Jane Smith"
+            "Witness testimony content", "witness.txt", "Jane Smith"
         )
 
         assert result["document_type"] == "Witness Statement"
@@ -202,7 +200,7 @@ class TestLLMIntegration:
         assert result["confidence_score"] == 0.95
         assert result["evidence_type"] == "PRIMARY"
 
-    @patch('src.lawyerfactory.phases.01_intake.llm_integration.llm_extract_metadata')
+    @patch("src.lawyerfactory.phases.01_intake.llm_integration.llm_extract_metadata")
     def test_llm_extract_metadata_with_mock(self, mock_extract):
         """Test llm_extract_document_metadata with mocked LLM service."""
         mock_extract.return_value = {
@@ -213,13 +211,10 @@ class TestLLMIntegration:
             "key_issues": ["Breach of contract", "Damages"],
             "summary": "This brief argues for breach of contract damages.",
             "relevance_score": 0.9,
-            "legal_context": "Commercial litigation"
+            "legal_context": "Commercial litigation",
         }
 
-        result = llm_extract_document_metadata(
-            "Legal brief content",
-            "brief.pdf"
-        )
+        result = llm_extract_document_metadata("Legal brief content", "brief.pdf")
 
         assert result["title"] == "Legal Brief"
         assert result["author"] == "Attorney Smith"
@@ -238,17 +233,23 @@ class TestFileProcessing:
 
             # Contract file
             contract_file = Path(temp_dir) / "contract.txt"
-            contract_file.write_text("This is a contract agreement between the parties. Terms and conditions apply.")
+            contract_file.write_text(
+                "This is a contract agreement between the parties. Terms and conditions apply."
+            )
             test_files.append(str(contract_file))
 
             # Litigation file
             litigation_file = Path(temp_dir) / "complaint.txt"
-            litigation_file.write_text("Plaintiff files complaint against defendant in court.")
+            litigation_file.write_text(
+                "Plaintiff files complaint against defendant in court."
+            )
             test_files.append(str(litigation_file))
 
             # General file
             general_file = Path(temp_dir) / "general.txt"
-            general_file.write_text("This is a general document with no specific legal keywords.")
+            general_file.write_text(
+                "This is a general document with no specific legal keywords."
+            )
             test_files.append(str(general_file))
 
             # Test file processing
@@ -257,11 +258,15 @@ class TestFileProcessing:
             assert len(results) == 3
 
             # Check contract file
-            contract_result = next(r for r in results if r["filename"] == "contract.txt")
+            contract_result = next(
+                r for r in results if r["filename"] == "contract.txt"
+            )
             assert contract_result["categorization"]["document_type"] == "contract"
 
             # Check litigation file
-            litigation_result = next(r for r in results if r["filename"] == "complaint.txt")
+            litigation_result = next(
+                r for r in results if r["filename"] == "complaint.txt"
+            )
             assert litigation_result["categorization"]["document_type"] == "litigation"
 
             # Check general file
@@ -285,15 +290,24 @@ class TestErrorHandling:
             "\n\n\n\n\n",
             "a" * 10000,  # Very long text
             "合同",  # Non-English text
-            "🤖🚀💼"  # Emojis
+            "🤖🚀💼",  # Emojis
         ]
 
         for text in malformed_texts:
             result = simple_categorize(text)
             assert isinstance(result, str)
-            assert result in ["general", "contract", "litigation", "financial",
-                            "correspondence", "regulatory", "employment",
-                            "real_estate", "intellectual_property", "medical"]
+            assert result in [
+                "general",
+                "contract",
+                "litigation",
+                "financial",
+                "correspondence",
+                "regulatory",
+                "employment",
+                "real_estate",
+                "intellectual_property",
+                "medical",
+            ]
 
     def test_unicode_handling(self):
         """Test handling of Unicode characters."""

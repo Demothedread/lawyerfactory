@@ -20,12 +20,12 @@ Key capabilities:
 - Bibliography generation
 """
 
+from dataclasses import dataclass, field
 import logging
 import re
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Tuple
 
-from ...compose.maestro.registry import AgentInterface, AgentCapability
+from ...compose.maestro.registry import AgentCapability, AgentInterface
 from ...compose.maestro.workflow_models import WorkflowTask
 
 logger = logging.getLogger(__name__)
@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Citation:
     """Represents a formatted legal citation"""
+
     original_text: str
     formatted_citation: str
     citation_type: str  # case, statute, regulation, secondary
@@ -55,15 +56,19 @@ class CitationFormatterAgent(AgentInterface):
     def _load_bluebook_patterns(self):
         """Load Bluebook citation patterns and rules"""
         self.case_patterns = {
-            'federal_circuit': re.compile(r'(\d+)\s+F\.\s*(?:Supp\.\s*)?(\d+)\s*\((\d{4})\)'),
-            'supreme_court': re.compile(r'(\d+)\s+U\.\s*S\.\s*(\d+)\s*\((\d{4})\)'),
-            'federal_district': re.compile(r'(\d+)\s+F\.\s*(?:Supp\.\s*)?(\d+)\s*\((\d{4})\)'),
-            'state_court': re.compile(r'(\d+)\s+([A-Za-z]+\.\s*)?(\d+)\s*\((\d{4})\)')
+            "federal_circuit": re.compile(
+                r"(\d+)\s+F\.\s*(?:Supp\.\s*)?(\d+)\s*\((\d{4})\)"
+            ),
+            "supreme_court": re.compile(r"(\d+)\s+U\.\s*S\.\s*(\d+)\s*\((\d{4})\)"),
+            "federal_district": re.compile(
+                r"(\d+)\s+F\.\s*(?:Supp\.\s*)?(\d+)\s*\((\d{4})\)"
+            ),
+            "state_court": re.compile(r"(\d+)\s+([A-Za-z]+\.\s*)?(\d+)\s*\((\d{4})\)"),
         }
 
         self.statute_patterns = {
-            'usc': re.compile(r'(\d+)\s*U\.\s*S\.\s*C\.\s*§\s*(\d+(?:-\d+)?)'),
-            'state_statute': re.compile(r'([A-Za-z]+)\s+Code\s+§\s*(\d+(?:\.\d+)?)')
+            "usc": re.compile(r"(\d+)\s*U\.\s*S\.\s*C\.\s*§\s*(\d+(?:-\d+)?)"),
+            "state_statute": re.compile(r"([A-Za-z]+)\s+Code\s+§\s*(\d+(?:\.\d+)?)"),
         }
 
     async def process(self, message: str) -> str:
@@ -95,7 +100,9 @@ class CitationFormatterAgent(AgentInterface):
             logger.error(f"Error processing citation formatting request: {e}")
             return f"Error formatting citations: {str(e)}"
 
-    async def execute_task(self, task: WorkflowTask, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_task(
+        self, task: WorkflowTask, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute a workflow task related to citation formatting"""
         try:
             # Extract text from context
@@ -111,7 +118,9 @@ class CitationFormatterAgent(AgentInterface):
                 "status": "completed",
                 "formatted_text": formatted_text,
                 "bibliography": bibliography,
-                "citations_formatted": len(self._extract_citations_from_text(text_to_format))
+                "citations_formatted": len(
+                    self._extract_citations_from_text(text_to_format)
+                ),
             }
 
         except Exception as e:
@@ -121,19 +130,21 @@ class CitationFormatterAgent(AgentInterface):
                 "error": str(e),
                 "formatted_text": "",
                 "bibliography": [],
-                "citations_formatted": 0
+                "citations_formatted": 0,
             }
 
     async def health_check(self) -> bool:
         """Check if the agent is functioning properly"""
         try:
             test_text = "See Smith v. Jones, 123 U.S. 456 (2023)"
-            formatted = await self.format_citation(Citation(
-                original_text=test_text,
-                formatted_citation="",
-                citation_type="case",
-                source="test"
-            ))
+            formatted = await self.format_citation(
+                Citation(
+                    original_text=test_text,
+                    formatted_citation="",
+                    citation_type="case",
+                    source="test",
+                )
+            )
             return formatted.formatted_citation != ""
         except Exception as e:
             logger.error(f"Health check failed: {e}")
@@ -153,9 +164,10 @@ class CitationFormatterAgent(AgentInterface):
     async def can_handle_task(self, task: WorkflowTask) -> bool:
         """Check if this agent can handle the given task"""
         task_text = f"{task.description} {task.agent_type}".lower()
-        return any(keyword in task_text for keyword in [
-            "citation", "bluebook", "format", "cite", "reference"
-        ])
+        return any(
+            keyword in task_text
+            for keyword in ["citation", "bluebook", "format", "cite", "reference"]
+        )
 
     async def format_citation(self, citation: Citation) -> Citation:
         """Format a single citation according to Bluebook rules"""
@@ -186,8 +198,7 @@ class CitationFormatterAgent(AgentInterface):
             for citation in citations:
                 formatted_citation = await self.format_citation(citation)
                 formatted_text = formatted_text.replace(
-                    citation.original_text,
-                    formatted_citation.formatted_citation
+                    citation.original_text, formatted_citation.formatted_citation
                 )
 
             return formatted_text
@@ -222,28 +233,32 @@ class CitationFormatterAgent(AgentInterface):
         for pattern_name, pattern in self.case_patterns.items():
             matches = pattern.finditer(text)
             for match in matches:
-                citations.append(Citation(
-                    original_text=match.group(0),
-                    formatted_citation="",
-                    citation_type="case",
-                    source=pattern_name
-                ))
+                citations.append(
+                    Citation(
+                        original_text=match.group(0),
+                        formatted_citation="",
+                        citation_type="case",
+                        source=pattern_name,
+                    )
+                )
 
         # Look for statute citations
         for pattern_name, pattern in self.statute_patterns.items():
             matches = pattern.finditer(text)
             for match in matches:
-                citations.append(Citation(
-                    original_text=match.group(0),
-                    formatted_citation="",
-                    citation_type="statute",
-                    source=pattern_name
-                ))
+                citations.append(
+                    Citation(
+                        original_text=match.group(0),
+                        formatted_citation="",
+                        citation_type="statute",
+                        source=pattern_name,
+                    )
+                )
 
         # Look for generic citation patterns
         generic_patterns = [
-            r'\d+\s+[A-Za-z\.]+\s+\d+',  # Generic case pattern
-            r'[A-Za-z]+\s+Code\s+§\s+\d+',  # Generic statute pattern
+            r"\d+\s+[A-Za-z\.]+\s+\d+",  # Generic case pattern
+            r"[A-Za-z]+\s+Code\s+§\s+\d+",  # Generic statute pattern
         ]
 
         for pattern in generic_patterns:
@@ -251,12 +266,14 @@ class CitationFormatterAgent(AgentInterface):
             for match in matches:
                 # Check if not already captured
                 if not any(c.original_text == match.group(0) for c in citations):
-                    citations.append(Citation(
-                        original_text=match.group(0),
-                        formatted_citation="",
-                        citation_type="unknown",
-                        source="generic"
-                    ))
+                    citations.append(
+                        Citation(
+                            original_text=match.group(0),
+                            formatted_citation="",
+                            citation_type="unknown",
+                            source="generic",
+                        )
+                    )
 
         return citations
 
@@ -284,20 +301,20 @@ class CitationFormatterAgent(AgentInterface):
         citation_text = citation_text.strip()
 
         # Ensure proper spacing
-        citation_text = re.sub(r'\s+', ' ', citation_text)
+        citation_text = re.sub(r"\s+", " ", citation_text)
 
         # Format reporter names
-        citation_text = re.sub(r'U\.S\.', 'U.S.', citation_text)
-        citation_text = re.sub(r'F\.', 'F.', citation_text)
-        citation_text = re.sub(r'Supp\.', 'Supp.', citation_text)
+        citation_text = re.sub(r"U\.S\.", "U.S.", citation_text)
+        citation_text = re.sub(r"F\.", "F.", citation_text)
+        citation_text = re.sub(r"Supp\.", "Supp.", citation_text)
 
         # Ensure year is in parentheses
-        if not re.search(r'\(\d{4}\)', citation_text):
+        if not re.search(r"\(\d{4}\)", citation_text):
             # Try to add year if missing
-            match = re.search(r'(\d{4})', citation_text)
+            match = re.search(r"(\d{4})", citation_text)
             if match:
                 year = match.group(1)
-                citation_text = re.sub(rf'{year}', f'({year})', citation_text)
+                citation_text = re.sub(rf"{year}", f"({year})", citation_text)
 
         return citation_text
 
@@ -306,11 +323,11 @@ class CitationFormatterAgent(AgentInterface):
         citation_text = citation_text.strip()
 
         # Format U.S.C. citations
-        citation_text = re.sub(r'U\.S\.C\.', 'U.S.C.', citation_text)
-        citation_text = re.sub(r'§', '§', citation_text)
+        citation_text = re.sub(r"U\.S\.C\.", "U.S.C.", citation_text)
+        citation_text = re.sub(r"§", "§", citation_text)
 
         # Ensure proper spacing
-        citation_text = re.sub(r'\s+', ' ', citation_text)
+        citation_text = re.sub(r"\s+", " ", citation_text)
 
         return citation_text
 
@@ -318,6 +335,6 @@ class CitationFormatterAgent(AgentInterface):
         """Format a regulation citation according to Bluebook rules"""
         # Basic formatting - would need more specific rules for different agencies
         citation_text = citation_text.strip()
-        citation_text = re.sub(r'\s+', ' ', citation_text)
+        citation_text = re.sub(r"\s+", " ", citation_text)
 
         return citation_text

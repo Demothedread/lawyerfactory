@@ -10,13 +10,13 @@ Extends the base knowledge graph with advanced legal relationship detection,
 confidence scoring, and temporal sequencing capabilities.
 """
 
-import json
-import logging
-import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
+import json
+import logging
 from typing import Any, Dict, List, Optional
+import uuid
 
 from knowledge_graph import KnowledgeGraph
 
@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 class LegalEntityType(Enum):
     """Legal-specific entity types for enhanced classification"""
+
     # Parties and People
     PLAINTIFF = "plaintiff"
     DEFENDANT = "defendant"
@@ -32,37 +33,37 @@ class LegalEntityType(Enum):
     JUDGE = "judge"
     WITNESS = "witness"
     EXPERT_WITNESS = "expert_witness"
-    
+
     # Legal Claims and Causes
     CLAIM = "claim"
     CAUSE_OF_ACTION = "cause_of_action"
     COUNTERCLAIM = "counterclaim"
-    
+
     # Legal Concepts
     STATUTE = "statute"
     REGULATION = "regulation"
     CASE_LAW = "case_law"
     LEGAL_STANDARD = "legal_standard"
     LEGAL_PRINCIPLE = "legal_principle"
-    
+
     # Jurisdictional and Procedural
     JURISDICTION = "jurisdiction"
     VENUE = "venue"
     COURT = "court"
     CASE_NUMBER = "case_number"
-    
+
     # Temporal and Factual
     EVENT = "event"
     DATE = "date"
     DEADLINE = "deadline"
     FACT = "fact"
     EVIDENCE = "evidence"
-    
+
     # Financial and Damages
     DAMAGES = "damages"
     AMOUNT = "amount"
     CONTRACT = "contract"
-    
+
     # Document Types
     DOCUMENT = "document"
     EXHIBIT = "exhibit"
@@ -71,17 +72,18 @@ class LegalEntityType(Enum):
 
 class LegalRelationshipType(Enum):
     """Legal-specific relationship types with legal significance"""
+
     # Causal relationships
     CAUSES = "causes"
     RESULTS_IN = "results_in"
     LEADS_TO = "leads_to"
-    
+
     # Temporal relationships
     OCCURS_BEFORE = "occurs_before"
     OCCURS_AFTER = "occurs_after"
     CONTEMPORANEOUS_WITH = "contemporaneous_with"
     DURING = "during"
-    
+
     # Legal relationships
     SUPPORTS = "supports"
     CONTRADICTS = "contradicts"
@@ -89,23 +91,23 @@ class LegalRelationshipType(Enum):
     REFUTES = "refutes"
     PROVES = "proves"
     DISPROVES = "disproves"
-    
+
     # Party relationships
     PLAINTIFF_DEFENDANT = "plaintiff_defendant"
     ATTORNEY_CLIENT = "attorney_client"
     PARTY_TO = "party_to"
     REPRESENTS = "represents"
-    
+
     # Evidence relationships
     EVIDENCED_BY = "evidenced_by"
     DOCUMENTED_IN = "documented_in"
     REFERENCED_IN = "referenced_in"
-    
+
     # Logical relationships
     DEPENDS_ON = "depends_on"
     REQUIRES = "requires"
     IMPLIES = "implies"
-    
+
     # Conflict relationships
     INCONSISTENT_WITH = "inconsistent_with"
     CONFLICTS_WITH = "conflicts_with"
@@ -114,39 +116,42 @@ class LegalRelationshipType(Enum):
 @dataclass
 class ConfidenceFactors:
     """Multi-dimensional confidence scoring factors"""
+
     source_credibility: float = 0.5  # 0-1 scale
     extraction_method_reliability: float = 0.8  # NER vs manual vs pattern
     evidence_support: float = 0.0  # Supporting evidence strength
     temporal_consistency: float = 1.0  # Timeline consistency
     cross_validation: float = 0.0  # Validation from other sources
     legal_precedence: float = 0.5  # Legal authority/precedence
-    
+
     def calculate_overall_confidence(self) -> float:
         """Calculate weighted overall confidence score"""
         weights = {
-            'source_credibility': 0.25,
-            'extraction_method_reliability': 0.20,
-            'evidence_support': 0.20,
-            'temporal_consistency': 0.15,
-            'cross_validation': 0.15,
-            'legal_precedence': 0.05
+            "source_credibility": 0.25,
+            "extraction_method_reliability": 0.20,
+            "evidence_support": 0.20,
+            "temporal_consistency": 0.15,
+            "cross_validation": 0.15,
+            "legal_precedence": 0.05,
         }
-        
+
         weighted_sum = (
-            self.source_credibility * weights['source_credibility'] +
-            self.extraction_method_reliability * weights['extraction_method_reliability'] +
-            self.evidence_support * weights['evidence_support'] +
-            self.temporal_consistency * weights['temporal_consistency'] +
-            self.cross_validation * weights['cross_validation'] +
-            self.legal_precedence * weights['legal_precedence']
+            self.source_credibility * weights["source_credibility"]
+            + self.extraction_method_reliability
+            * weights["extraction_method_reliability"]
+            + self.evidence_support * weights["evidence_support"]
+            + self.temporal_consistency * weights["temporal_consistency"]
+            + self.cross_validation * weights["cross_validation"]
+            + self.legal_precedence * weights["legal_precedence"]
         )
-        
+
         return min(1.0, max(0.0, weighted_sum))
 
 
 @dataclass
 class CauseOfAction:
     """Represents a cause of action with jurisdiction-specific definition"""
+
     id: Optional[int] = None
     jurisdiction: str = ""
     cause_name: str = ""
@@ -161,19 +166,23 @@ class CauseOfAction:
 @dataclass
 class LegalElement:
     """Represents a legal element within a cause of action"""
+
     id: Optional[int] = None
     cause_of_action_id: int = 0
     element_name: str = ""
     element_order: int = 1
     element_definition: Optional[str] = None
     authority_citation: Optional[str] = None
-    burden_of_proof: str = "preponderance"  # preponderance, clear_and_convincing, beyond_reasonable_doubt
+    burden_of_proof: str = (
+        "preponderance"  # preponderance, clear_and_convincing, beyond_reasonable_doubt
+    )
     created_at: Optional[datetime] = field(default_factory=datetime.now)
 
 
 @dataclass
 class ElementQuestion:
     """Represents a provable question for a legal element"""
+
     id: Optional[int] = None
     legal_element_id: int = 0
     question_text: str = ""
@@ -186,6 +195,7 @@ class ElementQuestion:
 @dataclass
 class JurisdictionAuthority:
     """Represents legal authority within a jurisdiction"""
+
     id: Optional[int] = None
     jurisdiction: str = ""
     authority_type: str = ""  # constitution, statute, regulation, case_law
@@ -201,6 +211,7 @@ class JurisdictionAuthority:
 @dataclass
 class FactElementAttachment:
     """Represents attachment of case facts to legal elements"""
+
     id: Optional[int] = None
     fact_entity_id: str = ""
     legal_element_id: int = 0
@@ -215,6 +226,7 @@ class FactElementAttachment:
 @dataclass
 class LegalEntity:
     """Enhanced entity with legal domain-specific attributes"""
+
     id: str
     entity_type: LegalEntityType
     name: str
@@ -222,7 +234,9 @@ class LegalEntity:
     description: Optional[str] = None
     source_text: Optional[str] = None
     context_window: Optional[str] = None
-    confidence_factors: Optional[ConfidenceFactors] = field(default_factory=ConfidenceFactors)
+    confidence_factors: Optional[ConfidenceFactors] = field(
+        default_factory=ConfidenceFactors
+    )
     extraction_method: str = "manual"
     created_at: Optional[datetime] = field(default_factory=datetime.now)
     updated_at: Optional[datetime] = field(default_factory=datetime.now)
@@ -230,7 +244,7 @@ class LegalEntity:
     legal_attributes: Dict[str, Any] = field(default_factory=dict)
     verified: bool = False
     verification_source: Optional[str] = None
-    
+
     def __post_init__(self):
         if self.created_at is None:
             self.created_at = datetime.now()
@@ -238,7 +252,7 @@ class LegalEntity:
             self.updated_at = datetime.now()
         if self.confidence_factors is None:
             self.confidence_factors = ConfidenceFactors()
-    
+
     @property
     def overall_confidence(self) -> float:
         """Get the overall confidence score for this entity"""
@@ -250,10 +264,13 @@ class LegalEntity:
 @dataclass
 class LegalRelationship:
     """Enhanced relationship with legal domain context and confidence"""
+
     from_entity: str
     to_entity: str
     relationship_type: LegalRelationshipType
-    confidence_factors: Optional[ConfidenceFactors] = field(default_factory=ConfidenceFactors)
+    confidence_factors: Optional[ConfidenceFactors] = field(
+        default_factory=ConfidenceFactors
+    )
     extraction_method: str = "manual"
     verified: bool = False
     supporting_text: Optional[str] = None
@@ -262,7 +279,7 @@ class LegalRelationship:
     legal_significance: Optional[str] = None
     created_at: Optional[datetime] = field(default_factory=datetime.now)
     updated_at: Optional[datetime] = field(default_factory=datetime.now)
-    
+
     def __post_init__(self):
         if self.created_at is None:
             self.created_at = datetime.now()
@@ -270,7 +287,7 @@ class LegalRelationship:
             self.updated_at = datetime.now()
         if self.confidence_factors is None:
             self.confidence_factors = ConfidenceFactors()
-    
+
     @property
     def overall_confidence(self) -> float:
         """Get the overall confidence score for this relationship"""
@@ -281,11 +298,11 @@ class LegalRelationship:
 
 class EnhancedKnowledgeGraph(KnowledgeGraph):
     """Enhanced knowledge graph with legal relationship capabilities"""
-    
-    def __init__(self, db_path: str = 'knowledge_graph.db', key: str = ''):
+
+    def __init__(self, db_path: str = "knowledge_graph.db", key: str = ""):
         super().__init__(db_path, key)
         self._initialize_enhanced_schema()
-        
+
     def _initialize_enhanced_schema(self):
         """Initialize enhanced schema for legal relationships"""
         enhanced_sql = """
@@ -530,7 +547,7 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
         CREATE INDEX IF NOT EXISTS idx_fact_attachments_element ON fact_element_attachments(legal_element_id);
         CREATE INDEX IF NOT EXISTS idx_fact_attachments_fact ON fact_element_attachments(fact_entity_id);
         """
-        
+
         try:
             cursor = self.conn.cursor()
             cursor.executescript(enhanced_sql)
@@ -540,60 +557,78 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
         except Exception as e:
             logger.exception("Failed to initialize enhanced schema: %s", e)
             raise
-    
+
     def add_legal_entity(self, entity: LegalEntity) -> str:
         """Add a legal entity with enhanced confidence tracking"""
         try:
             # Insert into base entities table
-            self._execute("""
+            self._execute(
+                """
                 INSERT OR REPLACE INTO entities
                 (id, type, name, canonical_name, description, source_text,
                  context_window, confidence, extraction_method, legal_attributes,
                  verified, verification_source)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                entity.id,
-                entity.entity_type.value,
-                entity.name,
-                entity.canonical_name,
-                entity.description,
-                entity.source_text,
-                entity.context_window,
-                entity.overall_confidence,
-                entity.extraction_method,
-                json.dumps(entity.legal_attributes) if entity.legal_attributes else None,
-                entity.verified,
-                entity.verification_source
-            ))
-            
+            """,
+                (
+                    entity.id,
+                    entity.entity_type.value,
+                    entity.name,
+                    entity.canonical_name,
+                    entity.description,
+                    entity.source_text,
+                    entity.context_window,
+                    entity.overall_confidence,
+                    entity.extraction_method,
+                    (
+                        json.dumps(entity.legal_attributes)
+                        if entity.legal_attributes
+                        else None
+                    ),
+                    entity.verified,
+                    entity.verification_source,
+                ),
+            )
+
             # Insert confidence factors
             cf = entity.confidence_factors or ConfidenceFactors()
-            self._execute("""
+            self._execute(
+                """
                 INSERT OR REPLACE INTO entity_confidence_metrics
                 (entity_id, source_credibility, extraction_method_reliability,
                  evidence_support, temporal_consistency, cross_validation,
                  legal_precedence, overall_confidence)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                entity.id, cf.source_credibility, cf.extraction_method_reliability,
-                cf.evidence_support, cf.temporal_consistency, cf.cross_validation,
-                cf.legal_precedence, entity.overall_confidence
-            ))
-            
-            logger.info(f"Added legal entity: {entity.name} ({entity.entity_type.value}) with confidence {entity.overall_confidence:.2f}")
+            """,
+                (
+                    entity.id,
+                    cf.source_credibility,
+                    cf.extraction_method_reliability,
+                    cf.evidence_support,
+                    cf.temporal_consistency,
+                    cf.cross_validation,
+                    cf.legal_precedence,
+                    entity.overall_confidence,
+                ),
+            )
+
+            logger.info(
+                f"Added legal entity: {entity.name} ({entity.entity_type.value}) with confidence {entity.overall_confidence:.2f}"
+            )
             return entity.id
-            
+
         except Exception as e:
             logger.exception(f"Failed to add legal entity {entity.name}: {e}")
             raise
-    
+
     def add_legal_relationship(self, relationship: LegalRelationship) -> int:
         """Add a legal relationship with enhanced confidence tracking"""
         try:
             cursor = self.conn.cursor()
             cf = relationship.confidence_factors or ConfidenceFactors()
-            
-            cursor.execute("""
+
+            cursor.execute(
+                """
                 INSERT INTO legal_relationships
                 (from_entity, to_entity, relationship_type, source_credibility,
                  extraction_method_reliability, evidence_support, temporal_consistency,
@@ -601,39 +636,50 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
                  extraction_method, verified, supporting_text, temporal_context,
                  legal_significance, source_documents)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                relationship.from_entity,
-                relationship.to_entity,
-                relationship.relationship_type.value,
-                cf.source_credibility,
-                cf.extraction_method_reliability,
-                cf.evidence_support,
-                cf.temporal_consistency,
-                cf.cross_validation,
-                cf.legal_precedence,
-                relationship.overall_confidence,
-                relationship.extraction_method,
-                relationship.verified,
-                relationship.supporting_text,
-                relationship.temporal_context,
-                relationship.legal_significance,
-                json.dumps(relationship.source_documents) if relationship.source_documents else None
-            ))
-            
+            """,
+                (
+                    relationship.from_entity,
+                    relationship.to_entity,
+                    relationship.relationship_type.value,
+                    cf.source_credibility,
+                    cf.extraction_method_reliability,
+                    cf.evidence_support,
+                    cf.temporal_consistency,
+                    cf.cross_validation,
+                    cf.legal_precedence,
+                    relationship.overall_confidence,
+                    relationship.extraction_method,
+                    relationship.verified,
+                    relationship.supporting_text,
+                    relationship.temporal_context,
+                    relationship.legal_significance,
+                    (
+                        json.dumps(relationship.source_documents)
+                        if relationship.source_documents
+                        else None
+                    ),
+                ),
+            )
+
             relationship_id = cursor.lastrowid or 0
             self.conn.commit()
             cursor.close()
-            
-            logger.info(f"Added legal relationship: {relationship.relationship_type.value} between {relationship.from_entity} and {relationship.to_entity} with confidence {relationship.overall_confidence:.2f}")
+
+            logger.info(
+                f"Added legal relationship: {relationship.relationship_type.value} between {relationship.from_entity} and {relationship.to_entity} with confidence {relationship.overall_confidence:.2f}"
+            )
             return relationship_id
-            
+
         except Exception as e:
             logger.exception(f"Failed to add legal relationship: {e}")
             raise
-    
-    def get_entity_legal_relationships(self, entity_id: str, 
-                                    relationship_types: Optional[List[LegalRelationshipType]] = None,
-                                    min_confidence: float = 0.0) -> List[Dict[str, Any]]:
+
+    def get_entity_legal_relationships(
+        self,
+        entity_id: str,
+        relationship_types: Optional[List[LegalRelationshipType]] = None,
+        min_confidence: float = 0.0,
+    ) -> List[Dict[str, Any]]:
         """Get legal relationships for an entity with filtering options"""
         try:
             base_query = """
@@ -645,83 +691,99 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
                 AND lr.overall_confidence >= ?
             """
             params = [entity_id, entity_id, min_confidence]
-            
+
             if relationship_types:
-                type_placeholders = ','.join(['?' for _ in relationship_types])
+                type_placeholders = ",".join(["?" for _ in relationship_types])
                 base_query += f" AND lr.relationship_type IN ({type_placeholders})"
                 params.extend([rt.value for rt in relationship_types])
-            
+
             base_query += " ORDER BY lr.overall_confidence DESC"
-            
+
             rows = self._fetchall(base_query, tuple(params))
-            
+
             relationships = []
             for row in rows:
-                relationships.append({
-                    'id': row[0],
-                    'from_entity': row[1],
-                    'to_entity': row[2],
-                    'relationship_type': row[3],
-                    'overall_confidence': row[10],
-                    'extraction_method': row[11],
-                    'verified': row[12],
-                    'supporting_text': row[13],
-                    'temporal_context': row[14],
-                    'legal_significance': row[15],
-                    'source_documents': json.loads(row[16]) if row[16] else [],
-                    'from_name': row[18],
-                    'to_name': row[19],
-                    'direction': 'outgoing' if row[1] == entity_id else 'incoming'
-                })
-            
+                relationships.append(
+                    {
+                        "id": row[0],
+                        "from_entity": row[1],
+                        "to_entity": row[2],
+                        "relationship_type": row[3],
+                        "overall_confidence": row[10],
+                        "extraction_method": row[11],
+                        "verified": row[12],
+                        "supporting_text": row[13],
+                        "temporal_context": row[14],
+                        "legal_significance": row[15],
+                        "source_documents": json.loads(row[16]) if row[16] else [],
+                        "from_name": row[18],
+                        "to_name": row[19],
+                        "direction": "outgoing" if row[1] == entity_id else "incoming",
+                    }
+                )
+
             return relationships
-            
+
         except Exception as e:
-            logger.exception(f"Failed to get legal relationships for entity {entity_id}: {e}")
+            logger.exception(
+                f"Failed to get legal relationships for entity {entity_id}: {e}"
+            )
             return []
-    
-    def update_entity_confidence(self, entity_id: str, confidence_factors: ConfidenceFactors):
+
+    def update_entity_confidence(
+        self, entity_id: str, confidence_factors: ConfidenceFactors
+    ):
         """Update confidence factors for an entity"""
         try:
             overall_confidence = confidence_factors.calculate_overall_confidence()
-            
+
             # Update confidence metrics
-            self._execute("""
+            self._execute(
+                """
                 UPDATE entity_confidence_metrics SET
                 source_credibility = ?, extraction_method_reliability = ?,
                 evidence_support = ?, temporal_consistency = ?,
                 cross_validation = ?, legal_precedence = ?,
                 overall_confidence = ?, last_updated = CURRENT_TIMESTAMP
                 WHERE entity_id = ?
-            """, (
-                confidence_factors.source_credibility,
-                confidence_factors.extraction_method_reliability,
-                confidence_factors.evidence_support,
-                confidence_factors.temporal_consistency,
-                confidence_factors.cross_validation,
-                confidence_factors.legal_precedence,
-                overall_confidence,
-                entity_id
-            ))
-            
+            """,
+                (
+                    confidence_factors.source_credibility,
+                    confidence_factors.extraction_method_reliability,
+                    confidence_factors.evidence_support,
+                    confidence_factors.temporal_consistency,
+                    confidence_factors.cross_validation,
+                    confidence_factors.legal_precedence,
+                    overall_confidence,
+                    entity_id,
+                ),
+            )
+
             # Update base entity confidence
-            self._execute("""
+            self._execute(
+                """
                 UPDATE entities SET confidence = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE id = ?
-            """, (overall_confidence, entity_id))
-            
-            logger.info(f"Updated confidence for entity {entity_id}: {overall_confidence:.2f}")
-            
+            """,
+                (overall_confidence, entity_id),
+            )
+
+            logger.info(
+                f"Updated confidence for entity {entity_id}: {overall_confidence:.2f}"
+            )
+
         except Exception as e:
             logger.exception(f"Failed to update confidence for entity {entity_id}: {e}")
             raise
-    
-    def detect_fact_conflicts(self, min_similarity_threshold: float = 0.7) -> List[Dict[str, Any]]:
+
+    def detect_fact_conflicts(
+        self, min_similarity_threshold: float = 0.7
+    ) -> List[Dict[str, Any]]:
         """Detect potential conflicts between facts/entities"""
         try:
             # Simple implementation - can be enhanced with semantic similarity
             conflicts = []
-            
+
             # Find entities with similar names but different details
             similar_entities_query = """
                 SELECT e1.id, e1.name, e1.description, e2.id, e2.name, e2.description
@@ -735,49 +797,52 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
                 )
                 AND (e1.description != e2.description OR e1.source_text != e2.source_text)
             """
-            
+
             rows = self._fetchall(similar_entities_query)
-            
+
             for row in rows:
                 conflict = {
-                    'entity_a_id': row[0],
-                    'entity_a_name': row[1],
-                    'entity_a_description': row[2],
-                    'entity_b_id': row[3],
-                    'entity_b_name': row[4],
-                    'entity_b_description': row[5],
-                    'conflict_type': 'potential_duplicate',
-                    'severity': 'medium'
+                    "entity_a_id": row[0],
+                    "entity_a_name": row[1],
+                    "entity_a_description": row[2],
+                    "entity_b_id": row[3],
+                    "entity_b_name": row[4],
+                    "entity_b_description": row[5],
+                    "conflict_type": "potential_duplicate",
+                    "severity": "medium",
                 }
                 conflicts.append(conflict)
-            
+
             # Store detected conflicts
             for conflict in conflicts:
-                self._execute("""
+                self._execute(
+                    """
                     INSERT OR IGNORE INTO fact_conflicts
                     (entity_a_id, entity_b_id, conflict_type, severity)
                     VALUES (?, ?, ?, ?)
-                """, (
-                    conflict['entity_a_id'],
-                    conflict['entity_b_id'],
-                    conflict['conflict_type'],
-                    conflict['severity']
-                ))
-            
+                """,
+                    (
+                        conflict["entity_a_id"],
+                        conflict["entity_b_id"],
+                        conflict["conflict_type"],
+                        conflict["severity"],
+                    ),
+                )
+
             logger.info(f"Detected {len(conflicts)} potential fact conflicts")
             return conflicts
-            
+
         except Exception as e:
             logger.exception(f"Failed to detect fact conflicts: {e}")
             return []
-    
+
     def get_temporal_timeline(self, entity_ids: List[str]) -> List[Dict[str, Any]]:
         """Build chronological timeline for specified entities"""
         try:
             if not entity_ids:
                 return []
-            
-            placeholders = ','.join(['?' for _ in entity_ids])
+
+            placeholders = ",".join(["?" for _ in entity_ids])
             timeline_query = f"""
                 SELECT te.*, e.name, e.type
                 FROM temporal_events te
@@ -785,187 +850,229 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
                 WHERE te.entity_id IN ({placeholders})
                 ORDER BY te.sequence_order ASC, te.absolute_timestamp ASC
             """
-            
+
             rows = self._fetchall(timeline_query, tuple(entity_ids))
-            
+
             timeline = []
             for row in rows:
-                timeline.append({
-                    'id': row[0],
-                    'entity_id': row[1],
-                    'entity_name': row[7],
-                    'entity_type': row[8],
-                    'event_type': row[2],
-                    'sequence_order': row[3],
-                    'absolute_timestamp': row[4],
-                    'relative_description': row[5],
-                    'duration_minutes': row[6],
-                    'certainty_level': row[7],
-                    'source_description': row[8]
-                })
-            
+                timeline.append(
+                    {
+                        "id": row[0],
+                        "entity_id": row[1],
+                        "entity_name": row[7],
+                        "entity_type": row[8],
+                        "event_type": row[2],
+                        "sequence_order": row[3],
+                        "absolute_timestamp": row[4],
+                        "relative_description": row[5],
+                        "duration_minutes": row[6],
+                        "certainty_level": row[7],
+                        "source_description": row[8],
+                    }
+                )
+
             return timeline
-            
+
         except Exception as e:
             logger.exception(f"Failed to build temporal timeline: {e}")
             return []
-    
+
     def get_enhanced_statistics(self) -> Dict[str, Any]:
         """Get comprehensive statistics for the enhanced knowledge graph"""
         try:
             # Get base statistics using the parent class method if available
             base_stats = {}
-            if hasattr(self, 'get_entity_statistics'):
+            if hasattr(self, "get_entity_statistics"):
                 try:
-                    base_stats = super(EnhancedKnowledgeGraph, self).get_entity_statistics()
+                    base_stats = super(
+                        EnhancedKnowledgeGraph, self
+                    ).get_entity_statistics()
                 except AttributeError:
                     # Fallback to basic entity count
                     total_entities = self._fetchone("SELECT COUNT(*) FROM entities")
-                    base_stats = {'total_entities': total_entities[0] if total_entities else 0}
-            
+                    base_stats = {
+                        "total_entities": total_entities[0] if total_entities else 0
+                    }
+
             # Enhanced statistics
-            legal_relationship_counts = self._fetchall("""
+            legal_relationship_counts = self._fetchall(
+                """
                 SELECT relationship_type, COUNT(*) 
                 FROM legal_relationships 
                 GROUP BY relationship_type 
                 ORDER BY COUNT(*) DESC
-            """)
-            
-            confidence_distribution = self._fetchone("""
+            """
+            )
+
+            confidence_distribution = self._fetchone(
+                """
                 SELECT 
                     AVG(overall_confidence) as avg_confidence,
                     MIN(overall_confidence) as min_confidence,
                     MAX(overall_confidence) as max_confidence,
                     COUNT(*) as total_with_confidence
                 FROM entity_confidence_metrics
-            """)
-            
-            conflict_counts = self._fetchone("""
+            """
+            )
+
+            conflict_counts = self._fetchone(
+                """
                 SELECT COUNT(*) as total_conflicts,
                        SUM(CASE WHEN attorney_reviewed = 1 THEN 1 ELSE 0 END) as reviewed_conflicts
                 FROM fact_conflicts
-            """)
-            
+            """
+            )
+
             enhanced_stats = {
                 **base_stats,
-                'legal_relationships': [
-                    {'type': row[0], 'count': row[1]} 
+                "legal_relationships": [
+                    {"type": row[0], "count": row[1]}
                     for row in legal_relationship_counts
                 ],
-                'confidence_metrics': {
-                    'average': confidence_distribution[0] if confidence_distribution else 0,
-                    'minimum': confidence_distribution[1] if confidence_distribution else 0,
-                    'maximum': confidence_distribution[2] if confidence_distribution else 0,
-                    'entities_with_confidence': confidence_distribution[3] if confidence_distribution else 0
+                "confidence_metrics": {
+                    "average": (
+                        confidence_distribution[0] if confidence_distribution else 0
+                    ),
+                    "minimum": (
+                        confidence_distribution[1] if confidence_distribution else 0
+                    ),
+                    "maximum": (
+                        confidence_distribution[2] if confidence_distribution else 0
+                    ),
+                    "entities_with_confidence": (
+                        confidence_distribution[3] if confidence_distribution else 0
+                    ),
                 },
-                'conflicts': {
-                    'total': conflict_counts[0] if conflict_counts else 0,
-                    'reviewed': conflict_counts[1] if conflict_counts else 0
-                }
+                "conflicts": {
+                    "total": conflict_counts[0] if conflict_counts else 0,
+                    "reviewed": conflict_counts[1] if conflict_counts else 0,
+                },
             }
-            
+
             return enhanced_stats
-            
+
         except Exception as e:
             logger.exception(f"Failed to get enhanced statistics: {e}")
             return {}
-    
+
     # ========== Claims Matrix Methods ==========
-    
+
     def add_cause_of_action(self, cause: CauseOfAction) -> int:
         """Add a cause of action to the knowledge graph"""
         try:
             cursor = self.conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO causes_of_action
                 (jurisdiction, cause_name, legal_definition, authority_citation,
                  federal_preempted, confidence_threshold)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, (
-                cause.jurisdiction,
-                cause.cause_name,
-                cause.legal_definition,
-                cause.authority_citation,
-                cause.federal_preempted,
-                cause.confidence_threshold
-            ))
-            
+            """,
+                (
+                    cause.jurisdiction,
+                    cause.cause_name,
+                    cause.legal_definition,
+                    cause.authority_citation,
+                    cause.federal_preempted,
+                    cause.confidence_threshold,
+                ),
+            )
+
             cause_id = cursor.lastrowid
             cursor.close()
             self.conn.commit()
-            
-            logger.info(f"Added cause of action: {cause.cause_name} for {cause.jurisdiction}")
+
+            logger.info(
+                f"Added cause of action: {cause.cause_name} for {cause.jurisdiction}"
+            )
             return cause_id
-            
+
         except Exception as e:
             logger.exception(f"Failed to add cause of action: {e}")
             raise
-    
-    def get_causes_of_action_by_jurisdiction(self, jurisdiction: str) -> List[Dict[str, Any]]:
+
+    def get_causes_of_action_by_jurisdiction(
+        self, jurisdiction: str
+    ) -> List[Dict[str, Any]]:
         """Get all causes of action for a specific jurisdiction"""
         try:
-            rows = self._fetchall("""
+            rows = self._fetchall(
+                """
                 SELECT id, jurisdiction, cause_name, legal_definition,
                        authority_citation, federal_preempted, confidence_threshold,
                        created_at, updated_at
                 FROM causes_of_action
                 WHERE jurisdiction = ?
                 ORDER BY cause_name ASC
-            """, (jurisdiction,))
-            
+            """,
+                (jurisdiction,),
+            )
+
             causes = []
             for row in rows:
-                causes.append({
-                    'id': row[0],
-                    'jurisdiction': row[1],
-                    'cause_name': row[2],
-                    'legal_definition': row[3],
-                    'authority_citation': row[4],
-                    'federal_preempted': bool(row[5]),
-                    'confidence_threshold': row[6],
-                    'created_at': row[7],
-                    'updated_at': row[8]
-                })
-            
+                causes.append(
+                    {
+                        "id": row[0],
+                        "jurisdiction": row[1],
+                        "cause_name": row[2],
+                        "legal_definition": row[3],
+                        "authority_citation": row[4],
+                        "federal_preempted": bool(row[5]),
+                        "confidence_threshold": row[6],
+                        "created_at": row[7],
+                        "updated_at": row[8],
+                    }
+                )
+
             return causes
-            
+
         except Exception as e:
-            logger.exception(f"Failed to get causes of action for jurisdiction {jurisdiction}: {e}")
+            logger.exception(
+                f"Failed to get causes of action for jurisdiction {jurisdiction}: {e}"
+            )
             return []
-    
+
     def add_legal_element(self, element: LegalElement) -> int:
         """Add a legal element to a cause of action"""
         try:
             cursor = self.conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO legal_elements
                 (cause_of_action_id, element_name, element_order, element_definition,
                  authority_citation, burden_of_proof)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, (
-                element.cause_of_action_id,
-                element.element_name,
-                element.element_order,
-                element.element_definition,
-                element.authority_citation,
-                element.burden_of_proof
-            ))
-            
+            """,
+                (
+                    element.cause_of_action_id,
+                    element.element_name,
+                    element.element_order,
+                    element.element_definition,
+                    element.authority_citation,
+                    element.burden_of_proof,
+                ),
+            )
+
             element_id = cursor.lastrowid
             cursor.close()
             self.conn.commit()
-            
-            logger.info(f"Added legal element: {element.element_name} to cause {element.cause_of_action_id}")
+
+            logger.info(
+                f"Added legal element: {element.element_name} to cause {element.cause_of_action_id}"
+            )
             return element_id
-            
+
         except Exception as e:
             logger.exception(f"Failed to add legal element: {e}")
             raise
-    
-    def get_legal_elements_for_cause(self, cause_of_action_id: int) -> List[Dict[str, Any]]:
+
+    def get_legal_elements_for_cause(
+        self, cause_of_action_id: int
+    ) -> List[Dict[str, Any]]:
         """Get all legal elements for a specific cause of action"""
         try:
-            rows = self._fetchall("""
+            rows = self._fetchall(
+                """
                 SELECT le.id, le.cause_of_action_id, le.element_name, le.element_order,
                        le.element_definition, le.authority_citation, le.burden_of_proof,
                        le.created_at, coa.cause_name, coa.jurisdiction
@@ -973,61 +1080,73 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
                 JOIN causes_of_action coa ON le.cause_of_action_id = coa.id
                 WHERE le.cause_of_action_id = ?
                 ORDER BY le.element_order ASC
-            """, (cause_of_action_id,))
-            
+            """,
+                (cause_of_action_id,),
+            )
+
             elements = []
             for row in rows:
-                elements.append({
-                    'id': row[0],
-                    'cause_of_action_id': row[1],
-                    'element_name': row[2],
-                    'element_order': row[3],
-                    'element_definition': row[4],
-                    'authority_citation': row[5],
-                    'burden_of_proof': row[6],
-                    'created_at': row[7],
-                    'cause_name': row[8],
-                    'jurisdiction': row[9]
-                })
-            
+                elements.append(
+                    {
+                        "id": row[0],
+                        "cause_of_action_id": row[1],
+                        "element_name": row[2],
+                        "element_order": row[3],
+                        "element_definition": row[4],
+                        "authority_citation": row[5],
+                        "burden_of_proof": row[6],
+                        "created_at": row[7],
+                        "cause_name": row[8],
+                        "jurisdiction": row[9],
+                    }
+                )
+
             return elements
-            
+
         except Exception as e:
-            logger.exception(f"Failed to get legal elements for cause {cause_of_action_id}: {e}")
+            logger.exception(
+                f"Failed to get legal elements for cause {cause_of_action_id}: {e}"
+            )
             return []
-    
+
     def add_element_question(self, question: ElementQuestion) -> int:
         """Add a provable question to a legal element"""
         try:
             cursor = self.conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT INTO element_questions
                 (legal_element_id, question_text, question_order, question_type,
                  suggested_evidence_types)
                 VALUES (?, ?, ?, ?, ?)
-            """, (
-                question.legal_element_id,
-                question.question_text,
-                question.question_order,
-                question.question_type,
-                json.dumps(question.suggested_evidence_types)
-            ))
-            
+            """,
+                (
+                    question.legal_element_id,
+                    question.question_text,
+                    question.question_order,
+                    question.question_type,
+                    json.dumps(question.suggested_evidence_types),
+                ),
+            )
+
             question_id = cursor.lastrowid
             cursor.close()
             self.conn.commit()
-            
-            logger.info(f"Added element question to legal element {question.legal_element_id}")
+
+            logger.info(
+                f"Added element question to legal element {question.legal_element_id}"
+            )
             return question_id
-            
+
         except Exception as e:
             logger.exception(f"Failed to add element question: {e}")
             raise
-    
+
     def get_element_questions(self, legal_element_id: int) -> List[Dict[str, Any]]:
         """Get all provable questions for a legal element"""
         try:
-            rows = self._fetchall("""
+            rows = self._fetchall(
+                """
                 SELECT eq.id, eq.legal_element_id, eq.question_text, eq.question_order,
                        eq.question_type, eq.suggested_evidence_types, eq.created_at,
                        le.element_name
@@ -1035,61 +1154,77 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
                 JOIN legal_elements le ON eq.legal_element_id = le.id
                 WHERE eq.legal_element_id = ?
                 ORDER BY eq.question_order ASC
-            """, (legal_element_id,))
-            
+            """,
+                (legal_element_id,),
+            )
+
             questions = []
             for row in rows:
-                questions.append({
-                    'id': row[0],
-                    'legal_element_id': row[1],
-                    'question_text': row[2],
-                    'question_order': row[3],
-                    'question_type': row[4],
-                    'suggested_evidence_types': json.loads(row[5]) if row[5] else [],
-                    'created_at': row[6],
-                    'element_name': row[7]
-                })
-            
+                questions.append(
+                    {
+                        "id": row[0],
+                        "legal_element_id": row[1],
+                        "question_text": row[2],
+                        "question_order": row[3],
+                        "question_type": row[4],
+                        "suggested_evidence_types": (
+                            json.loads(row[5]) if row[5] else []
+                        ),
+                        "created_at": row[6],
+                        "element_name": row[7],
+                    }
+                )
+
             return questions
-            
+
         except Exception as e:
-            logger.exception(f"Failed to get element questions for legal element {legal_element_id}: {e}")
+            logger.exception(
+                f"Failed to get element questions for legal element {legal_element_id}: {e}"
+            )
             return []
-    
+
     def attach_fact_to_element(self, attachment: FactElementAttachment) -> int:
         """Attach a case fact to a legal element"""
         try:
             cursor = self.conn.cursor()
-            cursor.execute("""
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO fact_element_attachments
                 (fact_entity_id, legal_element_id, attachment_type, relevance_score,
                  confidence_score, attorney_reviewed, attachment_reasoning)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (
-                attachment.fact_entity_id,
-                attachment.legal_element_id,
-                attachment.attachment_type,
-                attachment.relevance_score,
-                attachment.confidence_score,
-                attachment.attorney_reviewed,
-                attachment.attachment_reasoning
-            ))
-            
+            """,
+                (
+                    attachment.fact_entity_id,
+                    attachment.legal_element_id,
+                    attachment.attachment_type,
+                    attachment.relevance_score,
+                    attachment.confidence_score,
+                    attachment.attorney_reviewed,
+                    attachment.attachment_reasoning,
+                ),
+            )
+
             attachment_id = cursor.lastrowid
             cursor.close()
             self.conn.commit()
-            
-            logger.info(f"Attached fact {attachment.fact_entity_id} to element {attachment.legal_element_id}")
+
+            logger.info(
+                f"Attached fact {attachment.fact_entity_id} to element {attachment.legal_element_id}"
+            )
             return attachment_id
-            
+
         except Exception as e:
             logger.exception(f"Failed to attach fact to element: {e}")
             raise
-    
-    def get_fact_attachments_for_element(self, legal_element_id: int) -> List[Dict[str, Any]]:
+
+    def get_fact_attachments_for_element(
+        self, legal_element_id: int
+    ) -> List[Dict[str, Any]]:
         """Get all fact attachments for a legal element"""
         try:
-            rows = self._fetchall("""
+            rows = self._fetchall(
+                """
                 SELECT fea.id, fea.fact_entity_id, fea.legal_element_id, fea.attachment_type,
                        fea.relevance_score, fea.confidence_score, fea.attorney_reviewed,
                        fea.attachment_reasoning, fea.created_at,
@@ -1099,111 +1234,137 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
                 JOIN legal_elements le ON fea.legal_element_id = le.id
                 WHERE fea.legal_element_id = ?
                 ORDER BY fea.relevance_score DESC, fea.confidence_score DESC
-            """, (legal_element_id,))
-            
+            """,
+                (legal_element_id,),
+            )
+
             attachments = []
             for row in rows:
-                attachments.append({
-                    'id': row[0],
-                    'fact_entity_id': row[1],
-                    'legal_element_id': row[2],
-                    'attachment_type': row[3],
-                    'relevance_score': row[4],
-                    'confidence_score': row[5],
-                    'attorney_reviewed': bool(row[6]),
-                    'attachment_reasoning': row[7],
-                    'created_at': row[8],
-                    'fact_name': row[9],
-                    'fact_type': row[10],
-                    'element_name': row[11]
-                })
-            
+                attachments.append(
+                    {
+                        "id": row[0],
+                        "fact_entity_id": row[1],
+                        "legal_element_id": row[2],
+                        "attachment_type": row[3],
+                        "relevance_score": row[4],
+                        "confidence_score": row[5],
+                        "attorney_reviewed": bool(row[6]),
+                        "attachment_reasoning": row[7],
+                        "created_at": row[8],
+                        "fact_name": row[9],
+                        "fact_type": row[10],
+                        "element_name": row[11],
+                    }
+                )
+
             return attachments
-            
+
         except Exception as e:
-            logger.exception(f"Failed to get fact attachments for element {legal_element_id}: {e}")
+            logger.exception(
+                f"Failed to get fact attachments for element {legal_element_id}: {e}"
+            )
             return []
-    
+
     def get_case_strength_analysis(self, cause_of_action_id: int) -> Dict[str, Any]:
         """Analyze case strength for a specific cause of action"""
         try:
             # Get all elements for the cause
             elements = self.get_legal_elements_for_cause(cause_of_action_id)
-            
+
             if not elements:
-                return {'error': 'No legal elements found for cause of action'}
-            
+                return {"error": "No legal elements found for cause of action"}
+
             element_analysis = []
             total_strength = 0.0
-            
+
             for element in elements:
                 # Get fact attachments for this element
-                attachments = self.get_fact_attachments_for_element(element['id'])
-                
-                supporting_facts = [a for a in attachments if a['attachment_type'] == 'supports']
-                contradicting_facts = [a for a in attachments if a['attachment_type'] == 'contradicts']
-                
-                support_score = sum(a['relevance_score'] * a['confidence_score'] for a in supporting_facts)
-                contradiction_score = sum(a['relevance_score'] * a['confidence_score'] for a in contradicting_facts)
-                
+                attachments = self.get_fact_attachments_for_element(element["id"])
+
+                supporting_facts = [
+                    a for a in attachments if a["attachment_type"] == "supports"
+                ]
+                contradicting_facts = [
+                    a for a in attachments if a["attachment_type"] == "contradicts"
+                ]
+
+                support_score = sum(
+                    a["relevance_score"] * a["confidence_score"]
+                    for a in supporting_facts
+                )
+                contradiction_score = sum(
+                    a["relevance_score"] * a["confidence_score"]
+                    for a in contradicting_facts
+                )
+
                 element_strength = max(0.0, support_score - contradiction_score)
                 total_strength += element_strength
-                
-                element_analysis.append({
-                    'element_id': element['id'],
-                    'element_name': element['element_name'],
-                    'element_order': element['element_order'],
-                    'supporting_facts_count': len(supporting_facts),
-                    'contradicting_facts_count': len(contradicting_facts),
-                    'support_score': support_score,
-                    'contradiction_score': contradiction_score,
-                    'element_strength': element_strength,
-                    'burden_of_proof': element['burden_of_proof']
-                })
-            
+
+                element_analysis.append(
+                    {
+                        "element_id": element["id"],
+                        "element_name": element["element_name"],
+                        "element_order": element["element_order"],
+                        "supporting_facts_count": len(supporting_facts),
+                        "contradicting_facts_count": len(contradicting_facts),
+                        "support_score": support_score,
+                        "contradiction_score": contradiction_score,
+                        "element_strength": element_strength,
+                        "burden_of_proof": element["burden_of_proof"],
+                    }
+                )
+
             overall_strength = total_strength / len(elements) if elements else 0.0
-            
+
             return {
-                'cause_of_action_id': cause_of_action_id,
-                'overall_strength': overall_strength,
-                'total_elements': len(elements),
-                'elements_with_support': len([e for e in element_analysis if e['supporting_facts_count'] > 0]),
-                'elements_with_contradictions': len([e for e in element_analysis if e['contradicting_facts_count'] > 0]),
-                'element_analysis': element_analysis
+                "cause_of_action_id": cause_of_action_id,
+                "overall_strength": overall_strength,
+                "total_elements": len(elements),
+                "elements_with_support": len(
+                    [e for e in element_analysis if e["supporting_facts_count"] > 0]
+                ),
+                "elements_with_contradictions": len(
+                    [e for e in element_analysis if e["contradicting_facts_count"] > 0]
+                ),
+                "element_analysis": element_analysis,
             }
-            
+
         except Exception as e:
-            logger.exception(f"Failed to analyze case strength for cause {cause_of_action_id}: {e}")
-            return {'error': str(e)}
-    
+            logger.exception(
+                f"Failed to analyze case strength for cause {cause_of_action_id}: {e}"
+            )
+            return {"error": str(e)}
+
     def search_entities_by_type(self, entity_types: List[str]) -> List[Dict[str, Any]]:
         """Search for entities by their types"""
         try:
             if not entity_types:
                 return []
-            
-            placeholders = ','.join(['?' for _ in entity_types])
+
+            placeholders = ",".join(["?" for _ in entity_types])
             query = f"""
                 SELECT id, name, type, description, created_at
                 FROM entities
                 WHERE type IN ({placeholders})
                 ORDER BY created_at DESC
             """
-            
+
             rows = self._fetchall(query, tuple(entity_types))
-            
+
             entities = []
             for row in rows:
-                entities.append({
-                    'id': row[0],
-                    'name': row[1],
-                    'type': row[2],
-                    'description': row[3],
-                    'created_at': row[4]
-                })
-            
+                entities.append(
+                    {
+                        "id": row[0],
+                        "name": row[1],
+                        "type": row[2],
+                        "description": row[3],
+                        "created_at": row[4],
+                    }
+                )
+
             return entities
-            
+
         except Exception as e:
             logger.exception(f"Failed to search entities by type: {e}")
             return []
@@ -1212,11 +1373,11 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
 if __name__ == "__main__":
     # Test the enhanced knowledge graph
     import sys
-    
+
     logging.basicConfig(level=logging.INFO)
-    
+
     ekg = EnhancedKnowledgeGraph("test_enhanced_kg.db")
-    
+
     try:
         # Test entity creation
         test_entity = LegalEntity(
@@ -1227,40 +1388,40 @@ if __name__ == "__main__":
             confidence_factors=ConfidenceFactors(
                 source_credibility=0.8,
                 evidence_support=0.6,
-                extraction_method_reliability=0.9
-            )
+                extraction_method_reliability=0.9,
+            ),
         )
-        
+
         entity_id = ekg.add_legal_entity(test_entity)
         print(f"Added test entity: {entity_id}")
-        
+
         # Test relationship creation
         defendant_entity = LegalEntity(
             id=str(uuid.uuid4()),
             entity_type=LegalEntityType.DEFENDANT,
             name="MegaCorp Inc",
-            description="Defendant corporation"
+            description="Defendant corporation",
         )
-        
+
         defendant_id = ekg.add_legal_entity(defendant_entity)
-        
+
         test_relationship = LegalRelationship(
             from_entity=entity_id,
             to_entity=defendant_id,
             relationship_type=LegalRelationshipType.PLAINTIFF_DEFENDANT,
-            confidence_factors=ConfidenceFactors(source_credibility=0.9)
+            confidence_factors=ConfidenceFactors(source_credibility=0.9),
         )
-        
+
         rel_id = ekg.add_legal_relationship(test_relationship)
         print(f"Added test relationship: {rel_id}")
-        
+
         # Test queries
         relationships = ekg.get_entity_legal_relationships(entity_id)
         print(f"Found {len(relationships)} relationships for entity")
-        
+
         stats = ekg.get_enhanced_statistics()
         print(f"Enhanced statistics: {stats}")
-        
+
     except Exception as e:
         print(f"Test failed: {e}")
         sys.exit(1)

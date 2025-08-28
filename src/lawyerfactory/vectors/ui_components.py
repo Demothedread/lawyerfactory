@@ -12,13 +12,15 @@ Components:
 - ResearchRoundsMonitor: Monitor research round progress
 """
 
+from datetime import datetime
 import json
 import logging
-from datetime import datetime
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Callable, Dict, List, Optional
 
 from .enhanced_vector_store import (
-    EnhancedVectorStoreManager, VectorStoreType, ValidationType
+    EnhancedVectorStoreManager,
+    ValidationType,
+    VectorStoreType,
 )
 
 logger = logging.getLogger(__name__)
@@ -29,7 +31,9 @@ class ValidationTypeSelector:
     UI component for selecting validation types with real-time filtering
     """
 
-    def __init__(self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None):
+    def __init__(
+        self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None
+    ):
         self.vector_store = vector_store_manager
         self.selected_validation_type = ValidationType.COMPLAINTS_AGAINST_TESLA
         self.on_selection_change: Optional[Callable] = None
@@ -39,38 +43,43 @@ class ValidationTypeSelector:
             ValidationType.COMPLAINTS_AGAINST_TESLA: {
                 "name": "Complaints Against Tesla",
                 "description": "Filter for complaints specifically against Tesla Inc.",
-                "keywords": ["tesla", "elon musk", "autonomous vehicle", "self-driving"],
+                "keywords": [
+                    "tesla",
+                    "elon musk",
+                    "autonomous vehicle",
+                    "self-driving",
+                ],
                 "expected_count": "50-200 documents",
-                "quality_score": 0.85
+                "quality_score": 0.85,
             },
             ValidationType.CONTRACT_DISPUTES: {
                 "name": "Contract Disputes",
                 "description": "General contract breach and dispute cases",
                 "keywords": ["breach", "contract", "agreement", "violation"],
                 "expected_count": "100-500 documents",
-                "quality_score": 0.78
+                "quality_score": 0.78,
             },
             ValidationType.PERSONAL_INJURY: {
                 "name": "Personal Injury",
                 "description": "Personal injury and negligence cases",
                 "keywords": ["injury", "accident", "negligence", "damages"],
                 "expected_count": "75-300 documents",
-                "quality_score": 0.82
+                "quality_score": 0.82,
             },
             ValidationType.EMPLOYMENT_CLAIMS: {
                 "name": "Employment Claims",
                 "description": "Wrongful termination and employment disputes",
                 "keywords": ["employment", "wrongful termination", "discrimination"],
                 "expected_count": "60-250 documents",
-                "quality_score": 0.80
+                "quality_score": 0.80,
             },
             ValidationType.INTELLECTUAL_PROPERTY: {
                 "name": "Intellectual Property",
                 "description": "Patent, copyright, and trademark disputes",
                 "keywords": ["patent", "copyright", "trademark", "infringement"],
                 "expected_count": "40-150 documents",
-                "quality_score": 0.88
-            }
+                "quality_score": 0.88,
+            },
         }
 
     def render_html(self) -> str:
@@ -78,14 +87,16 @@ class ValidationTypeSelector:
         options_html = ""
 
         for validation_type, info in self.validation_types.items():
-            selected = "selected" if validation_type == self.selected_validation_type else ""
-            options_html += f'''
+            selected = (
+                "selected" if validation_type == self.selected_validation_type else ""
+            )
+            options_html += f"""
                 <option value="{validation_type.value}" {selected}>
                     {info["name"]}
                 </option>
-            '''
+            """
 
-        html = f'''
+        html = f"""
             <div class="validation-type-selector console-panel" style="margin-bottom: 1rem;">
                 <div class="panel-header">
                     <h3 style="color: var(--emerald-green); margin: 0;">
@@ -186,14 +197,14 @@ class ValidationTypeSelector:
                     }}
                 }}
             </script>
-        '''
+        """
 
         return html
 
     def _get_validation_type_info_html(self) -> str:
         """Get HTML for current validation type info"""
         info = self.validation_types[self.selected_validation_type]
-        return f'''
+        return f"""
             <div style="color: var(--metallic-silver);">
                 <h4 style="color: var(--emerald-green); margin: 0 0 0.5rem 0;">{info["name"]}</h4>
                 <p style="margin: 0 0 0.5rem 0; font-size: 0.9rem;">{info["description"]}</p>
@@ -203,7 +214,7 @@ class ValidationTypeSelector:
                     <div><strong>Quality Score:</strong> {info["quality_score"]*100:.1f}%</div>
                 </div>
             </div>
-        '''
+        """
 
     def set_selected_type(self, validation_type: ValidationType):
         """Set the selected validation type"""
@@ -223,12 +234,14 @@ class VectorStoreStatusWidget:
     Real-time status widget for vector store monitoring
     """
 
-    def __init__(self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None):
+    def __init__(
+        self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None
+    ):
         self.vector_store = vector_store_manager
 
     def render_html(self) -> str:
         """Render the status widget as HTML"""
-        html = '''
+        html = """
             <div class="vector-store-status console-panel" style="margin-bottom: 1rem;">
                 <div class="panel-header">
                     <h3 style="color: var(--gold-accent); margin: 0;">
@@ -336,7 +349,7 @@ class VectorStoreStatusWidget:
                 // Make function globally available
                 window.updateVectorStoreStatus = updateVectorStoreStatus;
             </script>
-        '''
+        """
 
         return html
 
@@ -354,8 +367,8 @@ class VectorStoreStatusWidget:
             "health": {
                 "cache_hit_rate": metrics.get("cache_hit_rate", 0.0),
                 "total_documents": metrics.get("total_documents", 0),
-                "total_vectors": metrics.get("total_vectors", 0)
-            }
+                "total_vectors": metrics.get("total_vectors", 0),
+            },
         }
 
 
@@ -364,12 +377,14 @@ class SemanticSearchInterface:
     Search interface for vector stores with real-time results
     """
 
-    def __init__(self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None):
+    def __init__(
+        self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None
+    ):
         self.vector_store = vector_store_manager
 
     def render_html(self) -> str:
         """Render the search interface as HTML"""
-        html = '''
+        html = """
             <div class="semantic-search console-panel" style="margin-bottom: 1rem;">
                 <div class="panel-header">
                     <h3 style="color: var(--emerald-green); margin: 0;">
@@ -497,7 +512,7 @@ class SemanticSearchInterface:
                     console.log(`[${type.toUpperCase()}] ${message}`);
                 }
             </script>
-        '''
+        """
 
         return html
 

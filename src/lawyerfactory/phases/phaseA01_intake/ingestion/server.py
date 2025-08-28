@@ -12,16 +12,16 @@ capabilities designed to work with ChatGPT's chat and deep research features.
 """
 
 import asyncio
+from datetime import date, datetime
 import hashlib
 import json
 import logging
 import os
-import re
-from datetime import date, datetime
 from pathlib import Path
+import re
 from typing import Any, Dict, List
 
- # Configure logging early so fallbacks and early checks can safely use logger
+# Configure logging early so fallbacks and early checks can safely use logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -167,7 +167,10 @@ except Exception:
 
 # Unified Storage API import
 try:
-    from lawyerfactory.storage.unified_storage_api import UnifiedStorageAPI, get_unified_storage_api
+    from lawyerfactory.storage.unified_storage_api import (
+        UnifiedStorageAPI,
+        get_unified_storage_api,
+    )
 
     UNIFIED_STORAGE_AVAILABLE = True
 except Exception:
@@ -182,6 +185,188 @@ if UNIFIED_STORAGE_AVAILABLE:
     except Exception as e:
         logger.warning(f"Failed to initialize unified storage: {e}")
         unified_storage = None
+
+
+# Fallback mechanisms for unified storage
+async def safe_unified_storage_operation(operation_func, fallback_func=None, *args, **kwargs):
+    """
+    Safely execute a unified storage operation with fallback.
+
+    Args:
+        operation_func: The unified storage function to call
+        fallback_func: Optional fallback function to call on failure
+        *args, **kwargs: Arguments to pass to the operation function
+
+    Returns:
+        Tuple of (success: bool, result: Any, storage_type: str)
+    """
+    if unified_storage and UNIFIED_STORAGE_AVAILABLE:
+        try:
+            result = await operation_func(*args, **kwargs)
+            if result and (result.get("success") is True or "success" not in result):
+                return True, result, "unified"
+        except Exception as e:
+            logger.warning(f"Unified storage operation failed: {e}")
+
+    # Fallback to alternative storage
+    if fallback_func:
+        try:
+            result = await fallback_func(*args, **kwargs)
+            return True, result, "fallback"
+        except Exception as e:
+            logger.error(f"Fallback storage operation also failed: {e}")
+
+    return False, None, "none"
+
+
+def create_storage_fallback_handler(operation_name: str):
+    """
+    Create a fallback handler for specific storage operations.
+
+    Args:
+        operation_name: Name of the operation (upload, retrieve, search, etc.)
+
+    Returns:
+        A handler function that tries unified storage first, then falls back
+    """
+
+    async def handler(*args, **kwargs):
+        if operation_name == "upload":
+            return await _upload_fallback(*args, **kwargs)
+        elif operation_name == "retrieve":
+            return await _retrieve_fallback(*args, **kwargs)
+        elif operation_name == "search":
+            return await _search_fallback(*args, **kwargs)
+        else:
+            raise ValueError(f"Unknown operation: {operation_name}")
+
+    return handler
+
+
+async def _upload_fallback(file_content: bytes, filename: str, file_id: str, metadata: dict = None):
+    """Fallback upload to local storage"""
+    if metadata is None:
+        metadata = {}
+
+    try:
+        # Determine target directory based on upload type
+        upload_type = metadata.get("upload_type", "evidence")
+        if upload_type == "fact_draft":
+            target_dir = FACT_DRAFTS_DIR
+        elif upload_type == "case_draft":
+            target_dir = CASE_DRAFTS_DIR
+        else:
+            target_dir = UPLOAD_DIR
+
+        save_path = target_dir / f"{file_id}"
+
+        # Write file to local storage
+        with open(save_path, "wb") as f:
+            f.write(file_content)
+
+        return {
+            "success": True,
+            "file_id": file_id,
+            "url": f"/uploads/{save_path.name}",
+            "local_path": str(save_path),
+            "metadata": metadata,
+        }
+    except Exception as e:
+        logger.error(f"Local storage fallback upload failed: {e}")
+        raise
+
+
+async def _retrieve_fallback(file_id: str):
+    """Fallback retrieval from local storage"""
+    try:
+        # Try different possible locations
+        possible_paths = [
+            UPLOAD_DIR / file_id,
+            FACT_DRAFTS_DIR / file_id,
+            CASE_DRAFTS_DIR / file_id,
+        ]
+
+        for path in possible_paths:
+            if path.exists():
+                with open(path, "rb") as f:
+                    content = f.read()
+
+                return {
+                    "success": True,
+                    "content": content,
+                    "url": f"/uploads/{path.name}",
+                    "metadata": {
+                        "local_path": str(path),
+                        "file_size": len(content),
+                    },
+                }
+
+        # Try to find by partial name match
+        for directory in [UPLOAD_DIR, FACT_DRAFTS_DIR, CASE_DRAFTS_DIR]:
+            for file_path in directory.glob(f"*{file_id}*"):
+                with open(file_path, "rb") as f:
+                    content = f.read()
+
+                return {
+                    "success": True,
+                    "content": content,
+                    "url": f"/uploads/{file_path.name}",
+                    "metadata": {
+                        "local_path": str(file_path),
+                        "file_size": len(content),
+                    },
+                }
+
+        raise FileNotFoundError(f"File {file_id} not found in local storage")
+
+    except Exception as e:
+        logger.error(f"Local storage fallback retrieval failed: {e}")
+        raise
+
+
+async def _search_fallback(query: str):
+    """Fallback search using local vector backup"""
+    try:
+        results = await vector_backup.search(query)
+        return {
+            "success": True,
+            "results": results,
+        }
+    except Exception as e:
+        logger.error(f"Local search fallback failed: {e}")
+        raise
+
+
+# Health check function for unified storage
+async def check_unified_storage_health():
+    """
+    Check if unified storage is healthy and responsive.
+
+    Returns:
+        dict: Health status information
+    """
+    if not unified_storage or not UNIFIED_STORAGE_AVAILABLE:
+        return {
+            "healthy": False,
+            "reason": "Unified storage not available",
+            "fallback_available": True,
+        }
+
+    try:
+        # Try a simple operation to test connectivity
+        test_result = await unified_storage.list_files(limit=1)
+        return {
+            "healthy": True,
+            "reason": "Unified storage operational",
+            "fallback_available": True,
+        }
+    except Exception as e:
+        logger.warning(f"Unified storage health check failed: {e}")
+        return {
+            "healthy": False,
+            "reason": f"Unified storage error: {e}",
+            "fallback_available": True,
+        }
 
     # provide minimal fallbacks so names are always defined (static checks / best-effort runtime)
     def summarize(text: str, max_sentences: int = 2) -> str:
@@ -275,9 +460,7 @@ class VectorBackup:
             return {"files": {}}
 
     def _write_index(self, data):
-        self.path.write_text(
-            json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
+        self.path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
     async def add_file(self, file_id: str, metadata: Dict[str, Any]):
         async with self._lock:
@@ -353,6 +536,53 @@ async def extract_text_for_index(file_path: Path) -> str:
     return f"[Binary file indexed: {file_path.name}]"
 
 
+# Helper to extract text from bytes content
+async def extract_text_for_index_from_bytes(content: bytes, filename: str) -> str:
+    """Extract text content from bytes data for indexing"""
+    try:
+        suffix = Path(filename).suffix.lower()
+
+        if suffix in (".txt", ".md"):
+            try:
+                return content.decode("utf-8")
+            except Exception:
+                return ""
+
+        if suffix == ".pdf":
+            try:
+                from io import BytesIO
+
+                import PyPDF2
+
+                pdf_file = BytesIO(content)
+                reader = PyPDF2.PdfReader(pdf_file)
+                return "\n".join((p.extract_text() or "") for p in reader.pages)
+            except Exception:
+                return f"[PDF file indexed: {filename}]"
+
+        if suffix == ".docx":
+            try:
+                from io import BytesIO
+
+                import docx
+
+                docx_file = BytesIO(content)
+                doc = docx.Document(docx_file)
+                return "\n".join(p.text for p in doc.paragraphs)
+            except Exception:
+                return f"[DOCX file indexed: {filename}]"
+
+        # Try text decoding for other types
+        try:
+            return content.decode("utf-8")
+        except Exception:
+            return f"[Binary file indexed: {filename}]"
+
+    except Exception as e:
+        logger.warning(f"Failed to extract text from bytes for {filename}: {e}")
+        return f"[Extraction failed: {filename}]"
+
+
 # New utilities: tokenization, embedding, local persistence, chunking, analysis, and evidence appends.
 async def _simple_tokenize(text: str) -> Dict[str, Any]:
     """
@@ -413,9 +643,7 @@ async def _embed_text(text: str, model: str = "text-embedding-3-small") -> List[
         return []
 
 
-async def _persist_local_vector(
-    vector: List[float], metadata: Dict[str, Any]
-) -> Dict[str, Any]:
+async def _persist_local_vector(vector: List[float], metadata: Dict[str, Any]) -> Dict[str, Any]:
     """
     Append a JSONL record to LOCAL_VECTOR_PATH with vector and metadata.
     Returns the record written (with assigned id and timestamp).
@@ -424,9 +652,7 @@ async def _persist_local_vector(
     try:
         record_id = (
             metadata.get("id")
-            or hashlib.sha1(
-                json.dumps(metadata, sort_keys=True).encode("utf-8")
-            ).hexdigest()
+            or hashlib.sha1(json.dumps(metadata, sort_keys=True).encode("utf-8")).hexdigest()
         )
         timestamp = datetime.utcnow().isoformat() + "Z"
         record = {
@@ -484,9 +710,7 @@ async def _chunk_and_vectorize(
 
             # prepare chunk metadata and deterministic chunk id
             chunk_meta = dict(metadata)
-            chunk_meta.update(
-                {"chunk_start": start, "chunk_end": end, "snippet": chunk_text[:500]}
-            )
+            chunk_meta.update({"chunk_start": start, "chunk_end": end, "snippet": chunk_text[:500]})
             chunk_meta.update({"chunk_index": len(results)})  # index before appending
             record_id = f"{metadata.get('id','doc')}::chunk{chunk_meta['chunk_index']}"
             chunk_meta["id"] = record_id
@@ -601,9 +825,7 @@ async def _analyze_with_openai(
                     return type_val, "receipts"
                 if any(k in title_low for k in ("contract", "agreement")):
                     return type_val, "contracts"
-                if any(
-                    k in title_low for k in ("dataset", "data", "spreadsheet", "csv")
-                ):
+                if any(k in title_low for k in ("dataset", "data", "spreadsheet", "csv")):
                     return type_val, "data"
                 return type_val, "other"
             else:
@@ -621,11 +843,7 @@ async def _analyze_with_openai(
                 for g in secondary_groups:
                     if g in cats_low or g in title_low:
                         return type_val, g
-                if (
-                    "case" in title_low
-                    or "opinion" in title_low
-                    or "caselaw" in cats_low
-                ):
+                if "case" in title_low or "opinion" in title_low or "caselaw" in cats_low:
                     return type_val, "caselaw"
                 if "docket" in title_low:
                     return type_val, "docket item"
@@ -674,9 +892,7 @@ async def _analyze_with_openai(
                     comp_api = getattr(openai_client, "chat_completions", None)
                     if comp_api is None:
                         # best-effort older client
-                        raise RuntimeError(
-                            "openai client has no chat/chat_completions API"
-                        )
+                        raise RuntimeError("openai client has no chat/chat_completions API")
                     resp = comp_api.create(
                         model=model,
                         messages=[
@@ -728,13 +944,9 @@ async def _analyze_with_openai(
                     json.dumps(metadata or {}, sort_keys=True).encode("utf-8")
                 ).hexdigest()
             )
-            title = (
-                metadata.get("title") or metadata.get("original_filename") or upload_id
-            )
+            title = metadata.get("title") or metadata.get("original_filename") or upload_id
             author = (
-                metadata.get("author")
-                or (parsed.get("author") if parsed else None)
-                or "Unknown"
+                metadata.get("author") or (parsed.get("author") if parsed else None) or "Unknown"
             )
             publication_date = (
                 metadata.get("publication_date")
@@ -744,9 +956,7 @@ async def _analyze_with_openai(
             summary = (parsed.get("summary") if parsed else None) or (
                 assistant_text.strip().split("\n")[0][:500] if assistant_text else None
             )
-            analysis_text = (
-                parsed.get("analysis") if parsed else None
-            ) or assistant_text
+            analysis_text = (parsed.get("analysis") if parsed else None) or assistant_text
 
             parsed_categories = parsed.get("categories") if parsed else []
             parsed_hashtags = parsed.get("hashtags") if parsed else []
@@ -756,9 +966,7 @@ async def _analyze_with_openai(
                 evidence_hint, parsed_categories, title
             )
 
-            tags = _extract_tags(
-                parsed_categories, parsed_hashtags, title, assistant_text
-            )
+            tags = _extract_tags(parsed_categories, parsed_hashtags, title, assistant_text)
 
             # star rating heuristics (1-5)
             importance = 3
@@ -823,12 +1031,10 @@ async def _analyze_with_openai(
 
             return {
                 "uploadID": upload_id,
-                "source_file": metadata.get("original_filename")
-                or metadata.get("title"),
+                "source_file": metadata.get("original_filename") or metadata.get("title"),
                 "title": metadata.get("title"),
                 "author": metadata.get("author") or "Unknown",
-                "publication_date": metadata.get("publication_date")
-                or date.today().isoformat(),
+                "publication_date": metadata.get("publication_date") or date.today().isoformat(),
                 "summary": summary,
                 "analysis": None,
                 "type": type_val,
@@ -866,9 +1072,7 @@ async def _append_evidence_row(row: Dict[str, Any]) -> Dict[str, Any]:
             row_copy = dict(row)
             row_copy.setdefault(
                 "id",
-                hashlib.sha1(
-                    json.dumps(row_copy, sort_keys=True).encode("utf-8")
-                ).hexdigest(),
+                hashlib.sha1(json.dumps(row_copy, sort_keys=True).encode("utf-8")).hexdigest(),
             )
             row_copy.setdefault("timestamp", datetime.utcnow().isoformat() + "Z")
             base.setdefault("rows", []).append(row_copy)
@@ -1044,9 +1248,7 @@ async def _ingest_to_knowledge_graph(
                         "description": entity.get("description", ""),
                         "confidence": 0.9,  # High confidence for draft documents
                         "extraction_method": f"draft_{metadata.get('draft_type', 'unknown')}",
-                        "source_text": metadata.get("content", "")[
-                            :500
-                        ],  # First 500 chars
+                        "source_text": metadata.get("content", "")[:500],  # First 500 chars
                         "legal_attributes": json.dumps(
                             {
                                 "draft_type": metadata.get("draft_type"),
@@ -1083,8 +1285,7 @@ async def _ingest_to_knowledge_graph(
             # Fallback to simulated ingestion
             kg_result = {
                 "entities_stored": len(entities),
-                "confidence_scores": [0.9]
-                * len(entities),  # High confidence for drafts
+                "confidence_scores": [0.9] * len(entities),  # High confidence for drafts
                 "relationships_discovered": len(entities) * 2,  # Estimate relationships
                 "foundational_categorization": True,
                 "metadata": metadata,
@@ -1111,51 +1312,123 @@ async def handle_upload(request):
     reader = await request.multipart()
     field = await reader.next()
     if field is None or field.name != "file":
-        return web.json_response(
-            {"success": False, "error": "No file field provided"}, status=400
-        )
+        return web.json_response({"success": False, "error": "No file field provided"}, status=400)
 
     original_filename = field.filename or "unnamed"
-    save_name = f"{int(asyncio.get_event_loop().time()*1000)}_{original_filename}"
-    save_path = UPLOAD_DIR / save_name
+    file_id = f"{int(asyncio.get_event_loop().time()*1000)}_{original_filename}"
 
-    # write file to disk
-    with open(save_path, "wb") as f:
-        while True:
-            chunk = await field.read_chunk()
-            if not chunk:
-                break
-            f.write(chunk)
+    # Read file content into memory for unified storage
+    file_content = b""
+    while True:
+        chunk = await field.read_chunk()
+        if not chunk:
+            break
+        file_content += chunk
 
-    # extract content for index (async)
-    content = await extract_text_for_index(save_path)
-    file_id = save_name  # unique id for local store
+    # Try unified storage first, fallback to local storage
+    storage_success = False
+    storage_info = {}
+    local_path = None
+
+    if unified_storage and UNIFIED_STORAGE_AVAILABLE:
+        try:
+            # Upload to unified storage
+            upload_result = await unified_storage.upload_file(
+                file_content=file_content,
+                filename=original_filename,
+                file_id=file_id,
+                metadata={
+                    "upload_type": "evidence",
+                    "original_filename": original_filename,
+                    "upload_timestamp": datetime.now().isoformat(),
+                },
+            )
+
+            if upload_result.get("success"):
+                storage_success = True
+                storage_info = {
+                    "storage_type": "unified",
+                    "storage_id": upload_result.get("file_id"),
+                    "storage_url": upload_result.get("url"),
+                    "storage_metadata": upload_result.get("metadata", {}),
+                }
+                logger.info(f"File uploaded to unified storage: {file_id}")
+            else:
+                logger.warning(f"Unified storage upload failed: {upload_result.get('error')}")
+        except Exception as e:
+            logger.warning(f"Unified storage upload error: {e}")
+
+    # Fallback to local storage if unified storage failed
+    if not storage_success:
+        try:
+            save_name = f"{file_id}"
+            save_path = UPLOAD_DIR / save_name
+            with open(save_path, "wb") as f:
+                f.write(file_content)
+            local_path = save_path
+            storage_info = {
+                "storage_type": "local",
+                "local_path": str(save_path),
+                "url": f"/uploads/{save_name}",
+            }
+            logger.info(f"File saved to local storage: {save_path}")
+        except Exception as e:
+            logger.error(f"Local storage fallback failed: {e}")
+            return web.json_response(
+                {"success": False, "error": f"Storage failed: {e}"}, status=500
+            )
+
+    # Extract content for index (async)
+    if storage_success and storage_info.get("storage_type") == "unified":
+        # For unified storage, we need to retrieve content for processing
+        try:
+            content_result = await unified_storage.retrieve_file(
+                file_id=storage_info.get("storage_id")
+            )
+            if content_result.get("success"):
+                retrieved_content = content_result.get("content", b"")
+                content = await extract_text_for_index_from_bytes(
+                    retrieved_content, original_filename
+                )
+            else:
+                content = f"[Unified storage content unavailable: {original_filename}]"
+        except Exception as e:
+            logger.warning(f"Failed to retrieve content from unified storage: {e}")
+            content = f"[Unified storage retrieval failed: {original_filename}]"
+    else:
+        # Local storage - extract directly
+        content = await extract_text_for_index(local_path)
+
+    # Prepare metadata
     metadata = {
         "id": file_id,
         "title": original_filename,
         "original_filename": original_filename,
-        "filename": str(save_path),
-        "url": f"/uploads/{save_name}",
         "content": content,
+        **storage_info,  # Include storage information
     }
+
+    # Add to vector backup
     await vector_backup.add_file(file_id, metadata)
 
-    # chunk_and_vectorize expects (text, metadata)
+    # Chunk and vectorize expects (text, metadata)
     chunk_count = await _chunk_and_vectorize(content, metadata)
-    # analyze the content with metadata context
+
+    # Analyze the content with metadata context
     evidence_row = await _analyze_with_openai(content, metadata)
 
     evidence_row.update(
         {
             "upload_id": file_id,
-            "url": f"/uploads/{save_name}",
             "token_chunks": chunk_count,
-            "bytes": os.path.getsize(save_path),
+            "bytes": len(file_content),
+            **storage_info,  # Include storage information in evidence row
         }
     )
-    await _append_evidence_row(evidence_row)
-    # Try to feed assessor intake automatically (best-effort)
 
+    await _append_evidence_row(evidence_row)
+
+    # Try to feed assessor intake automatically (best-effort)
     if ASSESSOR_AVAILABLE:
         try:
             # best-effort: call intake_document to populate repository
@@ -1177,11 +1450,11 @@ async def handle_upload(request):
             "success": True,
             "upload_id": file_id,
             "original_filename": original_filename,
-            "filename": str(save_path),
             "upload_session_id": file_id,
             "stored_in_repository": stored,
             "evidence_row": evidence_row,
             "token_chunks": chunk_count,
+            "storage_info": storage_info,
         }
     )
 
@@ -1200,35 +1473,102 @@ async def handle_upload_fact_draft(request):
             )
 
         original_filename = field.filename or "unnamed_fact_draft"
-        save_name = f"fact_draft_{int(asyncio.get_event_loop().time()*1000)}_{original_filename}"
-        save_path = FACT_DRAFTS_DIR / save_name
+        file_id = f"fact_draft_{int(asyncio.get_event_loop().time()*1000)}_{original_filename}"
 
-        # Write file to fact drafts directory
-        with open(save_path, "wb") as f:
-            while True:
-                chunk = await field.read_chunk()
-                if not chunk:
-                    break
-                f.write(chunk)
+        # Read file content into memory for unified storage
+        file_content = b""
+        while True:
+            chunk = await field.read_chunk()
+            if not chunk:
+                break
+            file_content += chunk
 
-        # Extract content and process as draft document
-        content = await extract_text_for_index(save_path)
-        file_id = save_name
+        # Try unified storage first, fallback to local storage
+        storage_success = False
+        storage_info = {}
+        local_path = None
+
+        if unified_storage and UNIFIED_STORAGE_AVAILABLE:
+            try:
+                # Upload to unified storage
+                upload_result = await unified_storage.upload_file(
+                    file_content=file_content,
+                    filename=original_filename,
+                    file_id=file_id,
+                    metadata={
+                        "upload_type": "fact_draft",
+                        "draft_type": "fact_statement",
+                        "original_filename": original_filename,
+                        "upload_timestamp": datetime.now().isoformat(),
+                    },
+                )
+
+                if upload_result.get("success"):
+                    storage_success = True
+                    storage_info = {
+                        "storage_type": "unified",
+                        "storage_id": upload_result.get("file_id"),
+                        "storage_url": upload_result.get("url"),
+                        "storage_metadata": upload_result.get("metadata", {}),
+                    }
+                    logger.info(f"Fact draft uploaded to unified storage: {file_id}")
+                else:
+                    logger.warning(f"Unified storage upload failed: {upload_result.get('error')}")
+            except Exception as e:
+                logger.warning(f"Unified storage upload error: {e}")
+
+        # Fallback to local storage if unified storage failed
+        if not storage_success:
+            try:
+                save_name = f"{file_id}"
+                save_path = FACT_DRAFTS_DIR / save_name
+                with open(save_path, "wb") as f:
+                    f.write(file_content)
+                local_path = save_path
+                storage_info = {
+                    "storage_type": "local",
+                    "local_path": str(save_path),
+                    "url": f"/uploads/fact_drafts/{save_name}",
+                }
+                logger.info(f"Fact draft saved to local storage: {save_path}")
+            except Exception as e:
+                logger.error(f"Local storage fallback failed: {e}")
+                return web.json_response(
+                    {"success": False, "error": f"Storage failed: {e}"}, status=500
+                )
+
+        # Extract content for processing
+        if storage_success and storage_info.get("storage_type") == "unified":
+            # For unified storage, retrieve content for processing
+            try:
+                content_result = await unified_storage.retrieve_file(
+                    file_id=storage_info.get("storage_id")
+                )
+                if content_result.get("success"):
+                    retrieved_content = content_result.get("content", b"")
+                    content = await extract_text_for_index_from_bytes(
+                        retrieved_content, original_filename
+                    )
+                else:
+                    content = f"[Unified storage content unavailable: {original_filename}]"
+            except Exception as e:
+                logger.warning(f"Failed to retrieve content from unified storage: {e}")
+                content = f"[Unified storage retrieval failed: {original_filename}]"
+        else:
+            # Local storage - extract directly
+            content = await extract_text_for_index(local_path)
 
         metadata = {
             "id": file_id,
             "title": original_filename,
             "original_filename": original_filename,
-            "filename": str(save_path),
-            "url": f"/uploads/fact_drafts/{save_name}",
             "content": content,
             "draft_type": "fact_statement",
+            **storage_info,  # Include storage information
         }
 
         # Process as draft document with enhanced analysis
-        draft_analysis = await _process_draft_document(
-            content, metadata, "fact_statement"
-        )
+        draft_analysis = await _process_draft_document(content, metadata, "fact_statement")
 
         # Add to vector backup with draft categorization
         await vector_backup.add_file(file_id, metadata)
@@ -1241,11 +1581,11 @@ async def handle_upload_fact_draft(request):
         evidence_row.update(
             {
                 "upload_id": file_id,
-                "url": f"/uploads/fact_drafts/{save_name}",
                 "token_chunks": chunk_count,
-                "bytes": os.path.getsize(save_path),
+                "bytes": len(file_content),
                 "document_type": "fact_statement_draft",
                 "priority": "foundational",
+                **storage_info,  # Include storage information in evidence row
             }
         )
 
@@ -1263,11 +1603,11 @@ async def handle_upload_fact_draft(request):
                 "success": True,
                 "upload_id": file_id,
                 "original_filename": original_filename,
-                "filename": str(save_path),
                 "document_type": "fact_statement_draft",
                 "draft_analysis": draft_analysis,
                 "evidence_row": evidence_row,
                 "processing_priority": "foundational",
+                "storage_info": storage_info,
             }
         )
 
@@ -1290,35 +1630,102 @@ async def handle_upload_case_draft(request):
             )
 
         original_filename = field.filename or "unnamed_case_draft"
-        save_name = f"case_draft_{int(asyncio.get_event_loop().time()*1000)}_{original_filename}"
-        save_path = CASE_DRAFTS_DIR / save_name
+        file_id = f"case_draft_{int(asyncio.get_event_loop().time()*1000)}_{original_filename}"
 
-        # Write file to case drafts directory
-        with open(save_path, "wb") as f:
-            while True:
-                chunk = await field.read_chunk()
-                if not chunk:
-                    break
-                f.write(chunk)
+        # Read file content into memory for unified storage
+        file_content = b""
+        while True:
+            chunk = await field.read_chunk()
+            if not chunk:
+                break
+            file_content += chunk
 
-        # Extract content and process as draft document
-        content = await extract_text_for_index(save_path)
-        file_id = save_name
+        # Try unified storage first, fallback to local storage
+        storage_success = False
+        storage_info = {}
+        local_path = None
+
+        if unified_storage and UNIFIED_STORAGE_AVAILABLE:
+            try:
+                # Upload to unified storage
+                upload_result = await unified_storage.upload_file(
+                    file_content=file_content,
+                    filename=original_filename,
+                    file_id=file_id,
+                    metadata={
+                        "upload_type": "case_draft",
+                        "draft_type": "case_complaint",
+                        "original_filename": original_filename,
+                        "upload_timestamp": datetime.now().isoformat(),
+                    },
+                )
+
+                if upload_result.get("success"):
+                    storage_success = True
+                    storage_info = {
+                        "storage_type": "unified",
+                        "storage_id": upload_result.get("file_id"),
+                        "storage_url": upload_result.get("url"),
+                        "storage_metadata": upload_result.get("metadata", {}),
+                    }
+                    logger.info(f"Case draft uploaded to unified storage: {file_id}")
+                else:
+                    logger.warning(f"Unified storage upload failed: {upload_result.get('error')}")
+            except Exception as e:
+                logger.warning(f"Unified storage upload error: {e}")
+
+        # Fallback to local storage if unified storage failed
+        if not storage_success:
+            try:
+                save_name = f"{file_id}"
+                save_path = CASE_DRAFTS_DIR / save_name
+                with open(save_path, "wb") as f:
+                    f.write(file_content)
+                local_path = save_path
+                storage_info = {
+                    "storage_type": "local",
+                    "local_path": str(save_path),
+                    "url": f"/uploads/case_drafts/{save_name}",
+                }
+                logger.info(f"Case draft saved to local storage: {save_path}")
+            except Exception as e:
+                logger.error(f"Local storage fallback failed: {e}")
+                return web.json_response(
+                    {"success": False, "error": f"Storage failed: {e}"}, status=500
+                )
+
+        # Extract content for processing
+        if storage_success and storage_info.get("storage_type") == "unified":
+            # For unified storage, retrieve content for processing
+            try:
+                content_result = await unified_storage.retrieve_file(
+                    file_id=storage_info.get("storage_id")
+                )
+                if content_result.get("success"):
+                    retrieved_content = content_result.get("content", b"")
+                    content = await extract_text_for_index_from_bytes(
+                        retrieved_content, original_filename
+                    )
+                else:
+                    content = f"[Unified storage content unavailable: {original_filename}]"
+            except Exception as e:
+                logger.warning(f"Failed to retrieve content from unified storage: {e}")
+                content = f"[Unified storage retrieval failed: {original_filename}]"
+        else:
+            # Local storage - extract directly
+            content = await extract_text_for_index(local_path)
 
         metadata = {
             "id": file_id,
             "title": original_filename,
             "original_filename": original_filename,
-            "filename": str(save_path),
-            "url": f"/uploads/case_drafts/{save_name}",
             "content": content,
             "draft_type": "case_complaint",
+            **storage_info,  # Include storage information
         }
 
         # Process as draft document with enhanced analysis
-        draft_analysis = await _process_draft_document(
-            content, metadata, "case_complaint"
-        )
+        draft_analysis = await _process_draft_document(content, metadata, "case_complaint")
 
         # Add to vector backup with draft categorization
         await vector_backup.add_file(file_id, metadata)
@@ -1331,11 +1738,11 @@ async def handle_upload_case_draft(request):
         evidence_row.update(
             {
                 "upload_id": file_id,
-                "url": f"/uploads/case_drafts/{save_name}",
                 "token_chunks": chunk_count,
-                "bytes": os.path.getsize(save_path),
+                "bytes": len(file_content),
                 "document_type": "case_complaint_draft",
                 "priority": "foundational",
+                **storage_info,  # Include storage information in evidence row
             }
         )
 
@@ -1353,11 +1760,11 @@ async def handle_upload_case_draft(request):
                 "success": True,
                 "upload_id": file_id,
                 "original_filename": original_filename,
-                "filename": str(save_path),
                 "document_type": "case_complaint_draft",
                 "draft_analysis": draft_analysis,
                 "evidence_row": evidence_row,
                 "processing_priority": "foundational",
+                "storage_info": storage_info,
             }
         )
 
@@ -1369,7 +1776,7 @@ async def handle_upload_case_draft(request):
 async def handle_search(request):
     """
     POST /mcp/search  payload: { "query": "..." }
-    Searches local vector backup (fallback) or OpenAI vector store if available.
+    Searches unified storage, local vector backup, or OpenAI vector store if available.
     """
     try:
         payload = await request.json()
@@ -1380,14 +1787,37 @@ async def handle_search(request):
     if not query.strip():
         return web.json_response({"results": []})
 
-    # If OpenAI vector store available, attempt to use it (best-effort)
+    all_results = []
+
+    # Try unified storage search first
+    if unified_storage and UNIFIED_STORAGE_AVAILABLE:
+        try:
+            search_result = await unified_storage.search_files(query)
+            if search_result.get("success"):
+                unified_results = search_result.get("results", [])
+                for result in unified_results:
+                    all_results.append(
+                        {
+                            "id": result.get("file_id"),
+                            "title": result.get("filename", "Unknown"),
+                            "text": (
+                                result.get("snippet", "")[:200] + "..."
+                                if len(result.get("snippet", "")) > 200
+                                else result.get("snippet", "")
+                            ),
+                            "url": result.get("url", ""),
+                            "storage_type": "unified",
+                            "score": result.get("score", 0),
+                        }
+                    )
+        except Exception as e:
+            logger.warning(f"Unified storage search failed: {e}")
+
+    # If OpenAI vector store available, attempt to use it
     if openai_client and OPENAI_SDK_AVAILABLE and OPENAI_API_KEY:
         try:
             # Use the OpenAI client vector store if configured
-            resp = openai_client.vector_stores.search(
-                vector_store_id=VECTOR_STORE_ID, query=query
-            )
-            results = []
+            resp = openai_client.vector_stores.search(vector_store_id=VECTOR_STORE_ID, query=query)
             if hasattr(resp, "data") and resp.data:
                 for i, item in enumerate(resp.data):
                     item_id = getattr(item, "file_id", f"vs_{i}")
@@ -1401,39 +1831,75 @@ async def handle_search(request):
                         elif isinstance(first_content, dict):
                             text_content = first_content.get("text", "")
                     text_snippet = (
-                        text_content[:200] + "..."
-                        if len(text_content) > 200
-                        else text_content
+                        text_content[:200] + "..." if len(text_content) > 200 else text_content
                     )
-                    results.append(
+                    all_results.append(
                         {
                             "id": item_id,
                             "title": item_filename,
                             "text": text_snippet,
                             "url": f"https://platform.openai.com/storage/files/{item_id}",
+                            "storage_type": "openai",
                         }
                     )
-            return web.json_response({"results": results})
         except Exception as e:
-            logger.warning(
-                "OpenAI vector search failed, falling back to local index: %s", e
-            )
+            logger.warning("OpenAI vector search failed, falling back to local index: %s", e)
 
-    # Fallback local search
-    results = await vector_backup.search(query)
-    return web.json_response({"results": results})
+    # Fallback to local search
+    try:
+        local_results = await vector_backup.search(query)
+        for result in local_results:
+            result["storage_type"] = "local"
+            all_results.append(result)
+    except Exception as e:
+        logger.warning(f"Local vector search failed: {e}")
+
+    # Sort results by score if available
+    all_results.sort(key=lambda x: x.get("score", 0), reverse=True)
+
+    return web.json_response({"results": all_results})
 
 
 async def handle_fetch(request):
     """
     GET /mcp/fetch?id=...
-    Returns file metadata and full text from local backup or OpenAI vector store.
+    Returns file metadata and full text from unified storage, local backup, or OpenAI vector store.
     """
     file_id = request.rel_url.query.get("id", "")
     if not file_id:
         return web.json_response({"error": "file id is required"}, status=400)
 
-    # Try OpenAI retrieval first if available
+    # Try unified storage first
+    if unified_storage and UNIFIED_STORAGE_AVAILABLE:
+        try:
+            retrieve_result = await unified_storage.retrieve_file(file_id=file_id)
+            if retrieve_result.get("success"):
+                file_content = retrieve_result.get("content", b"")
+                if isinstance(file_content, bytes):
+                    try:
+                        text_content = file_content.decode("utf-8")
+                    except UnicodeDecodeError:
+                        text_content = f"[Binary content: {len(file_content)} bytes]"
+                else:
+                    text_content = str(file_content)
+
+                metadata = retrieve_result.get("metadata", {})
+                filename = metadata.get("original_filename", f"Document {file_id}")
+
+                return web.json_response(
+                    {
+                        "id": file_id,
+                        "title": filename,
+                        "text": text_content,
+                        "url": retrieve_result.get("url", ""),
+                        "metadata": metadata,
+                        "storage_type": "unified",
+                    }
+                )
+        except Exception as e:
+            logger.warning(f"Unified storage fetch failed: {e}")
+
+    # Try OpenAI retrieval if available
     if openai_client and OPENAI_SDK_AVAILABLE and OPENAI_API_KEY:
         try:
             content_response = openai_client.vector_stores.files.content(
@@ -1459,6 +1925,7 @@ async def handle_fetch(request):
                     "text": file_content,
                     "url": f"https://platform.openai.com/storage/files/{file_id}",
                     "metadata": getattr(file_info, "attributes", None),
+                    "storage_type": "openai",
                 }
             )
         except Exception as e:
@@ -1468,13 +1935,34 @@ async def handle_fetch(request):
     metadata = await vector_backup.get_file(file_id)
     if not metadata:
         return web.json_response({"error": "file not found"}, status=404)
+
+    # If local file exists, try to read it
+    local_path = metadata.get("local_path")
+    if local_path and Path(local_path).exists():
+        try:
+            if metadata.get("storage_type") == "local":
+                content = await extract_text_for_index(Path(local_path))
+            else:
+                with open(local_path, "rb") as f:
+                    raw_content = f.read()
+                try:
+                    content = raw_content.decode("utf-8")
+                except UnicodeDecodeError:
+                    content = f"[Binary content: {len(raw_content)} bytes]"
+        except Exception as e:
+            logger.warning(f"Failed to read local file {local_path}: {e}")
+            content = metadata.get("content", "No content available")
+    else:
+        content = metadata.get("content", "No content available")
+
     return web.json_response(
         {
             "id": metadata["id"],
             "title": metadata.get("title"),
-            "text": metadata.get("content", "No content available"),
+            "text": content,
             "url": metadata.get("url"),
             "metadata": None,
+            "storage_type": "local",
         }
     )
 
@@ -1491,9 +1979,7 @@ async def handle_start_workflow(request):
     try:
         payload = await request.json()
     except Exception:
-        return web.json_response(
-            {"success": False, "error": "invalid json"}, status=400
-        )
+        return web.json_response({"success": False, "error": "invalid json"}, status=400)
 
     session_id = f"session_{int(asyncio.get_event_loop().time()*1000)}"
     # lightweight response expected by the frontend
@@ -1508,11 +1994,42 @@ async def handle_start_workflow(request):
     return web.json_response(response)
 
 
-# Static file route for uploads (optional serving)
+# Static file route for uploads (supports unified storage)
 async def handle_uploaded_file(request):
     name = request.match_info.get("name")
 
-    # Check if this is a request for a draft document
+    # Try unified storage first if available
+    if unified_storage and UNIFIED_STORAGE_AVAILABLE:
+        try:
+            # Extract file ID from the path
+            file_id = name
+            if "fact_drafts" in str(request.url):
+                file_id = f"fact_draft_{name}" if not name.startswith("fact_draft_") else name
+            elif "case_drafts" in str(request.url):
+                file_id = f"case_draft_{name}" if not name.startswith("case_draft_") else name
+
+            retrieve_result = await unified_storage.retrieve_file(file_id=file_id)
+            if retrieve_result.get("success"):
+                file_content = retrieve_result.get("content", b"")
+                if isinstance(file_content, bytes):
+                    # Return file content directly
+                    response = web.Response(body=file_content)
+                    # Set content type based on file extension
+                    if name.endswith(".pdf"):
+                        response.content_type = "application/pdf"
+                    elif name.endswith(".docx"):
+                        response.content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    elif name.endswith(".txt"):
+                        response.content_type = "text/plain"
+                    elif name.endswith(".md"):
+                        response.content_type = "text/markdown"
+                    else:
+                        response.content_type = "application/octet-stream"
+                    return response
+        except Exception as e:
+            logger.warning(f"Unified storage retrieval failed for {name}: {e}")
+
+    # Fallback to local storage
     if "fact_drafts" in str(request.url):
         path = FACT_DRAFTS_DIR / name
     elif "case_drafts" in str(request.url):
@@ -1549,9 +2066,7 @@ async def handle_intake_form(request):
         logger.info(f"Received intake form data for session")
 
         if not INTAKE_PROCESSOR_AVAILABLE:
-            return web.json_response(
-                {"error": "Intake processor not available"}, status=503
-            )
+            return web.json_response({"error": "Intake processor not available"}, status=503)
 
         # Process intake form data
         intake_processor = IntakeProcessor()
@@ -1577,11 +2092,26 @@ async def handle_intake_form(request):
         return web.json_response({"error": str(e)}, status=500)
 
 
+def handle_storage_health_check(request):
+    """Health check endpoint for unified storage"""
+    if not UNIFIED_STORAGE_AVAILABLE:
+        return web.json_response(
+            {"status": "unavailable", "message": "Unified storage not configured"}, status=503
+        )
+    try:
+        health = asyncio.run(check_unified_storage_health())
+        if health.get("status") == "healthy":
+            return web.json_response(health)
+        else:
+            return web.json_response(health, status=503)
+    except Exception as e:
+        logger.error(f"Unified storage health check error: {e}")
+        return web.json_response({"status": "unhealthy", "message": str(e)}, status=503)
+
+
 def create_app():
     if not AIOHTTP_AVAILABLE:
-        raise RuntimeError(
-            "aiohttp is required for the fallback server but is not installed."
-        )
+        raise RuntimeError("aiohttp is required for the fallback server but is not installed.")
     app = web.Application()
 
     # Standard upload endpoints
@@ -1600,6 +2130,9 @@ def create_app():
     app.router.add_get("/uploads/case_drafts/{name}", handle_uploaded_file)
     # Intake form endpoint
     app.router.add_post("/api/intake", handle_intake_form)
+
+    # Health check endpoint for unified storage
+    app.router.add_get("/api/health/storage", handle_storage_health_check)
 
     # Enhanced Evidence API integration
     if EVIDENCE_API_AVAILABLE:
@@ -1620,15 +2153,14 @@ def create_app():
     logger.info(
         "Draft document processing endpoints registered: /api/upload-fact-draft, /api/upload-case-draft"
     )
+    logger.info("Unified storage health check available at: /api/health/storage")
     return app
 
 
 def main():
     # prefer FastMCP if available and you want MCP/TCP features; otherwise run aiohttp
     if FASTMCP_AVAILABLE:
-        logger.info(
-            "FastMCP available - consider wiring FastMCP tools to the handlers if desired"
-        )
+        logger.info("FastMCP available - consider wiring FastMCP tools to the handlers if desired")
         # For now, still run aiohttp for compatibility with frontend
     if not AIOHTTP_AVAILABLE:
         logger.error("aiohttp not available; cannot start HTTP server")

@@ -7,14 +7,17 @@ with defendant-specific clusters and drafting validation.
 import asyncio
 import logging
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict
+
+from .phases05_drafting.drafting_validator import DraftingValidator
 
 # Import the new enhanced components
-from .phasesphaseA01_intake.enhanced_document_categorizer import EnhancedDocumentCategorizer
-from .phasesphaseA01_intake.vector_cluster_manager import VectorClusterManager
+from .phasesphaseA01_intake.enhanced_document_categorizer import (
+    EnhancedDocumentCategorizer,
+)
 from .phasesphaseA01_intake.enhanced_intake_processor import EnhancedIntakeProcessor
-from .phasesphaseA01_intake.legal_intake_form import LegalIntakeForm, IntakeFormData
-from .phases05_drafting.drafting_validator import DraftingValidator
+from .phasesphaseA01_intake.legal_intake_form import IntakeFormData, LegalIntakeForm
+from .phasesphaseA01_intake.vector_cluster_manager import VectorClusterManager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

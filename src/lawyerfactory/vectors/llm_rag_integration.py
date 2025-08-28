@@ -13,12 +13,14 @@ Features:
 """
 
 import asyncio
-import logging
 from datetime import datetime
+import logging
 from typing import Any, Dict, List, Optional, Tuple
 
 from .enhanced_vector_store import (
-    EnhancedVectorStoreManager, VectorStoreType, ValidationType
+    EnhancedVectorStoreManager,
+    ValidationType,
+    VectorStoreType,
 )
 from .research_integration import ResearchRoundsManager
 
@@ -41,9 +43,12 @@ class LegalDocumentGenerator:
     LLM-powered legal document generator with RAG integration
     """
 
-    def __init__(self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None,
-                 research_manager: Optional[ResearchRoundsManager] = None,
-                 llm_service=None):
+    def __init__(
+        self,
+        vector_store_manager: Optional[EnhancedVectorStoreManager] = None,
+        research_manager: Optional[ResearchRoundsManager] = None,
+        llm_service=None,
+    ):
         self.vector_store = vector_store_manager or EnhancedVectorStoreManager()
         self.research_manager = research_manager or ResearchRoundsManager()
         self.llm_service = llm_service
@@ -73,63 +78,59 @@ CASE NO. {case_number}
 
 COMPLAINT FOR {cause_of_action}
 """,
-
             "irac_issue": """
 ISSUE {number}
 
 {issue_statement}
 
 """,
-
             "irac_rule": """
 RULE
 
 {legal_rule}
 
 """,
-
             "irac_analysis": """
 ANALYSIS
 
 {legal_analysis}
 
 """,
-
             "irac_conclusion": """
 CONCLUSION
 
 {legal_conclusion}
 
 """,
-
             "irc_issue": """
 ISSUE {number}
 
 {issue_statement}
 
 """,
-
             "irc_rule": """
 RULE
 
 {legal_rule}
 
 """,
-
             "irc_conclusion": """
 CONCLUSION
 
 {legal_conclusion}
 
 """,
-
             "citation_format": "[{authority_name}, {year}]",
-
-            "evidence_reference": "See {document_type}: {document_title} (stored {date})"
+            "evidence_reference": "See {document_type}: {document_title} (stored {date})",
         }
 
-    async def generate_legal_document(self, document_type: str, case_data: Dict[str, Any],
-                                    context_query: str = "", use_rag: bool = True) -> Dict[str, Any]:
+    async def generate_legal_document(
+        self,
+        document_type: str,
+        case_data: Dict[str, Any],
+        context_query: str = "",
+        use_rag: bool = True,
+    ) -> Dict[str, Any]:
         """
         Generate a legal document using RAG-enhanced LLM
 
@@ -160,13 +161,21 @@ CONCLUSION
 
             # Generate document based on type
             if document_type == "complaint":
-                content = await self._generate_complaint(case_data, rag_context, research_context)
+                content = await self._generate_complaint(
+                    case_data, rag_context, research_context
+                )
             elif document_type == "brief":
-                content = await self._generate_brief(case_data, rag_context, research_context)
+                content = await self._generate_brief(
+                    case_data, rag_context, research_context
+                )
             elif document_type == "motion":
-                content = await self._generate_motion(case_data, rag_context, research_context)
+                content = await self._generate_motion(
+                    case_data, rag_context, research_context
+                )
             else:
-                content = await self._generate_general_document(document_type, case_data, rag_context, research_context)
+                content = await self._generate_general_document(
+                    document_type, case_data, rag_context, research_context
+                )
 
             # Calculate generation metrics
             generation_time = (datetime.now() - start_time).total_seconds()
@@ -180,38 +189,38 @@ CONCLUSION
                 "generation_time": generation_time,
                 "rag_context_used": rag_context is not None,
                 "research_context_used": research_context is not None,
-                "context_sources": self._extract_context_sources(rag_context, research_context),
+                "context_sources": self._extract_context_sources(
+                    rag_context, research_context
+                ),
                 "citations_found": self._count_citations(content),
-                "generated_at": datetime.now().isoformat()
+                "generated_at": datetime.now().isoformat(),
             }
 
             # Store generation in history
-            self.generation_history.append({
-                "document_type": document_type,
-                "case_id": case_id,
-                "word_count": word_count,
-                "generation_time": generation_time,
-                "timestamp": datetime.now().isoformat()
-            })
+            self.generation_history.append(
+                {
+                    "document_type": document_type,
+                    "case_id": case_id,
+                    "word_count": word_count,
+                    "generation_time": generation_time,
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
 
             return result
 
         except Exception as e:
             logger.error(f"Error generating legal document: {e}")
-            return {
-                "success": False,
-                "error": str(e),
-                "document_type": document_type
-            }
+            return {"success": False, "error": str(e), "document_type": document_type}
 
-    async def _get_rag_context(self, query: str, case_data: Dict[str, Any]) -> RAGContext:
+    async def _get_rag_context(
+        self, query: str, case_data: Dict[str, Any]
+    ) -> RAGContext:
         """Get RAG context from vector stores"""
         try:
             # Get contexts from vector store
             contexts = await self.vector_store.rag_retrieve_context(
-                query=query,
-                max_contexts=5,
-                context_window=1500
+                query=query, max_contexts=5, context_window=1500
             )
 
             # Add metadata
@@ -219,7 +228,7 @@ CONCLUSION
                 "query": query,
                 "context_count": len(contexts),
                 "case_id": case_data.get("case_id"),
-                "total_context_length": sum(len(ctx) for ctx in contexts)
+                "total_context_length": sum(len(ctx) for ctx in contexts),
             }
 
             return RAGContext(query, contexts, metadata)
@@ -228,9 +237,12 @@ CONCLUSION
             logger.error(f"Error getting RAG context: {e}")
             return RAGContext(query, [], {"error": str(e)})
 
-    async def _generate_complaint(self, case_data: Dict[str, Any],
-                                rag_context: Optional[RAGContext],
-                                research_context: Optional[Dict]) -> str:
+    async def _generate_complaint(
+        self,
+        case_data: Dict[str, Any],
+        rag_context: Optional[RAGContext],
+        research_context: Optional[Dict],
+    ) -> str:
         """Generate a complaint using RAG context"""
         try:
             # Build complaint structure
@@ -238,11 +250,13 @@ CONCLUSION
 
             # Header
             header = self.templates["complaint_header"].format(
-                jurisdiction=case_data.get("jurisdiction", "NORTHERN DISTRICT OF CALIFORNIA"),
+                jurisdiction=case_data.get(
+                    "jurisdiction", "NORTHERN DISTRICT OF CALIFORNIA"
+                ),
                 plaintiff_name=case_data.get("plaintiff_name", "Plaintiff"),
                 defendant_name=case_data.get("defendant_name", "Defendant"),
                 case_number=case_data.get("case_number", "Case No. TBD"),
-                cause_of_action=case_data.get("cause_of_action", "Damages")
+                cause_of_action=case_data.get("cause_of_action", "Damages"),
             )
             complaint_parts.append(header)
 
@@ -268,10 +282,14 @@ CONCLUSION
             logger.error(f"Error generating complaint: {e}")
             return f"Error generating complaint: {str(e)}"
 
-    async def _generate_cause_section(self, cause_name: str, section_number: int,
-                                    case_data: Dict[str, Any],
-                                    rag_context: Optional[RAGContext],
-                                    research_context: Optional[Dict]) -> str:
+    async def _generate_cause_section(
+        self,
+        cause_name: str,
+        section_number: int,
+        case_data: Dict[str, Any],
+        rag_context: Optional[RAGContext],
+        research_context: Optional[Dict],
+    ) -> str:
         """Generate a cause of action section using IRAC format"""
         try:
             section_parts = []
@@ -279,19 +297,23 @@ CONCLUSION
             # Issue
             issue = self.templates["irac_issue"].format(
                 number=section_number,
-                issue_statement=self._generate_issue_statement(cause_name, case_data)
+                issue_statement=self._generate_issue_statement(cause_name, case_data),
             )
             section_parts.append(issue)
 
             # Rule
             rule = self.templates["irac_rule"].format(
-                legal_rule=self._generate_legal_rule(cause_name, rag_context, research_context)
+                legal_rule=self._generate_legal_rule(
+                    cause_name, rag_context, research_context
+                )
             )
             section_parts.append(rule)
 
             # Analysis
             analysis = self.templates["irac_analysis"].format(
-                legal_analysis=self._generate_legal_analysis(cause_name, case_data, rag_context, research_context)
+                legal_analysis=self._generate_legal_analysis(
+                    cause_name, case_data, rag_context, research_context
+                )
             )
             section_parts.append(analysis)
 
@@ -307,12 +329,15 @@ CONCLUSION
             logger.error(f"Error generating cause section: {e}")
             return f"Error generating cause section for {cause_name}: {str(e)}"
 
-    def _generate_introduction(self, case_data: Dict[str, Any],
-                             rag_context: Optional[RAGContext]) -> str:
+    def _generate_introduction(
+        self, case_data: Dict[str, Any], rag_context: Optional[RAGContext]
+    ) -> str:
         """Generate complaint introduction"""
         plaintiff = case_data.get("plaintiff_name", "Plaintiff")
         defendant = case_data.get("defendant_name", "Defendant")
-        claim_description = case_data.get("claim_description", "the claims alleged herein")
+        claim_description = case_data.get(
+            "claim_description", "the claims alleged herein"
+        )
 
         introduction = f"""
 INTRODUCTION
@@ -336,7 +361,9 @@ INTRODUCTION
 
         return introduction
 
-    def _generate_issue_statement(self, cause_name: str, case_data: Dict[str, Any]) -> str:
+    def _generate_issue_statement(
+        self, cause_name: str, case_data: Dict[str, Any]
+    ) -> str:
         """Generate issue statement for IRAC"""
         if cause_name.lower() == "negligence":
             return f"Whether {case_data.get('defendant_name', 'Defendant')} was negligent in its actions that caused harm to {case_data.get('plaintiff_name', 'Plaintiff')}."
@@ -345,19 +372,27 @@ INTRODUCTION
         else:
             return f"Whether {case_data.get('defendant_name', 'Defendant')} is liable to {case_data.get('plaintiff_name', 'Plaintiff')} for {cause_name.lower()}."
 
-    def _generate_legal_rule(self, cause_name: str, rag_context: Optional[RAGContext],
-                           research_context: Optional[Dict]) -> str:
+    def _generate_legal_rule(
+        self,
+        cause_name: str,
+        rag_context: Optional[RAGContext],
+        research_context: Optional[Dict],
+    ) -> str:
         """Generate legal rule section with citations"""
         base_rules = {
             "negligence": "To establish negligence, a plaintiff must prove: (1) duty of care, (2) breach of duty, (3) causation, and (4) damages.",
-            "breach of contract": "To establish breach of contract, a plaintiff must prove: (1) existence of contract, (2) performance by plaintiff, (3) breach by defendant, and (4) damages."
+            "breach of contract": "To establish breach of contract, a plaintiff must prove: (1) existence of contract, (2) performance by plaintiff, (3) breach by defendant, and (4) damages.",
         }
 
-        rule = base_rules.get(cause_name.lower(), f"The elements of {cause_name} must be established.")
+        rule = base_rules.get(
+            cause_name.lower(), f"The elements of {cause_name} must be established."
+        )
 
         # Add citations from research context
         if research_context and "supporting_citations" in research_context:
-            citations = research_context["supporting_citations"][:3]  # Limit to 3 citations
+            citations = research_context["supporting_citations"][
+                :3
+            ]  # Limit to 3 citations
             if citations:
                 rule += "\n\nSupporting authorities include:"
                 for citation in citations:
@@ -365,14 +400,20 @@ INTRODUCTION
 
         return rule
 
-    def _generate_legal_analysis(self, cause_name: str, case_data: Dict[str, Any],
-                               rag_context: Optional[RAGContext],
-                               research_context: Optional[Dict]) -> str:
+    def _generate_legal_analysis(
+        self,
+        cause_name: str,
+        case_data: Dict[str, Any],
+        rag_context: Optional[RAGContext],
+        research_context: Optional[Dict],
+    ) -> str:
         """Generate legal analysis section"""
         analysis = f"Analysis of the {cause_name.lower()} claim:\n\n"
 
         # Add case-specific facts
-        claim_description = case_data.get("claim_description", "the incident in question")
+        claim_description = case_data.get(
+            "claim_description", "the incident in question"
+        )
         analysis += f"The plaintiff alleges that {claim_description}. "
 
         # Add evidence from RAG context
@@ -390,7 +431,9 @@ INTRODUCTION
 
         return analysis
 
-    def _generate_legal_conclusion(self, cause_name: str, case_data: Dict[str, Any]) -> str:
+    def _generate_legal_conclusion(
+        self, cause_name: str, case_data: Dict[str, Any]
+    ) -> str:
         """Generate legal conclusion"""
         plaintiff = case_data.get("plaintiff_name", "Plaintiff")
         defendant = case_data.get("defendant_name", "Defendant")
@@ -414,13 +457,18 @@ WHEREFORE, Plaintiff respectfully requests that this Court enter judgment in fav
 """
 
         if claim_amount > 0:
-            prayer = prayer.replace("to be determined at trial", f"no less than ${claim_amount:,}")
+            prayer = prayer.replace(
+                "to be determined at trial", f"no less than ${claim_amount:,}"
+            )
 
         return prayer
 
-    def _generate_brief(self, case_data: Dict[str, Any],
-                       rag_context: Optional[RAGContext],
-                       research_context: Optional[Dict]) -> str:
+    def _generate_brief(
+        self,
+        case_data: Dict[str, Any],
+        rag_context: Optional[RAGContext],
+        research_context: Optional[Dict],
+    ) -> str:
         """Generate a legal brief"""
         # Simplified brief generation - in production would be more comprehensive
         brief = f"""
@@ -453,9 +501,12 @@ IV. CONCLUSION
 """
         return brief
 
-    def _generate_motion(self, case_data: Dict[str, Any],
-                        rag_context: Optional[RAGContext],
-                        research_context: Optional[Dict]) -> str:
+    def _generate_motion(
+        self,
+        case_data: Dict[str, Any],
+        rag_context: Optional[RAGContext],
+        research_context: Optional[Dict],
+    ) -> str:
         """Generate a legal motion"""
         motion = f"""
 NOTICE OF MOTION AND MOTION FOR [RELIEF]
@@ -466,9 +517,13 @@ This motion is based on the following memorandum of points and authorities, the 
 """
         return motion
 
-    async def _generate_general_document(self, document_type: str, case_data: Dict[str, Any],
-                                       rag_context: Optional[RAGContext],
-                                       research_context: Optional[Dict]) -> str:
+    async def _generate_general_document(
+        self,
+        document_type: str,
+        case_data: Dict[str, Any],
+        rag_context: Optional[RAGContext],
+        research_context: Optional[Dict],
+    ) -> str:
         """Generate a general legal document"""
         return f"""
 {document_type.upper()}
@@ -481,8 +536,9 @@ Generated using RAG context: {len(rag_context.contexts) if rag_context else 0} s
 Research rounds integrated: {len(research_context.get('relevant_findings', [])) if research_context else 0} findings
 """
 
-    def _extract_context_sources(self, rag_context: Optional[RAGContext],
-                               research_context: Optional[Dict]) -> List[str]:
+    def _extract_context_sources(
+        self, rag_context: Optional[RAGContext], research_context: Optional[Dict]
+    ) -> List[str]:
         """Extract sources used for context"""
         sources = []
 
@@ -490,12 +546,14 @@ Research rounds integrated: {len(research_context.get('relevant_findings', [])) 
             sources.extend([f"RAG: {len(rag_context.contexts)} contexts"])
 
         if research_context:
-            findings = research_context.get('relevant_findings', [])
-            citations = research_context.get('supporting_citations', [])
-            sources.extend([
-                f"Research: {len(findings)} findings",
-                f"Citations: {len(citations)} authorities"
-            ])
+            findings = research_context.get("relevant_findings", [])
+            citations = research_context.get("supporting_citations", [])
+            sources.extend(
+                [
+                    f"Research: {len(findings)} findings",
+                    f"Citations: {len(citations)} authorities",
+                ]
+            )
 
         return sources
 
@@ -503,14 +561,15 @@ Research rounds integrated: {len(research_context.get('relevant_findings', [])) 
         """Count legal citations in content"""
         # Simple citation counting - in production would use more sophisticated detection
         citation_patterns = [
-            r'\d+\s+Cal\.\s+\d+',  # California citations
-            r'\d+\s+U\.S\.\s+\d+',  # US Supreme Court
-            r'\d+\s+F\.\s+\d+',    # Federal Reporter
+            r"\d+\s+Cal\.\s+\d+",  # California citations
+            r"\d+\s+U\.S\.\s+\d+",  # US Supreme Court
+            r"\d+\s+F\.\s+\d+",  # Federal Reporter
         ]
 
         total_citations = 0
         for pattern in citation_patterns:
             import re
+
             total_citations += len(re.findall(pattern, content))
 
         return total_citations
@@ -529,7 +588,9 @@ Research rounds integrated: {len(research_context.get('relevant_findings', [])) 
             "average_words_per_generation": total_words / len(self.generation_history),
             "total_generation_time": total_time,
             "average_generation_time": total_time / len(self.generation_history),
-            "document_types_generated": list(set(h.get("document_type") for h in self.generation_history))
+            "document_types_generated": list(
+                set(h.get("document_type") for h in self.generation_history)
+            ),
         }
 
 
@@ -538,16 +599,23 @@ class LLMConversationManager:
     Manages multi-turn conversations with LLM using vector store memory
     """
 
-    def __init__(self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None,
-                 document_generator: Optional[LegalDocumentGenerator] = None):
+    def __init__(
+        self,
+        vector_store_manager: Optional[EnhancedVectorStoreManager] = None,
+        document_generator: Optional[LegalDocumentGenerator] = None,
+    ):
         self.vector_store = vector_store_manager or EnhancedVectorStoreManager()
         self.document_generator = document_generator or LegalDocumentGenerator()
 
         # Conversation history
         self.conversations: Dict[str, List[Dict[str, Any]]] = {}
 
-    async def process_legal_query(self, query: str, conversation_id: str = "default",
-                                case_context: Dict[str, Any] = None) -> Dict[str, Any]:
+    async def process_legal_query(
+        self,
+        query: str,
+        conversation_id: str = "default",
+        case_context: Dict[str, Any] = None,
+    ) -> Dict[str, Any]:
         """
         Process a legal query with vector-enhanced LLM response
 
@@ -567,11 +635,11 @@ class LLMConversationManager:
             history = self.conversations[conversation_id]
 
             # Get relevant context from vector stores
-            context_query = f"{query} {' '.join(case_context.values()) if case_context else ''}"
+            context_query = (
+                f"{query} {' '.join(case_context.values()) if case_context else ''}"
+            )
             rag_context = await self.vector_store.rag_retrieve_context(
-                query=context_query,
-                max_contexts=3,
-                context_window=1000
+                query=context_query, max_contexts=3, context_window=1000
             )
 
             # Build prompt with context
@@ -585,7 +653,7 @@ class LLMConversationManager:
                 "query": query,
                 "response": response,
                 "context_sources": len(rag_context) if rag_context else 0,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
             history.append(conversation_entry)
 
@@ -598,26 +666,30 @@ class LLMConversationManager:
                 "success": True,
                 "response": response,
                 "context_sources": len(rag_context) if rag_context else 0,
-                "conversation_length": len(history)
+                "conversation_length": len(history),
             }
 
         except Exception as e:
             logger.error(f"Error processing legal query: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
-    def _build_legal_prompt(self, query: str, rag_context: List[str],
-                          history: List[Dict[str, Any]], case_context: Dict[str, Any]) -> str:
+    def _build_legal_prompt(
+        self,
+        query: str,
+        rag_context: List[str],
+        history: List[Dict[str, Any]],
+        case_context: Dict[str, Any],
+    ) -> str:
         """Build a legal-focused prompt with context"""
         prompt_parts = []
 
         # System instruction
-        prompt_parts.append("""
+        prompt_parts.append(
+            """
 You are an expert legal assistant with access to comprehensive legal knowledge and case-specific information.
 Provide accurate, well-reasoned legal analysis based on the provided context and your legal expertise.
-""")
+"""
+        )
 
         # Case context
         if case_context:

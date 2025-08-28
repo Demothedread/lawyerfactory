@@ -3,21 +3,22 @@ Enhanced Intake Processor for LawyerFactory
 Integrates advanced document categorization with intake form data.
 Creates defendant-specific clusters and manages document workflow.
 """
+
 import asyncio
-import json
-import logging
 from datetime import datetime
+import json 
+import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from .assessor import (  # kept for compatibility; may be used elsewhere
+    simple_categorize,
+)
 from .enhanced_document_categorizer import (
     DocumentMetadata,
     DocumentType,
     EnhancedDocumentCategorizer,
 )
-from .assessor_consolidated import (
-    simple_categorize,
-)  # kept for compatibility; may be used elsewhere
 from .legal_intake_form import IntakeFormData, LegalIntakeForm
 from .vector_cluster_manager import VectorClusterManager
 

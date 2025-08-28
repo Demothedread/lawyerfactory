@@ -17,11 +17,11 @@ The agent finds controlling precedents and analogous cases
 to support legal arguments and claims.
 """
 
-import logging
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
+import logging
+from typing import Any, Dict, List, Optional
 
-from ...compose.maestro.registry import AgentInterface, AgentCapability
+from ...compose.maestro.registry import AgentCapability, AgentInterface
 from ...compose.maestro.workflow_models import WorkflowTask
 
 logger = logging.getLogger(__name__)
@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CaseLawResult:
     """Result from caselaw research"""
+
     case_name: str
     citation: str
     court: str
@@ -48,7 +49,10 @@ class CaselawResearcherAgent(AgentInterface):
 
     def __init__(self, knowledge_graph=None):
         self.knowledge_graph = knowledge_graph
-        self.capabilities = [AgentCapability.LEGAL_RESEARCH, AgentCapability.CASE_ANALYSIS]
+        self.capabilities = [
+            AgentCapability.LEGAL_RESEARCH,
+            AgentCapability.CASE_ANALYSIS,
+        ]
 
         # Initialize research clients
         self._initialize_research_clients()
@@ -57,6 +61,7 @@ class CaselawResearcherAgent(AgentInterface):
         """Initialize external research clients"""
         try:
             from ...kg.legal_authorities import LegalAuthorityManager
+
             self.authority_manager = LegalAuthorityManager()
         except Exception as e:
             logger.warning(f"Could not initialize legal authority manager: {e}")
@@ -89,7 +94,9 @@ class CaselawResearcherAgent(AgentInterface):
             logger.error(f"Error processing caselaw research request: {e}")
             return f"Error researching caselaw: {str(e)}"
 
-    async def execute_task(self, task: WorkflowTask, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_task(
+        self, task: WorkflowTask, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Execute a workflow task related to caselaw research"""
         try:
             # Extract legal issues from context
@@ -106,7 +113,7 @@ class CaselawResearcherAgent(AgentInterface):
                 "cases_found": len(cases),
                 "cases": [case.__dict__ for case in cases],
                 "analysis": analysis,
-                "top_precedents": [case.__dict__ for case in cases[:3]]
+                "top_precedents": [case.__dict__ for case in cases[:3]],
             }
 
         except Exception as e:
@@ -117,7 +124,7 @@ class CaselawResearcherAgent(AgentInterface):
                 "cases_found": 0,
                 "cases": [],
                 "analysis": "",
-                "top_precedents": []
+                "top_precedents": [],
             }
 
     async def health_check(self) -> bool:
@@ -145,9 +152,10 @@ class CaselawResearcherAgent(AgentInterface):
     async def can_handle_task(self, task: WorkflowTask) -> bool:
         """Check if this agent can handle the given task"""
         task_text = f"{task.description} {task.agent_type}".lower()
-        return any(keyword in task_text for keyword in [
-            "case", "precedent", "caselaw", "research", "authority"
-        ])
+        return any(
+            keyword in task_text
+            for keyword in ["case", "precedent", "caselaw", "research", "authority"]
+        )
 
     async def search_caselaw(self, legal_issues: List[str]) -> List[CaseLawResult]:
         """Search for relevant caselaw based on legal issues"""
@@ -183,7 +191,7 @@ class CaselawResearcherAgent(AgentInterface):
                     relevance_score=0.8,
                     holding=f"The court held that {issue} claims require sufficient factual allegations.",
                     facts=f"Plaintiff alleged {issue} by defendant.",
-                    reasoning="Based on established precedent in the jurisdiction."
+                    reasoning="Based on established precedent in the jurisdiction.",
                 )
             ]
             return mock_cases
@@ -206,7 +214,7 @@ class CaselawResearcherAgent(AgentInterface):
                     relevance_score=0.7,
                     holding=f"Appeals court affirmed district court's ruling on {issue}.",
                     facts=f"Similar factual scenario involving {issue}.",
-                    reasoning="Applied controlling precedent to the facts."
+                    reasoning="Applied controlling precedent to the facts.",
                 )
             ]
             return mock_cases
@@ -236,7 +244,7 @@ class CaselawResearcherAgent(AgentInterface):
                         relevance_score=0.6,
                         holding=authority.content[:200] + "...",
                         facts="As described in the authority",
-                        reasoning="Based on legal authority analysis"
+                        reasoning="Based on legal authority analysis",
                     )
                     cases.append(case)
 
@@ -303,11 +311,15 @@ class CaselawResearcherAgent(AgentInterface):
 
         return unique_cases
 
-    def _rank_cases_by_relevance(self, cases: List[CaseLawResult]) -> List[CaseLawResult]:
+    def _rank_cases_by_relevance(
+        self, cases: List[CaseLawResult]
+    ) -> List[CaseLawResult]:
         """Rank cases by relevance score"""
         return sorted(cases, key=lambda x: x.relevance_score, reverse=True)
 
-    def _analyze_caselaw_results(self, cases: List[CaseLawResult], context: Dict[str, Any]) -> str:
+    def _analyze_caselaw_results(
+        self, cases: List[CaseLawResult], context: Dict[str, Any]
+    ) -> str:
         """Analyze caselaw search results"""
         analysis = "Caselaw Analysis:\n\n"
 

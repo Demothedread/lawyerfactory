@@ -12,10 +12,10 @@ before proceeding with legal research and document generation. This form
 appears as a popup/modal and gathers critical jurisdictional and case details.
 """
 
-import logging
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 import json
+import logging
+from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class IntakeFormData:
     """Data collected from the legal intake form"""
+
     user_name: str = ""
     user_address: str = ""
     other_party_name: str = ""
@@ -60,11 +61,11 @@ class IntakeFormData:
             "jurisdiction": self.jurisdiction,
             "venue": self.venue,
             "case_type": self.case_type,
-            "amount_in_controversy": self.amount_in_controversy
+            "amount_in_controversy": self.amount_in_controversy,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'IntakeFormData':
+    def from_dict(cls, data: Dict[str, Any]) -> "IntakeFormData":
         """Create from dictionary"""
         return cls(**data)
 
@@ -75,7 +76,7 @@ class IntakeFormData:
             self.other_party_name,
             self.party_role,
             self.event_location,
-            self.claim_description
+            self.claim_description,
         ]
         return all(required_fields) and len(self.selected_causes) > 0
 
@@ -100,7 +101,7 @@ class LegalIntakeForm:
             "Construction Defect",
             "Insurance Bad Faith",
             "Civil Rights Violation",
-            "Other"
+            "Other",
         ]
 
     def get_html_template(self) -> str:
@@ -239,8 +240,9 @@ class LegalIntakeForm:
         """Generate HTML checkboxes for common causes of action"""
         checkboxes = []
         for cause in self.common_causes:
-            safe_id = cause.lower().replace(' ', '_').replace('/', '_')
-            checkboxes.append(f'''
+            safe_id = cause.lower().replace(" ", "_").replace("/", "_")
+            checkboxes.append(
+                f"""
                 <div class="cause-checkbox">
                     <label class="checkbox-label">
                         <input type="checkbox" name="causes" value="{cause}" id="cause_{safe_id}">
@@ -248,8 +250,9 @@ class LegalIntakeForm:
                         {cause}
                     </label>
                 </div>
-            ''')
-        return '\n'.join(checkboxes)
+            """
+            )
+        return "\n".join(checkboxes)
 
     def get_css_styles(self) -> str:
         """Generate CSS styles for the intake form"""
@@ -655,7 +658,7 @@ class LegalIntakeForm:
 
         # Determine jurisdiction and venue based on location
         if form_data.event_location:
-            location_parts = form_data.event_location.split(', ')
+            location_parts = form_data.event_location.split(", ")
             if len(location_parts) >= 2:
                 state = location_parts[-1].strip()
                 form_data.jurisdiction = f"State of {state}"
@@ -663,24 +666,30 @@ class LegalIntakeForm:
 
         # Determine case type based on selected causes
         if form_data.selected_causes:
-            if any('contract' in cause.lower() for cause in form_data.selected_causes):
-                form_data.case_type = 'contract_dispute'
-            elif any('negligence' in cause.lower() for cause in form_data.selected_causes):
-                form_data.case_type = 'tort_claim'
-            elif any('product' in cause.lower() for cause in form_data.selected_causes):
-                form_data.case_type = 'products_liability'
+            if any("contract" in cause.lower() for cause in form_data.selected_causes):
+                form_data.case_type = "contract_dispute"
+            elif any(
+                "negligence" in cause.lower() for cause in form_data.selected_causes
+            ):
+                form_data.case_type = "tort_claim"
+            elif any("product" in cause.lower() for cause in form_data.selected_causes):
+                form_data.case_type = "products_liability"
             else:
-                form_data.case_type = 'general_civil'
+                form_data.case_type = "general_civil"
 
         # Estimate amount in controversy (placeholder logic)
-        if 'breach of contract' in [c.lower() for c in form_data.selected_causes]:
-            form_data.amount_in_controversy = 75000  # Minimum for diversity jurisdiction
-        elif any('tort' in c.lower() for c in form_data.selected_causes):
+        if "breach of contract" in [c.lower() for c in form_data.selected_causes]:
+            form_data.amount_in_controversy = (
+                75000  # Minimum for diversity jurisdiction
+            )
+        elif any("tort" in c.lower() for c in form_data.selected_causes):
             form_data.amount_in_controversy = 50000
         else:
             form_data.amount_in_controversy = 25000
 
-        logger.info(f"Processed intake data for {form_data.user_name} vs {form_data.other_party_name}")
+        logger.info(
+            f"Processed intake data for {form_data.user_name} vs {form_data.other_party_name}"
+        )
         return form_data
 
     def get_intake_summary(self, form_data: IntakeFormData) -> str:

@@ -1,7 +1,7 @@
 
 ==================================== ERRORS ====================================
 _______________ ERROR collecting test_enhanced_categorization.py _______________
-law_venv/lib/python3.11/site-packages/_pytest/python.py:617: in _importtestmodule
+law_venv/lib/python/site-packages/_pytest/python.py:617: in _importtestmodule
     mod = import_path(self.path, mode=importmode, root=self.config.rootpath)
 law_venv/lib/python3.11/site-packages/_pytest/pathlib.py:567: in import_path
     importlib.import_module(module_name)

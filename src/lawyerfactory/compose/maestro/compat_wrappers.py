@@ -18,7 +18,9 @@ async def _maybe_await(result: Any) -> Any:
     return result
 
 
-async def _call_candidate(obj: Any, candidate_names: Iterable[str], *args, **kwargs) -> Any:
+async def _call_candidate(
+    obj: Any, candidate_names: Iterable[str], *args, **kwargs
+) -> Any:
     """
     Try candidate attribute names on obj and call the first callable found.
     Handles both sync and async callables. Raises AttributeError if none found.
@@ -33,7 +35,9 @@ async def _call_candidate(obj: Any, candidate_names: Iterable[str], *args, **kwa
             except Exception as exc:
                 last_exc = exc
                 continue
-    raise AttributeError(f"No supported method found among: {list(candidate_names)}; last error: {last_exc}")
+    raise AttributeError(
+        f"No supported method found among: {list(candidate_names)}; last error: {last_exc}"
+    )
 
 
 class AgentPoolManagerWrapper:

@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 # Try to import LLM service
 try:
     from ...lf_core.llm import LLMService
+
     LLM_SERVICE_AVAILABLE = True
 except Exception:
     LLM_SERVICE_AVAILABLE = False
@@ -34,7 +35,10 @@ def llm_extract_legal_issues(text: str) -> List[str]:
         if result.get("success", False):
             return result.get("legal_issues", _fallback_extract_legal_issues(text))
         else:
-            logger.warning("LLM legal issue extraction failed: %s", result.get("error", "Unknown error"))
+            logger.warning(
+                "LLM legal issue extraction failed: %s",
+                result.get("error", "Unknown error"),
+            )
             return _fallback_extract_legal_issues(text)
 
     except Exception as e:
@@ -62,10 +66,12 @@ def llm_analyze_case_law(case_text: str, query_context: str = None) -> Dict[str,
                 "reasoning": analysis.get("reasoning", ""),
                 "key_principles": analysis.get("key_principles", []),
                 "relevance_score": analysis.get("relevance_score", 0.5),
-                "analysis_method": "llm"
+                "analysis_method": "llm",
             }
         else:
-            logger.warning("LLM case law analysis failed: %s", result.get("error", "Unknown error"))
+            logger.warning(
+                "LLM case law analysis failed: %s", result.get("error", "Unknown error")
+            )
             return _fallback_analyze_case_law(case_text, query_context)
 
     except Exception as e:
@@ -86,9 +92,14 @@ def llm_identify_research_gaps(query: str, existing_results: List[str]) -> List[
         result = llm_service.identify_research_gaps(query, existing_results)
 
         if result.get("success", False):
-            return result.get("gaps", _fallback_identify_research_gaps(query, existing_results))
+            return result.get(
+                "gaps", _fallback_identify_research_gaps(query, existing_results)
+            )
         else:
-            logger.warning("LLM research gap identification failed: %s", result.get("error", "Unknown error"))
+            logger.warning(
+                "LLM research gap identification failed: %s",
+                result.get("error", "Unknown error"),
+            )
             return _fallback_identify_research_gaps(query, existing_results)
 
     except Exception as e:
@@ -109,9 +120,15 @@ def llm_score_citation_relevance(citation_text: str, query: str) -> float:
         result = llm_service.score_citation_relevance(citation_text, query)
 
         if result.get("success", False):
-            return result.get("relevance_score", _fallback_score_citation_relevance(citation_text, query))
+            return result.get(
+                "relevance_score",
+                _fallback_score_citation_relevance(citation_text, query),
+            )
         else:
-            logger.warning("LLM citation relevance scoring failed: %s", result.get("error", "Unknown error"))
+            logger.warning(
+                "LLM citation relevance scoring failed: %s",
+                result.get("error", "Unknown error"),
+            )
             return _fallback_score_citation_relevance(citation_text, query)
 
     except Exception as e:
@@ -134,7 +151,10 @@ def llm_extract_legal_principles(text: str) -> List[str]:
         if result.get("success", False):
             return result.get("principles", _fallback_extract_legal_principles(text))
         else:
-            logger.warning("LLM legal principle extraction failed: %s", result.get("error", "Unknown error"))
+            logger.warning(
+                "LLM legal principle extraction failed: %s",
+                result.get("error", "Unknown error"),
+            )
             return _fallback_extract_legal_principles(text)
 
     except Exception as e:
@@ -142,39 +162,77 @@ def llm_extract_legal_principles(text: str) -> List[str]:
         return _fallback_extract_legal_principles(text)
 
 
-def llm_generate_research_recommendations(query: str, gaps: List[str], existing_results: List[str]) -> List[str]:
+def llm_generate_research_recommendations(
+    query: str, gaps: List[str], existing_results: List[str]
+) -> List[str]:
     """Use LLM to generate research recommendations based on gaps and existing results."""
     if not LLM_SERVICE_AVAILABLE:
         logger.warning("LLM service not available for research recommendations")
-        return _fallback_generate_research_recommendations(query, gaps, existing_results)
+        return _fallback_generate_research_recommendations(
+            query, gaps, existing_results
+        )
 
     try:
         llm_service = LLMService()
 
         # Use LLM to generate recommendations
-        result = llm_service.generate_research_recommendations(query, gaps, existing_results)
+        result = llm_service.generate_research_recommendations(
+            query, gaps, existing_results
+        )
 
         if result.get("success", False):
-            return result.get("recommendations", _fallback_generate_research_recommendations(query, gaps, existing_results))
+            return result.get(
+                "recommendations",
+                _fallback_generate_research_recommendations(
+                    query, gaps, existing_results
+                ),
+            )
         else:
-            logger.warning("LLM research recommendations failed: %s", result.get("error", "Unknown error"))
-            return _fallback_generate_research_recommendations(query, gaps, existing_results)
+            logger.warning(
+                "LLM research recommendations failed: %s",
+                result.get("error", "Unknown error"),
+            )
+            return _fallback_generate_research_recommendations(
+                query, gaps, existing_results
+            )
 
     except Exception as e:
         logger.error("LLM research recommendations error: %s", e)
-        return _fallback_generate_research_recommendations(query, gaps, existing_results)
+        return _fallback_generate_research_recommendations(
+            query, gaps, existing_results
+        )
 
 
 # Fallback functions for when LLM is not available
 
+
 def _fallback_extract_legal_issues(text: str) -> List[str]:
     """Fallback legal issue extraction using keyword matching."""
     legal_keywords = [
-        "negligence", "breach", "contract", "tort", "liability", "damages",
-        "jurisdiction", "venue", "standing", "mootness", "ripeness",
-        "statute", "regulation", "ordinance", "precedent", "stare decisis",
-        "due process", "equal protection", "first amendment", "fourth amendment",
-        "fifth amendment", "sixth amendment", "eighth amendment", "fourteenth amendment"
+        "negligence",
+        "breach",
+        "contract",
+        "tort",
+        "liability",
+        "damages",
+        "jurisdiction",
+        "venue",
+        "standing",
+        "mootness",
+        "ripeness",
+        "statute",
+        "regulation",
+        "ordinance",
+        "precedent",
+        "stare decisis",
+        "due process",
+        "equal protection",
+        "first amendment",
+        "fourth amendment",
+        "fifth amendment",
+        "sixth amendment",
+        "eighth amendment",
+        "fourteenth amendment",
     ]
 
     found_issues = []
@@ -187,7 +245,9 @@ def _fallback_extract_legal_issues(text: str) -> List[str]:
     return found_issues[:5] if found_issues else ["General legal issue"]
 
 
-def _fallback_analyze_case_law(case_text: str, query_context: str = None) -> Dict[str, Any]:
+def _fallback_analyze_case_law(
+    case_text: str, query_context: str = None
+) -> Dict[str, Any]:
     """Fallback case law analysis using text patterns."""
     return {
         "holding": _extract_holding_fallback(case_text),
@@ -195,21 +255,27 @@ def _fallback_analyze_case_law(case_text: str, query_context: str = None) -> Dic
         "reasoning": _extract_reasoning_fallback(case_text),
         "key_principles": _extract_principles_fallback(case_text),
         "relevance_score": 0.5,
-        "analysis_method": "fallback"
+        "analysis_method": "fallback",
     }
 
 
-def _fallback_identify_research_gaps(query: str, existing_results: List[str]) -> List[str]:
+def _fallback_identify_research_gaps(
+    query: str, existing_results: List[str]
+) -> List[str]:
     """Fallback research gap identification."""
     gaps = []
 
     # Simple gap identification based on missing information
     query_lower = query.lower()
 
-    if "supreme court" in query_lower and not any("supreme court" in result.lower() for result in existing_results):
+    if "supreme court" in query_lower and not any(
+        "supreme court" in result.lower() for result in existing_results
+    ):
         gaps.append("No Supreme Court precedent found")
 
-    if "recent" in query_lower and not any("2023" in result or "2024" in result for result in existing_results):
+    if "recent" in query_lower and not any(
+        "2023" in result or "2024" in result for result in existing_results
+    ):
         gaps.append("Limited recent case law")
 
     if len(existing_results) < 3:
@@ -235,38 +301,54 @@ def _fallback_extract_legal_principles(text: str) -> List[str]:
 
     # Look for common legal principle indicators
     principle_indicators = [
-        "therefore", "thus", "accordingly", "consequently",
-        "it is established", "the court holds", "we conclude",
-        "the law requires", "as a matter of law"
+        "therefore",
+        "thus",
+        "accordingly",
+        "consequently",
+        "it is established",
+        "the court holds",
+        "we conclude",
+        "the law requires",
+        "as a matter of law",
     ]
 
-    sentences = text.split('.')
+    sentences = text.split(".")
     for sentence in sentences:
         sentence_lower = sentence.lower()
         if any(indicator in sentence_lower for indicator in principle_indicators):
             principles.append(sentence.strip())
 
-    return principles[:3] if principles else ["Legal principles require further analysis"]
+    return (
+        principles[:3] if principles else ["Legal principles require further analysis"]
+    )
 
 
-def _fallback_generate_research_recommendations(query: str, gaps: List[str], existing_results: List[str]) -> List[str]:
+def _fallback_generate_research_recommendations(
+    query: str, gaps: List[str], existing_results: List[str]
+) -> List[str]:
     """Fallback research recommendation generation."""
     recommendations = []
 
     if gaps:
         for gap in gaps:
             if "supreme court" in gap.lower():
-                recommendations.append("Consider searching federal circuit courts for analogous decisions")
+                recommendations.append(
+                    "Consider searching federal circuit courts for analogous decisions"
+                )
             elif "recent" in gap.lower():
-                recommendations.append("Look for recent district court decisions or pending appeals")
+                recommendations.append(
+                    "Look for recent district court decisions or pending appeals"
+                )
             elif "insufficient" in gap.lower():
-                recommendations.append("Expand search to include related legal theories")
+                recommendations.append(
+                    "Expand search to include related legal theories"
+                )
 
     if not recommendations:
         recommendations = [
             "Consider consulting legal databases for additional case law",
             "Review secondary sources and legal commentary",
-            "Consult with subject matter experts in the field"
+            "Consult with subject matter experts in the field",
         ]
 
     return recommendations
@@ -274,11 +356,15 @@ def _fallback_generate_research_recommendations(query: str, gaps: List[str], exi
 
 # Helper functions for fallback analysis
 
+
 def _extract_holding_fallback(text: str) -> str:
     """Extract holding using simple text patterns."""
-    sentences = text.split('.')
+    sentences = text.split(".")
     for sentence in sentences:
-        if any(word in sentence.lower() for word in ["hold", "grant", "deny", "affirm", "reverse"]):
+        if any(
+            word in sentence.lower()
+            for word in ["hold", "grant", "deny", "affirm", "reverse"]
+        ):
             return sentence.strip()
     return "Holding requires detailed analysis"
 
@@ -293,14 +379,21 @@ def _extract_facts_fallback(text: str) -> str:
 
 def _extract_reasoning_fallback(text: str) -> str:
     """Extract reasoning using simple text patterns."""
-    sentences = text.split('.')
+    sentences = text.split(".")
     reasoning_sentences = []
 
     for sentence in sentences:
-        if any(word in sentence.lower() for word in ["because", "therefore", "thus", "accordingly"]):
+        if any(
+            word in sentence.lower()
+            for word in ["because", "therefore", "thus", "accordingly"]
+        ):
             reasoning_sentences.append(sentence.strip())
 
-    return " ".join(reasoning_sentences[:3]) if reasoning_sentences else "Reasoning requires detailed analysis"
+    return (
+        " ".join(reasoning_sentences[:3])
+        if reasoning_sentences
+        else "Reasoning requires detailed analysis"
+    )
 
 
 def _extract_principles_fallback(text: str) -> List[str]:

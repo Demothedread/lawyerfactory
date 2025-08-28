@@ -25,7 +25,7 @@ class LLMService:
     def _initialize_providers(self):
         """Initialize provider instances"""
         try:
-            from .providers import OpenAIProvider, OllamaProvider, GeminiProvider
+            from .providers import GeminiProvider, OllamaProvider, OpenAIProvider
 
             self._providers = {
                 "openai": OpenAIProvider(self.config_manager),
