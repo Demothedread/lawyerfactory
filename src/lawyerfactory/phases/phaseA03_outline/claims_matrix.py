@@ -20,10 +20,8 @@ from src.ingestion.api.cause_of_action_definition_engine import (
     LegalDefinition,
     ProvableQuestion,
 )
-from src.knowledge_graph.api.enhanced_knowledge_graph import EnhancedKnowledgeGraph
-from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
-    JurisdictionManager,
-)
+from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
 # cascading_decision_tree_engine may live in claims_matrix or src; try src first and fall back
 try:

@@ -149,7 +149,7 @@ src/lawyerfactory/phases/phaseA01_intake/simple_test.py
 src/lawyerfactory/phases/phaseA01_intake/test_llm_integration.py
 src/lawyerfactory/phases/phaseA01_intake/evidence/__init__.py
 src/lawyerfactory/phases/phaseA01_intake/evidence/table.py
-src/lawyerfactory/phases/phaseA01_intake/ingest_consolidated/assessor_consolidated.py
+src/lawyerfactory/phases/phaseA01_intake/ingest_consolidated/assessor.py
 src/lawyerfactory/phases/phaseA01_intake/ingest_consolidated/reader.py
 src/lawyerfactory/phases/phaseA01_intake/ingest_consolidated/vector_cluster_manager.py
 src/lawyerfactory/phases/phaseA01_intake/ingestion/__init__.py

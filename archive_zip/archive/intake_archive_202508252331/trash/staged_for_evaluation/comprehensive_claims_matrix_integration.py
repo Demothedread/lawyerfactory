@@ -23,7 +23,7 @@ from cause_of_action_definition_engine import (CauseOfActionDefinitionEngine,
 from enhanced_knowledge_graph import EnhancedKnowledgeGraph
 
 from claims_matrix.claims_matrix_research_api import ClaimsMatrixResearchAPI
-from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import JurisdictionManager
+from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
 logger = logging.getLogger(__name__)
 

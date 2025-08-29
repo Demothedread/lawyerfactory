@@ -18,7 +18,7 @@ from pathlib import Path
 from datetime import datetime
 
 from src.lawyerfactory.phases.one_intake.intake_processor import IntakeProcessor, IntakeData
-from src.lawyerfactory.knowledge_graph.core.legal_authorities import LegalAuthorityManager, AuthorityCitationManager
+from lawyerfactory.kg.legal_authorities import LegalAuthorityManager, AuthorityCitationManager
 from src.lawyerfactory.phases.phaseC02_orchestration.caselaw_validator import CaselawValidationAgent, ValidationReport
 from src.lawyerfactory.compose.strategies.statement_of_facts import StatementOfFactsGenerator
 

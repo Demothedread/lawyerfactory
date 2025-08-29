@@ -67,7 +67,7 @@ echo "Moving canonical files into $canonical_ingest_dir"
 
 # list of canonical files to keep/move (adjust paths if necessary)
 declare -a keep_files=(
-  "src/lawyerfactory/phases/01_intake/assessor_consolidated.py"
+  "src/lawyerfactory/phases/01_intake/assessor.py"
   "src/lawyerfactory/phases/01_intake/enhanced_intake_processor.py"
   "src/lawyerfactory/phases/01_intake/vector_cluster_manager.py"
   "src/lawyerfactory/agents/intake/reader.py"
@@ -119,9 +119,9 @@ for file in $files_to_patch; do
   fi
 done
 
-# 6) Minor cleanup: remove duplicate __all__ or duplicated simple_categorize in assessor_consolidated.py
+# 6) Minor cleanup: remove duplicate __all__ or duplicated simple_categorize in assessor.py
 # (manual review recommended; we don't auto-edit complex logic here)
-echo "Note: please manually inspect $canonical_ingest_dir/assessor_consolidated.py for duplicate definitions (__all__, simple_categorize) and remove duplicates."
+echo "Note: please manually inspect $canonical_ingest_dir/assessor.py for duplicate definitions (__all__, simple_categorize) and remove duplicates."
 
 # 7) Run tests and capture failures
 echo "Running test suite (pytest). Output -> consolidation_test_results.txt"

@@ -27,7 +27,7 @@ from claims_matrix.claims_matrix_research_api import (
     ClaimsMatrixResearchAPI, ClaimsMatrixResearchRequest,
     ClaimsMatrixResearchResponse)
 from maestro.bots.research_bot import LegalCitation
-from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import JurisdictionManager
+from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

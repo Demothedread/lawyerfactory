@@ -136,3 +136,48 @@
  
 
 
+
+    {
+      "id": "assess_evidence_content",
+      "type": "function",
+      "features": ["evidence assessment", "LLM integration", "fallback processing"],
+      "relationships": ["EnhancedEvidenceAssessor", "simple_categorize"]
+    },
+    {
+      "id": "simple_test.py",
+      "type": "test_module", 
+      "features": ["import validation", "LLM integration testing", "categorization testing"],
+      "relationships": ["assessor.py", "llm_integration.py"]
+    },
+    {
+      "id": "import_cleanup",
+      "type": "process",
+      "features": ["circular import resolution", "module consolidation", "path normalization"],
+      "relationships": ["assessor.py", "llm_integration.py", "simple_test.py"]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "assess_evidence_content",
+      "to": "EnhancedEvidenceAssessor",
+      "type": "uses"
+    },
+    {
+      "from": "simple_test.py", 
+      "to": "assess_evidence_content",
+      "type": "tests"
+    },
+    {
+      "from": "import_cleanup",
+      "to": "assessor.py",
+      "type": "improves"
+    }
+  ],
+  "observations": [
+    "Consolidated duplicate assess_evidence_content functions in assessor.py",
+    "Fixed import paths in simple_test.py for correct function names",
+    "Removed syntax errors and stray characters from cleaned files",
+    "Maintained backward compatibility in __all__ exports",
+    "Test suite validates LLM integration with fallback mechanisms"
+  ]
+}

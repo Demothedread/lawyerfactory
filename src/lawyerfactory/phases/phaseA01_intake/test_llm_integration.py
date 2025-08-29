@@ -1,7 +1,7 @@
 """
 Integration Tests for LLM-powered Evidence Processing Functions
 
-This module tests the LLM integration functions in assessor_consolidated.py,
+This module tests the LLM integration functions in assessor.py,
 including fallback mechanisms and error handling.
 """
 
@@ -13,13 +13,17 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 # Import the functions to test
-from .assessor_consolidated import (
+from .assessor import (
     LLM_INTEGRATION_AVAILABLE,
+    llm_classify_evidence,
+    llm_extract_metadata,
+    llm_summarize_text,
+    simple_categorize,
+)
+from .enhanced_evidence_assessor import (
     llm_categorize_document,
-    llm_enhanced_ingest_files,
     llm_extract_document_metadata,
     llm_generate_summary,
-    simple_categorize,
 )
 
 

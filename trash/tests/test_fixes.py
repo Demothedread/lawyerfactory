@@ -58,7 +58,7 @@ def test_knowledge_graph_fallback():
     print("\n=== Testing KnowledgeGraph Fallback ===")
     try:
         # Import the knowledge graph and test the fallback
-        from src.lawyerfactory.knowledge_graph.core.knowledge_graph import KnowledgeGraph
+        from lawyerfactory.kg.graph_api import KnowledgeGraph
 
         # Create instance
         kg = KnowledgeGraph(':memory:')  # Use in-memory SQLite for testing

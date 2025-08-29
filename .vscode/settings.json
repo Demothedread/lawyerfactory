@@ -20,5 +20,11 @@
     "workbench.commandPalette.experimental.suggestCommands": true,
     "workbench.list.scrollByPage": true,
     "workbench.list.smoothScrolling": true,
-    "workbench.iconTheme": "vscode-icons"
+    "workbench.iconTheme": "vscode-icons",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    "notebook.codeActionsOnSave": {
+        "source.fixAll":   "explicit"
+    },
 }

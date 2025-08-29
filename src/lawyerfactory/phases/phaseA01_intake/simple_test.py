@@ -9,23 +9,17 @@ import os
 from pathlib import Path
 import sys
 
+
 # Add the src directory to the path so we can import our modules
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+from lawyerfactory.phases.phaseA01_intake.assessor import simple_categorize, LLM_INTEGRATION_AVAILABLE, ingest_files
+from lawyerfactory.phases.phaseA01_intake.llm_integration import (
+    llm_classify_evidence as llm_categorize_document,
+    llm_extract_metadata as llm_extract_document_metadata,
+    llm_summarize_text as llm_generate_summary
+)
 
-try:
-    from lawyerfactory.phases.phaseA01_intake.ingest_consolidated.assessor_consolidated import (
-        LLM_INTEGRATION_AVAILABLE,
-        llm_categorize_document,
-        llm_enhanced_ingest_files,
-        llm_extract_document_metadata,
-        llm_generate_summary,
-        simple_categorize,
-    )
-
-    print("✅ Successfully imported all functions from assessor_consolidated")
-except ImportError as e:
-    print(f"❌ Failed to import functions: {e}")
-    sys.exit(1)
+print("✅ Successfully imported test functions")
 
 
 def test_simple_categorize():
@@ -125,15 +119,15 @@ def test_file_processing():
 
     try:
         # Test with empty list
-        results = llm_enhanced_ingest_files([])
+        results = ingest_files([])
         if results == []:
-            print("✅ llm_enhanced_ingest_files handles empty list")
+            print("✅ ingest_files handles empty list")
             return True
         else:
-            print("❌ llm_enhanced_ingest_files failed on empty list")
+            print("❌ ingest_files failed on empty list")
             return False
     except Exception as e:
-        print(f"❌ llm_enhanced_ingest_files error: {e}")
+        print(f"❌ ingest_files error: {e}")
         return False
 
 

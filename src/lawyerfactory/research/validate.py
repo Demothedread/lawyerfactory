@@ -16,12 +16,10 @@ import logging
 import re
 from typing import Any, Dict, List, Optional
 
-from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
 from legal_research_integration import AuthorityLevel, LegalCitation
 
-from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
-    JurisdictionManager,
-)
+from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
 logger = logging.getLogger(__name__)
 

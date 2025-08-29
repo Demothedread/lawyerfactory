@@ -19,7 +19,7 @@ import logging
 import time
 from typing import Any, Dict, List, Optional
 
-from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
 
 logger = logging.getLogger(__name__)
 

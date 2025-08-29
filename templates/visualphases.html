@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Document Factory</title>
+    <style>
+        /* --- General Setup & Aesthetics --- */
+        @import url('https://fonts.googleapis.com/css2?family=Changa+One&family=Roboto+Slab:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #f4e8d1; /* Old paper */
+            --tin-color: #c0c0c0; /* Silver tin */
+            --tin-shadow: #8d8d8d;
+            --brass-color: #d1b768;
+            --brass-shadow: #a48e4b;
+            --rust-color: #b7410e;
+            --gauge-bg: #fffbf0;
+            --paint-red: #c0392b;
+            --paint-blue: #2980b9;
+            --ink-color: #2c3e50;
+        }
+
+        body {
+            font-family: 'Roboto Slab', serif;
+            background-color: var(--bg-color);
+            color: var(--ink-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            font-family: 'Changa One', cursive;
+            font-size: 3rem;
+            color: var(--rust-color);
+            text-shadow: 2px 2px 0px var(--brass-color);
+            border-bottom: 4px solid var(--rust-color);
+            margin-bottom: 20px;
+        }
+
+        /* --- Factory Layout & Controls --- */
+        #factory-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-gap: 20px;
+            width: 95%;
+            max-width: 1600px;
+            padding: 20px;
+            background: #a0957e;
+            border: 8px solid #5a5245;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        #controls {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        #startButton {
+            font-family: 'Changa One', cursive;
+            font-size: 1.5rem;
+            padding: 10px 30px;
+            cursor: pointer;
+            border: 4px solid var(--brass-shadow);
+            background-color: var(--brass-color);
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            border-radius: 5px;
+            box-shadow: 0 5px 0 var(--brass-shadow);
+            transition: all 0.1s ease-in-out;
+        }
+
+        #startButton:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 var(--brass-shadow);
+        }
+
+        /* --- Phase Module Styling --- */
+        .phase {
+            background-color: var(--tin-color);
+            border: 4px solid var(--tin-shadow);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 5px 5px 10px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            min-height: 250px;
+        }
+
+        .phase h2 {
+            font-family: 'Changa One', cursive;
+            margin: 0 0 10px 0;
+            padding-bottom: 5px;
+            font-size: 1.2rem;
+            color: var(--ink-color);
+            text-align: center;
+            border-bottom: 3px double var(--tin-shadow);
+            width: 100%;
+        }
+
+        .phase .status {
+            font-size: 0.9rem;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 5px;
+            background: var(--tin-shadow);
+            color: white;
+            position: absolute;
+            bottom: 10px;
+            transition: background-color 0.5s;
+        }
+        
+        .phase.active .status { background-color: var(--paint-blue); }
+        .phase.complete .status { background-color: #27ae60; }
+
+        .visuals {
+            flex-grow: 1;
+            width: 100%;
+            position: relative;
+        }
+        
+        /* --- Conveyor Belt --- */
+        .conveyor-belt {
+            position: absolute;
+            bottom: -15px;
+            left: -10%;
+            width: 120%;
+            height: 30px;
+            background-color: #333;
+            border: 3px solid #222;
+            background-image: linear-gradient(45deg, #444 25%, transparent 25%, transparent 50%, #444 50%, #444 75%, transparent 75%, transparent);
+            background-size: 30px 30px;
+            overflow: hidden;
+        }
+
+        .phase.active .conveyor-belt {
+            animation: move-belt 1s linear infinite;
+        }
+        
+        .document {
+            position: absolute;
+            width: 40px;
+            height: 25px;
+            background: var(--gauge-bg);
+            border: 2px solid var(--ink-color);
+            top: -10px;
+            opacity: 0;
+        }
+        
+        .phase.active .document {
+            animation: move-doc 4s linear forwards;
+        }
+
+        @keyframes move-belt {
+            from { background-position: 0 0; }
+            to { background-position: -30px 0; }
+        }
+        
+        @keyframes move-doc {
+            0% { left: -40px; opacity: 1; }
+            100% { left: 110%; opacity: 1; }
+        }
+
+        /* --- Phase-Specific Animations --- */
+
+        /* 1. Ingest */
+        #ingest .pipe {
+            width: 20px;
+            height: 100px;
+            background: var(--brass-color);
+            border: 3px solid var(--brass-shadow);
+            position: absolute;
+            top: -10px; left: 50%;
+            transform: translateX(-50%);
+        }
+        #ingest .hopper {
+            width: 80%;
+            height: 60px;
+            background: var(--tin-shadow);
+            clip-path: polygon(0 0, 100% 0, 80% 100%, 20% 100%);
+            margin: 40px auto 0;
+        }
+        #ingest .scrap {
+            width: 10px; height: 10px;
+            background: var(--paint-red);
+            position: absolute;
+            opacity: 0;
+        }
+        #ingest.active .scrap1 { animation: fall 1s linear infinite; }
+        #ingest.active .scrap2 { animation: fall 1.5s linear infinite 0.5s; }
+        @keyframes fall {
+            0% { top: 30px; left: 45%; opacity: 1; transform: rotate(0deg); }
+            100% { top: 90px; left: 50%; opacity: 0; transform: rotate(360deg); }
+        }
+
+        /* 2. Research */
+        #research .magnifying-glass {
+            width: 50px; height: 50px;
+            border: 8px solid var(--brass-color);
+            border-radius: 50%;
+            position: absolute;
+            top: 20%; left: 30%;
+            background: rgba(41, 128, 185, 0.2);
+        }
+        #research .magnifying-glass::after {
+            content: '';
+            width: 10px; height: 30px;
+            background: var(--brass-color);
+            position: absolute;
+            top: 40px; left: 45px;
+            transform: rotate(45deg);
+        }
+        #research.active .magnifying-glass {
+            animation: scan 3s ease-in-out infinite;
+        }
+        @keyframes scan {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(30px, 10px) rotate(15deg); }
+        }
+
+        /* 3. Outline */
+        #outline .punch-press {
+            width: 20px; height: 40px;
+            background: var(--rust-color);
+            position: absolute;
+            top: 30px; left: 50%;
+            transform: translateX(-50%);
+        }
+        #outline .paper-scroll {
+            width: 60%;
+            height: 20px;
+            background: var(--gauge-bg);
+            position: absolute;
+            top: 70px;
+            left: 20%;
+        }
+        #outline.active .punch-press {
+            animation: punch 0.5s ease-in-out infinite;
+        }
+        @keyframes punch {
+            0%, 100% { top: 30px; }
+            50% { top: 55px; }
+        }
+
+        /* 4. Draft */
+        #draft .gauge {
+            width: 80px; height: 40px;
+            border: 4px solid var(--brass-color);
+            border-radius: 40px 40px 0 0;
+            background: var(--gauge-bg);
+            position: relative;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        #draft .gauge-needle {
+            width: 4px; height: 35px;
+            background: var(--paint-red);
+            position: absolute;
+            bottom: 0; left: 38px;
+            transform-origin: bottom center;
+            transform: rotate(-80deg);
+        }
+        #draft.active .gauge-needle {
+            animation: measure 4s linear forwards;
+        }
+        @keyframes measure {
+            from { transform: rotate(-80deg); }
+            to { transform: rotate(80deg); }
+        }
+        
+        /* 5. Edit */
+        #edit .red-pen {
+            width: 80px; height: 10px;
+            background: var(--paint-red);
+            position: absolute;
+            top: 60px; left: 10%;
+            transform-origin: left;
+        }
+        #edit.active .red-pen {
+            animation: strike 1.5s ease-in-out infinite;
+        }
+        @keyframes strike {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(15deg); }
+        }
+        
+        /* 6. Orchestration */
+        #orchestration .crane-arm {
+            width: 10px; height: 80px;
+            background: var(--tin-shadow);
+            position: absolute;
+            top: 0; left: 50%;
+        }
+        #orchestration .crane-item {
+            width: 30px; height: 30px;
+            background: var(--paint-blue);
+            position: absolute;
+            top: 80px; left: 38%;
+        }
+        #orchestration.active .crane-arm, #orchestration.active .crane-item {
+             animation: drop-item 4s linear forwards;
+        }
+        @keyframes drop-item {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(40px); }
+            100% { transform: translateY(40px); }
+        }
+
+        /* 7. Post-Production */
+        #post-production .stamper {
+            width: 60px; height: 60px;
+            background: var(--rust-color);
+            color: white;
+            font-size: 0.8rem;
+            text-align: center;
+            line-height: 60px;
+            font-weight: bold;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            left: calc(50% - 30px);
+        }
+        #post-production.active .stamper {
+            animation: stamp 2s ease-in-out 1s;
+        }
+        @keyframes stamp {
+            0% { transform: translateY(0); }
+            25% { transform: translateY(60px); }
+            50% { transform: translateY(50px); }
+            100% { transform: translateY(50px); }
+        }
+        
+        /* --- General Animations (Gears) --- */
+        .gear {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            fill: var(--brass-color);
+            stroke: var(--brass-shadow);
+            stroke-width: 2;
+        }
+        .phase.active .gear {
+            animation: spin 2s linear infinite;
+        }
+        .gear.rev { animation-direction: reverse; }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>The Document Factory</h1>
+
+    <div id="factory-container">
+        <div id="controls">
+            <button id="startButton">Start Factory Process</button>
+        </div>
+
+        <div class="phase" id="ingest">
+            <h2>1. Ingest</h2>
+            <div class="visuals">
+                <div class="pipe"></div>
+                <div class="hopper"></div>
+                <div class="scrap scrap1"></div>
+                <div class="scrap scrap2"></div>
+            </div>
+            <div class="status">Idle</div>
+        </div>
+
+        <div class="phase" id="research">
+            <h2>2. Research</h2>
+            <div class="visuals">
+                <div class="magnifying-glass"></div>
+                <svg class="gear" style="top: 70%; left: 10%;">
+                    <path d="M45,25a2.5,2.5 0 0,0-5,0 l-3.54,0 a20,20 0 1,0 0,1 l7.07,0 a2.5,2.5 0 0,0 5,0 l3.54,0 a20,20 0 1,0 0,-1 Z"></path>
+                </svg>
+            </div>
+            <div class="status">Idle</div>
+        </div>
+
+        <div class="phase" id="outline">
+            <h2>3. Outline</h2>
+            <div class="visuals">
+                <div class="punch-press"></div>
+                <div class="paper-scroll"></div>
+            </div>
+            <div class="status">Idle</div>
+        </div>
+
+        <div class="phase" id="draft">
+            <h2>4. Draft</h2>
+            <div class="visuals">
+                <div class="gauge" aria-label="Word-O-Meter">
+                    <div class="gauge-needle"></div>
+                </div>
+                <p style="text-align: center; font-size: 0.7rem; margin-top: -15px;">WORD-O-METER</p>
+                 <svg class="gear rev" style="top: 60%; left: 60%;">
+                    <path d="M45,25a2.5,2.5 0 0,0-5,0 l-3.54,0 a20,20 0 1,0 0,1 l7.07,0 a2.5,2.5 0 0,0 5,0 l3.54,0 a20,20 0 1,0 0,-1 Z"></path>
+                </svg>
+            </div>
+            <div class="status">Idle</div>
+        </div>
+
+        <div class="phase" id="edit">
+            <h2>5. Edit</h2>
+            <div class="visuals">
+                <div class="red-pen"></div>
+            </div>
+            <div class="status">Idle</div>
+        </div>
+
+        <div class="phase" id="orchestration">
+            <h2>6. Orchestration</h2>
+            <div class="visuals">
+                <div class="crane-arm"></div>
+                <div class="crane-item"></div>
+            </div>
+            <div class="status">Idle</div>
+        </div>
+
+        <div class="phase" id="post-production">
+            <h2>7. Post-Production</h2>
+            <div class="visuals">
+                 <div class="conveyor-belt">
+                    <div class="document"></div>
+                </div>
+                <div class="stamper">SEAL</div>
+            </div>
+            <div class="status">Idle</div>
+        </div>
+
+    </div>
+
+    <script>
+        const startButton = document.getElementById('startButton');
+        const phases = document.querySelectorAll('.phase');
+        const phaseDuration = 4000; // 4 seconds per phase
+
+        const runPhase = (index) => {
+            if (index >= phases.length) {
+                startButton.disabled = false;
+                startButton.innerText = "Restart Process";
+                console.log("Factory process complete!");
+                return;
+            }
+
+            const currentPhase = phases[index];
+            const statusEl = currentPhase.querySelector('.status');
+
+            // Deactivate previous phase if it exists
+            if (index > 0) {
+                const prevPhase = phases[index - 1];
+                prevPhase.classList.remove('active');
+                prevPhase.classList.add('complete');
+                prevPhase.querySelector('.status').innerText = 'Complete';
+            }
+
+            // Activate current phase
+            currentPhase.classList.add('active');
+            statusEl.innerText = 'In Progress...';
+            console.log(`Starting Phase ${index + 1}: ${currentPhase.id}`);
+
+            // Schedule next phase
+            setTimeout(() => runPhase(index + 1), phaseDuration);
+        };
+
+        const startFactory = () => {
+            startButton.disabled = true;
+            startButton.innerText = "Running...";
+
+            // Reset all phases to initial state
+            phases.forEach(phase => {
+                phase.classList.remove('active', 'complete');
+                phase.querySelector('.status').innerText = 'Idle';
+                // Reset animations by cloning and replacing node
+                const visual = phase.querySelector('.visuals');
+                const newVisual = visual.cloneNode(true);
+                visual.parentNode.replaceChild(newVisual, visual);
+            });
+            
+            runPhase(0);
+        };
+
+        startButton.addEventListener('click', startFactory);
+    </script>
+
+</body>
+</html>

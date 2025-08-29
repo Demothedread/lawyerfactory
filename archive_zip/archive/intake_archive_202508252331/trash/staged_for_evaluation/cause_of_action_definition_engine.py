@@ -17,7 +17,7 @@ from enhanced_knowledge_graph import EnhancedKnowledgeGraph
 from legal_authority_validator import LegalAuthorityValidator
 from legal_research_integration import LegalResearchAPIIntegration
 
-from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import JurisdictionManager
+from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
 logger = logging.getLogger(__name__)
 
@@ -1006,8 +1006,7 @@ if __name__ == "__main__":
     
     from enhanced_knowledge_graph import EnhancedKnowledgeGraph
 
-    from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import \
-        JurisdictionManager
+    from lawyerfactory.kg.jurisdiction import JurisdictionManager
     
     try:
         kg = EnhancedKnowledgeGraph("test_definition_engine.db")

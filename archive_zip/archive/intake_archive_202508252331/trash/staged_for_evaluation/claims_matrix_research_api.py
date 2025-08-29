@@ -23,7 +23,7 @@ from legal_research_cache_manager import LegalResearchCacheManager
 from legal_research_integration import (LegalResearchAPIIntegration,
                                         LegalResearchRequest, ResearchPriority)
 
-from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import JurisdictionManager
+from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
 logger = logging.getLogger(__name__)
 

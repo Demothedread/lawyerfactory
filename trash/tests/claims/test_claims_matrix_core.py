@@ -18,8 +18,7 @@ from enhanced_knowledge_graph import (CauseOfAction, EnhancedKnowledgeGraph,
                                       FactElementAttachment, LegalElement,
                                       LegalEntity, LegalEntityType)
 
-from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
-    JurisdictionAuthority, JurisdictionManager)
+from lawyerfactory.kg.jurisdiction import JurisdictionAuthority, JurisdictionManager
 
 # Configure logging for tests
 logging.basicConfig(level=logging.INFO)

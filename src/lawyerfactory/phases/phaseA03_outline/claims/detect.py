@@ -23,9 +23,7 @@ from enhanced_knowledge_graph import (
     LegalEntityType,
 )
 
-from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
-    JurisdictionManager,
-)
+from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
 logger = logging.getLogger(__name__)
 
@@ -555,11 +553,9 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+    from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
 
-    from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
-        JurisdictionManager,
-    )
+    from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
     kg = EnhancedKnowledgeGraph("test_cause_detector.db")
     jurisdiction_manager = JurisdictionManager(kg)
