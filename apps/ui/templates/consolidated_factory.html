@@ -1,4 +1,5 @@
-"""
+<!--
+###
 Consolidated LawyerFactory Interface
 
 A unified interface that combines the best elements from all UI components:
@@ -12,7 +13,8 @@ A unified interface that combines the best elements from all UI components:
 
 Design inspired by cold war Eastern Europe with mechanical punk elements,
 featuring oxidized copper, emerald, gold, and industrial textures.
-"""
+###
+-->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -26,6 +28,9 @@ featuring oxidized copper, emerald, gold, and industrial textures.
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/llm_config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Fonts -->
@@ -540,6 +545,11 @@ featuring oxidized copper, emerald, gold, and industrial textures.
             letter-spacing: 1px;
         }
 
+        /* Small helper classes referenced in HTML (avoid visual mismatches) */
+        .border-oxidized-copper { border-color: var(--oxidized-copper) !important; }
+        .bg-emerald-green { background: var(--emerald-green) !important; }
+        .bg-gold-accent { background: var(--gold-accent) !important; }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .factory-layout {
@@ -714,6 +724,59 @@ featuring oxidized copper, emerald, gold, and industrial textures.
                             <div class="metric-label">Avg Time</div>
                         </div>
                     </div>
+                    <!-- LLM Configuration Section -->
+                    <div class="mt-4 space-y-3">
+                        <div class="industrial-texture p-3 rounded">
+                            <div class="text-xs metallic-text mb-2 font-medium">🧠 LLM CONFIGURATION</div>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="text-xs metallic-text block mb-1">Provider:</label>
+                                    <select id="cf-llm-provider" class="w-full bg-charcoal-dark border border-oxidized-copper rounded px-2 py-1 text-xs metallic-text">
+                                        <option value="openai">OpenAI</option>
+                                        <option value="anthropic">Anthropic</option>
+                                        <option value="google">Google</option>
+                                        <option value="azure">Azure OpenAI</option>
+                                        <option value="local">Local Model</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs metallic-text block mb-1">Model:</label>
+                                    <select id="cf-llm-model" class="w-full bg-charcoal-dark border border-oxidized-copper rounded px-2 py-1 text-xs metallic-text">
+                                        <option value="gpt-4o">GPT-4o</option>
+                                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-xs metallic-text block mb-1">Temperature:</label>
+                                    <input type="range" id="cf-llm-temperature" min="0" max="2" step="0.1" value="0.7"
+                                           class="w-full">
+                                    <div class="flex justify-between text-xs metallic-text mt-1">
+                                        <span>0.0</span>
+                                        <span id="cf-temperature-value" class="accent-text">0.7</span>
+                                        <span>2.0</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-xs metallic-text block mb-1">Max Tokens:</label>
+                                    <input type="number" id="cf-llm-max-tokens" value="4000" min="100" max="32000"
+                                           class="w-full bg-charcoal-dark border border-oxidized-copper rounded px-2 py-1 text-xs metallic-text">
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button id="cf-apply-llm-config" class="flex-1 bg-emerald-green text-black px-2 py-1 rounded text-xs font-medium hover:bg-opacity-80">
+                                        Apply
+                                    </button>
+                                    <button id="cf-reset-llm-config" class="flex-1 bg-rust-brown text-white px-2 py-1 rounded text-xs font-medium hover:bg-opacity-80">
+                                        Reset
+                                    </button>
+                                </div>
+                                <div class="flex items-center space-x-2 text-xs">
+                                    <span class="status-indicator" id="cf-llm-connection-status"></span>
+                                    <span id="cf-llm-status-text" class="metallic-text">Ready</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Phase Method Visualization -->
@@ -740,20 +803,22 @@ featuring oxidized copper, emerald, gold, and industrial textures.
                         </div>
                         <div class="text-center text-xs metallic-text">Review</div>
                     </div>
+                </div>
+
                 <!-- Vector Store Controls -->
                 <div class="sidebar-panel">
                     <div class="panel-header">
                         <h3 style="color: var(--gold-accent); margin: 0;">
-                            <i class="fas fa-database"></i> VECTOR STORE CONTROLS
+                            🗄️ VECTOR STORE CONTROLS
                         </h3>
                     </div>
 
-                    <div style="padding: 1rem; space-y: 1rem;">
+                    <div style="padding: 1rem;">
                         <!-- Validation Type Selector -->
                         <div class="validation-type-selector console-panel" style="margin-bottom: 1rem;">
                             <div class="panel-header">
                                 <h4 style="color: var(--emerald-green); margin: 0; font-size: 0.9rem;">
-                                    <i class="fas fa-filter"></i> VALIDATION TYPE
+                                    🔎 VALIDATION TYPE
                                 </h4>
                             </div>
 
@@ -768,7 +833,7 @@ featuring oxidized copper, emerald, gold, and industrial textures.
                                 </select>
                                 <button id="applyValidationFilter" class="gizmo-dial"
                                         style="width: 100%; background: var(--emerald-green); color: black; border: none; font-size: 0.8rem;">
-                                    <i class="fas fa-check"></i> Apply Filter
+                                    ✅ Apply Filter
                                 </button>
                             </div>
                         </div>
@@ -777,7 +842,7 @@ featuring oxidized copper, emerald, gold, and industrial textures.
                         <div class="vector-store-status console-panel">
                             <div class="panel-header">
                                 <h4 style="color: var(--gold-accent); margin: 0; font-size: 0.9rem;">
-                                    <i class="fas fa-chart-bar"></i> VECTOR STATUS
+                                    📊 VECTOR STATUS
                                 </h4>
                             </div>
 
@@ -803,7 +868,6 @@ featuring oxidized copper, emerald, gold, and industrial textures.
                             </div>
                         </div>
                     </div>
-                </div>
                 </div>
 
                 <!-- Control Panel -->
@@ -938,7 +1002,7 @@ featuring oxidized copper, emerald, gold, and industrial textures.
 
         socket.on('document_processed', function(data) {
             updateDocumentPreview(data);
-            updateProgress(data.progress);
+            updateProgress(data);
             updateActivityFeed(`📄 Processed: ${data.filename}`, 'success');
         });
 
@@ -1126,6 +1190,223 @@ featuring oxidized copper, emerald, gold, and industrial textures.
                             addActivityLog(`Applied ${validationType} filter. Found ${data.document_count} documents.`, 'success');
                             updateVectorStoreStatus();
                         } else {
+        // LLM Configuration Methods for Consolidated Factory
+        function initializeLLMConfig() {
+            // LLM Configuration
+            window.llmConfig = {
+                provider: 'openai',
+                model: 'gpt-4o',
+                temperature: 0.7,
+                maxTokens: 4000
+            };
+            window.llmProviders = {
+                openai: {
+                    name: 'OpenAI',
+                    models: ['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+                    baseUrl: 'https://api.openai.com/v1'
+                },
+                anthropic: {
+                    name: 'Anthropic',
+                    models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
+                    baseUrl: 'https://api.anthropic.com'
+                },
+                google: {
+                    name: 'Google',
+                    models: ['gemini-pro', 'gemini-pro-vision'],
+                    baseUrl: 'https://generativelanguage.googleapis.com'
+                },
+                azure: {
+                    name: 'Azure OpenAI',
+                    models: ['gpt-4', 'gpt-35-turbo'],
+                    baseUrl: null // Requires custom endpoint
+                },
+                local: {
+                    name: 'Local Model',
+                    models: ['llama-2-7b', 'llama-2-13b', 'codellama'],
+                    baseUrl: 'http://localhost:11434'
+                }
+            };
+        }
+
+        function setupLLMEventListeners() {
+            // LLM Provider change handler
+            const providerSelect = document.getElementById('cf-llm-provider');
+            if (providerSelect) {
+                providerSelect.addEventListener('change', (e) => {
+                    handleProviderChange(e.target.value);
+                });
+            }
+
+            // LLM Model change handler
+            const modelSelect = document.getElementById('cf-llm-model');
+            if (modelSelect) {
+                modelSelect.addEventListener('change', (e) => {
+                    window.llmConfig.model = e.target.value;
+                    addActivityLog(`Model changed to ${e.target.value}`, 'info');
+                });
+            }
+
+            // Temperature slider handler
+            const tempSlider = document.getElementById('cf-llm-temperature');
+            const tempValue = document.getElementById('cf-temperature-value');
+            if (tempSlider && tempValue) {
+                tempSlider.addEventListener('input', (e) => {
+                    const value = parseFloat(e.target.value);
+                    window.llmConfig.temperature = value;
+                    tempValue.textContent = value.toFixed(1);
+                });
+            }
+
+            // Max tokens input handler
+            const maxTokensInput = document.getElementById('cf-llm-max-tokens');
+            if (maxTokensInput) {
+                maxTokensInput.addEventListener('change', (e) => {
+                    const value = parseInt(e.target.value);
+                    if (value >= 100 && value <= 32000) {
+                        window.llmConfig.maxTokens = value;
+                        addActivityLog(`Max tokens set to ${value}`, 'info');
+                    } else {
+                        e.target.value = window.llmConfig.maxTokens;
+                        addActivityLog('Max tokens must be between 100 and 32,000', 'warning');
+                    }
+                });
+            }
+
+            // Apply config button handler
+            const applyBtn = document.getElementById('cf-apply-llm-config');
+            if (applyBtn) {
+                applyBtn.addEventListener('click', () => {
+                    applyLLMConfig();
+                });
+            }
+
+            // Reset config button handler
+            const resetBtn = document.getElementById('cf-reset-llm-config');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    resetLLMConfig();
+                });
+            }
+        }
+
+        function handleProviderChange(provider) {
+            window.llmConfig.provider = provider;
+            const modelSelect = document.getElementById('cf-llm-model');
+
+            if (modelSelect && window.llmProviders[provider]) {
+                // Update available models for the selected provider
+                const models = window.llmProviders[provider].models;
+                modelSelect.innerHTML = models.map(model =>
+                    `<option value="${model}">${model}</option>`
+                ).join('');
+
+                // Set default model for the provider
+                window.llmConfig.model = models[0];
+                addActivityLog(`Switched to ${window.llmProviders[provider].name} provider`, 'success');
+            }
+        }
+
+        async function applyLLMConfig() {
+            try {
+                // Validate configuration
+                if (!window.llmConfig.provider || !window.llmConfig.model) {
+                    throw new Error('Provider and model are required');
+                }
+
+                // Update LLM status
+                updateLLMStatus('Applying configuration...', 'busy');
+
+                // Simulate API call to apply configuration
+                await delay(1000);
+
+                // Save configuration to localStorage
+                localStorage.setItem('lawyerfactory-llm-config', JSON.stringify(window.llmConfig));
+
+                // Update UI
+                updateLLMStatus('Configuration applied successfully', 'success');
+                addActivityLog('LLM configuration applied successfully', 'success');
+
+            } catch (error) {
+                console.error('Failed to apply LLM configuration:', error);
+                updateLLMStatus('Configuration failed', 'error');
+                addActivityLog(`Failed to apply configuration: ${error.message}`, 'error');
+            }
+        }
+
+        function resetLLMConfig() {
+            // Reset to default configuration
+            window.llmConfig = {
+                provider: 'openai',
+                model: 'gpt-4o',
+                temperature: 0.7,
+                maxTokens: 4000
+            };
+
+            // Update UI elements
+            const providerSelect = document.getElementById('cf-llm-provider');
+            const modelSelect = document.getElementById('cf-llm-model');
+            const tempSlider = document.getElementById('cf-llm-temperature');
+            const tempValue = document.getElementById('cf-temperature-value');
+            const maxTokensInput = document.getElementById('cf-llm-max-tokens');
+
+            if (providerSelect) providerSelect.value = window.llmConfig.provider;
+            if (modelSelect) handleProviderChange(window.llmConfig.provider);
+            if (tempSlider) tempSlider.value = window.llmConfig.temperature;
+            if (tempValue) tempValue.textContent = window.llmConfig.temperature.toFixed(1);
+            if (maxTokensInput) maxTokensInput.value = window.llmConfig.maxTokens;
+
+            updateLLMStatus('Configuration reset to defaults', 'ready');
+            addActivityLog('LLM configuration reset to defaults', 'info');
+        }
+
+        function updateLLMStatus(message, status) {
+            const statusElement = document.getElementById('cf-llm-status-text');
+            const indicatorElement = document.getElementById('cf-llm-connection-status');
+
+            if (statusElement) statusElement.textContent = message;
+
+            if (indicatorElement) {
+                indicatorElement.className = 'status-indicator';
+                switch (status) {
+                    case 'success':
+                        indicatorElement.classList.add('status-online');
+                        break;
+                    case 'busy':
+                        indicatorElement.classList.add('status-busy');
+                        break;
+                    case 'error':
+                        indicatorElement.classList.add('status-error');
+                        break;
+                    default:
+                        // Default ready state
+                        break;
+                }
+            }
+        }
+
+        function loadSavedLLMConfig() {
+            try {
+                const saved = localStorage.getItem('lawyerfactory-llm-config');
+                if (saved) {
+                    const savedConfig = JSON.parse(saved);
+                    window.llmConfig = { ...window.llmConfig, ...savedConfig };
+                    addActivityLog('Loaded saved LLM configuration', 'info');
+                }
+            } catch (error) {
+                console.error('Failed to load saved LLM configuration:', error);
+            }
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Initialize LLM configuration when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLLMConfig();
+            loadSavedLLMConfig();
+            setupLLMEventListeners();
+        });
                             addActivityLog('Failed to apply validation filter.', 'error');
                         }
                     } catch (error) {

@@ -16,8 +16,8 @@ import logging
 from typing import Any, Dict, List, Optional
 import uuid
 
-from cause_of_action_detector import CauseDetectionResult, CauseOfActionDetector
-from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+from lawyerfactory.phases.phaseA01_intake.cause_of_action_detector import CauseDetectionResult, CauseOfActionDetector
+from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
 from legal_authority_validator import LegalAuthorityValidator
 from legal_research_cache_manager import LegalResearchCacheManager
 from legal_research_integration import (
@@ -26,9 +26,7 @@ from legal_research_integration import (
     ResearchPriority,
 )
 
-from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
-    JurisdictionManager,
-)
+from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
 logger = logging.getLogger(__name__)
 

@@ -40,6 +40,21 @@
         "puppeteer_navigate"
       ],
       "timeout": 300
+    },
+    "@magicuidesign/mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@magicuidesign/mcp@latest"
+      ],
+      "alwaysAllow": [
+        "getAnimations",
+        "getTextAnimations",
+        "getSpecialEffects",
+        "getComponents",
+        "getUIComponents",
+        "getButtons"
+      ]
     }
   }
 }

@@ -14,13 +14,11 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
 from legal_authority_validator import LegalAuthorityValidator
 from legal_research_integration import LegalResearchAPIIntegration
 
-from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
-    JurisdictionManager,
-)
+from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
 logger = logging.getLogger(__name__)
 
@@ -1031,11 +1029,9 @@ if __name__ == "__main__":
     import sys
     logging.basicConfig(level=logging.INFO)
     
-    from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+    from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
 
-    from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
-        JurisdictionManager,
-    )
+    from lawyerfactory.kg.jurisdiction import JurisdictionManager
     
     try:
         kg = EnhancedKnowledgeGraph("test_definition_engine.db")

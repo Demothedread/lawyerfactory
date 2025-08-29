@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from enhanced_draft_processor import EnhancedDraftProcessor
-from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
 from legal_relationship_detector import LegalRelationshipDetector
 
 logger = logging.getLogger(__name__)

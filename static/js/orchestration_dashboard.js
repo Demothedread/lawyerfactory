@@ -20,6 +20,13 @@ class OrchestrationDashboard {
         this.documentPreviews = {};
         this.agentStatus = {};
 
+        this.initializeLLMConfig();
+        this.loadSavedLLMConfig();
+
+        this.initializeDashboard();
+        this.setupEventListeners();
+        this.setupLLMEventListeners();
+        this.startPeriodicUpdates();
         this.initializeDashboard();
         this.setupEventListeners();
         this.startPeriodicUpdates();
@@ -416,6 +423,233 @@ Would you like me to elaborate on any specific aspect?`;
             const newProgress = Math.min(1.0, currentProgress + Math.random() * 0.1);
             this.updateProgress(randomComponent, newProgress);
         }
+    }
+    // LLM Configuration Methods
+    initializeLLMConfig() {
+        // LLM Configuration
+        this.llmConfig = {
+            provider: 'openai',
+            model: 'gpt-4o',
+            temperature: 0.7,
+            maxTokens: 4000
+        };
+        this.llmProviders = {
+            openai: {
+                name: 'OpenAI',
+                models: ['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'],
+                baseUrl: 'https://api.openai.com/v1'
+            },
+            anthropic: {
+                name: 'Anthropic',
+                models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
+                baseUrl: 'https://api.anthropic.com'
+            },
+            google: {
+                name: 'Google',
+                models: ['gemini-pro', 'gemini-pro-vision'],
+                baseUrl: 'https://generativelanguage.googleapis.com'
+            },
+            azure: {
+                name: 'Azure OpenAI',
+                models: ['gpt-4', 'gpt-35-turbo'],
+                baseUrl: null // Requires custom endpoint
+            },
+            local: {
+                name: 'Local Model',
+                models: ['llama-2-7b', 'llama-2-13b', 'codellama'],
+                baseUrl: 'http://localhost:11434'
+            }
+        };
+    }
+
+    setupLLMEventListeners() {
+        // LLM Provider change handler
+        const providerSelect = document.getElementById('llm-provider');
+        if (providerSelect) {
+            providerSelect.addEventListener('change', (e) => {
+                this.handleProviderChange(e.target.value);
+            });
+        }
+
+        // LLM Model change handler
+        const modelSelect = document.getElementById('llm-model');
+        if (modelSelect) {
+            modelSelect.addEventListener('change', (e) => {
+                this.llmConfig.model = e.target.value;
+                this.addNotification(`Model changed to ${e.target.value}`, 'info');
+            });
+        }
+
+        // Temperature slider handler
+        const tempSlider = document.getElementById('llm-temperature');
+        const tempValue = document.getElementById('temperature-value');
+        if (tempSlider && tempValue) {
+            tempSlider.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                this.llmConfig.temperature = value;
+                tempValue.textContent = value.toFixed(1);
+            });
+        }
+
+        // Max tokens input handler
+        const maxTokensInput = document.getElementById('llm-max-tokens');
+        if (maxTokensInput) {
+            maxTokensInput.addEventListener('change', (e) => {
+                const value = parseInt(e.target.value);
+                if (value >= 100 && value <= 32000) {
+                    this.llmConfig.maxTokens = value;
+                    this.addNotification(`Max tokens set to ${value}`, 'info');
+                } else {
+                    e.target.value = this.llmConfig.maxTokens;
+                    this.addNotification('Max tokens must be between 100 and 32,000', 'warning');
+                }
+            });
+        }
+
+        // Apply config button handler
+        const applyBtn = document.getElementById('apply-llm-config');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', () => {
+                this.applyLLMConfig();
+            });
+        }
+
+        // Reset config button handler
+        const resetBtn = document.getElementById('reset-llm-config');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => {
+                this.resetLLMConfig();
+            });
+        }
+    }
+
+    handleProviderChange(provider) {
+        this.llmConfig.provider = provider;
+        const modelSelect = document.getElementById('llm-model');
+
+        if (modelSelect && this.llmProviders[provider]) {
+            // Update available models for the selected provider
+            const models = this.llmProviders[provider].models;
+            modelSelect.innerHTML = models.map(model =>
+                `<option value="${model}">${model}</option>`
+            ).join('');
+
+            // Set default model for the provider
+            this.llmConfig.model = models[0];
+            this.addNotification(`Switched to ${this.llmProviders[provider].name} provider`, 'success');
+        }
+    }
+
+    async applyLLMConfig() {
+        try {
+            // Validate configuration
+            if (!this.llmConfig.provider || !this.llmConfig.model) {
+                throw new Error('Provider and model are required');
+            }
+
+            // Update LLM status
+            this.updateLLMStatus('Applying configuration...', 'busy');
+
+            // Simulate API call to apply configuration
+            await this.delay(1000);
+
+            // Save configuration to localStorage
+            localStorage.setItem('lawyerfactory-llm-config', JSON.stringify(this.llmConfig));
+
+            // Update UI
+            this.updateLLMStatus('Configuration applied successfully', 'success');
+            this.addNotification('LLM configuration applied successfully', 'success');
+
+            // Update chat interface with new config if available
+            if (this.chatInterface && this.chatInterface.updateConfig) {
+                await this.chatInterface.updateConfig(this.llmConfig);
+            }
+
+        } catch (error) {
+            console.error('Failed to apply LLM configuration:', error);
+            this.updateLLMStatus('Configuration failed', 'error');
+            this.addNotification(`Failed to apply configuration: ${error.message}`, 'error');
+        }
+    }
+
+    resetLLMConfig() {
+        // Reset to default configuration
+        this.llmConfig = {
+            provider: 'openai',
+            model: 'gpt-4o',
+            temperature: 0.7,
+            maxTokens: 4000
+        };
+
+        // Update UI elements
+        const providerSelect = document.getElementById('llm-provider');
+        const modelSelect = document.getElementById('llm-model');
+        const tempSlider = document.getElementById('llm-temperature');
+        const tempValue = document.getElementById('temperature-value');
+        const maxTokensInput = document.getElementById('llm-max-tokens');
+
+        if (providerSelect) providerSelect.value = this.llmConfig.provider;
+        if (modelSelect) this.handleProviderChange(this.llmConfig.provider);
+        if (tempSlider) tempSlider.value = this.llmConfig.temperature;
+        if (tempValue) tempValue.textContent = this.llmConfig.temperature.toFixed(1);
+        if (maxTokensInput) maxTokensInput.value = this.llmConfig.maxTokens;
+
+        this.updateLLMStatus('Configuration reset to defaults', 'ready');
+        this.addNotification('LLM configuration reset to defaults', 'info');
+    }
+
+    updateLLMStatus(message, status) {
+        const statusElement = document.getElementById('llm-status-text');
+        const indicatorElement = document.getElementById('llm-connection-status');
+
+        if (statusElement) statusElement.textContent = message;
+
+        if (indicatorElement) {
+            indicatorElement.className = 'status-indicator';
+            switch (status) {
+                case 'success':
+                    indicatorElement.classList.add('status-online');
+                    indicatorElement.textContent = '🟢';
+                    break;
+                case 'busy':
+                    indicatorElement.classList.add('status-busy');
+                    indicatorElement.textContent = '🟡';
+                    break;
+                case 'error':
+                    indicatorElement.classList.add('status-error');
+                    indicatorElement.textContent = '🔴';
+                    break;
+                default:
+                    indicatorElement.textContent = '⚪';
+            }
+        }
+    }
+
+    loadSavedLLMConfig() {
+        try {
+            const saved = localStorage.getItem('lawyerfactory-llm-config');
+            if (saved) {
+                const savedConfig = JSON.parse(saved);
+                this.llmConfig = { ...this.llmConfig, ...savedConfig };
+                this.addNotification('Loaded saved LLM configuration', 'info');
+            }
+        } catch (error) {
+            console.error('Failed to load saved LLM configuration:', error);
+        }
+    }
+
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    getLLMConfigSummary() {
+        const provider = this.llmProviders[this.llmConfig.provider];
+        return {
+            provider: provider ? provider.name : 'Unknown',
+            model: this.llmConfig.model,
+            temperature: this.llmConfig.temperature,
+            maxTokens: this.llmConfig.maxTokens
+        };
     }
 }
 

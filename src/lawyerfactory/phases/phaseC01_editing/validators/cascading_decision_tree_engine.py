@@ -17,11 +17,9 @@ from typing import Any, Dict, List, Optional, Tuple
 import uuid
 
 from cause_of_action_definition_engine import CauseOfActionDefinitionEngine
-from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
 
-from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
-    JurisdictionManager,
-)
+from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
 logger = logging.getLogger(__name__)
 
@@ -1125,11 +1123,9 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     from cause_of_action_definition_engine import CauseOfActionDefinitionEngine
-    from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+    from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
 
-    from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
-        JurisdictionManager,
-    )
+    from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
     try:
         kg = EnhancedKnowledgeGraph("test_decision_tree.db")

@@ -15,12 +15,12 @@ single, compact module that provides:
 This reduces file clutter while preserving capabilities.
 """
 
+import asyncio  # new: used for async ingestion helpers
+from datetime import date
 import json
 import logging
-from datetime import date
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-import asyncio  # new: used for async ingestion helpers
 
 logger = logging.getLogger(__name__)
 
@@ -62,20 +62,25 @@ except Exception:
 
 # Try to import enhanced categorizer
 try:
-    from .enhanced_document_categorizer import (
-        EnhancedDocumentCategorizer,  # type: ignore
-    )
+    from .enhanced_document_categorizer import EnhancedDocumentCategorizer  # type: ignore
 
     ENHANCED_AVAILABLE = True
 except Exception:
     EnhancedDocumentCategorizer = None
     ENHANCED_AVAILABLE = False
+# Try to import enhanced evidence assessor
+try:
+    from .enhanced_evidence_assessor import EnhancedEvidenceAssessor  # type: ignore
+
+    EVIDENCE_ASSESSOR_AVAILABLE = True
+except Exception:
+    EnhancedEvidenceAssessor = None
+    EVIDENCE_ASSESSOR_AVAILABLE = False
+
 
 # Try to import court authority helper (optional)
 try:
-    from ...agents.research.court_authority_helper import (
-        CourtAuthorityHelper,  # type: ignore
-    )
+    from ...agents.research.court_authority_helper import CourtAuthorityHelper  # type: ignore
 
     AUTHORITY_HELPER_AVAILABLE = True
 except Exception:
@@ -93,11 +98,7 @@ except Exception:
 
 # Import LLM integration functions (ensure names used below exist or are None)
 try:
-    from .llm_integration import (  # type: ignore
-        llm_classify_evidence,
-        llm_extract_document_metadata,
-        llm_summarize_text
-    )
+    from .llm_integration import llm_classify_evidence, llm_extract_metadata, llm_summarize_text
 
     LLM_INTEGRATION_AVAILABLE = True
 except Exception:
@@ -105,9 +106,6 @@ except Exception:
     llm_classify_evidence = None
     llm_extract_metadata = None
     llm_summarize_text = None
-    _fallback_classify_evidence = None
-    _fallback_extract_metadata = None
-    _basic_summarize = None
     LLM_INTEGRATION_AVAILABLE = False
     logger.warning("LLM integration functions not available")
 
@@ -458,11 +456,11 @@ async def intake_document(path: str, use_llm: bool = False) -> Dict[str, Any]:
                 "summary": summary,
                 "categorization": categorization,
                 "metadata": metadata,
-                "hashtags": hashtags_from_category(
-                    categorization.get("document_type", "general")
-                )
-                if isinstance(categorization, dict)
-                else hashtags_from_category(categorization or "general"),
+                "hashtags": (
+                    hashtags_from_category(categorization.get("document_type", "general"))
+                    if isinstance(categorization, dict)
+                    else hashtags_from_category(categorization or "general")
+                ),
                 "processing_method": method,
                 "success": True,
             }
@@ -485,7 +483,9 @@ async def async_ingest_files(paths: List[str], use_llm: bool = False) -> List[Di
         try:
             return await loop.run_in_executor(None, llm_enhanced_ingest_files, paths)
         except Exception as exc:
-            logger.warning("llm_enhanced_ingest_files failed, falling back to per-file ingest: %s", exc)
+            logger.warning(
+                "llm_enhanced_ingest_files failed, falling back to per-file ingest: %s", exc
+            )
 
     # Otherwise run intake_document concurrently per file
     tasks = [intake_document(p, use_llm=use_llm) for p in paths]
@@ -599,6 +599,18 @@ def process_evidence_table_with_authority(
     }
 
 
+# --- Evidence assessment ---
+def assess_evidence_content(content: str, filename: Optional[str] = None) -> Dict[str, Any]:
+    """Try to run the enhanced evidence assessor; fallback to minimal processing."""
+    try:
+        if EVIDENCE_ASSESSOR_AVAILABLE and EnhancedEvidenceAssessor is not None:
+            assessor = EnhancedEvidenceAssessor()
+            return assessor.assess(content=content, filename=filename or "")
+    except Exception as e:
+        logger.warning("Enhanced evidence assessment failed: %s", e)
+    return {"evidence_assessment": None}
+
+
 # --- Backwards-compatible exported API ---
 __all__ = [
     "summarize",
@@ -611,68 +623,5 @@ __all__ = [
     "intake_document",
     "async_ingest_files",
     "intake_document_sync",
+    "assess_evidence_content",
 ]
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except Exception as e:
-        logger.exception("Failed to read evidence table %s: %s", evidence_table_path, e)
-        return {"success": False, "error": "read_error"}
-
-    entries = data.get("evidence_entries") or data.get("entries") or []
-    processed = []
-    authority_helper = None
-    if AUTHORITY_HELPER_AVAILABLE and CourtAuthorityHelper is not None:
-        try:
-            authority_helper = CourtAuthorityHelper()
-        except Exception as e:
-            logger.warning("CourtAuthorityHelper init failed: %s", e)
-            authority_helper = None
-
-    binding_count = 0
-    persuasive_count = 0
-    no_authority = 0
-
-    for e in entries:
-        text = e.get("content") or e.get("text") or ""
-        bluebook = e.get("bluebook_citation")
-        cat = enhanced_categorize_document(text, filename=e.get("source_document"))
-        authority = None
-        stars = None
-        if authority_helper and bluebook:
-            try:
-                # best-effort call; helper API may differ across versions — use getattr to appease static checkers
-                if hasattr(authority_helper, "assess_citation"):
-                    authority = getattr(authority_helper, "assess_citation")(bluebook)
-                elif hasattr(authority_helper, "assess"):
-                    authority = getattr(authority_helper, "assess")(bluebook)
-            except Exception as ex:
-                logger.debug("Authority helper call failed for %s: %s", bluebook, ex)
-        if authority:
-            # normalize minimal expected fields
-            stars = authority.get("stars") if isinstance(authority, dict) else None
-            if stars is None:
-                stars = authority.get("rating") if isinstance(authority, dict) else None
-            if stars and stars >= 4:
-                binding_count += 1
-            elif stars:
-                persuasive_count += 1
-        else:
-            no_authority += 1
-
-        processed.append(
-            {
-                "evidence_id": e.get("evidence_id") or e.get("id"),
-                "category": cat,
-                "authority": authority,
-                "stars": stars,
-                "summary": summarize(text, max_sentences=2),
-            }
-        )
-
-    return {
-        "success": True,
-        "entries_processed": len(processed),
-        "binding_count": binding_count,
-        "persuasive_count": persuasive_count,
-        "no_authority_count": no_authority,
-        "processed_entries": processed,
-    }

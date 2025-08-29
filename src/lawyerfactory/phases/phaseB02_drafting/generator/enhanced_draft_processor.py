@@ -14,7 +14,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List
 
-from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
 from legal_relationship_detector import LegalRelationshipDetector
 
 # Import unified storage API

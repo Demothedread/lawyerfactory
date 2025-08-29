@@ -17,7 +17,7 @@ import json
 import logging
 from typing import Any, Dict, List, Optional
 
-from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
 from maestro.evidence_api import EvidenceAPI
 from skeletal_outline_integration import SkeletalOutlineIntegration
 
@@ -440,7 +440,7 @@ class MaestroSkeletalOutlineBot:
 async def test_maestro_skeletal_outline_bot():
     """Test the Maestro skeletal outline bot"""
     try:
-        from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+        from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
         from maestro.evidence_api import EvidenceAPI
 
         from src.claims_matrix.comprehensive_claims_matrix_integration import (

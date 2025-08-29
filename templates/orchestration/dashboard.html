@@ -39,6 +39,47 @@
                 </div>
 
                 <div class="control-section">
+                    <h3>🧠 LLM CONFIGURATION</h3>
+                    <div class="llm-config-container">
+                        <div class="config-group">
+                            <label for="llm-provider" class="config-label">Provider:</label>
+                            <select id="llm-provider" class="steampunk-select">
+                                <option value="openai">OpenAI</option>
+                                <option value="anthropic">Anthropic</option>
+                                <option value="google">Google</option>
+                                <option value="azure">Azure OpenAI</option>
+                                <option value="local">Local Model</option>
+                            </select>
+                        </div>
+                        <div class="config-group">
+                            <label for="llm-model" class="config-label">Model:</label>
+                            <select id="llm-model" class="steampunk-select">
+                                <option value="gpt-4o">GPT-4o</option>
+                                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                            </select>
+                        </div>
+                        <div class="config-group">
+                            <label for="llm-temperature" class="config-label">Temperature:</label>
+                            <input type="range" id="llm-temperature" min="0" max="2" step="0.1" value="0.7" class="steampunk-slider">
+                            <span id="temperature-value" class="config-value">0.7</span>
+                        </div>
+                        <div class="config-group">
+                            <label for="llm-max-tokens" class="config-label">Max Tokens:</label>
+                            <input type="number" id="llm-max-tokens" value="4000" min="100" max="32000" class="steampunk-input">
+                        </div>
+                        <div class="config-actions">
+                            <button id="apply-llm-config" class="steampunk-button primary">APPLY CONFIG</button>
+                            <button id="reset-llm-config" class="steampunk-button warning">RESET</button>
+                        </div>
+                        <div class="llm-status" id="llm-status">
+                            <span class="status-indicator" id="llm-connection-status">⚪</span>
+                            <span id="llm-status-text">Ready</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
                     <h3>📊 PROGRESS METERS</h3>
                     <div class="progress-container">
                         <div class="progress-item">
@@ -245,6 +286,9 @@
                                 </div>
                                 <div class="document-content" id="generated-document-text">
                                     <div class="loading-placeholder">
+    <script src="/static/js/steampunk_animations.js"></script>
+    <script src="/static/js/llm_config.js"></script>
+    <script src="/static/js/orchestration_dashboard.js"></script>
                                         <div class="gear-spinner"></div>
                                         <p>Assembling Final Document...</p>
                                     </div>

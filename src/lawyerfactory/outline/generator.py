@@ -17,7 +17,7 @@ import json
 import logging
 from typing import Any, Dict, List, Optional
 
-from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
 from maestro.evidence_api import EvidenceAPI
 
 from src.claims_matrix.comprehensive_claims_matrix_integration import (
@@ -782,7 +782,7 @@ def test_skeletal_outline_generator():
     """Test function for skeletal outline generator"""
     try:
         # Mock data for testing
-        from enhanced_knowledge_graph import EnhancedKnowledgeGraph
+        from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
         from maestro.evidence_api import EvidenceAPI
         
         from src.claims_matrix.comprehensive_claims_matrix_integration import (
