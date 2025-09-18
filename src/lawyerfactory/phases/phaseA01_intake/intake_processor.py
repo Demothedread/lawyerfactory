@@ -21,6 +21,7 @@ from .enhanced_document_categorizer import (
 )
 from .legal_intake_form import IntakeFormData, LegalIntakeForm
 from .vector_cluster_manager import VectorClusterManager
+from .background_research_integration import BackgroundResearchIntegration
 
 # Evidence pipeline is optional; guard the import
 try:
@@ -48,6 +49,9 @@ class EnhancedIntakeProcessor:
         self.evidence_pipeline = (
             EvidenceIngestionPipeline() if EvidenceIngestionPipeline else None
         )
+
+        # Initialize background research integration
+        self.background_research = BackgroundResearchIntegration()
 
         # Track active cases and their defendant clusters
         self.active_cases: Dict[str, Dict[str, Any]] = {}
@@ -144,8 +148,27 @@ class EnhancedIntakeProcessor:
             # Save case information
             await self._save_case_info(case_info)
 
+            # Perform background research using intake data
+            research_session_id = f"{case_id}_research"
+            research_result = await self.background_research.perform_background_research(
+                form_data.to_dict(), research_session_id
+            )
+
+            # Update case info with research results
+            case_info["background_research"] = research_result
+            if research_result["research_performed"]:
+                case_info["research_evidence_ids"] = research_result["evidence_ids"]
+                case_info["research_summary"] = research_result["research_summary"]
+
+            # Save updated case information
+            await self._save_case_info(case_info)
+
             logger.info(
                 f"Created case {case_id} with cluster {cluster_id} for defendant {defendant_name}"
+            )
+            logger.info(
+                f"Background research completed: {research_result['citations_found']} citations, "
+                f"{research_result['evidence_entries_created']} evidence entries"
             )
 
             return {
@@ -154,7 +177,8 @@ class EnhancedIntakeProcessor:
                 "cluster_id": cluster_id,
                 "defendant_name": defendant_name,
                 "validation_threshold": case_info["validation_threshold"],
-                "message": f"Case setup complete. Ready to process {defendant_name} documents.",
+                "background_research": research_result,
+                "message": f"Case setup complete with background research. Ready to process {defendant_name} documents.",
             }
 
         except Exception as e:

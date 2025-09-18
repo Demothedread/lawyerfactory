@@ -11,4 +11,9 @@ _w.warn(
     DeprecationWarning,
     stacklevel=2,
 )
-from lawyerfactory.outline.integration_legacy import *  # noqa: F401,F403
+from lawyerfactory.outline.integration_legacy import (
+    SkeletalOutlineAPI,
+    SkeletalOutlineIntegration,
+    SkeletalOutlineWorkflow,
+    create_skeletal_outline_system,
+)

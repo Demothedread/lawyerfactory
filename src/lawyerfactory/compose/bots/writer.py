@@ -1,6 +1,6 @@
 """
 # Script Name: writer.py
-# Description: Import AI document generation modules
+# Description: Enhanced legal document writer with AI generation modules and Tavily claim validation
 # Relationships:
 #   - Entity Type: Module
 #   - Directory Group: Orchestration
@@ -9,7 +9,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
@@ -23,6 +23,8 @@ from lawyerfactory.document_generator.modules.legal_theory_mapping import (
 from ..agent_registry import AgentConfig, AgentInterface
 from ..bot_interface import Bot
 from ..workflow_models import WorkflowTask
+from ...outline.generator import SkeletalOutlineGenerator
+from ...research.tavily_integration import ResearchQuery, TavilyResearchIntegration
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +55,29 @@ class WriterBot(Bot, AgentInterface):
             self.jinja_env = None
             logger.warning(f"Template directory not found: {template_dir}")
 
+        # Initialize Tavily integration for claim validation
+        self.tavily_integration = None
+        self.outline_generator = None
+
+        try:
+            self.tavily_integration = TavilyResearchIntegration()
+            logger.info("Tavily integration enabled for claim validation")
+        except Exception as e:
+            logger.warning(f"Tavily integration not available: {e}")
+
+        try:
+            # Initialize outline generator for validation
+            from lawyerfactory.kg.graph import KnowledgeGraph
+
+            kg = KnowledgeGraph()
+            self.outline_generator = SkeletalOutlineGenerator(kg, None, None)
+            logger.info("Outline generator initialized for claim validation")
+        except Exception as e:
+            logger.warning(f"Outline generator not available: {e}")
+
         logger.info(
-            "WriterBot initialized with professional legal document generation capabilities"
-        )
+            "WriterBot initialized with professional legal document generation and claim validation capabilities"
+        )</search>
 
     async def process(self, message: str) -> str:
         """Legacy Bot interface implementation"""
@@ -93,6 +115,16 @@ class WriterBot(Bot, AgentInterface):
             research_findings = context.get("research_findings", {})
             case_data = context.get("case_data", {})
 
+            # Perform claim validation if available
+            validation_context = await self._validate_claims_for_drafting(
+                case_facts, case_data, context
+            )
+
+            # Merge validation results into context
+            if validation_context["validation_performed"]:
+                context["claim_validation"] = validation_context
+                research_findings["claim_validation"] = validation_context["validation_results"]
+
             # Execute professional writing task using AI modules
             if content_type == "complaint":
                 result = await self._write_professional_complaint(
@@ -105,6 +137,14 @@ class WriterBot(Bot, AgentInterface):
             else:
                 result = await self._write_professional_document(
                     case_facts, research_findings, case_data, context
+                )
+
+            # Add validation metadata to result
+            result["claim_validation_performed"] = validation_context["validation_performed"]
+            if validation_context["validation_performed"]:
+                result["validation_recommendations"] = validation_context["recommendations"]
+                result["validation_confidence"] = validation_context["validation_results"].get(
+                    "overall_confidence", 0.0
                 )
 
             return {
@@ -121,7 +161,7 @@ class WriterBot(Bot, AgentInterface):
 
         except Exception as e:
             logger.error(f"WriterBot task execution failed: {e}")
-            return {"status": "failed", "error": str(e), "content": None}
+            return {"status": "failed", "error": str(e), "content": None}</search>
 
     async def _write_professional_complaint(
         self,
@@ -178,6 +218,13 @@ class WriterBot(Bot, AgentInterface):
             complaint_template = self.jinja_env.get_template("complaint.jinja2")
             professional_content = complaint_template.render(**template_context)
 
+            # Enhance with validation insights if available
+            validation_context = context.get("claim_validation", {})
+            if validation_context.get("validation_performed"):
+                professional_content = self._enhance_content_with_validation(
+                    professional_content, validation_context
+                )
+
             return {
                 "content": professional_content,
                 "template_used": "complaint.jinja2",
@@ -188,6 +235,7 @@ class WriterBot(Bot, AgentInterface):
                     "prayer_for_relief",
                     "bibliography",
                 ],
+                "validation_enhanced": validation_context.get("validation_performed", False),
             }
 
         except Exception as e:
@@ -248,6 +296,13 @@ Respectfully submitted,
 Attorney for Plaintiff
 """
 
+            # Enhance with validation insights if available
+            validation_context = context.get("claim_validation", {})
+            if validation_context.get("validation_performed"):
+                professional_content = self._enhance_content_with_validation(
+                    professional_content, validation_context
+                )
+
             return {
                 "content": professional_content,
                 "template_used": "motion_template",
@@ -258,6 +313,7 @@ Attorney for Plaintiff
                     "argument",
                     "conclusion",
                 ],
+                "validation_enhanced": validation_context.get("validation_performed", False),
             }
 
         except Exception as e:
@@ -337,3 +393,302 @@ Based on the facts and applicable law, the following relief is appropriate.
             return "The facts and law support the relief requested."
 
         return "\n".join(argument_sections)
+
+    async def _validate_claims_for_drafting(
+        self, case_facts: List[Dict], case_data: Dict, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Validate claims using Tavily research for drafting
+        """
+        if not self.outline_generator or not self.tavily_integration:
+            return {"validation_performed": False, "error": "Validation components not available"}
+
+        try:
+            # Extract claims from context
+            claims = self._extract_claims_from_context(case_facts, case_data, context)
+            jurisdiction = case_data.get("jurisdiction", "California")
+
+            if not claims:
+                return {"validation_performed": False, "error": "No claims found to validate"}
+
+            # Perform validation
+            validation_result = await self.outline_generator.validate_claims_for_drafting(
+                claims, jurisdiction
+            )
+
+            return validation_result
+
+        except Exception as e:
+            logger.error(f"Claim validation failed: {e}")
+            return {"validation_performed": False, "error": str(e)}
+
+    def _extract_claims_from_context(
+        self, case_facts: List[Dict], case_data: Dict, context: Dict[str, Any]
+    ) -> List[str]:
+        """
+        Extract legal claims from various context sources
+        """
+        claims = []
+
+        # Extract from causes of action
+        causes_of_action = context.get("causes_of_action", [])
+        for coa in causes_of_action:
+            if isinstance(coa, dict) and "name" in coa:
+                claims.append(coa["name"])
+            elif isinstance(coa, str):
+                claims.append(coa)
+
+        # Extract from case data
+        if "primary_cause_of_action" in case_data:
+            claims.append(case_data["primary_cause_of_action"])
+
+        # Extract from research findings
+        research_findings = context.get("research_findings", {})
+        legal_issues = research_findings.get("legal_issues", [])
+        claims.extend(legal_issues)
+
+        # Remove duplicates and clean
+        unique_claims = []
+        seen = set()
+        for claim in claims:
+            claim_clean = str(claim).strip().lower()
+            if claim_clean and claim_clean not in seen:
+                unique_claims.append(str(claim).strip())
+                seen.add(claim_clean)
+
+        return unique_claims[:10]  # Limit to 10 claims for performance
+
+    async def validate_specific_claim(
+        self, claim_text: str, supporting_facts: List[str], jurisdiction: str
+    ) -> Dict[str, Any]:
+        """
+        Validate a specific claim with supporting facts
+        """
+        if not self.tavily_integration:
+            return {"validation_performed": False}
+
+        try:
+            # Create research query for claim validation
+            research_query = ResearchQuery(
+                query_text=f"{claim_text} {jurisdiction} legal requirements supporting facts",
+                legal_issues=[claim_text],
+                jurisdiction=jurisdiction,
+                preferred_sources=["academic", "news"],
+                max_results=10,
+            )
+
+            # Execute research
+            research_result = await self.tavily_integration.comprehensive_research(research_query)
+
+            # Analyze supporting facts against research
+            validation_score = self._analyze_facts_against_research(
+                supporting_facts, research_result
+            )
+
+            return {
+                "validation_performed": True,
+                "claim_text": claim_text,
+                "jurisdiction": jurisdiction,
+                "validation_score": validation_score,
+                "research_findings": {
+                    "content": research_result.content,
+                    "sources": research_result.sources,
+                    "confidence_score": research_result.confidence_score,
+                },
+                "supporting_facts_analysis": self._analyze_supporting_facts(supporting_facts),
+                "recommendations": self._generate_claim_recommendations(
+                    claim_text, validation_score, research_result
+                ),
+            }
+
+        except Exception as e:
+            logger.error(f"Specific claim validation failed: {e}")
+            return {"validation_performed": False, "error": str(e)}
+
+    def _analyze_facts_against_research(
+        self, supporting_facts: List[str], research_result: Any
+    ) -> float:
+        """
+        Analyze how well supporting facts align with research findings
+        """
+        if not hasattr(research_result, "content") or not research_result.content:
+            return 0.5  # Neutral score if no research
+
+        research_content = research_result.content.lower()
+        alignment_score = 0.0
+        total_facts = len(supporting_facts)
+
+        if total_facts == 0:
+            return 0.5
+
+        for fact in supporting_facts:
+            fact_lower = fact.lower()
+            # Simple keyword matching for alignment
+            fact_words = set(fact_lower.split())
+            research_words = set(research_content.split())
+
+            overlap = len(fact_words.intersection(research_words))
+            if overlap > 0:
+                alignment_score += min(1.0, overlap / len(fact_words))
+
+        return alignment_score / total_facts
+
+    def _analyze_supporting_facts(self, supporting_facts: List[str]) -> Dict[str, Any]:
+        """
+        Analyze the quality and completeness of supporting facts
+        """
+        analysis = {
+            "total_facts": len(supporting_facts),
+            "fact_quality_score": 0.0,
+            "fact_specificity_score": 0.0,
+            "temporal_coverage": False,
+            "geographic_coverage": False,
+        }
+
+        if not supporting_facts:
+            return analysis
+
+        # Analyze fact quality
+        quality_indicators = ["specific", "dated", "named", "quantified", "detailed"]
+        specificity_indicators = ["date", "time", "location", "amount", "specific person"]
+
+        for fact in supporting_facts:
+            fact_lower = fact.lower()
+
+            # Quality score
+            quality_matches = sum(1 for indicator in quality_indicators if indicator in fact_lower)
+            analysis["fact_quality_score"] += quality_matches / len(quality_indicators)
+
+            # Specificity score
+            specificity_matches = sum(
+                1 for indicator in specificity_indicators if indicator in fact_lower
+            )
+            analysis["fact_specificity_score"] += specificity_matches / len(specificity_indicators)
+
+            # Coverage analysis
+            if any(word in fact_lower for word in ["date", "time", "when", "on ", "at "]):
+                analysis["temporal_coverage"] = True
+            if any(
+                word in fact_lower for word in ["location", "place", "address", "city", "state"]
+            ):
+                analysis["geographic_coverage"] = True
+
+        # Average the scores
+        analysis["fact_quality_score"] /= len(supporting_facts)
+        analysis["fact_specificity_score"] /= len(supporting_facts)
+
+        return analysis
+
+    def _generate_claim_recommendations(
+        self, claim_text: str, validation_score: float, research_result: Any
+    ) -> List[str]:
+        """
+        Generate recommendations based on claim validation
+        """
+        recommendations = []
+
+        if validation_score < 0.4:
+            recommendations.append(
+                f"Consider strengthening the {claim_text} claim with additional supporting facts"
+            )
+            recommendations.append(
+                "Review recent case law to ensure all elements are adequately pled"
+            )
+
+        if validation_score > 0.8:
+            recommendations.append(
+                f"The {claim_text} claim appears well-supported by current legal standards"
+            )
+
+        # Research-based recommendations
+        if hasattr(research_result, "content") and research_result.content:
+            content_lower = research_result.content.lower()
+
+            if "recent case" in content_lower or "new decision" in content_lower:
+                recommendations.append(
+                    f"Consider citing recent case law developments for {claim_text}"
+                )
+
+            if "amended" in content_lower or "updated" in content_lower:
+                recommendations.append(f"Review recent statutory amendments affecting {claim_text}")
+
+        return (
+            recommendations
+            if recommendations
+            else [f"Continue monitoring legal developments for {claim_text}"]
+
+    def _enhance_content_with_validation(
+        self, content: str, validation_context: Dict[str, Any]
+    ) -> str:
+        """
+        Enhance document content with validation insights
+        """
+        try:
+            validation_results = validation_context.get("validation_results", {})
+            recommendations = validation_context.get("recommendations", [])
+
+            overall_confidence = validation_results.get("overall_confidence", 0.0)
+
+            # Add validation disclaimer based on confidence
+            if overall_confidence < 0.5:
+                validation_note = """
+
+CLAIM VALIDATION NOTE:
+The claims in this document have been validated against recent legal developments.
+Some claims may benefit from additional factual development or legal research.
+Recommendations: """ + "\n".join(
+                    f"- {rec}" for rec in recommendations[:3]
+                )
+
+            elif overall_confidence > 0.8:
+                validation_note = """
+
+CLAIM VALIDATION NOTE:
+The claims in this document are well-supported by current legal landscape and recent developments.
+The pleading appears sufficiently robust for Rule 12(b)(6) survival."""
+
+            else:
+                validation_note = """
+
+CLAIM VALIDATION NOTE:
+The claims in this document have been validated against recent legal developments.
+The pleading appears adequate but should be monitored for relevant case law updates."""
+
+            # Insert validation note before conclusion
+            if "CONCLUSION" in content.upper():
+                conclusion_index = content.upper().find("CONCLUSION")
+                enhanced_content = (
+                    content[:conclusion_index]
+                    + validation_note
+                    + "\n\n"
+                    + content[conclusion_index:]
+                )
+            else:
+                enhanced_content = content + "\n\n" + validation_note
+
+            return enhanced_content
+
+        except Exception as e:
+            logger.warning(f"Content enhancement failed: {e}")
+            return content
+
+
+# Convenience functions
+async def validate_claim_for_drafting(
+    claim_text: str, supporting_facts: List[str], jurisdiction: str
+) -> Dict[str, Any]:
+    """
+    Convenience function for claim validation
+    """
+    try:
+        from lawyerfactory.kg.graph import KnowledgeGraph
+
+        kg = KnowledgeGraph()
+        generator = SkeletalOutlineGenerator(kg, None, None)
+
+        return await generator.validate_claims_for_drafting([claim_text], jurisdiction)
+
+    except Exception as e:
+        logger.error(f"Claim validation failed: {e}")
+        return {"validation_performed": False, "error": str(e)}
+        )

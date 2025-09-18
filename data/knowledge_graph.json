@@ -40,8 +40,8 @@
       "type": "agent",
       "features": ["procedure compliance", "form retrieval"]
     },
-    {  
-     "id": "Assessor",
+    {
+      "id": "Assessor",
       "type": "Agent",
       "features": [
         "intake documents",
@@ -69,29 +69,73 @@
     },
     {
       "id": "Lawsuit",
-      "type": "Document".
+      "type": "Document",
       "features": [
-            "statement_of_facts",
-            "description_of_parties",
-            "cover_sheet"
-          ]
+        "statement_of_facts",
+        "description_of_parties",
+        "cover_sheet"
+      ]
     },
     {
-      "id": "workflow"
-      "type": "meta"
-      "features":[
-          "stages": [
-            "Preproduction Planning",
-            "Research and Development",
-            "Organization / Database Building",
-            "1st Pass All Parts",
-            "Combining",
-            "Editing",
-            "2nd Pass",
-            "Human Feedback",
-            "Final Draft"
-           ],
-        ]
+      "id": "workflow",
+      "type": "meta",
+      "features": [
+        "stages: Preproduction Planning, Research and Development, Organization/Database Building, 1st Pass All Parts, Combining, Editing, 2nd Pass, Human Feedback, Final Draft"
+      ]
+    },
+    {
+      "id": "assess_evidence_content",
+      "type": "function",
+      "features": ["evidence assessment", "LLM integration", "fallback processing"],
+      "relationships": ["EnhancedEvidenceAssessor", "simple_categorize"]
+    },
+    {
+      "id": "simple_test.py",
+      "type": "test_module",
+      "features": ["import validation", "LLM integration testing", "categorization testing"],
+      "relationships": ["assessor.py", "llm_integration.py"]
+    },
+    {
+      "id": "import_cleanup",
+      "type": "process",
+      "features": ["circular import resolution", "module consolidation", "path normalization"],
+      "relationships": ["assessor.py", "llm_integration.py", "simple_test.py"]
+    },
+    {
+      "id": "WriterBot",
+      "type": "agent",
+      "features": ["legal document generation", "Tavily claim validation", "content enhancement", "template rendering"],
+      "relationships": ["TavilyResearchIntegration", "SkeletalOutlineGenerator", "KnowledgeGraph"]
+    },
+    {
+      "id": "TerminalDashboard",
+      "type": "ui_component",
+      "features": ["retro terminal interface", "3-panel layout", "ASCII art visualization", "real-time updates", "mechanical gauges"],
+      "relationships": ["LawyerFactoryServer", "MultiSWARM phases"]
+    },
+    {
+      "id": "LawyerFactoryServer",
+      "type": "backend_service",
+      "features": ["Flask+Socket.IO", "REST API", "real-time communication", "phase tracking", "agent status monitoring"],
+      "relationships": ["TerminalDashboard", "MultiSWARM agents"]
+    },
+    {
+      "id": "MultiSWARMPhases",
+      "type": "workflow_system",
+      "features": ["A01_Intake", "A02_Research", "A03_Outline", "B01_Review", "B02_Drafting", "C01_Editing", "C02_Orchestration"],
+      "relationships": ["TerminalDashboard", "LawyerFactoryServer"]
+    },
+    {
+      "id": "PhaseProgressTracker",
+      "type": "ui_component",
+      "features": ["real-time phase updates", "progress bars", "status indicators", "completion tracking"],
+      "relationships": ["TerminalDashboard", "MultiSWARMPhases"]
+    },
+    {
+      "id": "SocketIOIntegration",
+      "type": "communication_layer",
+      "features": ["real-time messaging", "event broadcasting", "client-server sync", "agent status updates"],
+      "relationships": ["LawyerFactoryServer", "TerminalDashboard"]
     }
   ],
   "relationships": [
@@ -120,6 +164,36 @@
       "to": "research_bot",
       "relation": "requests_more_research"
     },
+    {
+      "from": "assess_evidence_content",
+      "to": "EnhancedEvidenceAssessor",
+      "type": "uses"
+    },
+    {
+      "from": "simple_test.py",
+      "to": "assess_evidence_content",
+      "type": "tests"
+    },
+    {
+      "from": "import_cleanup",
+      "to": "assessor.py",
+      "type": "improves"
+    },
+    {
+      "from": "TerminalDashboard",
+      "to": "LawyerFactoryServer",
+      "type": "communicates_with"
+    },
+    {
+      "from": "LawyerFactoryServer",
+      "to": "MultiSWARMPhases",
+      "type": "orchestrates"
+    },
+    {
+      "from": "PhaseProgressTracker",
+      "to": "SocketIOIntegration",
+      "type": "uses"
+    }
   ],
   "observations": [
     "Initial graph created.",
@@ -129,55 +203,19 @@
     "Task 2 added at Preproduction Planning",
     "Task 1 assigned to ResearchAgent",
     "Task 2 assigned to DraftingAgent",
-    "Task 1 moved to Research and Development"
-  ]
-}}
-
- 
-
-
-
-    {
-      "id": "assess_evidence_content",
-      "type": "function",
-      "features": ["evidence assessment", "LLM integration", "fallback processing"],
-      "relationships": ["EnhancedEvidenceAssessor", "simple_categorize"]
-    },
-    {
-      "id": "simple_test.py",
-      "type": "test_module", 
-      "features": ["import validation", "LLM integration testing", "categorization testing"],
-      "relationships": ["assessor.py", "llm_integration.py"]
-    },
-    {
-      "id": "import_cleanup",
-      "type": "process",
-      "features": ["circular import resolution", "module consolidation", "path normalization"],
-      "relationships": ["assessor.py", "llm_integration.py", "simple_test.py"]
-    }
-  ],
-  "relationships": [
-    {
-      "from": "assess_evidence_content",
-      "to": "EnhancedEvidenceAssessor",
-      "type": "uses"
-    },
-    {
-      "from": "simple_test.py", 
-      "to": "assess_evidence_content",
-      "type": "tests"
-    },
-    {
-      "from": "import_cleanup",
-      "to": "assessor.py",
-      "type": "improves"
-    }
-  ],
-  "observations": [
+    "Task 1 moved to Research and Development",
     "Consolidated duplicate assess_evidence_content functions in assessor.py",
     "Fixed import paths in simple_test.py for correct function names",
     "Removed syntax errors and stray characters from cleaned files",
     "Maintained backward compatibility in __all__ exports",
-    "Test suite validates LLM integration with fallback mechanisms"
+    "Test suite validates LLM integration with fallback mechanisms",
+    "Consolidated enhanced_writer.py functionality into canonical writer.py",
+    "WriterBot now includes Tavily claim validation and content enhancement",
+    "Removed duplicate enhanced files per no_duplicate_enhanced rule",
+    "Implemented retro-futuristic terminal UI with 3-panel layout for MultiSWARM visualization",
+    "Added real-time Socket.IO communication between frontend and backend for phase tracking",
+    "Created mechanical UI elements including gauges, status LEDs, and ASCII art visualization",
+    "Integrated phase-based progression system with downloadable outputs and completion tracking",
+    "Enhanced backend server with REST API endpoints for terminal logs, system metrics, and output management"
   ]
 }

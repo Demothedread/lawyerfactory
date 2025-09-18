@@ -1,19 +1,7 @@
 <!--
-###
-Consolidated LawyerFactory Interface
-
-A unified interface that combines the best elements from all UI components:
-- Retro Eastern European mechanical punk aesthetic with metallic textures
-- LLM dashboard integration from modern_dashboard.html
-- Legal intake form as popup modal
-- Agent swarm visualization in center console
-- Phase method workflow visualization
-- Interactive widgets and gizmos that spin and provide status
-- Sidebar integration for new deliverables
-
-Design inspired by cold war Eastern Europe with mechanical punk elements,
-featuring oxidized copper, emerald, gold, and industrial textures.
-###
+LawyerFactory Soviet Control Panel Interface
+Industrial control board aesthetic with 3-panel layout for legal workflow automation
+Optimized for 1920x1080 displays with collapsible panels for focus mode
 -->
 
 <!DOCTYPE html>
@@ -21,1445 +9,1118 @@ featuring oxidized copper, emerald, gold, and industrial textures.
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚙️ LAWYERFACTORY ⚙️ - Consolidated Interface</title>
-
+    <title>⚙️ LawyerFactory Control Station</title>
+    
     <!-- Core Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="/static/js/llm_config.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Fonts -->
+    
+    <!-- React and Dependencies -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- ag-Grid for Evidence Management -->
+    <script src="https://unpkg.com/ag-grid-community@30.2.1/dist/ag-grid-community.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community@30.2.1/dist/ag-grid-theme-quartz.min.css" />
+    
+    <!-- Soviet Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;500;700;900&family=Russo+One&display=swap" rel="stylesheet">
 
     <style>
-        /* Retro Eastern European Mechanical Punk Aesthetic */
         :root {
-            --metallic-silver: #c0c0c0;
-            --oxidized-copper: #b87333;
-            --emerald-green: #50c878;
-            --gold-accent: #ffd700;
-            --rust-brown: #8b4513;
-            --industrial-gray: #2f2f2f;
-            --charcoal-dark: #1c1c1e;
-            --steam-punk: #8b7355;
+            /* Soviet Control Board Color Palette */
+            --soviet-brass: #B87333;
+            --soviet-bronze: #CD7F32;
+            --soviet-emerald: #00563F;
+            --soviet-crimson: #DC143C;
+            --soviet-silver: #C0C0C0;
+            --soviet-charcoal: #1A1A1A;
+            --soviet-steel: #434B4D;
+            --soviet-amber: #FFB000;
+            --soviet-warning: #FF6B35;
+            --soviet-success: #00A878;
+            --panel-rivets: #8B8680;
+            
+            /* Panel Dimensions */
+            --panel-left: 400px;
+            --panel-center: 920px;
+            --panel-right: 600px;
+            --panel-header: 80px;
+            --panel-collapsed: 48px;
         }
-
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
-            font-family: 'Courier Prime', 'JetBrains Mono', monospace;
-            background: linear-gradient(135deg, var(--charcoal-dark) 0%, var(--industrial-gray) 100%);
-            color: var(--metallic-silver);
+            font-family: 'Share Tech Mono', 'Russo One', monospace;
+            background: linear-gradient(135deg, var(--soviet-charcoal) 0%, var(--soviet-steel) 100%);
+            color: var(--soviet-silver);
             overflow: hidden;
             position: relative;
         }
-
+        
+        /* Scanline Effect */
         body::before {
             content: '';
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.03)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.02)"/><circle cx="50" cy="10" r="0.5" fill="rgba(184,115,51,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        /* Industrial Machine Components */
-        .factory-header {
-            background: linear-gradient(90deg,
-                var(--industrial-gray) 0%,
-                var(--steam-punk) 30%,
-                var(--oxidized-copper) 70%,
-                var(--industrial-gray) 100%);
-            border-bottom: 3px solid var(--rust-brown);
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .factory-header::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 20px,
-                rgba(255,255,255,0.05) 20px,
-                rgba(255,255,255,0.05) 40px
-            );
-            pointer-events: none;
-        }
-
-        .console-panel {
-            background: linear-gradient(135deg,
-                var(--industrial-gray) 0%,
-                var(--charcoal-dark) 50%,
-                var(--industrial-gray) 100%);
-            border: 2px solid var(--oxidized-copper);
-            border-radius: 8px;
-            box-shadow:
-                inset 0 2px 4px rgba(0,0,0,0.5),
-                0 4px 8px rgba(0,0,0,0.3),
-                0 0 20px rgba(184,115,51,0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .console-panel::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at 30% 30%, rgba(80,200,120,0.1), transparent 50%);
-            pointer-events: none;
-        }
-
-        /* Mechanical Widgets and Gizmos */
-        .gizmo-dial {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%,
-                var(--metallic-silver),
-                var(--industrial-gray));
-            border: 4px solid var(--oxidized-copper);
-            box-shadow:
-                inset 0 2px 4px rgba(0,0,0,0.5),
-                0 2px 8px rgba(0,0,0,0.3);
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .gizmo-dial:hover {
-            transform: scale(1.05);
-            box-shadow:
-                inset 0 2px 4px rgba(0,0,0,0.5),
-                0 4px 12px rgba(184,115,51,0.4);
-        }
-
-        .gizmo-dial::before {
-            content: '';
-            position: absolute;
-            width: 60%;
-            height: 60%;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%,
-                var(--emerald-green),
-                var(--industrial-gray));
-            border: 2px solid var(--gold-accent);
-        }
-
-        .gizmo-needle {
-            position: absolute;
-            width: 2px;
-            height: 35%;
-            background: var(--gold-accent);
-            transform-origin: bottom center;
-            top: 15%;
-            left: 50%;
-            margin-left: -1px;
-            border-radius: 1px;
-            transition: transform 0.5s ease;
-            box-shadow: 0 0 4px rgba(255,215,0,0.6);
-        }
-
-        .gizmo-pipe {
-            background: linear-gradient(90deg,
-                var(--oxidized-copper) 0%,
-                var(--rust-brown) 15%,
-                var(--oxidized-copper) 30%,
-                var(--steam-punk) 45%,
-                var(--oxidized-copper) 60%,
-                var(--rust-brown) 75%,
-                var(--oxidized-copper) 100%);
-            border: 2px solid var(--industrial-gray);
-            border-radius: 20px;
-            box-shadow:
-                inset 0 2px 4px rgba(0,0,0,0.3),
-                0 2px 8px rgba(0,0,0,0.2);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .gizmo-pipe::before {
-            content: '';
-            position: absolute;
-            top: 20%;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg,
-                transparent,
-                rgba(255,215,0,0.3),
-                transparent);
-            animation: flow 3s ease-in-out infinite;
-        }
-
-        @keyframes flow {
-            0%, 100% { transform: translateX(-100%); }
-            50% { transform: translateX(100%); }
-        }
-
-        .gizmo-valve {
-            width: 30px;
-            height: 30px;
-            background: radial-gradient(circle at 30% 30%,
-                var(--industrial-gray),
-                var(--charcoal-dark));
-            border-radius: 50%;
-            border: 2px solid var(--oxidized-copper);
-            position: relative;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        .gizmo-valve:hover {
-            background: radial-gradient(circle at 30% 30%,
-                var(--steam-punk),
-                var(--industrial-gray));
-            box-shadow: 0 0 10px rgba(184,115,51,0.4);
-        }
-
-        .gizmo-valve::after {
-            content: '⚙';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 16px;
-            color: var(--gold-accent);
-            animation: spin 4s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        /* LLM Dashboard Integration */
-        .llm-metrics-panel {
-            background: linear-gradient(135deg,
-                rgba(30, 41, 59, 0.9) 0%,
-                rgba(51, 65, 85, 0.9) 100%);
-            border: 1px solid var(--emerald-green);
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
-        }
-
-        .metric-card {
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 8px;
-            padding: 16px;
-            border: 1px solid var(--oxidized-copper);
-            transition: all 0.3s ease;
-        }
-
-        .metric-card:hover {
-            border-color: var(--emerald-green);
-            box-shadow: 0 0 20px rgba(80,200,120,0.2);
-        }
-
-        .metric-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--gold-accent);
-            margin-bottom: 4px;
-        }
-
-        .metric-label {
-            font-size: 0.75rem;
-            color: var(--metallic-silver);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        /* Agent Swarm Visualization */
-        .agent-swarm-container {
-            background: radial-gradient(circle at center,
-                rgba(80,200,120,0.1) 0%,
-                rgba(15, 23, 42, 0.8) 70%);
-            border: 2px solid var(--emerald-green);
-            border-radius: 50%;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .agent-node {
-            cursor: pointer;
-            transition: all 0.3s ease;
-            filter: drop-shadow(0 0 8px var(--emerald-green));
-        }
-
-        .agent-node:hover {
-            filter: drop-shadow(0 0 12px var(--gold-accent));
-            transform: scale(1.1);
-        }
-
-        .agent-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            color: white;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid var(--oxidized-copper);
-        }
-
-        .agent-avatar::before {
-            content: '';
-            position: absolute;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, var(--emerald-green), var(--industrial-gray));
-            border-radius: 50%;
-            z-index: -1;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.03) 2px,
+                rgba(0, 0, 0, 0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
         }
-
-        /* Phase Method Visualization */
-        .phase-visualization {
-            background: linear-gradient(135deg,
-                var(--industrial-gray) 0%,
-                var(--charcoal-dark) 100%);
-            border: 2px solid var(--gold-accent);
-            border-radius: 8px;
+        
+        /* Main Control Panel Container */
+        .control-station {
+            display: flex;
+            height: 100vh;
             position: relative;
+            background: radial-gradient(ellipse at center, rgba(184, 115, 51, 0.05) 0%, transparent 70%);
         }
-
-        .phase-node {
-            background: var(--oxidized-copper);
-            border: 2px solid var(--gold-accent);
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-
-        .phase-node.active {
-            background: var(--emerald-green);
-            box-shadow: 0 0 20px rgba(80,200,120,0.6);
-        }
-
-        .phase-node.completed {
-            background: var(--gold-accent);
-        }
-
-        /* Legal Intake Form Modal */
-        .intake-modal {
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(5px);
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            z-index: 1000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .intake-form-container {
-            background: #fff9c2;
-            border: 3px solid var(--rust-brown);
-            border-radius: 8px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
+        
+        /* Metal Panel Base Style */
+        .metal-panel {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 50%, #2a2a2a 100%);
+            border: 3px solid var(--soviet-brass);
             position: relative;
+            box-shadow:
+                inset 0 2px 5px rgba(0,0,0,0.5),
+                inset 0 -2px 5px rgba(0,0,0,0.5),
+                0 4px 8px rgba(0,0,0,0.8);
         }
-
-        .legal-pad-header {
-            background: #ffe082;
-            border-bottom: 2px solid var(--rust-brown);
-            padding: 16px 20px;
-            position: relative;
+        
+        /* Rivet Decoration */
+        .rivets::before,
+        .rivets::after {
+            content: '⬢ ⬢ ⬢ ⬢';
+            position: absolute;
+            color: var(--panel-rivets);
+            font-size: 10px;
+            letter-spacing: 20px;
+            left: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .rivets::before {
+            top: 8px;
+        }
+        
+        .rivets::after {
+            bottom: 8px;
+        }
+        
+        /* Panel Headers */
+        .panel-header {
+            height: var(--panel-header);
+            background: linear-gradient(180deg, var(--soviet-brass) 0%, var(--soviet-bronze) 100%);
+            border-bottom: 3px solid var(--soviet-charcoal);
             display: flex;
             align-items: center;
-            justify-content: space-between;
-        }
-
-        .pad-spiral {
-            width: 20px;
-            height: 20px;
-            background: var(--industrial-gray);
-            border-radius: 50%;
+            padding: 0 20px;
             position: relative;
-        }
-
-        .pad-spiral::before {
-            content: '';
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            background: var(--oxidized-copper);
-            border-radius: 50%;
-            top: 4px;
-            left: 4px;
-        }
-
-        .pad-title {
-            font-family: 'Courier Prime', monospace;
-            font-size: 1.5rem;
+            font-family: 'Orbitron', monospace;
             font-weight: 700;
-            color: var(--rust-brown);
+            color: var(--soviet-charcoal);
             text-transform: uppercase;
             letter-spacing: 2px;
         }
-
-        .legal-pad-content {
-            padding: 20px;
-            background-image:
-                linear-gradient(transparent 29px, rgba(0,0,0,0.1) 30px),
-                linear-gradient(90deg, transparent 29px, rgba(0,0,0,0.1) 30px);
-            background-size: 100% 30px, 30px 100%;
-            line-height: 30px;
+        
+        /* Warning Stripes */
+        .warning-stripe {
+            height: 8px;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--soviet-amber),
+                var(--soviet-amber) 10px,
+                var(--soviet-charcoal) 10px,
+                var(--soviet-charcoal) 20px
+            );
         }
-
-        .form-section {
-            margin-bottom: 24px;
+        
+        /* Analog Gauge Component */
+        .analog-gauge {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            background: radial-gradient(circle at center, #1a1a1a 0%, #0f0f0f 100%);
+            border: 3px solid var(--soviet-brass);
+            border-radius: 50%;
+            box-shadow:
+                inset 0 0 20px rgba(0,0,0,0.8),
+                0 2px 10px rgba(0,0,0,0.5);
         }
-
-        .form-section h3 {
-            font-family: 'Courier Prime', monospace;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--rust-brown);
-            margin-bottom: 12px;
-            text-transform: uppercase;
+        
+        .gauge-needle {
+            position: absolute;
+            width: 2px;
+            height: 45px;
+            background: var(--soviet-crimson);
+            left: 50%;
+            top: 15%;
+            transform-origin: center bottom;
+            transform: translateX(-50%) rotate(0deg);
+            transition: transform 0.3s ease-out;
+            box-shadow: 0 0 4px var(--soviet-crimson);
         }
-
-        .form-row {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 16px;
+        
+        .gauge-center {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--soviet-brass);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
         }
-
-        .form-row label {
-            font-family: 'Courier Prime', monospace;
-            font-weight: 600;
-            color: var(--industrial-gray);
-            margin-bottom: 4px;
-            font-size: 0.9rem;
-        }
-
-        .pad-input, .pad-textarea, .pad-select {
-            border: 1px solid var(--rust-brown);
-            border-radius: 4px;
+        
+        /* Toggle Switch Component */
+        .toggle-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
             padding: 8px;
-            font-family: 'Courier Prime', monospace;
-            background: rgba(255,255,255,0.9);
-            color: var(--industrial-gray);
+            background: var(--soviet-charcoal);
+            border: 2px solid var(--soviet-brass);
+            border-radius: 4px;
         }
-
-        .pad-input:focus, .pad-textarea:focus, .pad-select:focus {
-            outline: none;
-            border-color: var(--emerald-green);
-            box-shadow: 0 0 8px rgba(80,200,120,0.3);
+        
+        .toggle-track {
+            width: 60px;
+            height: 30px;
+            background: linear-gradient(180deg, #0f0f0f 0%, #2a2a2a 100%);
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
         }
-
-        /* Status Indicators */
-        .status-indicator {
+        
+        .toggle-handle {
+            width: 26px;
+            height: 26px;
+            background: linear-gradient(135deg, var(--soviet-brass) 0%, var(--soviet-bronze) 100%);
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .toggle-switch.active .toggle-handle {
+            transform: translateX(30px);
+        }
+        
+        .led-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--soviet-crimson);
+            box-shadow: 0 0 8px var(--soviet-crimson);
+            opacity: 0.3;
+            transition: opacity 0.2s ease;
+        }
+        
+        .toggle-switch.active .led-indicator {
+            background: var(--soviet-success);
+            box-shadow: 0 0 12px var(--soviet-success);
+            opacity: 1;
+        }
+        
+        /* Nixie Tube Display */
+        .nixie-display {
+            display: inline-block;
+            padding: 10px 15px;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+            border: 2px solid var(--soviet-brass);
+            border-radius: 6px;
+            font-family: 'Orbitron', monospace;
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--soviet-amber);
+            text-shadow: 0 0 10px var(--soviet-amber);
+            box-shadow:
+                inset 0 0 20px rgba(255, 176, 0, 0.2),
+                0 2px 10px rgba(0,0,0,0.8);
+        }
+        
+        /* Mechanical Button */
+        .mech-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--soviet-brass) 0%, var(--soviet-bronze) 50%, var(--soviet-brass) 100%);
+            border: 3px solid var(--soviet-charcoal);
+            border-radius: 6px;
+            font-family: 'Russo One', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--soviet-charcoal);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.1s ease;
+            box-shadow:
+                0 4px 0 var(--soviet-charcoal),
+                0 6px 8px rgba(0,0,0,0.5);
+        }
+        
+        .mech-button:active {
+            transform: translateY(4px);
+            box-shadow:
+                0 0 0 var(--soviet-charcoal),
+                0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .mech-button.danger {
+            background: linear-gradient(135deg, var(--soviet-crimson) 0%, #B91C1C 50%, var(--soviet-crimson) 100%);
+            color: white;
+        }
+        
+        .mech-button.success {
+            background: linear-gradient(135deg, var(--soviet-emerald) 0%, #00A878 50%, var(--soviet-emerald) 100%);
+            color: white;
+        }
+        
+        /* Status Light Array */
+        .status-lights {
+            display: flex;
+            gap: 8px;
+            padding: 10px;
+            background: var(--soviet-charcoal);
+            border: 2px solid var(--soviet-steel);
+            border-radius: 4px;
+        }
+        
+        .status-light {
             width: 16px;
             height: 16px;
             border-radius: 50%;
-            border: 2px solid var(--oxidized-copper);
+            background: var(--soviet-steel);
             position: relative;
-            display: inline-block;
-            margin-right: 8px;
+            transition: all 0.3s ease;
         }
-
-        .status-online {
-            background: var(--emerald-green);
-            box-shadow: 0 0 8px rgba(80,200,120,0.8);
-            animation: pulse 2s ease-in-out infinite;
+        
+        .status-light.green {
+            background: var(--soviet-success);
+            box-shadow: 0 0 10px var(--soviet-success);
         }
-
-        .status-busy {
-            background: var(--gold-accent);
-            box-shadow: 0 0 8px rgba(255,215,0,0.8);
-            animation: spin 3s linear infinite;
+        
+        .status-light.amber {
+            background: var(--soviet-amber);
+            box-shadow: 0 0 10px var(--soviet-amber);
+            animation: pulse 1s infinite;
         }
-
-        .status-error {
-            background: var(--rust-brown);
-            box-shadow: 0 0 8px rgba(139,69,19,0.8);
-            animation: blink 1s ease-in-out infinite;
+        
+        .status-light.red {
+            background: var(--soviet-crimson);
+            box-shadow: 0 0 10px var(--soviet-crimson);
+            animation: blink 0.5s infinite;
         }
-
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
         @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.3; }
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.3; }
         }
-
-        /* Sidebar Integration */
-        .sidebar-panel {
-            background: linear-gradient(180deg,
-                var(--industrial-gray) 0%,
-                var(--charcoal-dark) 100%);
-            border: 2px solid var(--oxidized-copper);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px;
-            position: relative;
-            overflow: hidden;
+        
+        /* Panel Layouts */
+        .panel-left {
+            width: var(--panel-left);
+            transition: width 0.3s ease;
+            border-right: 3px solid var(--soviet-brass);
         }
-
-        .sidebar-panel::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 10px,
-                rgba(184,115,51,0.05) 10px,
-                rgba(184,115,51,0.05) 20px
-            );
-            pointer-events: none;
+        
+        .panel-center {
+            flex: 1;
+            min-width: var(--panel-center);
         }
-
-        .sidebar-title {
-            font-family: 'Courier Prime', monospace;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--gold-accent);
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        
+        .panel-right {
+            width: var(--panel-right);
+            transition: width 0.3s ease;
+            border-left: 3px solid var(--soviet-brass);
         }
-
-        /* Small helper classes referenced in HTML (avoid visual mismatches) */
-        .border-oxidized-copper { border-color: var(--oxidized-copper) !important; }
-        .bg-emerald-green { background: var(--emerald-green) !important; }
-        .bg-gold-accent { background: var(--gold-accent) !important; }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .factory-layout {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto 1fr auto auto;
+        
+        .panel-collapsed {
+            width: var(--panel-collapsed) !important;
+        }
+        
+        .panel-content {
+            padding: 20px;
+            height: calc(100vh - var(--panel-header));
+            overflow-y: auto;
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--soviet-charcoal);
+            border: 1px solid var(--soviet-steel);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--soviet-brass);
+            border-radius: 2px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--soviet-bronze);
+        }
+        
+        /* Soviet Grid Theme Override */
+        .ag-theme-soviet {
+            --ag-background-color: var(--soviet-charcoal);
+            --ag-header-background-color: var(--soviet-steel);
+            --ag-header-foreground-color: var(--soviet-silver);
+            --ag-border-color: var(--soviet-brass);
+            --ag-row-hover-color: rgba(184, 115, 51, 0.1);
+            --ag-selected-row-background-color: rgba(0, 86, 63, 0.2);
+        }
+        
+        /* Chat Interface */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .chat-message {
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
             }
-
-            .gizmo-dial {
-                width: 60px;
-                height: 60px;
+            to {
+                opacity: 1;
+                transform: translateX(0);
             }
         }
-
-        /* Utility Classes */
-        .industrial-texture {
-            background: linear-gradient(135deg,
-                var(--industrial-gray) 0%,
-                var(--steam-punk) 25%,
-                var(--industrial-gray) 50%,
-                var(--steam-punk) 75%,
-                var(--industrial-gray) 100%);
-            border: 1px solid var(--oxidized-copper);
-            box-shadow: inset 0 1px 2px rgba(255,255,255,0.1),
-                        inset 0 -1px 2px rgba(0,0,0,0.3);
+        
+        .agent-avatar {
+            width: 48px;
+            height: 48px;
+            background: var(--soviet-brass);
+            border: 2px solid var(--soviet-charcoal);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
         }
-
-        .metallic-text {
-            color: var(--metallic-silver);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        
+        .message-content {
+            flex: 1;
+            padding: 12px;
+            background: rgba(43, 75, 77, 0.3);
+            border: 1px solid var(--soviet-steel);
+            border-radius: 6px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            line-height: 1.6;
         }
-
-        .accent-text {
-            color: var(--gold-accent);
-            text-shadow: 0 0 8px rgba(255,215,0,0.3);
+        
+        .chat-input {
+            padding: 20px;
+            border-top: 2px solid var(--soviet-brass);
+            background: var(--soviet-charcoal);
         }
-
-        .emerald-text {
-            color: var(--emerald-green);
-            text-shadow: 0 0 8px rgba(80,200,120,0.3);
+        
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            background: var(--soviet-steel);
+            border: 2px solid var(--soviet-brass);
+            border-radius: 4px;
+            color: var(--soviet-silver);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--soviet-amber);
+            box-shadow: 0 0 10px rgba(255, 176, 0, 0.3);
         }
     </style>
-</head>
-<body class="h-screen overflow-hidden">
-    <!-- Legal Intake Form Modal -->
-    <div id="intakeModal" class="intake-modal">
-        <div class="intake-form-container">
-            <div class="legal-pad-header">
-                <div class="pad-spiral"></div>
-                <h2 class="pad-title">⚖️ LEGAL INTAKE FORM</h2>
-                <button class="text-2xl metallic-text hover:accent-text" onclick="closeIntakeForm()">×</button>
-            </div>
+  </head>
 
-            <div class="legal-pad-content">
-                <form id="intakeForm" class="space-y-6">
-                    <!-- Client Information -->
-                    <div class="form-section">
-                        <h3>📋 Client Information</h3>
-                        <div class="form-row">
-                            <label for="user_name">Your Name:</label>
-                            <input type="text" id="user_name" name="user_name" class="pad-input" required>
-                        </div>
-                        <div class="form-row">
-                            <label for="user_address">Your Address:</label>
-                            <textarea id="user_address" name="user_address" class="pad-textarea" rows="2"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Other Party Information -->
-                    <div class="form-section">
-                        <h3>⚖️ Other Party Information</h3>
-                        <div class="form-row">
-                            <label for="other_party_name">Other Party Name:</label>
-                            <input type="text" id="other_party_name" name="other_party_name" class="pad-input" required>
-                        </div>
-                        <div class="form-row">
-                            <label for="party_role">Are you the:</label>
-                            <select id="party_role" name="party_role" class="pad-select" required>
-                                <option value="">Select...</option>
-                                <option value="plaintiff">Plaintiff (Suing)</option>
-                                <option value="defendant">Defendant (Being Sued)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Case Details -->
-                    <div class="form-section">
-                        <h3>📜 Case Details</h3>
-                        <div class="form-row">
-                            <label for="claim_description">Claim Description:</label>
-                            <textarea id="claim_description" name="claim_description" class="pad-textarea" rows="3" required></textarea>
-                        </div>
-                        <div class="form-row">
-                            <label for="jurisdiction">Jurisdiction:</label>
-                            <select id="jurisdiction" name="jurisdiction" class="pad-select">
-                                <option value="">Select...</option>
-                                <option value="federal">Federal</option>
-                                <option value="state">State</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Form Actions -->
-                    <div class="flex justify-between items-center pt-4 border-t border-gray-300">
-                        <button type="button" onclick="closeIntakeForm()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                            Cancel
-                        </button>
-                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                            Start Processing
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Factory Interface -->
-    <div class="h-full flex flex-col">
-        <!-- Factory Header -->
-        <header class="factory-header p-4 flex justify-between items-center z-20">
-            <div class="flex items-center space-x-4">
-                <div class="text-3xl font-bold metallic-text tracking-wider">
-                    ⚙️ LAWYERFACTORY ⚙️
-                </div>
-                <div class="text-sm metallic-text opacity-75">
-                    Consolidated Interface v2.0
-                </div>
-            </div>
-
-            <div class="flex items-center space-x-6">
-                <!-- Status Indicators -->
-                <div class="flex items-center space-x-2">
-                    <span class="status-indicator status-online"></span>
-                    <span class="text-sm metallic-text">LLM Online</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <span class="status-indicator status-busy"></span>
-                    <span class="text-sm metallic-text">Processing</span>
-                </div>
-
-                <!-- Control Buttons -->
-                <button onclick="openIntakeForm()" class="industrial-texture px-4 py-2 metallic-text hover:accent-text transition-all">
-                    📝 Intake Form
-                </button>
-                <button onclick="startFactory()" class="industrial-texture px-4 py-2 metallic-text hover:accent-text transition-all">
-                    ▶️ Start Factory
-                </button>
-            </div>
-        </header>
-
-        <!-- Main Factory Layout -->
-        <main class="flex-grow grid grid-cols-12 gap-4 p-4 overflow-hidden factory-layout">
-            <!-- Left Sidebar -->
-            <div class="col-span-3 space-y-4">
-                <!-- LLM Dashboard Panel -->
-                <div class="sidebar-panel">
-                    <h3 class="sidebar-title">🤖 LLM Dashboard</h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="metric-card">
-                            <div class="metric-value" id="documentsProcessed">0</div>
-                            <div class="metric-label">Documents</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value" id="accuracyScore">95%</div>
-                            <div class="metric-label">Accuracy</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value" id="activeAgents">3</div>
-                            <div class="metric-label">Active Agents</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-value" id="processingTime">2.3s</div>
-                            <div class="metric-label">Avg Time</div>
-                        </div>
-                    </div>
-                    <!-- LLM Configuration Section -->
-                    <div class="mt-4 space-y-3">
-                        <div class="industrial-texture p-3 rounded">
-                            <div class="text-xs metallic-text mb-2 font-medium">🧠 LLM CONFIGURATION</div>
-                            <div class="space-y-2">
-                                <div>
-                                    <label class="text-xs metallic-text block mb-1">Provider:</label>
-                                    <select id="cf-llm-provider" class="w-full bg-charcoal-dark border border-oxidized-copper rounded px-2 py-1 text-xs metallic-text">
-                                        <option value="openai">OpenAI</option>
-                                        <option value="anthropic">Anthropic</option>
-                                        <option value="google">Google</option>
-                                        <option value="azure">Azure OpenAI</option>
-                                        <option value="local">Local Model</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="text-xs metallic-text block mb-1">Model:</label>
-                                    <select id="cf-llm-model" class="w-full bg-charcoal-dark border border-oxidized-copper rounded px-2 py-1 text-xs metallic-text">
-                                        <option value="gpt-4o">GPT-4o</option>
-                                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="text-xs metallic-text block mb-1">Temperature:</label>
-                                    <input type="range" id="cf-llm-temperature" min="0" max="2" step="0.1" value="0.7"
-                                           class="w-full">
-                                    <div class="flex justify-between text-xs metallic-text mt-1">
-                                        <span>0.0</span>
-                                        <span id="cf-temperature-value" class="accent-text">0.7</span>
-                                        <span>2.0</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="text-xs metallic-text block mb-1">Max Tokens:</label>
-                                    <input type="number" id="cf-llm-max-tokens" value="4000" min="100" max="32000"
-                                           class="w-full bg-charcoal-dark border border-oxidized-copper rounded px-2 py-1 text-xs metallic-text">
-                                </div>
-                                <div class="flex space-x-2">
-                                    <button id="cf-apply-llm-config" class="flex-1 bg-emerald-green text-black px-2 py-1 rounded text-xs font-medium hover:bg-opacity-80">
-                                        Apply
-                                    </button>
-                                    <button id="cf-reset-llm-config" class="flex-1 bg-rust-brown text-white px-2 py-1 rounded text-xs font-medium hover:bg-opacity-80">
-                                        Reset
-                                    </button>
-                                </div>
-                                <div class="flex items-center space-x-2 text-xs">
-                                    <span class="status-indicator" id="cf-llm-connection-status"></span>
-                                    <span id="cf-llm-status-text" class="metallic-text">Ready</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Phase Method Visualization -->
-                <div class="sidebar-panel">
-                    <h3 class="sidebar-title">⚡ Phase Method</h3>
-                    <div class="space-y-3">
-                        <div class="phase-node active flex items-center justify-center w-12 h-12 mx-auto">
-                            <span class="text-white font-bold">1</span>
-                        </div>
-                        <div class="text-center text-xs metallic-text">Intake</div>
-
-                        <div class="phase-node flex items-center justify-center w-10 h-10 mx-auto">
-                            <span class="text-white font-bold">2</span>
-                        </div>
-                        <div class="text-center text-xs metallic-text">Research</div>
-
-                        <div class="phase-node flex items-center justify-center w-10 h-10 mx-auto">
-                            <span class="text-white font-bold">3</span>
-                        </div>
-                        <div class="text-center text-xs metallic-text">Drafting</div>
-
-                        <div class="phase-node flex items-center justify-center w-10 h-10 mx-auto">
-                            <span class="text-white font-bold">4</span>
-                        </div>
-                        <div class="text-center text-xs metallic-text">Review</div>
-                    </div>
-                </div>
-
-                <!-- Vector Store Controls -->
-                <div class="sidebar-panel">
-                    <div class="panel-header">
-                        <h3 style="color: var(--gold-accent); margin: 0;">
-                            🗄️ VECTOR STORE CONTROLS
-                        </h3>
-                    </div>
-
-                    <div style="padding: 1rem;">
-                        <!-- Validation Type Selector -->
-                        <div class="validation-type-selector console-panel" style="margin-bottom: 1rem;">
-                            <div class="panel-header">
-                                <h4 style="color: var(--emerald-green); margin: 0; font-size: 0.9rem;">
-                                    🔎 VALIDATION TYPE
-                                </h4>
-                            </div>
-
-                            <div style="padding: 0.5rem;">
-                                <select id="validationTypeSelect" class="gizmo-dial"
-                                        style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; font-size: 0.8rem;">
-                                    <option value="complaints_against_tesla" selected>Complaints Against Tesla</option>
-                                    <option value="contract_disputes">Contract Disputes</option>
-                                    <option value="personal_injury">Personal Injury</option>
-                                    <option value="employment_claims">Employment Claims</option>
-                                    <option value="intellectual_property">Intellectual Property</option>
-                                </select>
-                                <button id="applyValidationFilter" class="gizmo-dial"
-                                        style="width: 100%; background: var(--emerald-green); color: black; border: none; font-size: 0.8rem;">
-                                    ✅ Apply Filter
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Vector Store Status -->
-                        <div class="vector-store-status console-panel">
-                            <div class="panel-header">
-                                <h4 style="color: var(--gold-accent); margin: 0; font-size: 0.9rem;">
-                                    📊 VECTOR STATUS
-                                </h4>
-                            </div>
-
-                            <div id="vectorStoreStatus" style="padding: 0.5rem;">
-                                <div class="status-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.8rem;">
-                                    <div class="status-item">
-                                        <div style="color: var(--emerald-green); font-size: 0.7rem;">PRIMARY</div>
-                                        <div id="primaryEvidenceCount" style="color: var(--metallic-silver); font-weight: bold;">0</div>
-                                    </div>
-                                    <div class="status-item">
-                                        <div style="color: var(--emerald-green); font-size: 0.7rem;">OPINIONS</div>
-                                        <div id="caseOpinionsCount" style="color: var(--metallic-silver); font-weight: bold;">0</div>
-                                    </div>
-                                    <div class="status-item">
-                                        <div style="color: var(--emerald-green); font-size: 0.7rem;">RAG</div>
-                                        <div id="generalRagCount" style="color: var(--metallic-silver); font-weight: bold;">0</div>
-                                    </div>
-                                    <div class="status-item">
-                                        <div style="color: var(--emerald-green); font-size: 0.7rem;">FILTERED</div>
-                                        <div id="validationSubVectorsCount" style="color: var(--metallic-silver); font-weight: bold;">0</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Control Panel -->
-                <div class="sidebar-panel">
-                    <h3 class="sidebar-title">🎛️ Control Panel</h3>
-                    <div class="space-y-4">
-                        <div class="gizmo-dial">
-                            <div class="gizmo-needle" style="transform: rotate(45deg);"></div>
-                            <span class="absolute text-xs metallic-text">Speed</span>
-                        </div>
-                        <div class="gizmo-dial">
-                            <div class="gizmo-needle" style="transform: rotate(90deg);"></div>
-                            <span class="absolute text-xs metallic-text">Quality</span>
-                        </div>
-                        <div class="flex justify-center">
-                            <div class="gizmo-valve"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Center Console - Agent Swarm -->
-            <div class="col-span-6 console-panel flex flex-col">
-                <h2 class="text-xl font-bold p-4 metallic-text border-b border-oxidized-copper">
-                    🕸️ Agent Swarm Console
-                </h2>
-                <div class="flex-grow p-4">
-                    <div id="agentSwarmContainer" class="agent-swarm-container w-full h-full rounded-full">
-                        <!-- Agent nodes will be dynamically added here -->
-                    </div>
-                </div>
-                <div class="p-4 border-t border-oxidized-copper">
-                    <div class="flex justify-between items-center text-sm metallic-text">
-                        <span>Status: <span id="factoryStatus" class="accent-text">IDLE</span></span>
-                        <span>Phase: <span id="currentPhase" class="emerald-text">Ready</span></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Sidebar -->
-            <div class="col-span-3 space-y-4">
-                <!-- Document Preview -->
-                <div class="sidebar-panel">
-                    <h3 class="sidebar-title">📄 Document Preview</h3>
-                    <div id="documentPreview" class="space-y-2 text-sm metallic-text">
-                        <div class="industrial-texture p-3 rounded">
-                            <div class="font-medium accent-text">No document selected</div>
-                            <div class="text-xs opacity-75">Upload or select a document to preview</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Progress Indicators -->
-                <div class="sidebar-panel">
-                    <h3 class="sidebar-title">📊 Progress</h3>
-                    <div class="space-y-3">
-                        <div class="industrial-texture p-3 rounded">
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="metallic-text">Overall</span>
-                                <span class="accent-text" id="overallProgress">0%</span>
-                            </div>
-                            <div class="gizmo-pipe h-2">
-                                <div class="bg-emerald-green h-full rounded" style="width: 0%"></div>
-                            </div>
-                        </div>
-                        <div class="industrial-texture p-3 rounded">
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="metallic-text">Current Task</span>
-                                <span class="emerald-text" id="taskProgress">0%</span>
-                            </div>
-                            <div class="gizmo-pipe h-2">
-                                <div class="bg-gold-accent h-full rounded" style="width: 0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Activity Feed -->
-                <div class="sidebar-panel">
-                    <h3 class="sidebar-title">📋 Activity Feed</h3>
-                    <div id="activityFeed" class="space-y-2 max-h-64 overflow-y-auto">
-                        <div class="industrial-texture p-2 rounded text-xs metallic-text">
-                            <div class="font-medium accent-text">System Ready</div>
-                            <div class="opacity-75">Factory initialized and waiting for input</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Footer Status Bar -->
-        <footer class="factory-header p-3 flex justify-between items-center text-sm">
-            <div class="flex items-center space-x-4">
-                <span class="metallic-text">Connection: <span class="accent-text">Online</span></span>
-                <span class="metallic-text">LLM: <span class="emerald-text">Active</span></span>
-            </div>
-            <div class="flex items-center space-x-4">
-                <span class="metallic-text">v2.0 - Consolidated Interface</span>
-                <span class="metallic-text">Built with ❤️ for Legal Innovation</span>
-            </div>
-        </footer>
-    </div>
-
-    <script>
-        // Socket.IO connection for real-time updates
-        const socket = io();
-
-        socket.on('connect', function() {
-            console.log('Connected to LawyerFactory server');
-            updateActivityFeed('🔗 Connected to server', 'success');
-        });
-
-        socket.on('disconnect', function() {
-            console.log('Disconnected from server');
-            updateActivityFeed('❌ Disconnected from server', 'error');
-        });
-
-        // LLM Dashboard updates
-        socket.on('llm_metrics_update', function(data) {
-            updateLLMMetrics(data);
-        });
-
-        socket.on('agent_activity', function(data) {
-            updateAgentSwarm(data);
-            updateActivityFeed(`🤖 ${data.agent}: ${data.action}`, 'info');
-        });
-
-        socket.on('phase_change', function(data) {
-            updatePhaseVisualization(data);
-            updateActivityFeed(`⚡ Phase changed to: ${data.phase}`, 'info');
-        });
-
-        socket.on('document_processed', function(data) {
-            updateDocumentPreview(data);
-            updateProgress(data);
-            updateActivityFeed(`📄 Processed: ${data.filename}`, 'success');
-        });
-
-        // Legal Intake Form Functions
-        function openIntakeForm() {
-            document.getElementById('intakeModal').style.display = 'flex';
-        }
-
-        function closeIntakeForm() {
-            document.getElementById('intakeModal').style.display = 'none';
-        }
-
-        // Form submission
-        document.getElementById('intakeForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(e.target);
-            const intakeData = Object.fromEntries(formData.entries());
-
-            socket.emit('start_legal_intake', intakeData);
-            closeIntakeForm();
-
-            updateActivityFeed('📝 Legal intake form submitted', 'info');
-            updateFactoryStatus('Processing intake...');
-        });
-
-        // Factory Control Functions
-        function startFactory() {
-            socket.emit('start_factory');
-            updateFactoryStatus('Starting factory...');
-            updateActivityFeed('🏭 Starting LawyerFactory', 'info');
-        }
-
-        // UI Update Functions
-        function updateLLMMetrics(data) {
-            document.getElementById('documentsProcessed').textContent = data.documents_processed || 0;
-            document.getElementById('accuracyScore').textContent = data.accuracy_score || '95%';
-            document.getElementById('activeAgents').textContent = data.active_agents || 3;
-            document.getElementById('processingTime').textContent = data.processing_time || '2.3s';
-        }
-
-        function updateAgentSwarm(data) {
-            const container = document.getElementById('agentSwarmContainer');
-            // Update agent swarm visualization based on data
-            // This would integrate with D3.js for the agent network visualization
-        }
-
-        function updatePhaseVisualization(data) {
-            // Update phase method visualization
-            const phases = document.querySelectorAll('.phase-node');
-            phases.forEach((phase, index) => {
-                phase.classList.remove('active', 'completed');
-                if (index + 1 < data.current_phase) {
-                    phase.classList.add('completed');
-                } else if (index + 1 === data.current_phase) {
-                    phase.classList.add('active');
-                }
-            });
-        }
-
-        function updateDocumentPreview(data) {
-            const preview = document.getElementById('documentPreview');
-            preview.innerHTML = `
-                <div class="industrial-texture p-3 rounded">
-                    <div class="font-medium accent-text">${data.filename || 'Unknown'}</div>
-                    <div class="text-xs metallic-text mt-1">${data.content_preview || 'No preview available'}</div>
-                    <div class="text-xs emerald-text mt-2">Type: ${data.document_type || 'Unknown'}</div>
-                </div>
-            `;
-        }
-
-        function updateProgress(data) {
-            document.getElementById('overallProgress').textContent = `${data.overall || 0}%`;
-            document.getElementById('taskProgress').textContent = `${data.task || 0}%`;
-
-            // Update progress bars
-            const overallBar = document.querySelector('.gizmo-pipe .bg-emerald-green');
-            const taskBar = document.querySelector('.gizmo-pipe .bg-gold-accent');
-
-            if (overallBar) overallBar.style.width = `${data.overall || 0}%`;
-            if (taskBar) taskBar.style.width = `${data.task || 0}%`;
-        }
-
-        function updateFactoryStatus(status) {
-            document.getElementById('factoryStatus').textContent = status;
-        }
-
-        function updateActivityFeed(message, type = 'info') {
-            const feed = document.getElementById('activityFeed');
-            const entry = document.createElement('div');
-            entry.className = `industrial-texture p-2 rounded text-xs metallic-text`;
-            entry.innerHTML = `
-                <div class="font-medium ${type === 'error' ? 'text-red-400' : type === 'success' ? 'accent-text' : 'metallic-text'}">
-                    ${message}
-                </div>
-            `;
-
-            feed.insertBefore(entry, feed.firstChild);
-
-            // Keep only last 10 entries
-            while (feed.children.length > 10) {
-                feed.removeChild(feed.lastChild);
-            }
-        }
-
-        // Initialize gizmo animations
-        function initializeGizmos() {
-            // Animate dials
-            const dials = document.querySelectorAll('.gizmo-dial .gizmo-needle');
-            dials.forEach((dial, index) => {
-                setInterval(() => {
-                    const angle = Math.sin(Date.now() * 0.001 + index) * 45 + 90;
-                    dial.style.transform = `rotate(${angle}deg)`;
-                }, 100);
-            });
-        }
-
-        // Initialize agent swarm visualization
-        function initializeAgentSwarm() {
-            const container = document.getElementById('agentSwarmContainer');
-
-            // Create sample agent nodes
-            const agents = [
-                { id: 'intake', name: 'Intake', x: 100, y: 100, status: 'active' },
-                { id: 'research', name: 'Research', x: 200, y: 150, status: 'idle' },
-                { id: 'drafting', name: 'Drafting', x: 150, y: 200, status: 'idle' },
-                { id: 'review', name: 'Review', x: 250, y: 100, status: 'idle' }
+    <body>
+        <div id="root"></div>
+        
+        <script type="text/babel">
+            const { useState, useEffect, useRef, useCallback } = React;
+            
+            // Phase Configuration
+            const PHASES = [
+                {
+                    id: "A01",
+                    name: "Document Intake",
+                    description: "Upload and categorize legal documents",
+                    type: "preproduction",
+                    icon: "📄",
+                    inputs: ["Legal documents", "Client information", "Case details"],
+                    outputs: ["Categorized documents", "Extracted facts", "Evidence table"],
+                },
+                {
+                    id: "A02",
+                    name: "Legal Research",
+                    description: "Automated legal research and authority gathering",
+                    type: "preproduction",
+                    icon: "🔍",
+                    inputs: ["Case facts", "Jurisdiction", "Legal issues"],
+                    outputs: ["Legal authorities", "Precedent cases", "Research notes"],
+                },
+                {
+                    id: "A03",
+                    name: "Case Outline",
+                    description: "Structure case claims and arguments",
+                    type: "preproduction",
+                    icon: "📋",
+                    inputs: ["Research results", "Evidence", "Legal theories"],
+                    outputs: ["Case outline", "Claims matrix", "Argument structure"],
+                },
+                {
+                    id: "B01",
+                    name: "Quality Review",
+                    description: "Validate research and outline quality",
+                    type: "production",
+                    icon: "✅",
+                    inputs: ["Case outline", "Research quality", "Evidence strength"],
+                    outputs: ["Quality assessment", "Missing elements", "Recommendations"],
+                },
+                {
+                    id: "B02",
+                    name: "Document Drafting",
+                    description: "Generate professional legal documents",
+                    type: "production",
+                    icon: "✍️",
+                    inputs: ["Approved outline", "Templates", "Legal standards"],
+                    outputs: ["Draft documents", "Legal pleadings", "Supporting briefs"],
+                },
+                {
+                    id: "C01",
+                    name: "Document Editing",
+                    description: "Refine formatting and citations",
+                    type: "production",
+                    icon: "🔧",
+                    inputs: ["Draft documents", "Citation rules", "Format standards"],
+                    outputs: ["Formatted documents", "Proper citations", "Final review"],
+                },
+                {
+                    id: "C02",
+                    name: "Final Orchestration",
+                    description: "Coordinate and finalize all deliverables",
+                    type: "production",
+                    icon: "🎯",
+                    inputs: ["All phase outputs", "Quality checks", "Client review"],
+                    outputs: ["Court-ready documents", "Filing package", "Case summary"],
+                },
             ];
-
-            agents.forEach(agent => {
-                const agentNode = document.createElement('div');
-                agentNode.className = 'agent-node absolute';
-                agentNode.style.left = `${agent.x}px`;
-                agentNode.style.top = `${agent.y}px`;
-
-                agentNode.innerHTML = `
-                    <div class="agent-avatar ${agent.status === 'active' ? 'bg-emerald-500' : 'bg-gray-500'}">
-                        ${agent.name[0]}
-                    </div>
-                    <div class="agent-label">${agent.name}</div>
-                `;
-
-                container.appendChild(agentNode);
-            });
-        }
-
-        // Initialize the interface
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeGizmos();
-            initializeAgentSwarm();
-            updateActivityFeed('⚙️ LawyerFactory Consolidated Interface v2.0 Ready', 'success');
-        });
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'i' && e.ctrlKey) {
-                e.preventDefault();
-                openIntakeForm();
-            } else if (e.key === 'Enter' && e.ctrlKey) {
-                e.preventDefault();
-                startFactory();
-            }
-        });
-                // Vector Store Controls Functionality
-                document.getElementById('applyValidationFilter').addEventListener('click', function() {
-                    const selectedType = document.getElementById('validationTypeSelect').value;
-                    applyValidationFilter(selectedType);
-                });
-
-                async function applyValidationFilter(validationType) {
-                    try {
-                        const response = await fetch('/api/vector-store/apply-validation-filter', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
+            
+            // Soviet Control Panel Components
+            const AnalogGauge = ({ value, label, max = 100, color = 'var(--soviet-crimson)' }) => {
+                const angle = (value / max) * 180 - 90; // -90 to 90 degrees
+                
+                return React.createElement('div', { className: 'analog-gauge' },
+                    React.createElement('div', {
+                        className: 'gauge-needle',
+                        style: { transform: `translateX(-50%) rotate(${angle}deg)` }
+                    }),
+                    React.createElement('div', { className: 'gauge-center' }),
+                    React.createElement('div', {
+                        style: {
+                            position: 'absolute',
+                            bottom: '15px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            color: 'var(--soviet-silver)'
+                        }
+                    }, label)
+                );
+            };
+            
+            const ToggleSwitch = ({ active, onToggle, label }) => {
+                return React.createElement('div', { className: 'toggle-switch' + (active ? ' active' : '') },
+                    React.createElement('span', { style: { fontSize: '12px', color: 'var(--soviet-silver)' } }, label),
+                    React.createElement('div', { className: 'toggle-track', onClick: onToggle },
+                        React.createElement('div', { className: 'toggle-handle' })
+                    ),
+                    React.createElement('div', { className: 'led-indicator' })
+                );
+            };
+            
+            const NixieDisplay = ({ value, digits = 3 }) => {
+                const paddedValue = String(value).padStart(digits, '0');
+                return React.createElement('div', { className: 'nixie-display' }, paddedValue);
+            };
+            
+            const MetalPanel = ({ children, title, className = '', collapsed = false }) => {
+                return React.createElement('div', {
+                    className: `metal-panel rivets ${className}`
+                },
+                    title && React.createElement('div', { className: 'panel-header' },
+                        React.createElement('h3', null, title)
+                    ),
+                    !collapsed && React.createElement('div', { className: 'panel-content' }, children)
+                );
+            };
+            
+            const MechanicalButton = ({ children, onClick, variant = 'default', disabled = false }) => {
+                const className = `mech-button ${variant}`;
+                return React.createElement('button', {
+                    className,
+                    onClick,
+                    disabled
+                }, children);
+            };
+            
+            const StatusLights = ({ statuses }) => {
+                return React.createElement('div', { className: 'status-lights' },
+                    statuses.map((status, index) =>
+                        React.createElement('div', {
+                            key: index,
+                            className: `status-light ${status}`
+                        })
+                    )
+                );
+            };
+            
+            // Evidence Table Component
+            const EvidenceTable = () => {
+                const [evidenceData, setEvidenceData] = useState([]);
+                const gridRef = useRef(null);
+                
+                const columnDefs = [
+                    { field: 'id', headerName: 'ID', width: 80, pinned: 'left' },
+                    { field: 'source', headerName: 'Source', width: 150 },
+                    { field: 'content', headerName: 'Content', flex: 1 },
+                    { field: 'relevance', headerName: 'Relevance', width: 100 },
+                    { field: 'type', headerName: 'Type', width: 120 },
+                    { field: 'date', headerName: 'Date', width: 100 }
+                ];
+                
+                useEffect(() => {
+                    // Load evidence data
+                    fetch('/api/evidence')
+                        .then(response => response.json())
+                        .then(data => setEvidenceData(data.evidence_entries || []))
+                        .catch(error => console.error('Error loading evidence:', error));
+                }, []);
+                
+                return React.createElement('div', {
+                    className: 'ag-theme-soviet',
+                    style: { height: '400px', width: '100%' }
+                },
+                    typeof agGrid !== 'undefined' && agGrid.AgGridReact ?
+                        React.createElement(agGrid.AgGridReact, {
+                            ref: gridRef,
+                            columnDefs,
+                            rowData: evidenceData,
+                            defaultColDef: {
+                                sortable: true,
+                                filter: true,
+                                resizable: true
                             },
-                            body: JSON.stringify({
-                                validation_type: validationType
-                            })
-                        });
-
-                        const data = await response.json();
-
-                        if (data.success) {
-                            addActivityLog(`Applied ${validationType} filter. Found ${data.document_count} documents.`, 'success');
-                            updateVectorStoreStatus();
-                        } else {
-        // LLM Configuration Methods for Consolidated Factory
-        function initializeLLMConfig() {
-            // LLM Configuration
-            window.llmConfig = {
-                provider: 'openai',
-                model: 'gpt-4o',
-                temperature: 0.7,
-                maxTokens: 4000
+                            onGridReady: (params) => {
+                                gridRef.current = params.api;
+                            }
+                        }) :
+                        React.createElement('div', {
+                            style: {
+                                padding: '20px',
+                                textAlign: 'center',
+                                color: 'var(--soviet-amber)',
+                                border: '1px solid var(--soviet-brass)'
+                            }
+                        }, 'Evidence Table Loading...')
+                );
             };
-            window.llmProviders = {
-                openai: {
-                    name: 'OpenAI',
-                    models: ['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'],
-                    baseUrl: 'https://api.openai.com/v1'
-                },
-                anthropic: {
-                    name: 'Anthropic',
-                    models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'],
-                    baseUrl: 'https://api.anthropic.com'
-                },
-                google: {
-                    name: 'Google',
-                    models: ['gemini-pro', 'gemini-pro-vision'],
-                    baseUrl: 'https://generativelanguage.googleapis.com'
-                },
-                azure: {
-                    name: 'Azure OpenAI',
-                    models: ['gpt-4', 'gpt-35-turbo'],
-                    baseUrl: null // Requires custom endpoint
-                },
-                local: {
-                    name: 'Local Model',
-                    models: ['llama-2-7b', 'llama-2-13b', 'codellama'],
-                    baseUrl: 'http://localhost:11434'
-                }
+            
+            // Claims Matrix Component
+            const ClaimsMatrix = () => {
+                const [claims, setClaims] = useState([]);
+                
+                useEffect(() => {
+                    // Load claims data
+                    fetch('/api/claims')
+                        .then(response => response.json())
+                        .then(data => setClaims(data.claims || []))
+                        .catch(error => console.error('Error loading claims:', error));
+                }, []);
+                
+                return React.createElement('div', { className: 'claims-matrix' },
+                    React.createElement('h4', null, 'Claims Matrix'),
+                    React.createElement('div', { className: 'matrix-grid' },
+                        claims.map((claim, index) =>
+                            React.createElement('div', {
+                                key: index,
+                                className: 'claim-card metal-panel',
+                                style: { margin: '10px', padding: '15px' }
+                            },
+                                React.createElement('h5', null, claim.cause_of_action || 'Claim ' + (index + 1)),
+                                React.createElement('div', { className: 'claim-strength' },
+                                    React.createElement(AnalogGauge, {
+                                        value: claim.claim_strength * 100 || 0,
+                                        label: 'Strength',
+                                        max: 100
+                                    })
+                                )
+                            )
+                        )
+                    )
+                );
             };
-        }
-
-        function setupLLMEventListeners() {
-            // LLM Provider change handler
-            const providerSelect = document.getElementById('cf-llm-provider');
-            if (providerSelect) {
-                providerSelect.addEventListener('change', (e) => {
-                    handleProviderChange(e.target.value);
-                });
-            }
-
-            // LLM Model change handler
-            const modelSelect = document.getElementById('cf-llm-model');
-            if (modelSelect) {
-                modelSelect.addEventListener('change', (e) => {
-                    window.llmConfig.model = e.target.value;
-                    addActivityLog(`Model changed to ${e.target.value}`, 'info');
-                });
-            }
-
-            // Temperature slider handler
-            const tempSlider = document.getElementById('cf-llm-temperature');
-            const tempValue = document.getElementById('cf-temperature-value');
-            if (tempSlider && tempValue) {
-                tempSlider.addEventListener('input', (e) => {
-                    const value = parseFloat(e.target.value);
-                    window.llmConfig.temperature = value;
-                    tempValue.textContent = value.toFixed(1);
-                });
-            }
-
-            // Max tokens input handler
-            const maxTokensInput = document.getElementById('cf-llm-max-tokens');
-            if (maxTokensInput) {
-                maxTokensInput.addEventListener('change', (e) => {
-                    const value = parseInt(e.target.value);
-                    if (value >= 100 && value <= 32000) {
-                        window.llmConfig.maxTokens = value;
-                        addActivityLog(`Max tokens set to ${value}`, 'info');
-                    } else {
-                        e.target.value = window.llmConfig.maxTokens;
-                        addActivityLog('Max tokens must be between 100 and 32,000', 'warning');
+            
+            // Shot List Component
+            const ShotList = () => {
+                const [shots, setShots] = useState([]);
+                
+                useEffect(() => {
+                    // Load shot list data
+                    fetch('/api/shotlist')
+                        .then(response => response.json())
+                        .then(data => setShots(data.shots || []))
+                        .catch(error => console.error('Error loading shots:', error));
+                }, []);
+                
+                return React.createElement('div', { className: 'shot-list' },
+                    React.createElement('h4', null, 'Document Sequence'),
+                    React.createElement('div', { className: 'shot-items' },
+                        shots.map((shot, index) =>
+                            React.createElement('div', {
+                                key: index,
+                                className: 'shot-item',
+                                style: {
+                                    padding: '10px',
+                                    margin: '5px 0',
+                                    background: 'var(--soviet-steel)',
+                                    border: '1px solid var(--soviet-brass)',
+                                    borderRadius: '4px'
+                                }
+                            },
+                                React.createElement('div', { style: { fontWeight: 'bold' } },
+                                    shot.title || `Shot ${index + 1}`
+                                ),
+                                React.createElement('div', { style: { fontSize: '12px', opacity: 0.8 } },
+                                    shot.description || 'Document preparation step'
+                                )
+                            )
+                        )
+                    )
+                );
+            };
+            
+            // Chat Interface Component
+            const ChatInterface = () => {
+                const [messages, setMessages] = useState([]);
+                const [inputValue, setInputValue] = useState('');
+                const [activeAgent, setActiveAgent] = useState('maestro');
+                const messagesEndRef = useRef(null);
+                
+                const agents = {
+                    maestro: { name: 'Maestro', icon: '🎭', color: 'var(--soviet-brass)' },
+                    reader: { name: 'Reader', icon: '📖', color: 'var(--soviet-emerald)' },
+                    researcher: { name: 'Researcher', icon: '🔍', color: 'var(--soviet-bronze)' },
+                    writer: { name: 'Writer', icon: '✍️', color: 'var(--soviet-amber)' },
+                    editor: { name: 'Editor', icon: '🔧', color: 'var(--soviet-crimson)' }
+                };
+                
+                const scrollToBottom = () => {
+                    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                };
+                
+                useEffect(scrollToBottom, [messages]);
+                
+                const handleSendMessage = () => {
+                    if (!inputValue.trim()) return;
+                    
+                    const newMessage = {
+                        id: Date.now(),
+                        agent: 'user',
+                        content: inputValue,
+                        timestamp: new Date().toLocaleTimeString()
+                    };
+                    
+                    setMessages(prev => [...prev, newMessage]);
+                    setInputValue('');
+                    
+                    // Simulate agent response
+                    setTimeout(() => {
+                        const response = {
+                            id: Date.now() + 1,
+                            agent: activeAgent,
+                            content: `${agents[activeAgent].name} acknowledges: "${inputValue}". Processing request...`,
+                            timestamp: new Date().toLocaleTimeString()
+                        };
+                        setMessages(prev => [...prev, response]);
+                    }, 1000);
+                };
+                
+                const handleKeyPress = (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
                     }
-                });
-            }
-
-            // Apply config button handler
-            const applyBtn = document.getElementById('cf-apply-llm-config');
-            if (applyBtn) {
-                applyBtn.addEventListener('click', () => {
-                    applyLLMConfig();
-                });
-            }
-
-            // Reset config button handler
-            const resetBtn = document.getElementById('cf-reset-llm-config');
-            if (resetBtn) {
-                resetBtn.addEventListener('click', () => {
-                    resetLLMConfig();
-                });
-            }
-        }
-
-        function handleProviderChange(provider) {
-            window.llmConfig.provider = provider;
-            const modelSelect = document.getElementById('cf-llm-model');
-
-            if (modelSelect && window.llmProviders[provider]) {
-                // Update available models for the selected provider
-                const models = window.llmProviders[provider].models;
-                modelSelect.innerHTML = models.map(model =>
-                    `<option value="${model}">${model}</option>`
-                ).join('');
-
-                // Set default model for the provider
-                window.llmConfig.model = models[0];
-                addActivityLog(`Switched to ${window.llmProviders[provider].name} provider`, 'success');
-            }
-        }
-
-        async function applyLLMConfig() {
-            try {
-                // Validate configuration
-                if (!window.llmConfig.provider || !window.llmConfig.model) {
-                    throw new Error('Provider and model are required');
-                }
-
-                // Update LLM status
-                updateLLMStatus('Applying configuration...', 'busy');
-
-                // Simulate API call to apply configuration
-                await delay(1000);
-
-                // Save configuration to localStorage
-                localStorage.setItem('lawyerfactory-llm-config', JSON.stringify(window.llmConfig));
-
-                // Update UI
-                updateLLMStatus('Configuration applied successfully', 'success');
-                addActivityLog('LLM configuration applied successfully', 'success');
-
-            } catch (error) {
-                console.error('Failed to apply LLM configuration:', error);
-                updateLLMStatus('Configuration failed', 'error');
-                addActivityLog(`Failed to apply configuration: ${error.message}`, 'error');
-            }
-        }
-
-        function resetLLMConfig() {
-            // Reset to default configuration
-            window.llmConfig = {
-                provider: 'openai',
-                model: 'gpt-4o',
-                temperature: 0.7,
-                maxTokens: 4000
+                };
+                
+                return React.createElement('div', { className: 'chat-container' },
+                    React.createElement('div', { className: 'chat-messages' },
+                        messages.map(message =>
+                            React.createElement('div', {
+                                key: message.id,
+                                className: 'chat-message'
+                            },
+                                React.createElement('div', {
+                                    className: 'agent-avatar',
+                                    style: {
+                                        background: message.agent === 'user' ? 'var(--soviet-steel)' : agents[message.agent]?.color
+                                    }
+                                }, message.agent === 'user' ? '👤' : agents[message.agent]?.icon),
+                                React.createElement('div', { className: 'message-content' },
+                                    React.createElement('div', {
+                                        style: { fontSize: '12px', opacity: 0.7, marginBottom: '5px' }
+                                    }, `${message.agent === 'user' ? 'You' : agents[message.agent]?.name} - ${message.timestamp}`),
+                                    message.content
+                                )
+                            )
+                        ),
+                        React.createElement('div', { ref: messagesEndRef })
+                    ),
+                    React.createElement('div', { className: 'chat-input' },
+                        React.createElement('div', { style: { marginBottom: '10px' } },
+                            React.createElement('label', { style: { fontSize: '12px', marginRight: '10px' } }, 'Active Agent:'),
+                            React.createElement('select', {
+                                value: activeAgent,
+                                onChange: (e) => setActiveAgent(e.target.value),
+                                style: {
+                                    background: 'var(--soviet-steel)',
+                                    border: '1px solid var(--soviet-brass)',
+                                    color: 'var(--soviet-silver)',
+                                    padding: '5px'
+                                }
+                            },
+                                Object.entries(agents).map(([key, agent]) =>
+                                    React.createElement('option', { key, value: key },
+                                        `${agent.icon} ${agent.name}`
+                                    )
+                                )
+                            )
+                        ),
+                        React.createElement('div', { style: { display: 'flex', gap: '10px' } },
+                            React.createElement('input', {
+                                type: 'text',
+                                className: 'input-field',
+                                value: inputValue,
+                                onChange: (e) => setInputValue(e.target.value),
+                                onKeyPress: handleKeyPress,
+                                placeholder: `Message ${agents[activeAgent].name}...`,
+                                style: { flex: 1 }
+                            }),
+                            React.createElement(MechanicalButton, {
+                                onClick: handleSendMessage,
+                                variant: 'success'
+                            }, 'Send')
+                        )
+                    )
+                );
             };
-
-            // Update UI elements
-            const providerSelect = document.getElementById('cf-llm-provider');
-            const modelSelect = document.getElementById('cf-llm-model');
-            const tempSlider = document.getElementById('cf-llm-temperature');
-            const tempValue = document.getElementById('cf-temperature-value');
-            const maxTokensInput = document.getElementById('cf-llm-max-tokens');
-
-            if (providerSelect) providerSelect.value = window.llmConfig.provider;
-            if (modelSelect) handleProviderChange(window.llmConfig.provider);
-            if (tempSlider) tempSlider.value = window.llmConfig.temperature;
-            if (tempValue) tempValue.textContent = window.llmConfig.temperature.toFixed(1);
-            if (maxTokensInput) maxTokensInput.value = window.llmConfig.maxTokens;
-
-            updateLLMStatus('Configuration reset to defaults', 'ready');
-            addActivityLog('LLM configuration reset to defaults', 'info');
-        }
-
-        function updateLLMStatus(message, status) {
-            const statusElement = document.getElementById('cf-llm-status-text');
-            const indicatorElement = document.getElementById('cf-llm-connection-status');
-
-            if (statusElement) statusElement.textContent = message;
-
-            if (indicatorElement) {
-                indicatorElement.className = 'status-indicator';
-                switch (status) {
-                    case 'success':
-                        indicatorElement.classList.add('status-online');
-                        break;
-                    case 'busy':
-                        indicatorElement.classList.add('status-busy');
-                        break;
-                    case 'error':
-                        indicatorElement.classList.add('status-error');
-                        break;
-                    default:
-                        // Default ready state
-                        break;
+            
+            // Workflow Panel Component
+            const WorkflowPanel = ({ collapsed }) => {
+                const [activePhase, setActivePhase] = useState(null);
+                const [completedPhases, setCompletedPhases] = useState(new Set());
+                const [phaseProgress, setPhaseProgress] = useState({});
+                
+                const handlePhaseStart = (phaseId) => {
+                    setActivePhase(phaseId);
+                    // Emit to backend via Socket.IO
+                    // socketRef.current?.emit('start_phase', { phase: phaseId });
+                };
+                
+                const handlePhaseComplete = (phaseId) => {
+                    setCompletedPhases(prev => new Set([...prev, phaseId]));
+                    setActivePhase(null);
+                };
+                
+                const getPhaseStatus = (phase) => {
+                    if (completedPhases.has(phase.id)) return 'completed';
+                    if (activePhase === phase.id) return 'active';
+                    return 'pending';
+                };
+                
+                if (collapsed) {
+                    return React.createElement(MetalPanel, {
+                        title: 'WF',
+                        collapsed: true,
+                        className: 'panel-left panel-collapsed'
+                    });
                 }
-            }
-        }
-
-        function loadSavedLLMConfig() {
-            try {
-                const saved = localStorage.getItem('lawyerfactory-llm-config');
-                if (saved) {
-                    const savedConfig = JSON.parse(saved);
-                    window.llmConfig = { ...window.llmConfig, ...savedConfig };
-                    addActivityLog('Loaded saved LLM configuration', 'info');
+                
+                return React.createElement(MetalPanel, {
+                    title: 'Workflow Control',
+                    className: 'panel-left'
+                },
+                    React.createElement('div', { style: { marginBottom: '20px' } },
+                        React.createElement('h4', null, 'System Status'),
+                        React.createElement(StatusLights, {
+                            statuses: ['green', 'green', 'amber', 'red', 'red']
+                        })
+                    ),
+                    
+                    React.createElement('div', { style: { marginBottom: '20px' } },
+                        React.createElement('h4', null, 'Progress Metrics'),
+                        React.createElement(AnalogGauge, {
+                            value: (completedPhases.size / PHASES.length) * 100,
+                            label: 'Overall',
+                            max: 100
+                        }),
+                        React.createElement(NixieDisplay, {
+                            value: completedPhases.size,
+                            digits: 1
+                        }),
+                        React.createElement('span', { style: { marginLeft: '10px', fontSize: '12px' } },
+                            `/ ${PHASES.length} Phases`
+                        )
+                    ),
+                    
+                    React.createElement('div', { className: 'workflow-phases' },
+                        React.createElement('h4', null, 'Phase Control'),
+                        PHASES.map(phase => {
+                            const status = getPhaseStatus(phase);
+                            return React.createElement('div', {
+                                key: phase.id,
+                                style: {
+                                    margin: '10px 0',
+                                    padding: '10px',
+                                    background: status === 'active' ? 'rgba(255, 176, 0, 0.1)' :
+                                              status === 'completed' ? 'rgba(0, 168, 120, 0.1)' :
+                                              'var(--soviet-steel)',
+                                    border: '1px solid var(--soviet-brass)',
+                                    borderRadius: '4px'
+                                }
+                            },
+                                React.createElement('div', {
+                                    style: {
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginBottom: '5px'
+                                    }
+                                },
+                                    React.createElement('span', { style: { fontWeight: 'bold' } },
+                                        `${phase.icon} ${phase.id}`
+                                    ),
+                                    React.createElement('div', { className: `status-light ${
+                                        status === 'completed' ? 'green' :
+                                        status === 'active' ? 'amber' : ''
+                                    }` })
+                                ),
+                                React.createElement('div', { style: { fontSize: '12px', marginBottom: '5px' } },
+                                    phase.name
+                                ),
+                                status === 'pending' && React.createElement(MechanicalButton, {
+                                    onClick: () => handlePhaseStart(phase.id),
+                                    variant: 'default'
+                                }, 'Start'),
+                                status === 'active' && React.createElement(MechanicalButton, {
+                                    onClick: () => handlePhaseComplete(phase.id),
+                                    variant: 'success'
+                                }, 'Complete')
+                            );
+                        })
+                    )
+                );
+            };
+            
+            // Deliverables Panel Component
+            const DeliverablesPanel = ({ collapsed }) => {
+                const [activeTab, setActiveTab] = useState('evidence');
+                
+                if (collapsed) {
+                    return React.createElement(MetalPanel, {
+                        title: 'DEL',
+                        collapsed: true,
+                        className: 'panel-center panel-collapsed'
+                    });
                 }
-            } catch (error) {
-                console.error('Failed to load saved LLM configuration:', error);
-            }
-        }
-
-        function delay(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // Initialize LLM configuration when DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeLLMConfig();
-            loadSavedLLMConfig();
-            setupLLMEventListeners();
-        });
-                            addActivityLog('Failed to apply validation filter.', 'error');
+                
+                return React.createElement(MetalPanel, {
+                    title: 'Deliverables & Data',
+                    className: 'panel-center'
+                },
+                    React.createElement('div', { className: 'warning-stripe' }),
+                    
+                    React.createElement('div', { style: { display: 'flex', gap: '10px', marginBottom: '20px' } },
+                        React.createElement(ToggleSwitch, {
+                            active: activeTab === 'evidence',
+                            onToggle: () => setActiveTab('evidence'),
+                            label: 'Evidence'
+                        }),
+                        React.createElement(ToggleSwitch, {
+                            active: activeTab === 'claims',
+                            onToggle: () => setActiveTab('claims'),
+                            label: 'Claims'
+                        }),
+                        React.createElement(ToggleSwitch, {
+                            active: activeTab === 'sequence',
+                            onToggle: () => setActiveTab('sequence'),
+                            label: 'Sequence'
+                        })
+                    ),
+                    
+                    activeTab === 'evidence' && React.createElement(EvidenceTable),
+                    activeTab === 'claims' && React.createElement(ClaimsMatrix),
+                    activeTab === 'sequence' && React.createElement(ShotList)
+                );
+            };
+            
+            // LLM Chat Panel Component
+            const LLMChatPanel = ({ collapsed }) => {
+                if (collapsed) {
+                    return React.createElement(MetalPanel, {
+                        title: 'LLM',
+                        collapsed: true,
+                        className: 'panel-right panel-collapsed'
+                    });
+                }
+                
+                return React.createElement(MetalPanel, {
+                    title: 'Agent Communication',
+                    className: 'panel-right'
+                },
+                    React.createElement(ChatInterface)
+                );
+            };
+            
+            // Main Application Component
+            const LawyerFactoryApp = () => {
+                const [leftCollapsed, setLeftCollapsed] = useState(false);
+                const [rightCollapsed, setRightCollapsed] = useState(false);
+                const [notifications, setNotifications] = useState([]);
+                
+                // Keyboard shortcuts
+                useEffect(() => {
+                    const handleKeyPress = (e) => {
+                        if (e.key === 'F1') {
+                            e.preventDefault();
+                            setLeftCollapsed(prev => !prev);
+                        } else if (e.key === 'F3') {
+                            e.preventDefault();
+                            setRightCollapsed(prev => !prev);
                         }
-                    } catch (error) {
-                        console.error('Error applying validation filter:', error);
-                        addActivityLog('Error applying validation filter.', 'error');
-                    }
-                }
-
-                async function updateVectorStoreStatus() {
-                    try {
-                        const response = await fetch('/api/vector-store/status');
-                        const data = await response.json();
-
-                        if (data.success) {
-                            document.getElementById('primaryEvidenceCount').textContent = data.stores.primary_evidence?.documents || 0;
-                            document.getElementById('caseOpinionsCount').textContent = data.stores.case_opinions?.documents || 0;
-                            document.getElementById('generalRagCount').textContent = data.stores.general_rag?.documents || 0;
-                            document.getElementById('validationSubVectorsCount').textContent = data.validation_sub_vectors || 0;
+                    };
+                    
+                    window.addEventListener('keydown', handleKeyPress);
+                    return () => window.removeEventListener('keydown', handleKeyPress);
+                }, []);
+                
+                // Notification system
+                const addNotification = (notification) => {
+                    const id = Date.now();
+                    setNotifications(prev => [...prev, { ...notification, id }]);
+                    setTimeout(() => {
+                        setNotifications(prev => prev.filter(n => n.id !== id));
+                    }, 5000);
+                };
+                
+                return React.createElement('div', { className: 'control-station' },
+                    React.createElement(WorkflowPanel, { collapsed: leftCollapsed }),
+                    React.createElement(DeliverablesPanel, { collapsed: false }),
+                    React.createElement(LLMChatPanel, { collapsed: rightCollapsed }),
+                    
+                    // Keyboard shortcuts help
+                    React.createElement('div', {
+                        style: {
+                            position: 'fixed',
+                            bottom: '10px',
+                            right: '10px',
+                            background: 'var(--soviet-charcoal)',
+                            border: '1px solid var(--soviet-brass)',
+                            padding: '5px 10px',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            opacity: 0.7
                         }
-                    } catch (error) {
-                        console.error('Error updating vector store status:', error);
-                    }
-                }
-
-                function addActivityLog(message, type = 'info') {
-                    const activityFeed = document.getElementById('activityFeed');
-                    const logEntry = document.createElement('div');
-                    logEntry.className = 'industrial-texture p-2 rounded text-xs metallic-text';
-                    logEntry.innerHTML = `
-                        <div class="flex justify-between items-center">
-                            <span>${message}</span>
-                            <span class="text-xs opacity-70">${new Date().toLocaleTimeString()}</span>
-                        </div>
-                    `;
-
-                    activityFeed.insertBefore(logEntry, activityFeed.firstChild);
-
-                    // Keep only last 20 entries
-                    while (activityFeed.children.length > 20) {
-                        activityFeed.removeChild(activityFeed.lastChild);
-                    }
-                }
-
-                // Auto-update vector store status every 30 seconds
-                setInterval(updateVectorStoreStatus, 30000);
-
-                // Initial status update
-                updateVectorStoreStatus();
-
-                // Add some initial activity logs
-                addActivityLog('Vector store system initialized', 'success');
-                addActivityLog('Default validation type: Complaints Against Tesla', 'info');
-                addActivityLog('Ready for evidence ingestion and RAG queries', 'info');
-    </script>
-</body>
+                    }, 'F1: Toggle Workflow | F3: Toggle Chat'),
+                    
+                    // Notification overlay
+                    notifications.length > 0 && React.createElement('div', {
+                        style: {
+                            position: 'fixed',
+                            top: '20px',
+                            right: '20px',
+                            zIndex: 1000
+                        }
+                    },
+                        notifications.map(notification =>
+                            React.createElement('div', {
+                                key: notification.id,
+                                style: {
+                                    background: 'var(--soviet-crimson)',
+                                    color: 'white',
+                                    padding: '10px',
+                                    margin: '5px 0',
+                                    borderRadius: '4px',
+                                    minWidth: '300px'
+                                }
+                            }, notification.message)
+                        )
+                    )
+                );
+            };
+            
+            // Render the application using React 18 createRoot API
+            const rootElement = document.getElementById('root');
+            if (!rootElement._reactRoot) {
+                const root = ReactDOM.createRoot(rootElement);
+                rootElement._reactRoot = root;
+                root.render(React.createElement(LawyerFactoryApp));
+            } else {
+                rootElement._reactRoot.render(React.createElement(LawyerFactoryApp));
+            }
+        </script>
+    </body>
 </html>

@@ -53,6 +53,20 @@ try:
 except Exception:
     LLM_SERVICE_AVAILABLE = False
     logger.warning("LLM service not available - using fallback categorization")
+
+# Import precision citation service for enhanced research
+try:
+    from ...research.precision_citation_service import (
+        PrecisionCitationService,
+        perform_background_research,
+        substantiate_claims,
+        verify_facts
+    )
+    PRECISION_CITATION_AVAILABLE = True
+except ImportError:
+    PRECISION_CITATION_AVAILABLE = False
+    logger.warning("Precision citation service not available - research will be limited")
+
 logger = logging.getLogger(__name__)
 
 
@@ -440,6 +454,15 @@ class ResearchBot(Bot, AgentInterface):
             "other": 5,
         }
 
+        # Initialize precision citation service for enhanced research
+        self.precision_citation = None
+        if PRECISION_CITATION_AVAILABLE:
+            try:
+                self.precision_citation = PrecisionCitationService()
+                logger.info("Precision citation service initialized for enhanced research")
+            except Exception as e:
+                logger.warning(f"Failed to initialize precision citation service: {e}")
+
         logger.info("ResearchBot initialized with legal research capabilities")
 
     async def process(self, message: str) -> str:
@@ -585,6 +608,20 @@ class ResearchBot(Bot, AgentInterface):
         recommendations = await self._generate_recommendations(
             query, scored_citations, gaps
         )
+
+        # Enhance research with precision citation service if available
+        if self.precision_citation and query.jurisdiction:
+            try:
+                enhanced_citations = await self._enhance_with_precision_citations(
+                    query, scored_citations
+                )
+                if enhanced_citations:
+                    scored_citations.extend(enhanced_citations)
+                    scored_citations = self._deduplicate_citations(scored_citations)
+                    scored_citations.sort(key=lambda x: x.relevance_score, reverse=True)
+                    logger.info(f"Enhanced research with {len(enhanced_citations)} precision citations")
+            except Exception as e:
+                logger.warning(f"Precision citation enhancement failed: {e}")
 
         # Calculate overall confidence
         confidence_score = self._calculate_confidence_score(scored_citations, gaps)
@@ -1136,6 +1173,49 @@ class ResearchBot(Bot, AgentInterface):
                 gaps.append(f"Limited precedents for {case_type} cases")
 
         return gaps
+
+    async def _enhance_with_precision_citations(self, query: ResearchQuery, existing_citations: List[LegalCitation]) -> List[LegalCitation]:
+        """Enhance research results with precision citation service"""
+        if not self.precision_citation:
+            return []
+
+        try:
+            # Convert query to intake data format for precision citation service
+            intake_data = {
+                "jurisdiction": query.jurisdiction,
+                "causes_of_action": query.legal_issues,
+                "claim_description": query.query_text,
+            }
+
+            # Perform background research with precision citations
+            precision_result = await self.precision_citation.search_background_research(
+                intake_data, max_sources=5
+            )
+
+            # Convert precision citations to LegalCitation format
+            enhanced_citations = []
+            for pc in precision_result:
+                # Convert precision citation to legal citation format
+                legal_citation = LegalCitation(
+                    citation=pc.bluebook_citation or pc.title,
+                    title=pc.title,
+                    court=None,  # Not available in precision citations
+                    year=pc.publication_date,
+                    jurisdiction=query.jurisdiction,
+                    citation_type="case" if pc.source_type == "academic" else "secondary",
+                    url=pc.url,
+                    relevance_score=pc.quality_metrics.overall_quality_score / 5.0,  # Normalize to 0-1
+                    authority_level=1 if pc.source_type == "academic" else 3,
+                    excerpt=pc.content[:500] if pc.content else "",
+                )
+                enhanced_citations.append(legal_citation)
+
+            logger.info(f"Enhanced research with {len(enhanced_citations)} precision citations")
+            return enhanced_citations
+
+        except Exception as e:
+            logger.error(f"Precision citation enhancement failed: {e}")
+            return []
 
     def _generate_query_id(self, query: ResearchQuery) -> str:
         """Generate unique ID for research query"""

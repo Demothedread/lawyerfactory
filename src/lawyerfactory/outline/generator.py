@@ -17,12 +17,10 @@ import json
 import logging
 from typing import Any, Dict, List, Optional
 
+from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
 from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
-from maestro.evidence_api import EvidenceAPI
-
-from src.claims_matrix.comprehensive_claims_matrix_integration import (
-    ComprehensiveClaimsMatrixIntegration,
-)
+from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
+from lawyerfactory.storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
 
 logger = logging.getLogger(__name__)
 
@@ -67,12 +65,8 @@ class SkeletalSection:
     word_count_target: int = 500
     priority_level: int = 1  # 1=highest, 5=lowest
     dependencies: List[str] = field(default_factory=list)  # Section IDs this depends on
-    evidence_mapping: Dict[str, List[str]] = field(
-        default_factory=dict
-    )  # element -> evidence_ids
-    fact_mapping: Dict[str, List[str]] = field(
-        default_factory=dict
-    )  # element -> fact_ids
+    evidence_mapping: Dict[str, List[str]] = field(default_factory=dict)  # element -> evidence_ids
+    fact_mapping: Dict[str, List[str]] = field(default_factory=dict)  # element -> fact_ids
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -147,9 +141,108 @@ class SkeletalOutlineGenerator:
 
         logger.info("Skeletal Outline Generator initialized")
 
-    def generate_skeletal_outline(
-        self, case_id: str, session_id: str
-    ) -> SkeletalOutline:
+    def store_outline_results(
+        self,
+        outline: SkeletalOutline,
+        case_id: str,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Store skeletal outline results through unified storage pipeline.
+
+        Args:
+            outline: Complete skeletal outline
+            case_id: Associated case identifier
+            metadata: Additional metadata for storage
+
+        Returns:
+            Storage results with ObjectIDs
+        """
+        try:
+            stored_results = []
+            object_ids = []
+
+            # Convert outline to storable format
+            outline_content = self._format_outline_for_storage(outline)
+
+            # Store through unified storage
+            storage_result = self.unified_storage.store_evidence(
+                file_content=outline_content.encode("utf-8"),
+                filename=f"skeletal_outline_{outline.outline_id}.txt",
+                metadata={
+                    "outline_id": outline.outline_id,
+                    "case_id": case_id,
+                    "document_type": outline.document_type,
+                    "jurisdiction": outline.jurisdiction,
+                    "section_count": len(outline.sections),
+                    "estimated_page_count": outline.estimated_page_count,
+                    "created_at": outline.created_at.isoformat(),
+                    **(metadata or {}),
+                },
+                source_phase="outline_generation",
+            )
+
+            if storage_result.success:
+                object_ids.append(storage_result.object_id)
+                stored_results.append(
+                    {
+                        "object_id": storage_result.object_id,
+                        "outline_id": outline.outline_id,
+                        "case_id": case_id,
+                        "storage_urls": {
+                            "s3": storage_result.s3_url,
+                            "evidence": storage_result.evidence_id,
+                            "vector": storage_result.vector_ids,
+                        },
+                    }
+                )
+
+                # Store individual sections as separate objects
+                for section in outline.sections:
+                    section_content = self._format_section_for_storage(section, outline)
+
+                    section_storage = self.unified_storage.store_evidence(
+                        file_content=section_content.encode("utf-8"),
+                        filename=f"section_{section.section_id}_{outline.outline_id}.txt",
+                        metadata={
+                            "parent_outline_id": outline.outline_id,
+                            "section_id": section.section_id,
+                            "section_type": section.section_type.value,
+                            "case_id": case_id,
+                            "jurisdiction": outline.jurisdiction,
+                            "created_at": outline.created_at.isoformat(),
+                        },
+                        source_phase="outline_generation",
+                    )
+
+                    if section_storage.success:
+                        object_ids.append(section_storage.object_id)
+                        stored_results.append(
+                            {
+                                "object_id": section_storage.object_id,
+                                "section_id": section.section_id,
+                                "parent_outline_id": outline.outline_id,
+                            }
+                        )
+
+            return {
+                "success": True,
+                "stored_count": len(stored_results),
+                "object_ids": object_ids,
+                "results": stored_results,
+            }
+
+        except Exception as e:
+            logger.error(f"Failed to store outline results: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "stored_count": 0,
+                "object_ids": [],
+                "results": [],
+            }
+
+    def generate_skeletal_outline(self, case_id: str, session_id: str) -> SkeletalOutline:
         """Generate comprehensive skeletal outline from claims matrix and evidence"""
         try:
             # Get case data from various sources
@@ -184,9 +277,7 @@ class SkeletalOutlineGenerator:
                 "claims_summary": case_data.get("claims_summary", {}),
             }
 
-            storage_result = await self.store_outline_results(
-                outline, case_id, storage_metadata
-            )
+            storage_result = self.store_outline_results(outline, case_id, storage_metadata)
 
             # Add storage information to the outline object
             if storage_result.get("success"):
@@ -194,7 +285,9 @@ class SkeletalOutlineGenerator:
                 outline.object_ids = storage_result.get("object_ids", [])
                 outline.storage_metadata = storage_result
 
-                logger.info(f"Outline {outline.outline_id} stored with {storage_result.get('stored_count', 0)} objects")
+                logger.info(
+                    f"Outline {outline.outline_id} stored with {storage_result.get('stored_count', 0)} objects"
+                )
 
             logger.info(
                 f"Generated skeletal outline {outline.outline_id} with {len(outline.sections)} sections"
@@ -202,9 +295,7 @@ class SkeletalOutlineGenerator:
             return outline
 
         except Exception as e:
-            logger.exception(
-                f"Failed to generate skeletal outline for case {case_id}: {e}"
-            )
+            logger.exception(f"Failed to generate skeletal outline for case {case_id}: {e}")
             raise
 
     def _gather_case_data(self, case_id: str, session_id: str) -> Dict[str, Any]:
@@ -253,9 +344,7 @@ class SkeletalOutlineGenerator:
                 "total_evidence_count": len(case_data["evidence_entries"]),
                 "total_fact_count": len(case_data["facts"]),
                 "primary_cause_of_action": (
-                    case_data["causes_of_action"][0]
-                    if case_data["causes_of_action"]
-                    else "Unknown"
+                    case_data["causes_of_action"][0] if case_data["causes_of_action"] else "Unknown"
                 ),
                 "jurisdiction": case_data["jurisdiction"],
             }
@@ -265,9 +354,7 @@ class SkeletalOutlineGenerator:
 
         return case_data
 
-    def _extract_parties_from_data(
-        self, case_data: Dict[str, Any]
-    ) -> List[Dict[str, str]]:
+    def _extract_parties_from_data(self, case_data: Dict[str, Any]) -> List[Dict[str, str]]:
         """Extract party information from facts and evidence"""
         parties = []
         party_names = set()
@@ -336,9 +423,7 @@ class SkeletalOutlineGenerator:
             """,
         }
 
-    def _build_skeletal_sections(
-        self, case_data: Dict[str, Any]
-    ) -> List[SkeletalSection]:
+    def _build_skeletal_sections(self, case_data: Dict[str, Any]) -> List[SkeletalSection]:
         """Build all skeletal sections with appropriate prompts and mappings"""
         sections = []
 
@@ -400,9 +485,7 @@ class SkeletalOutlineGenerator:
             dependencies=["caption"],
         )
 
-    def _build_jurisdiction_venue_section(
-        self, case_data: Dict[str, Any]
-    ) -> SkeletalSection:
+    def _build_jurisdiction_venue_section(self, case_data: Dict[str, Any]) -> SkeletalSection:
         """Build jurisdiction and venue section"""
         return SkeletalSection(
             section_id="jurisdiction_venue",
@@ -439,9 +522,7 @@ class SkeletalOutlineGenerator:
             dependencies=["jurisdiction_venue"],
         )
 
-    def _build_statement_of_facts_section(
-        self, case_data: Dict[str, Any]
-    ) -> SkeletalSection:
+    def _build_statement_of_facts_section(self, case_data: Dict[str, Any]) -> SkeletalSection:
         """Build statement of facts section with evidence mapping"""
         # Map facts to evidence
         fact_mapping = {}
@@ -478,9 +559,7 @@ class SkeletalOutlineGenerator:
             dependencies=["parties"],
         )
 
-    def _build_causes_of_action_sections(
-        self, case_data: Dict[str, Any]
-    ) -> List[SkeletalSection]:
+    def _build_causes_of_action_sections(self, case_data: Dict[str, Any]) -> List[SkeletalSection]:
         """Build cause of action sections with element-specific prompts"""
         sections = []
         roman_start = 5  # Start at V after Statement of Facts
@@ -530,9 +609,7 @@ class SkeletalOutlineGenerator:
         """Build subsection for specific legal element"""
         # Map relevant facts and evidence to this element
         relevant_facts = self._find_relevant_facts_for_element(element_name, case_data)
-        relevant_evidence = self._find_relevant_evidence_for_element(
-            element_name, case_data
-        )
+        relevant_evidence = self._find_relevant_evidence_for_element(element_name, case_data)
 
         return SkeletalSection(
             section_id=f"{parent_id}_{element_name.lower().replace(' ', '_')}",
@@ -544,14 +621,10 @@ class SkeletalOutlineGenerator:
                 authority_citations=breakdown.get("authority_citations", []),
                 relevant_facts=relevant_facts,
                 relevant_evidence=relevant_evidence,
-                burden_of_proof=breakdown.get(
-                    "burden_of_proof", "preponderance of evidence"
-                ),
+                burden_of_proof=breakdown.get("burden_of_proof", "preponderance of evidence"),
             ),
             fact_mapping={element_name: [f["fact_id"] for f in relevant_facts]},
-            evidence_mapping={
-                element_name: [e["evidence_id"] for e in relevant_evidence]
-            },
+            evidence_mapping={element_name: [e["evidence_id"] for e in relevant_evidence]},
             legal_authorities=breakdown.get("authority_citations", []),
             word_count_target=500,
             priority_level=2,
@@ -568,9 +641,7 @@ class SkeletalOutlineGenerator:
         relevant_facts = []
         for fact in facts:
             fact_text = fact.get("fact_text", "").lower()
-            relevance_score = sum(
-                1 for keyword in element_keywords if keyword in fact_text
-            )
+            relevance_score = sum(1 for keyword in element_keywords if keyword in fact_text)
             if relevance_score > 0:
                 fact_copy = fact.copy()
                 fact_copy["relevance_score"] = relevance_score
@@ -590,9 +661,7 @@ class SkeletalOutlineGenerator:
         relevant_evidence = []
         for evidence in evidence_entries:
             content = evidence.get("content", "").lower()
-            relevance_score = sum(
-                1 for keyword in element_keywords if keyword in content
-            )
+            relevance_score = sum(1 for keyword in element_keywords if keyword in content)
             if relevance_score > 0:
                 evidence_copy = evidence.copy()
                 evidence_copy["relevance_score"] = relevance_score
@@ -622,9 +691,7 @@ class SkeletalOutlineGenerator:
         # Default keywords
         return element_name.lower().split()
 
-    def _build_prayer_for_relief_section(
-        self, case_data: Dict[str, Any]
-    ) -> SkeletalSection:
+    def _build_prayer_for_relief_section(self, case_data: Dict[str, Any]) -> SkeletalSection:
         """Build prayer for relief section"""
         return SkeletalSection(
             section_id="prayer_for_relief",
@@ -639,9 +706,7 @@ class SkeletalOutlineGenerator:
             priority_level=1,
             dependencies=[
                 "coa_"
-                + case_data["global_context"]["primary_cause_of_action"]
-                .lower()
-                .replace(" ", "_")
+                + case_data["global_context"]["primary_cause_of_action"].lower().replace(" ", "_")
             ],
         )
 
@@ -777,18 +842,143 @@ class SkeletalOutlineGenerator:
             """,
         }
 
+    def _format_outline_for_storage(self, outline: SkeletalOutline) -> str:
+        """
+        Format skeletal outline for storage as text content.
+
+        Args:
+            outline: Complete skeletal outline
+
+        Returns:
+            Formatted text content
+        """
+        content = f"""
+SKELETAL OUTLINE FOR LEGAL COMPLAINT
+====================================
+
+Outline ID: {outline.outline_id}
+Case ID: {outline.case_id}
+Document Type: {outline.document_type}
+Jurisdiction: {outline.jurisdiction}
+Estimated Page Count: {outline.estimated_page_count}
+Created: {outline.created_at.strftime('%Y-%m-%d %H:%M:%S')}
+
+GLOBAL CONTEXT
+==============
+{json.dumps(outline.global_context, indent=2)}
+
+GENERAL PROMPTS
+===============
+"""
+        for prompt_name, prompt_text in outline.general_prompts.items():
+            content += f"\n{prompt_name.upper()}:\n{prompt_text}\n"
+
+        content += f"""
+
+SECTION OUTLINE
+===============
+"""
+        for section in outline.sections:
+            content += f"\n{section.roman_numeral or ''} {section.title}\n"
+            content += f"Section ID: {section.section_id}\n"
+            content += f"Type: {section.section_type.value}\n"
+            content += f"Word Count Target: {section.word_count_target}\n"
+            content += f"Priority: {section.priority_level}\n"
+            if section.dependencies:
+                content += f"Dependencies: {', '.join(section.dependencies)}\n"
+            content += f"Prompt Template:\n{section.prompt_template}\n"
+
+            if section.subsections:
+                content += "Subsections:\n"
+                for subsection in section.subsections:
+                    content += f"  - {subsection.title} ({subsection.word_count_target} words)\n"
+
+        return content.strip()
+
+    def _format_section_for_storage(
+        self, section: SkeletalSection, outline: SkeletalOutline
+    ) -> str:
+        """
+        Format individual section for storage.
+
+        Args:
+            section: Section to format
+            outline: Parent outline for context
+
+        Returns:
+            Formatted text content for section
+        """
+        content = f"""
+SECTION: {section.title.upper()}
+{'=' * (len(section.title) + 9)}
+
+Section ID: {section.section_id}
+Type: {section.section_type.value}
+Roman Numeral: {section.roman_numeral or 'N/A'}
+Word Count Target: {section.word_count_target}
+Priority Level: {section.priority_level}
+
+Parent Outline: {outline.outline_id}
+Case ID: {outline.case_id}
+Jurisdiction: {outline.jurisdiction}
+
+DEPENDENCIES
+============
+{', '.join(section.dependencies) if section.dependencies else 'None'}
+
+CONTEXT REFERENCES
+==================
+{', '.join(section.context_references) if section.context_references else 'None'}
+
+LEGAL AUTHORITIES
+=================
+{chr(10).join(f"• {authority}" for authority in section.legal_authorities)}
+
+EVIDENCE MAPPING
+================
+"""
+        for element, evidence_ids in section.evidence_mapping.items():
+            content += f"{element}: {', '.join(evidence_ids)}\n"
+
+        content += f"""
+
+FACT MAPPING
+============
+"""
+        for element, fact_ids in section.fact_mapping.items():
+            content += f"{element}: {', '.join(fact_ids)}\n"
+
+        content += f"""
+
+PROMPT TEMPLATE
+===============
+{section.prompt_template}
+"""
+
+        if section.subsections:
+            content += f"""
+
+SUBSECTIONS
+===========
+"""
+            for subsection in section.subsections:
+                content += f"• {subsection.title} ({subsection.word_count_target} words)\n"
+                content += f"  ID: {subsection.section_id}\n"
+                content += f"  Dependencies: {', '.join(subsection.dependencies) if subsection.dependencies else 'None'}\n\n"
+
+        return content.strip()
+
 
 def test_skeletal_outline_generator():
     """Test function for skeletal outline generator"""
     try:
         # Mock data for testing
+        from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
         from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
-        from maestro.evidence_api import EvidenceAPI
-        
-        from src.claims_matrix.comprehensive_claims_matrix_integration import (
-            ComprehensiveClaimsMatrixIntegration,
+        from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
+        from lawyerfactory.storage.enhanced_unified_storage_api import (
+            get_enhanced_unified_storage_api,
         )
-        from src.lawyerfactory.storage.unified_storage_api import UnifiedStorageAPI, get_unified_storage_api
 
         # Initialize components
         kg = EnhancedKnowledgeGraph()
@@ -799,9 +989,7 @@ def test_skeletal_outline_generator():
         generator = SkeletalOutlineGenerator(kg, claims_matrix, evidence_api)
 
         # Test generation
-        outline = generator.generate_skeletal_outline(
-            "test_case_001", "test_session_001"
-        )
+        outline = generator.generate_skeletal_outline("test_case_001", "test_session_001")
 
         print(f"Generated outline with {len(outline.sections)} sections")
         print(f"Estimated page count: {outline.estimated_page_count}")

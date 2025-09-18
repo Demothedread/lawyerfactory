@@ -28,9 +28,7 @@ class LegalProcedureBot(Bot, AgentInterface):
         # Initialize AgentInterface
         AgentInterface.__init__(self, config)
 
-        logger.info(
-            "LegalProcedureBot initialized with procedural compliance capabilities"
-        )
+        logger.info("LegalProcedureBot initialized with procedural compliance capabilities")
 
     async def process(self, message: str) -> str:
         """Legacy Bot interface implementation with procedural checking"""
@@ -53,15 +51,15 @@ class LegalProcedureBot(Bot, AgentInterface):
                     + "\n".join(f"- {issue}" for issue in issues)
                 )
             else:
-                return f"Procedural compliance verified for: '{message}' - No procedural issues found"
+                return (
+                    f"Procedural compliance verified for: '{message}' - No procedural issues found"
+                )
 
         except Exception as e:
             logger.error(f"Procedural review failed: {e}")
             return f"Procedural review completed for '{message}'"
 
-    async def execute_task(
-        self, task: WorkflowTask, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def execute_task(self, task: WorkflowTask, context: Dict[str, Any]) -> Dict[str, Any]:
         """AgentInterface implementation for orchestration system"""
         try:
             self.is_busy = True
@@ -80,29 +78,19 @@ class LegalProcedureBot(Bot, AgentInterface):
 
             # Check based on document type
             if document_type.lower() in ["complaint", "petition"]:
-                compliance_issues.extend(
-                    await self._check_complaint_compliance(document_content)
-                )
+                compliance_issues.extend(await self._check_complaint_compliance(document_content))
             elif document_type.lower() in ["motion", "brief"]:
-                compliance_issues.extend(
-                    await self._check_motion_compliance(document_content)
-                )
+                compliance_issues.extend(await self._check_motion_compliance(document_content))
             else:
                 # General document compliance
-                compliance_issues.extend(
-                    await self._check_general_compliance(document_content)
-                )
+                compliance_issues.extend(await self._check_general_compliance(document_content))
 
             # Generate recommendations
             if compliance_issues:
-                recommendations = await self._generate_compliance_recommendations(
-                    compliance_issues
-                )
+                recommendations = await self._generate_compliance_recommendations(compliance_issues)
 
             # Determine if document passes compliance
-            compliance_status = (
-                "pass" if len(compliance_issues) == 0 else "requires_review"
-            )
+            compliance_status = "pass" if len(compliance_issues) == 0 else "requires_review"
 
             result = {
                 "compliance_status": compliance_status,
@@ -113,9 +101,7 @@ class LegalProcedureBot(Bot, AgentInterface):
                 "requires_attorney_review": len(compliance_issues) > 0,
             }
 
-            logger.info(
-                f"LegalProcedureBot completed task {task.id}: {compliance_status}"
-            )
+            logger.info(f"LegalProcedureBot completed task {task.id}: {compliance_status}")
             return result
 
         except Exception as e:
@@ -213,3 +199,7 @@ class LegalProcedureBot(Bot, AgentInterface):
     async def cleanup(self) -> None:
         """Clean up agent resources"""
         logger.info("LegalProcedureBot cleanup completed")
+
+
+# Re-export for phase shims and legacy imports
+LegalProcedureBot = LegalProcedureBot

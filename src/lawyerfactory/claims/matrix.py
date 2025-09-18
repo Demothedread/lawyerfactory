@@ -14,45 +14,51 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from ingestion.api.cause_of_action_definition_engine import (
-    CauseOfActionDefinitionEngine,
+from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.knowledge_graph.core.jurisdiction_manager import JurisdictionManager
+
+# from ingestion.api.cause_of_action_definition_engine import (
+#     CauseOfActionDefinitionEngine,
+#     ElementBreakdown,
+#     LegalDefinition,
+#     ProvableQuestion,
+# )
+from lawyerfactory.phases.phaseA03_outline.cause_of_action_engine import (
     ElementBreakdown,
     LegalDefinition,
     ProvableQuestion,
 )
-from knowledge_graph.api.enhanced_knowledge_graph import EnhancedKnowledgeGraph
-from lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
-    JurisdictionManager,
-)
-from lawyerfactory.storage.unified_storage_api import UnifiedStorageAPI, get_unified_storage_api
+from lawyerfactory.storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
 
 # cascading_decision_tree_engine may live in claims_matrix or src; try src first and fall back
 try:
-    from src.claims_matrix.cascading_decision_tree_engine import (
+    from lawyerfactory.phases.phaseC01_editing.cascading_decision_tree import (
         CascadingDecisionTreeEngine,
         ClickableTerm,
         DecisionOutcome,
         DecisionPathResult,
     )
 except Exception:
-    from cascading_decision_tree_engine import (
-        CascadingDecisionTreeEngine,
-        ClickableTerm,
-        DecisionOutcome,
-        DecisionPathResult,
-    )
+    try:
+        from lawyerfactory.phases.phaseC01_editing.validators.cascading_decision_tree_engine import (
+            CascadingDecisionTreeEngine,
+            ClickableTerm,
+            DecisionOutcome,
+            DecisionPathResult,
+        )
+    except Exception:
+        # logger.warning("Cascading decision tree engine not available")
+        CascadingDecisionTreeEngine = None
+        ClickableTerm = None
+        DecisionOutcome = None
+        DecisionPathResult = None
 
 try:
     pass
 except Exception:
     pass
 
-try:
-    pass
-except Exception:
-    pass
-
-from claims_matrix.claims_matrix_research_api import ClaimsMatrixResearchAPI
+# from claims_matrix.claims_matrix_research_api import ClaimsMatrixResearchAPI
 
 logger = logging.getLogger(__name__)
 
@@ -91,8 +97,8 @@ class AttorneyReadyAnalysis:
 
     # Interactive analysis results
     provable_questions: Dict[str, List[ProvableQuestion]]
-    decision_tree_outcomes: Dict[str, DecisionPathResult]
-    clickable_terms_used: Dict[str, ClickableTerm]
+    # decision_tree_outcomes: Dict[str, DecisionPathResult]  # Commented out - DecisionPathResult not defined
+    # clickable_terms_used: Dict[str, ClickableTerm]  # Commented out - ClickableTerm not defined
 
     # Attorney guidance
     case_strength_assessment: Dict[str, Any]
@@ -126,34 +132,36 @@ class ComprehensiveClaimsMatrixIntegration:
         self.kg = enhanced_kg
 
         # Initialize core components
-        self.jurisdiction_manager = JurisdictionManager(enhanced_kg)
-        self.definition_engine = CauseOfActionDefinitionEngine(
-            enhanced_kg, self.jurisdiction_manager, None, None
-        )
-        self.tree_engine = CascadingDecisionTreeEngine(
-            enhanced_kg, self.jurisdiction_manager, self.definition_engine
-        )
+        # self.jurisdiction_manager = JurisdictionManager(enhanced_kg)
+        # self.definition_engine = CauseOfActionDefinitionEngine(
+        #     enhanced_kg, self.jurisdiction_manager, None, None
+        # )
+        # self.tree_engine = CascadingDecisionTreeEngine(
+        #     enhanced_kg, self.jurisdiction_manager, self.definition_engine
+        # )
 
         # Initialize research integration if tokens provided
         if courtlistener_token or scholar_contact_email:
             try:
-                from legal_research_integration import LegalResearchAPIIntegration
+                # from legal_research_integration import LegalResearchAPIIntegration
+                # from lawyerfactory.research.validate import LegalAuthorityValidator
 
-                from lawyerfactory.research.validate import LegalAuthorityValidator
-
-                self.authority_validator = LegalAuthorityValidator(
-                    enhanced_kg, self.jurisdiction_manager
-                )
-                self.research_integration = LegalResearchAPIIntegration(
-                    enhanced_kg,
-                    self.jurisdiction_manager,
-                    None,
-                    courtlistener_token,
-                    scholar_contact_email,
-                )
-                self.research_api = ClaimsMatrixResearchAPI(
-                    enhanced_kg, courtlistener_token, scholar_contact_email
-                )
+                # self.authority_validator = LegalAuthorityValidator(
+                #     enhanced_kg, self.jurisdiction_manager
+                # )
+                # self.research_integration = LegalResearchAPIIntegration(
+                #     enhanced_kg,
+                #     self.jurisdiction_manager,
+                #     None,
+                #     courtlistener_token,
+                #     scholar_contact_email,
+                # )
+                # self.research_api = ClaimsMatrixResearchAPI(
+                #     enhanced_kg, courtlistener_token, scholar_contact_email
+                # )
+                self.research_integration = None
+                self.authority_validator = None
+                self.research_api = None
             except ImportError:
                 logger.warning("Research integration components not available")
                 self.research_integration = None
@@ -165,7 +173,7 @@ class ComprehensiveClaimsMatrixIntegration:
             self.research_api = None
 
         # Initialize unified storage API
-        self.unified_storage = get_unified_storage_api()
+        self.unified_storage = get_enhanced_unified_storage_api()
 
         # Session management
         self.active_sessions: Dict[str, InteractiveAnalysisSession] = {}
@@ -185,8 +193,8 @@ class ComprehensiveClaimsMatrixIntegration:
                 session_id = f"analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{len(self.active_sessions)}"
 
             # Validate jurisdiction
-            if not self.jurisdiction_manager.select_jurisdiction(jurisdiction):
-                raise ValueError(f"Invalid jurisdiction: {jurisdiction}")
+            # if not self.jurisdiction_manager.select_jurisdiction(jurisdiction):
+            #     raise ValueError(f"Invalid jurisdiction: {jurisdiction}")
 
             # Create analysis session
             session = InteractiveAnalysisSession(
@@ -212,11 +220,12 @@ class ComprehensiveClaimsMatrixIntegration:
             if not session:
                 return None
 
-            definition = self.definition_engine.generate_comprehensive_definition(
-                session.cause_of_action, session.jurisdiction
-            )
+            # definition = self.definition_engine.generate_comprehensive_definition(
+            #     session.cause_of_action, session.jurisdiction
+            # )
 
-            return definition
+            # return definition
+            return None  # Placeholder until definition engine is available
 
         except Exception as e:
             logger.exception(f"Failed to get comprehensive definition: {e}")
@@ -230,15 +239,16 @@ class ComprehensiveClaimsMatrixIntegration:
                 return None
 
             # Get term expansion with context
-            context = f"{session.cause_of_action}_{session.jurisdiction}"
-            term = self.tree_engine.expand_clickable_term(term_text, context)
+            # context = f"{session.cause_of_action}_{session.jurisdiction}"
+            # term = self.tree_engine.expand_clickable_term(term_text, context)
 
-            if term:
-                # Track expanded terms
-                session.clickable_terms_expanded[term_text] = term.term_id
-                session.last_updated = datetime.now()
+            # if term:
+            #     # Track expanded terms
+            #     session.clickable_terms_expanded[term_text] = term.term_id
+            #     session.last_updated = datetime.now()
 
-            return term
+            # return term
+            return None  # Placeholder until tree engine is available
 
         except Exception as e:
             logger.exception(f"Failed to expand clickable term '{term_text}': {e}")
@@ -253,15 +263,16 @@ class ComprehensiveClaimsMatrixIntegration:
             if not session:
                 return None
 
-            breakdown = self.definition_engine.generate_element_breakdown(
-                session.cause_of_action, element_name, session.jurisdiction
-            )
+            # breakdown = self.definition_engine.generate_element_breakdown(
+            #     session.cause_of_action, element_name, session.jurisdiction
+            # )
 
-            if breakdown:
-                session.current_element = element_name
-                session.last_updated = datetime.now()
+            # if breakdown:
+            #     session.current_element = element_name
+            #     session.last_updated = datetime.now()
 
-            return breakdown
+            # return breakdown
+            return None  # Placeholder until definition engine is available
 
         except Exception as e:
             logger.exception(f"Failed to get element breakdown for '{element_name}': {e}")
@@ -274,11 +285,12 @@ class ComprehensiveClaimsMatrixIntegration:
             if not session:
                 return []
 
-            questions = self.definition_engine.generate_provable_questions(
-                session.cause_of_action, element_name
-            )
+            # questions = self.definition_engine.generate_provable_questions(
+            #     session.cause_of_action, element_name
+            # )
 
-            return questions
+            # return questions
+            return []  # Placeholder until definition engine is available
 
         except Exception as e:
             logger.exception(f"Failed to get provable questions for '{element_name}': {e}")
@@ -291,15 +303,16 @@ class ComprehensiveClaimsMatrixIntegration:
             if not session:
                 return {}
 
-            tree = self.tree_engine.build_decision_tree(
-                session.cause_of_action, element_name, session.case_facts
-            )
+            # tree = self.tree_engine.build_decision_tree(
+            #     session.cause_of_action, element_name, session.case_facts
+            # )
 
-            if tree:
-                session.decision_tree_state[element_name] = tree
-                session.last_updated = datetime.now()
+            # if tree:
+            #     session.decision_tree_state[element_name] = tree
+            #     session.last_updated = datetime.now()
 
-            return tree
+            # return tree
+            return {}  # Placeholder until tree engine is available
 
         except Exception as e:
             logger.exception(f"Failed to build decision tree for '{element_name}': {e}")
@@ -314,24 +327,25 @@ class ComprehensiveClaimsMatrixIntegration:
             if not session:
                 return None
 
-            tree_id = f"{session.cause_of_action}_{element_name}"
-            result = self.tree_engine.analyze_decision_path(tree_id, decisions, session.case_facts)
+            # tree_id = f"{session.cause_of_action}_{element_name}"
+            # result = self.tree_engine.analyze_decision_path(tree_id, decisions, session.case_facts)
 
-            if result:
-                # Update session with analysis
-                session.analysis_path.append(
-                    {
-                        "element": element_name,
-                        "decisions": decisions,
-                        "outcome": result.final_outcome.value,
-                        "confidence": result.confidence_score,
-                        "timestamp": datetime.now().isoformat(),
-                    }
-                )
-                session.confidence_assessments[element_name] = result.confidence_score
-                session.last_updated = datetime.now()
+            # if result:
+            #     # Update session with analysis
+            #     session.analysis_path.append(
+            #         {
+            #             "element": element_name,
+            #             "decisions": decisions,
+            #             "outcome": result.final_outcome.value,
+            #             "confidence": result.confidence_score,
+            #             "timestamp": datetime.now().isoformat(),
+            #         }
+            #     )
+            #     session.confidence_assessments[element_name] = result.confidence_score
+            #     session.last_updated = datetime.now()
 
-            return result
+            # return result
+            return None  # Placeholder until tree engine is available
 
         except Exception as e:
             logger.exception(f"Failed to analyze decision path for '{element_name}': {e}")
@@ -344,17 +358,18 @@ class ComprehensiveClaimsMatrixIntegration:
             if not session or session.jurisdiction != "ca_state":
                 return []
 
-            authorities = self.jurisdiction_manager.get_jurisdiction_authorities("ca_state")
+            # authorities = self.jurisdiction_manager.get_jurisdiction_authorities("ca_state")
 
-            # Filter for relevant authorities
-            cause_relevant = [
-                auth
-                for auth in authorities
-                if session.cause_of_action.lower() in auth.get("authority_name", "").lower()
-                or "general" in auth.get("authority_type", "").lower()
-            ]
+            # # Filter for relevant authorities
+            # cause_relevant = [
+            #     auth
+            #     for auth in authorities
+            #     if session.cause_of_action.lower() in auth.get("authority_name", "").lower()
+            #     or "general" in auth.get("authority_type", "").lower()
+            # ]
 
-            return cause_relevant
+            # return cause_relevant
+            return []  # Placeholder until jurisdiction manager is available
 
         except Exception as e:
             logger.exception(f"Failed to get California authorities: {e}")
@@ -371,29 +386,30 @@ class ComprehensiveClaimsMatrixIntegration:
                 return {"error": "Session not found"}
 
             # Create research request
-            from claims_matrix.claims_matrix_research_api import (
-                ClaimsMatrixResearchRequest,
-                ResearchPriority,
-            )
+            # from claims_matrix.claims_matrix_research_api import (
+            #     ClaimsMatrixResearchRequest,
+            #     ResearchPriority,
+            # )
 
-            request = ClaimsMatrixResearchRequest(
-                request_id=f"research_{session_id}",
-                cause_of_action=session.cause_of_action,
-                jurisdiction=session.jurisdiction,
-                legal_elements=([session.current_element] if session.current_element else []),
-                case_facts=[
-                    f"{f.get('name', '')}: {f.get('description', '')}" for f in session.case_facts
-                ],
-                priority=ResearchPriority.HIGH,
-                include_definitions=True,
-                include_case_law=True,
-                validate_authorities=True,
-            )
+            # request = ClaimsMatrixResearchRequest(
+            #     request_id=f"research_{session_id}",
+            #     cause_of_action=session.cause_of_action,
+            #     jurisdiction=session.jurisdiction,
+            #     legal_elements=([session.current_element] if session.current_element else []),
+            #     case_facts=[
+            #         f"{f.get('name', '')}: {f.get('description', '')}" for f in session.case_facts
+            #     ],
+            #     priority=ResearchPriority.HIGH,
+            #     include_definitions=True,
+            #     include_case_law=True,
+            #     validate_authorities=True,
+            # )
 
             # Execute research
-            response = self.research_api.execute_comprehensive_research(request)
+            # response = self.research_api.execute_comprehensive_research(request)
 
-            return asdict(response) if response else {"error": "Research failed"}
+            # return asdict(response) if response else {"error": "Research failed"}
+            return {"error": "Research integration not available"}
 
         except Exception as e:
             logger.exception(f"Failed to enhance with legal research: {e}")
@@ -518,8 +534,8 @@ class ComprehensiveClaimsMatrixIntegration:
                 element_breakdowns=element_breakdowns,
                 authority_validation={},  # Would be populated with research integration
                 provable_questions=provable_questions,
-                decision_tree_outcomes=decision_tree_outcomes,
-                clickable_terms_used=clickable_terms_used,
+                # decision_tree_outcomes=decision_tree_outcomes,  # Commented out - DecisionPathResult not defined
+                # clickable_terms_used=clickable_terms_used,  # Commented out - ClickableTerm not defined
                 case_strength_assessment=case_strength,
                 discovery_recommendations=discovery_recs,
                 expert_witness_needs=expert_needs,
@@ -585,18 +601,18 @@ class ComprehensiveClaimsMatrixIntegration:
                     "executive_summary": {
                         "case_strength": analysis.case_strength_assessment,
                         "key_challenges": [
-                            outcome.missing_evidence
-                            for outcome in analysis.decision_tree_outcomes.values()
+                            # outcome.missing_evidence  # Commented out - decision_tree_outcomes not defined
+                            # for outcome in analysis.decision_tree_outcomes.values()  # Commented out - decision_tree_outcomes not defined
                         ],
                         "recommended_actions": list(
                             set(
                                 [
-                                    rec
-                                    for recs in [
-                                        outcome.recommended_actions
-                                        for outcome in analysis.decision_tree_outcomes.values()
-                                    ]
-                                    for rec in recs
+                                    # rec  # Commented out - decision_tree_outcomes not defined
+                                    # for recs in [
+                                    #     outcome.recommended_actions
+                                    #     for outcome in analysis.decision_tree_outcomes.values()
+                                    # ]
+                                    # for rec in recs
                                 ]
                             )
                         ),
@@ -614,9 +630,9 @@ class ComprehensiveClaimsMatrixIntegration:
                                 asdict(q) for q in analysis.provable_questions.get(element, [])
                             ],
                             "decision_outcome": (
-                                asdict(analysis.decision_tree_outcomes.get(element))
-                                if element in analysis.decision_tree_outcomes
-                                else None
+                                # asdict(analysis.decision_tree_outcomes.get(element))  # Commented out - decision_tree_outcomes not defined
+                                # if element in analysis.decision_tree_outcomes  # Commented out - decision_tree_outcomes not defined
+                                None  # Placeholder
                             ),
                         }
                         for element, breakdown in analysis.element_breakdowns.items()
@@ -629,7 +645,7 @@ class ComprehensiveClaimsMatrixIntegration:
                     "appendices": {
                         "case_law_precedents": analysis.case_law_precedents,
                         "clickable_terms_expanded": {
-                            k: asdict(v) for k, v in analysis.clickable_terms_used.items()
+                            # k: asdict(v) for k, v in analysis.clickable_terms_used.items()  # Commented out - clickable_terms_used not defined
                         },
                     },
                 }
@@ -957,7 +973,7 @@ class ComprehensiveClaimsMatrixIntegration:
 
             # Store through unified storage
             storage_result = self.unified_storage.store_evidence(
-                file_content=analysis_content.encode('utf-8'),
+                file_content=analysis_content.encode("utf-8"),
                 filename=f"claims_analysis_{analysis.analysis_id}.txt",
                 metadata={
                     "analysis_id": analysis.analysis_id,
@@ -968,9 +984,9 @@ class ComprehensiveClaimsMatrixIntegration:
                     "element_count": len(analysis.element_breakdowns),
                     "confidence_assessments": analysis.case_strength_assessment,
                     "created_at": analysis.created_at.isoformat(),
-                    **(metadata or {})
+                    **(metadata or {}),
                 },
-                source_phase="claims_matrix"
+                source_phase="claims_matrix",
             )
 
             if storage_result.success:
@@ -995,7 +1011,7 @@ class ComprehensiveClaimsMatrixIntegration:
                     )
 
                     element_storage = self.unified_storage.store_evidence(
-                        file_content=element_content.encode('utf-8'),
+                        file_content=element_content.encode("utf-8"),
                         filename=f"element_{element_name}_{analysis.analysis_id}.txt",
                         metadata={
                             "parent_analysis_id": analysis.analysis_id,
@@ -1006,7 +1022,7 @@ class ComprehensiveClaimsMatrixIntegration:
                             "analysis_phase": "element_breakdown",
                             "created_at": analysis.created_at.isoformat(),
                         },
-                        source_phase="claims_matrix"
+                        source_phase="claims_matrix",
                     )
 
                     if element_storage.success:

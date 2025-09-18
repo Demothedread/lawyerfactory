@@ -12,21 +12,22 @@ Integrates legal relationship detection with the enhanced maestro workflow
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+
+from legal_relationship_detector import LegalRelationshipDetector
 
 from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
-from legal_relationship_detector import LegalRelationshipDetector
 
 # Import unified storage API
 try:
     from lawyerfactory.storage.enhanced_unified_storage_api import (
         EnhancedUnifiedStorageAPI,
+        EvidenceMetadata,
         get_enhanced_unified_storage_api,
-        EvidenceMetadata
     )
+
     UNIFIED_STORAGE_AVAILABLE = True
 except ImportError:
-    logger.warning("Enhanced unified storage not available")
     UNIFIED_STORAGE_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
@@ -55,13 +56,11 @@ class EnhancedDraftProcessor:
             "conflicts_detected": 0,
         }
 
-    def process_fact_statement_drafts(
+    async def process_fact_statement_drafts(
         self, fact_drafts: List[Dict[str, Any]], session_id: str
     ) -> Dict[str, Any]:
         """Process fact statement drafts with enhanced relationship mapping"""
-        logger.info(
-            f"Processing {len(fact_drafts)} fact statement drafts for session {session_id}"
-        )
+        logger.info(f"Processing {len(fact_drafts)} fact statement drafts for session {session_id}")
 
         all_entities = []
         all_relationships = []
@@ -96,9 +95,7 @@ class EnhancedDraftProcessor:
                 all_relationships.extend(result.get("relationship_details", []))
 
                 self.processing_stats["documents_processed"] += 1
-                self.processing_stats["entities_extracted"] += result.get(
-                    "entities_extracted", 0
-                )
+                self.processing_stats["entities_extracted"] += result.get("entities_extracted", 0)
                 self.processing_stats["relationships_mapped"] += result.get(
                     "relationships_extracted", 0
                 )
@@ -131,9 +128,7 @@ class EnhancedDraftProcessor:
             "confidence_summary": self._calculate_confidence_summary(
                 all_entities, all_relationships
             ),
-            "legal_significance_summary": self._analyze_legal_significance(
-                all_relationships
-            ),
+            "legal_significance_summary": self._analyze_legal_significance(all_relationships),
         }
 
         logger.info(
@@ -148,19 +143,19 @@ class EnhancedDraftProcessor:
                 )
                 if object_id:
                     result["storage_object_id"] = object_id
-                    logger.info(f"Fact statement processing result stored with ObjectID: {object_id}")
+                    logger.info(
+                        f"Fact statement processing result stored with ObjectID: {object_id}"
+                    )
             except Exception as e:
                 logger.warning(f"Failed to store fact statement processing result: {e}")
 
         return result
 
-    def process_case_complaint_drafts(
+    async def process_case_complaint_drafts(
         self, case_drafts: List[Dict[str, Any]], session_id: str
     ) -> Dict[str, Any]:
         """Process case/complaint drafts with legal issue extraction"""
-        logger.info(
-            f"Processing {len(case_drafts)} case/complaint drafts for session {session_id}"
-        )
+        logger.info(f"Processing {len(case_drafts)} case/complaint drafts for session {session_id}")
 
         all_entities = []
         all_relationships = []
@@ -191,9 +186,7 @@ class EnhancedDraftProcessor:
                 all_relationships.extend(result.get("relationship_details", []))
 
                 self.processing_stats["documents_processed"] += 1
-                self.processing_stats["entities_extracted"] += result.get(
-                    "entities_extracted", 0
-                )
+                self.processing_stats["entities_extracted"] += result.get("entities_extracted", 0)
                 self.processing_stats["relationships_mapped"] += result.get(
                     "relationships_extracted", 0
                 )
@@ -203,14 +196,10 @@ class EnhancedDraftProcessor:
                 continue
 
         # Extract legal issues and claims structure
-        legal_issues = self._extract_legal_issues_structure(
-            all_entities, all_relationships
-        )
+        legal_issues = self._extract_legal_issues_structure(all_entities, all_relationships)
 
         # Analyze party relationships
-        party_analysis = self._analyze_party_relationships(
-            all_entities, all_relationships
-        )
+        party_analysis = self._analyze_party_relationships(all_entities, all_relationships)
 
         # Build claims hierarchy
         claims_hierarchy = self._build_claims_hierarchy(all_entities, all_relationships)
@@ -228,9 +217,7 @@ class EnhancedDraftProcessor:
             "confidence_summary": self._calculate_confidence_summary(
                 all_entities, all_relationships
             ),
-            "procedural_requirements": self._identify_procedural_requirements(
-                all_entities
-            ),
+            "procedural_requirements": self._identify_procedural_requirements(all_entities),
         }
 
         logger.info(
@@ -245,13 +232,15 @@ class EnhancedDraftProcessor:
                 )
                 if object_id:
                     result["storage_object_id"] = object_id
-                    logger.info(f"Case/complaint processing result stored with ObjectID: {object_id}")
+                    logger.info(
+                        f"Case/complaint processing result stored with ObjectID: {object_id}"
+                    )
             except Exception as e:
                 logger.warning(f"Failed to store case/complaint processing result: {e}")
 
         return result
 
-    def aggregate_draft_results(
+    async def aggregate_draft_results(
         self, fact_results: Dict[str, Any], case_results: Dict[str, Any]
     ) -> Dict[str, Any]:
         """Aggregate results from both fact statement and case drafts"""
@@ -282,14 +271,10 @@ class EnhancedDraftProcessor:
             )
 
         # Cross-validate information between fact statements and case documents
-        cross_validation = self._cross_validate_draft_information(
-            fact_results, case_results
-        )
+        cross_validation = self._cross_validate_draft_information(fact_results, case_results)
 
         # Build comprehensive case foundation
-        case_foundation = self._build_case_foundation(
-            fact_results, case_results, cross_validation
-        )
+        case_foundation = self._build_case_foundation(fact_results, case_results, cross_validation)
 
         # Generate facts matrix
         facts_matrix = self._generate_facts_matrix(case_foundation)
@@ -297,8 +282,7 @@ class EnhancedDraftProcessor:
         aggregated_result = {
             "aggregation_type": "fact_and_case_drafts",
             "total_drafts": (
-                fact_results.get("drafts_processed", 0)
-                + case_results.get("drafts_processed", 0)
+                fact_results.get("drafts_processed", 0) + case_results.get("drafts_processed", 0)
             ),
             "total_entities": len(all_entities),
             "total_relationships": len(all_relationships),
@@ -308,22 +292,24 @@ class EnhancedDraftProcessor:
             "case_foundation": case_foundation,
             "facts_matrix": facts_matrix,
             "processing_stats": self.processing_stats,
-            "recommendations": self._generate_processing_recommendations(
-                case_foundation
-            ),
+            "recommendations": self._generate_processing_recommendations(case_foundation),
         }
 
         # Store aggregated result through unified storage (don't block on this)
         if self.unified_storage:
             try:
                 # Use session_id from fact_results or case_results
-                session_id = fact_results.get("session_id") or case_results.get("session_id", "unknown_session")
+                session_id = fact_results.get("session_id") or case_results.get(
+                    "session_id", "unknown_session"
+                )
                 object_id = await self.store_draft_processing_result(
                     aggregated_result, session_id, "aggregated"
                 )
                 if object_id:
                     aggregated_result["storage_object_id"] = object_id
-                    logger.info(f"Aggregated draft processing result stored with ObjectID: {object_id}")
+                    logger.info(
+                        f"Aggregated draft processing result stored with ObjectID: {object_id}"
+                    )
             except Exception as e:
                 logger.warning(f"Failed to store aggregated draft processing result: {e}")
 
@@ -378,15 +364,11 @@ class EnhancedDraftProcessor:
                     if confidence_distribution
                     else 0
                 ),
-                "high_confidence_count": sum(
-                    1 for c in confidence_distribution if c > 0.8
-                ),
+                "high_confidence_count": sum(1 for c in confidence_distribution if c > 0.8),
                 "medium_confidence_count": sum(
                     1 for c in confidence_distribution if 0.6 <= c <= 0.8
                 ),
-                "low_confidence_count": sum(
-                    1 for c in confidence_distribution if c < 0.6
-                ),
+                "low_confidence_count": sum(1 for c in confidence_distribution if c < 0.6),
             },
         }
 
@@ -397,9 +379,7 @@ class EnhancedDraftProcessor:
         conflicts = []
 
         # Look for contradictory relationships
-        contradiction_rels = [
-            rel for rel in relationships if rel.get("type") == "contradicts"
-        ]
+        contradiction_rels = [rel for rel in relationships if rel.get("type") == "contradicts"]
 
         for rel in contradiction_rels:
             conflict = {
@@ -432,9 +412,7 @@ class EnhancedDraftProcessor:
     ) -> List[Dict[str, Any]]:
         """Build chronological timeline of facts"""
         temporal_entities = [
-            entity
-            for entity in entities
-            if entity.get("type") in ["date", "event", "fact"]
+            entity for entity in entities if entity.get("type") in ["date", "event", "fact"]
         ]
 
         # Extract entity IDs for timeline building
@@ -472,9 +450,7 @@ class EnhancedDraftProcessor:
                 sum(all_confidences) / len(all_confidences) if all_confidences else 0
             ),
             "entity_average": (
-                sum(entity_confidences) / len(entity_confidences)
-                if entity_confidences
-                else 0
+                sum(entity_confidences) / len(entity_confidences) if entity_confidences else 0
             ),
             "relationship_average": (
                 sum(relationship_confidences) / len(relationship_confidences)
@@ -482,16 +458,12 @@ class EnhancedDraftProcessor:
                 else 0
             ),
             "high_confidence_items": sum(1 for c in all_confidences if c > 0.8),
-            "medium_confidence_items": sum(
-                1 for c in all_confidences if 0.6 <= c <= 0.8
-            ),
+            "medium_confidence_items": sum(1 for c in all_confidences if 0.6 <= c <= 0.8),
             "low_confidence_items": sum(1 for c in all_confidences if c < 0.6),
             "total_items": len(all_confidences),
         }
 
-    def _analyze_legal_significance(
-        self, relationships: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def _analyze_legal_significance(self, relationships: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Analyze legal significance of relationships"""
         significance_categories = {
             "critical": [],
@@ -533,9 +505,7 @@ class EnhancedDraftProcessor:
     ) -> Dict[str, Any]:
         """Extract structured legal issues from case drafts"""
         legal_issues = [
-            entity
-            for entity in entities
-            if entity.get("type") in ["claim", "cause_of_action"]
+            entity for entity in entities if entity.get("type") in ["claim", "cause_of_action"]
         ]
 
         issues_structure = {
@@ -578,8 +548,7 @@ class EnhancedDraftProcessor:
         party_relationships = [
             rel
             for rel in relationships
-            if rel.get("type")
-            in ["plaintiff_defendant", "attorney_client", "represents"]
+            if rel.get("type") in ["plaintiff_defendant", "attorney_client", "represents"]
         ]
 
         return {
@@ -612,9 +581,7 @@ class EnhancedDraftProcessor:
             hierarchy[claim_name] = {
                 "claim": claim,
                 "supporting_relationships": supporting_rels,
-                "strength_score": self._calculate_claim_strength(
-                    claim, supporting_rels
-                ),
+                "strength_score": self._calculate_claim_strength(claim, supporting_rels),
             }
 
         return hierarchy
@@ -713,12 +680,8 @@ class EnhancedDraftProcessor:
         fact_only = set(fact_entities.keys()) - common_names
         case_only = set(case_entities.keys()) - common_names
 
-        validation_results["fact_only_entities"] = [
-            fact_entities[name] for name in fact_only
-        ]
-        validation_results["case_only_entities"] = [
-            case_entities[name] for name in case_only
-        ]
+        validation_results["fact_only_entities"] = [fact_entities[name] for name in fact_only]
+        validation_results["case_only_entities"] = [case_entities[name] for name in case_only]
 
         return validation_results
 
@@ -754,9 +717,7 @@ class EnhancedDraftProcessor:
         if case_results:
             foundation["legal_framework"] = case_results.get("legal_issues", {})
             foundation["party_structure"] = case_results.get("party_analysis", {})
-            foundation["procedural_checklist"] = case_results.get(
-                "procedural_requirements", []
-            )
+            foundation["procedural_checklist"] = case_results.get("procedural_requirements", [])
 
         # Add cross-validated entities for higher confidence
         cross_validated = cross_validation.get("consistent_entities", [])
@@ -771,18 +732,13 @@ class EnhancedDraftProcessor:
         """Assess overall strength of the case based on foundation"""
         factual_strength = len(foundation.get("foundational_facts", []))
         legal_strength = len(
-            foundation.get("legal_framework", {})
-            .get("structure", {})
-            .get("primary_claims", [])
+            foundation.get("legal_framework", {}).get("structure", {}).get("primary_claims", [])
         )
         procedural_strength = len(foundation.get("procedural_checklist", []))
         cross_validation_strength = len(foundation.get("cross_validated_entities", []))
 
         total_strength = (
-            factual_strength
-            + legal_strength
-            + procedural_strength
-            + cross_validation_strength
+            factual_strength + legal_strength + procedural_strength + cross_validation_strength
         )
 
         return {
@@ -851,9 +807,7 @@ class EnhancedDraftProcessor:
 
         return matrix
 
-    def _generate_processing_recommendations(
-        self, case_foundation: Dict[str, Any]
-    ) -> List[str]:
+    def _generate_processing_recommendations(self, case_foundation: Dict[str, Any]) -> List[str]:
         """Generate recommendations based on processing results"""
         recommendations = []
 
@@ -865,14 +819,10 @@ class EnhancedDraftProcessor:
             )
 
         if strength.get("legal_strength", 0) < 3:
-            recommendations.append(
-                "Research additional legal theories that may apply to the facts"
-            )
+            recommendations.append("Research additional legal theories that may apply to the facts")
 
         if len(case_foundation.get("cross_validated_entities", [])) < 3:
-            recommendations.append(
-                "Review consistency between fact statements and case documents"
-            )
+            recommendations.append("Review consistency between fact statements and case documents")
 
         return recommendations
 
@@ -889,8 +839,10 @@ class EnhancedDraftProcessor:
         }
 
     async def store_draft_processing_result(
-        self, processing_result: Dict[str, Any], session_id: str,
-        result_type: str = "draft_processing"
+        self,
+        processing_result: Dict[str, Any],
+        session_id: str,
+        result_type: str = "draft_processing",
     ) -> Optional[str]:
         """
         Store draft processing result through unified storage
@@ -915,7 +867,9 @@ class EnhancedDraftProcessor:
                 "source_phase": "drafting_processing",
                 "content_type": "processing_result",
                 "processing_stats": self.processing_stats,
-                "created_at": json.dumps({"timestamp": "2024-01-01T00:00:00Z"}),  # Current time placeholder
+                "created_at": json.dumps(
+                    {"timestamp": "2024-01-01T00:00:00Z"}
+                ),  # Current time placeholder
             }
 
             # Add result-specific metadata
@@ -924,21 +878,27 @@ class EnhancedDraftProcessor:
                 metadata["drafts_processed"] = processing_result.get("drafts_processed", 0)
                 metadata["total_entities"] = processing_result.get("total_entities", 0)
             elif result_type == "case_complaint":
-                metadata["legal_issues_count"] = processing_result.get("legal_issues", {}).get("total_issues", 0)
+                metadata["legal_issues_count"] = processing_result.get("legal_issues", {}).get(
+                    "total_issues", 0
+                )
                 metadata["party_analysis"] = json.dumps(processing_result.get("party_analysis", {}))
             elif result_type == "aggregated":
                 metadata["total_drafts"] = processing_result.get("total_drafts", 0)
-                metadata["case_foundation_strength"] = processing_result.get("case_foundation", {}).get("strength_assessment", {}).get("strength_rating", "unknown")
+                metadata["case_foundation_strength"] = (
+                    processing_result.get("case_foundation", {})
+                    .get("strength_assessment", {})
+                    .get("strength_rating", "unknown")
+                )
 
             # Convert processing result to JSON
             result_data = {
                 "processing_result": processing_result,
                 "session_id": session_id,
                 "result_type": result_type,
-                "processing_stats": self.processing_stats
+                "processing_stats": self.processing_stats,
             }
 
-            file_content = json.dumps(result_data, indent=2, ensure_ascii=False).encode('utf-8')
+            file_content = json.dumps(result_data, indent=2, ensure_ascii=False).encode("utf-8")
             filename = f"draft_processing_{result_type}_{session_id}.json"
 
             # Store through unified storage
@@ -946,11 +906,13 @@ class EnhancedDraftProcessor:
                 file_content=file_content,
                 filename=filename,
                 metadata=metadata,
-                source_phase="drafting_processing"
+                source_phase="drafting_processing",
             )
 
             if storage_result.success:
-                logger.info(f"Stored draft processing result with ObjectID: {storage_result.object_id}")
+                logger.info(
+                    f"Stored draft processing result with ObjectID: {storage_result.object_id}"
+                )
                 return storage_result.object_id
             else:
                 logger.error(f"Failed to store draft processing result: {storage_result.error}")
@@ -978,7 +940,9 @@ class EnhancedDraftProcessor:
             evidence_data = await self.unified_storage.get_evidence(object_id=object_id)
 
             if "error" in evidence_data:
-                logger.error(f"Failed to retrieve draft processing result: {evidence_data['error']}")
+                logger.error(
+                    f"Failed to retrieve draft processing result: {evidence_data['error']}"
+                )
                 return None
 
             # Extract processing data from evidence
@@ -999,8 +963,7 @@ class EnhancedDraftProcessor:
             return None
 
     async def search_draft_processing_results(
-        self, query: str, session_id: Optional[str] = None,
-        result_type: Optional[str] = None
+        self, query: str, session_id: Optional[str] = None, result_type: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
         Search for draft processing results in unified storage
@@ -1026,8 +989,7 @@ class EnhancedDraftProcessor:
                 search_query += f" result_type:{result_type}"
 
             search_results = await self.unified_storage.search_evidence(
-                query=search_query,
-                search_tier="vector"
+                query=search_query, search_tier="vector"
             )
 
             results = []
@@ -1037,12 +999,14 @@ class EnhancedDraftProcessor:
                     result.get("object_id", "")
                 )
                 if processing_result:
-                    results.append({
-                        "object_id": result.get("object_id", ""),
-                        "processing_result": processing_result,
-                        "metadata": result.get("metadata", {}),
-                        "relevance_score": result.get("relevance_score", 0.0)
-                    })
+                    results.append(
+                        {
+                            "object_id": result.get("object_id", ""),
+                            "processing_result": processing_result,
+                            "metadata": result.get("metadata", {}),
+                            "relevance_score": result.get("relevance_score", 0.0),
+                        }
+                    )
 
             return results
 
@@ -1058,76 +1022,81 @@ class EnhancedDraftProcessor:
 
 if __name__ == "__main__":
     # Test the enhanced draft processor
+    import asyncio
     import os
     import tempfile
 
-    logging.basicConfig(level=logging.INFO)
+    async def run_test():
+        logging.basicConfig(level=logging.INFO)
 
-    # Create test processor
-    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp:
-        processor = EnhancedDraftProcessor(tmp.name)
+        # Create test processor
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as tmp:
+            processor = EnhancedDraftProcessor(tmp.name)
 
-    try:
-        # Test fact statement processing
-        test_fact_drafts = [
-            {
-                "content": """
-            On January 15, 2024, plaintiff John Doe was driving southbound on Main Street when 
-            defendant MegaCorp's delivery truck ran a red light and collided with plaintiff's vehicle.
-            The impact caused significant damage to plaintiff's vehicle and resulted in serious injuries
-            including a broken leg and concussion. Witnesses at the scene confirm that the defendant's
-            truck was speeding and failed to stop at the red light.
-            """,
-                "file_path": "",
-                "timestamp": "2024-01-20T10:00:00Z",
-            }
-        ]
+        try:
+            # Test fact statement processing
+            test_fact_drafts = [
+                {
+                    "content": """
+                On January 15, 2024, plaintiff John Doe was driving southbound on Main Street when
+                defendant MegaCorp's delivery truck ran a red light and collided with plaintiff's vehicle.
+                The impact caused significant damage to plaintiff's vehicle and resulted in serious injuries
+                including a broken leg and concussion. Witnesses at the scene confirm that the defendant's
+                truck was speeding and failed to stop at the red light.
+                """,
+                    "file_path": "",
+                    "timestamp": "2024-01-20T10:00:00Z",
+                }
+            ]
 
-        test_case_drafts = [
-            {
-                "content": """
-            Plaintiff John Doe brings this action against Defendant MegaCorp Inc. for negligence
-            arising from a motor vehicle accident. Plaintiff seeks damages in the amount of $150,000
-            for medical expenses, lost wages, pain and suffering, and property damage.
-            
-            First Cause of Action: Negligence
-            Defendant owed plaintiff a duty of care while operating its vehicle on public roads.
-            Defendant breached this duty by running a red light and speeding.
-            """,
-                "file_path": "",
-                "timestamp": "2024-01-21T14:00:00Z",
-            }
-        ]
+            test_case_drafts = [
+                {
+                    "content": """
+                Plaintiff John Doe brings this action against Defendant MegaCorp Inc. for negligence
+                arising from a motor vehicle accident. Plaintiff seeks damages in the amount of $150,000
+                for medical expenses, lost wages, pain and suffering, and property damage.
 
-        # Process drafts
-        fact_results = processor.process_fact_statement_drafts(
-            test_fact_drafts, "test_session_001"
-        )
-        case_results = processor.process_case_complaint_drafts(
-            test_case_drafts, "test_session_001"
-        )
+                First Cause of Action: Negligence
+                Defendant owed plaintiff a duty of care while operating its vehicle on public roads.
+                Defendant breached this duty by running a red light and speeding.
+                """,
+                    "file_path": "",
+                    "timestamp": "2024-01-21T14:00:00Z",
+                }
+            ]
 
-        # Aggregate results
-        aggregated = processor.aggregate_draft_results(fact_results, case_results)
+            # Process drafts
+            fact_results = await processor.process_fact_statement_drafts(
+                test_fact_drafts, "test_session_001"
+            )
+            case_results = await processor.process_case_complaint_drafts(
+                test_case_drafts, "test_session_001"
+            )
 
-        print("Enhanced Draft Processing Test Results:")
-        print(
-            f"Fact Results: {fact_results['total_entities']} entities, {fact_results['total_relationships']} relationships"
-        )
-        print(
-            f"Case Results: {case_results['total_entities']} entities, {case_results['legal_issues']['total_issues']} legal issues"
-        )
-        print(f"Aggregated: {aggregated['total_entities']} total entities")
-        print(
-            f"Case Foundation Strength: {aggregated['case_foundation']['strength_assessment']['strength_rating']}"
-        )
+            # Aggregate results
+            aggregated = await processor.aggregate_draft_results(fact_results, case_results)
 
-        # Get statistics
-        stats = processor.get_processing_statistics()
-        print(f"Processing Statistics: {stats['processing_stats']}")
+            print("Enhanced Draft Processing Test Results:")
+            print(
+                f"Fact Results: {fact_results['total_entities']} entities, {fact_results['total_relationships']} relationships"
+            )
+            print(
+                f"Case Results: {case_results['total_entities']} entities, {case_results['legal_issues']['total_issues']} legal issues"
+            )
+            print(f"Aggregated: {aggregated['total_entities']} total entities")
+            print(
+                f"Case Foundation Strength: {aggregated['case_foundation']['strength_assessment']['strength_rating']}"
+            )
 
-    except Exception as e:
-        print(f"Test failed: {e}")
-    finally:
-        processor.close()
-        os.unlink(tmp.name)
+            # Get statistics
+            stats = processor.get_processing_statistics()
+            print(f"Processing Statistics: {stats['processing_stats']}")
+
+        except Exception as e:
+            print(f"Test failed: {e}")
+        finally:
+            processor.close()
+            os.unlink(tmp.name)
+
+    # Run the async test
+    asyncio.run(run_test())

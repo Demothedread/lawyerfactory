@@ -16,9 +16,12 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from enhanced_draft_processor import EnhancedDraftProcessor
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
 from legal_relationship_detector import LegalRelationshipDetector
+
+from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.phases.phaseB02_drafting.generator.enhanced_draft_processor import (
+    EnhancedDraftProcessor,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -90,21 +93,15 @@ class KnowledgeGraphIntegration:
         self, draft_documents: List[Dict[str, Any]], session_id: str
     ) -> Dict[str, Any]:
         """Comprehensive processing of draft documents with full relationship mapping"""
-        logger.info(
-            f"Starting comprehensive processing of {len(draft_documents)} draft documents"
-        )
+        logger.info(f"Starting comprehensive processing of {len(draft_documents)} draft documents")
 
         try:
             # Separate drafts by type
             fact_drafts = [
-                doc
-                for doc in draft_documents
-                if doc.get("draft_type") == "fact_statement"
+                doc for doc in draft_documents if doc.get("draft_type") == "fact_statement"
             ]
             case_drafts = [
-                doc
-                for doc in draft_documents
-                if doc.get("draft_type") == "case_complaint"
+                doc for doc in draft_documents if doc.get("draft_type") == "case_complaint"
             ]
 
             results = {
@@ -150,9 +147,7 @@ class KnowledgeGraphIntegration:
             results["knowledge_graph_impact"] = self._analyze_knowledge_graph_impact()
 
             # Generate recommendations
-            results["recommendations"] = self._generate_comprehensive_recommendations(
-                results
-            )
+            results["recommendations"] = self._generate_comprehensive_recommendations(results)
 
             # Update final statistics
             results["final_statistics"] = self._calculate_final_statistics(results)
@@ -163,9 +158,7 @@ class KnowledgeGraphIntegration:
             return results
 
         except Exception as e:
-            logger.exception(
-                f"Comprehensive processing failed for session {session_id}: {e}"
-            )
+            logger.exception(f"Comprehensive processing failed for session {session_id}: {e}")
             return {
                 "session_id": session_id,
                 "error": str(e),
@@ -182,9 +175,7 @@ class KnowledgeGraphIntegration:
         try:
             # Get comprehensive case foundation
             if processing_results and "aggregated_analysis" in processing_results:
-                case_foundation = processing_results["aggregated_analysis"][
-                    "case_foundation"
-                ]
+                case_foundation = processing_results["aggregated_analysis"]["case_foundation"]
             else:
                 # Retrieve from knowledge graph if not provided
                 case_foundation = self._rebuild_case_foundation_from_kg(session_id)
@@ -210,21 +201,15 @@ class KnowledgeGraphIntegration:
                 "statement_of_facts_outline": statement_outline,
                 "legal_issues_summary": legal_issues_summary,
                 "procedural_checklist": procedural_checklist,
-                "case_strength_assessment": case_foundation.get(
-                    "strength_assessment", {}
-                ),
-                "attorney_review_points": self._identify_attorney_review_points(
-                    case_foundation
-                ),
+                "case_strength_assessment": case_foundation.get("strength_assessment", {}),
+                "attorney_review_points": self._identify_attorney_review_points(case_foundation),
                 "research_recommendations": self._generate_research_recommendations(
                     case_foundation
                 ),
             }
 
         except Exception as e:
-            logger.exception(
-                f"Failed to generate facts matrix for session {session_id}: {e}"
-            )
+            logger.exception(f"Failed to generate facts matrix for session {session_id}: {e}")
             return {
                 "session_id": session_id,
                 "error": str(e),
@@ -245,9 +230,7 @@ class KnowledgeGraphIntegration:
                 "recent_conflicts_detected": len(recent_conflicts),
                 "conflict_details": recent_conflicts[:5],  # Limit to top 5 for summary
                 "knowledge_graph_health": self._assess_kg_health(stats),
-                "recommendations": self._generate_kg_recommendations(
-                    stats, recent_conflicts
-                ),
+                "recommendations": self._generate_kg_recommendations(stats, recent_conflicts),
             }
 
         except Exception as e:
@@ -281,9 +264,7 @@ class KnowledgeGraphIntegration:
             elif relationship_ratio > 0.2:
                 health_score += 15
             else:
-                issues.append(
-                    "Low relationship density - entities may be insufficiently connected"
-                )
+                issues.append("Low relationship density - entities may be insufficiently connected")
 
         # Conflict assessment
         conflicts = stats.get("conflicts", {})
@@ -295,9 +276,7 @@ class KnowledgeGraphIntegration:
         elif reviewed_conflicts >= total_conflicts * 0.8:
             health_score += 15
         else:
-            issues.append(
-                f"Unresolved conflicts: {total_conflicts - reviewed_conflicts}"
-            )
+            issues.append(f"Unresolved conflicts: {total_conflicts - reviewed_conflicts}")
 
         # Data completeness
         if total_entities > 10 and total_relationships > 5:
@@ -308,16 +287,10 @@ class KnowledgeGraphIntegration:
             "health_rating": (
                 "excellent"
                 if health_score >= 90
-                else (
-                    "good"
-                    if health_score >= 70
-                    else "fair" if health_score >= 50 else "poor"
-                )
+                else ("good" if health_score >= 70 else "fair" if health_score >= 50 else "poor")
             ),
             "identified_issues": issues,
-            "improvement_suggestions": self._generate_health_improvements(
-                health_score, issues
-            ),
+            "improvement_suggestions": self._generate_health_improvements(health_score, issues),
         }
 
     def _generate_kg_recommendations(
@@ -335,9 +308,7 @@ class KnowledgeGraphIntegration:
             )
 
         if len(conflicts) > 5:
-            recommendations.append(
-                "Multiple fact conflicts detected - attorney review recommended"
-            )
+            recommendations.append("Multiple fact conflicts detected - attorney review recommended")
 
         total_relationships = len(stats.get("legal_relationships", []))
         if total_relationships < 10:
@@ -347,9 +318,7 @@ class KnowledgeGraphIntegration:
 
         return recommendations
 
-    def _generate_comprehensive_recommendations(
-        self, results: Dict[str, Any]
-    ) -> List[str]:
+    def _generate_comprehensive_recommendations(self, results: Dict[str, Any]) -> List[str]:
         """Generate comprehensive recommendations based on processing results"""
         recommendations = []
 
@@ -420,15 +389,11 @@ class KnowledgeGraphIntegration:
         if "aggregated_analysis" in results:
             aggregated = results["aggregated_analysis"]
             cross_validation = aggregated.get("cross_validation", {})
-            stats["cross_validated_entities"] = len(
-                cross_validation.get("consistent_entities", [])
-            )
+            stats["cross_validated_entities"] = len(cross_validation.get("consistent_entities", []))
 
         return stats
 
-    def _generate_enhanced_facts_matrix(
-        self, case_foundation: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _generate_enhanced_facts_matrix(self, case_foundation: Dict[str, Any]) -> Dict[str, Any]:
         """Generate enhanced facts matrix with categorization and analysis"""
         facts_matrix = {
             "chronological_facts": [],
@@ -480,15 +445,11 @@ class KnowledgeGraphIntegration:
         outline = {
             "introduction": {
                 "parties": self._extract_party_introductions(facts_matrix),
-                "jurisdiction_and_venue": self._extract_jurisdictional_facts(
-                    facts_matrix
-                ),
+                "jurisdiction_and_venue": self._extract_jurisdictional_facts(facts_matrix),
                 "case_overview": self._generate_case_overview(case_foundation),
             },
             "background_facts": {
-                "chronological_narrative": self._build_chronological_narrative(
-                    facts_matrix
-                ),
+                "chronological_narrative": self._build_chronological_narrative(facts_matrix),
                 "key_relationships": self._identify_key_relationships(case_foundation),
                 "relevant_context": self._extract_background_context(facts_matrix),
             },
@@ -499,9 +460,7 @@ class KnowledgeGraphIntegration:
             },
             "disputed_facts": {
                 "factual_disputes": facts_matrix.get("disputed_facts", []),
-                "areas_requiring_discovery": self._identify_discovery_needs(
-                    facts_matrix
-                ),
+                "areas_requiring_discovery": self._identify_discovery_needs(facts_matrix),
                 "witness_requirements": self._identify_witness_needs(case_foundation),
             },
             "damages_and_relief": {
@@ -512,24 +471,16 @@ class KnowledgeGraphIntegration:
 
         return outline
 
-    def _generate_legal_issues_summary(
-        self, case_foundation: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _generate_legal_issues_summary(self, case_foundation: Dict[str, Any]) -> Dict[str, Any]:
         """Generate summary of legal issues and claims"""
         legal_framework = case_foundation.get("legal_framework", {})
         claims_hierarchy = case_foundation.get("claims_hierarchy", {})
 
         return {
-            "primary_legal_issues": legal_framework.get("structure", {}).get(
-                "primary_claims", []
-            ),
-            "causes_of_action": legal_framework.get("structure", {}).get(
-                "causes_of_action", []
-            ),
+            "primary_legal_issues": legal_framework.get("structure", {}).get("primary_claims", []),
+            "causes_of_action": legal_framework.get("structure", {}).get("causes_of_action", []),
             "claims_analysis": self._analyze_claims_strength(claims_hierarchy),
-            "legal_standards": self._identify_applicable_legal_standards(
-                case_foundation
-            ),
+            "legal_standards": self._identify_applicable_legal_standards(case_foundation),
             "burden_of_proof": self._analyze_burden_of_proof(legal_framework),
             "potential_defenses": self._identify_potential_defenses(case_foundation),
         }
@@ -577,9 +528,7 @@ class KnowledgeGraphIntegration:
         ]
 
         for item in standard_items:
-            if not any(
-                existing["requirement"] == item["requirement"] for existing in checklist
-            ):
+            if not any(existing["requirement"] == item["requirement"] for existing in checklist):
                 checklist.append(
                     {
                         **item,
@@ -590,9 +539,7 @@ class KnowledgeGraphIntegration:
 
         return sorted(
             checklist,
-            key=lambda x: {"high": 0, "medium": 1, "low": 2}[
-                x.get("urgency", "medium")
-            ],
+            key=lambda x: {"high": 0, "medium": 1, "low": 2}[x.get("urgency", "medium")],
         )
 
     def _identify_attorney_review_points(
@@ -717,7 +664,9 @@ class KnowledgeGraphIntegration:
             "strength_rating", "unknown"
         )
 
-        return f"Case involves {total_issues} legal issues with {strength_rating} foundation strength"
+        return (
+            f"Case involves {total_issues} legal issues with {strength_rating} foundation strength"
+        )
 
     def _build_chronological_narrative(self, facts_matrix: Dict[str, Any]) -> List[str]:
         """Build chronological narrative from facts"""
@@ -741,9 +690,7 @@ class KnowledgeGraphIntegration:
         # Extract lower-confidence facts that provide context
         all_facts = facts_matrix.get("chronological_facts", [])
         background = [
-            fact.get("name", "")
-            for fact in all_facts
-            if 0.4 < fact.get("confidence", 0) < 0.7
+            fact.get("name", "") for fact in all_facts if 0.4 < fact.get("confidence", 0) < 0.7
         ]
         return background[:5]  # Limit to 5 background facts
 
@@ -751,9 +698,7 @@ class KnowledgeGraphIntegration:
         """Identify key events from material facts"""
         material_facts = facts_matrix.get("material_facts", [])
         events = [
-            fact.get("name", "")
-            for fact in material_facts
-            if fact.get("type") in ["event", "fact"]
+            fact.get("name", "") for fact in material_facts if fact.get("type") in ["event", "fact"]
         ]
         return events
 
@@ -767,8 +712,7 @@ class KnowledgeGraphIntegration:
         """Identify areas needing discovery"""
         disputed_facts = facts_matrix.get("disputed_facts", [])
         needs = [
-            f"Discovery needed for: {fact.get('name', 'unknown')}"
-            for fact in disputed_facts[:3]
+            f"Discovery needed for: {fact.get('name', 'unknown')}" for fact in disputed_facts[:3]
         ]
         return needs
 
@@ -781,9 +725,7 @@ class KnowledgeGraphIntegration:
         """Extract damages claims"""
         all_facts = facts_matrix.get("chronological_facts", [])
         damages = [
-            fact.get("name", "")
-            for fact in all_facts
-            if fact.get("type") in ["damages", "amount"]
+            fact.get("name", "") for fact in all_facts if fact.get("type") in ["damages", "amount"]
         ]
         return damages
 
@@ -793,9 +735,7 @@ class KnowledgeGraphIntegration:
         support = [fact.get("name", "") for fact in evidence_facts]
         return support
 
-    def _analyze_claims_strength(
-        self, claims_hierarchy: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+    def _analyze_claims_strength(self, claims_hierarchy: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Analyze strength of each claim"""
         analysis = []
         for claim_name, claim_data in claims_hierarchy.items():
@@ -809,23 +749,17 @@ class KnowledgeGraphIntegration:
                         if strength_score > 0.8
                         else "moderate" if strength_score > 0.6 else "weak"
                     ),
-                    "supporting_relationships": len(
-                        claim_data.get("supporting_relationships", [])
-                    ),
+                    "supporting_relationships": len(claim_data.get("supporting_relationships", [])),
                 }
             )
         return analysis
 
-    def _identify_applicable_legal_standards(
-        self, case_foundation: Dict[str, Any]
-    ) -> List[str]:
+    def _identify_applicable_legal_standards(self, case_foundation: Dict[str, Any]) -> List[str]:
         """Identify applicable legal standards"""
         # Extract legal standards from the knowledge graph
         return ["Legal standards to be identified from knowledge graph analysis"]
 
-    def _analyze_burden_of_proof(
-        self, legal_framework: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _analyze_burden_of_proof(self, legal_framework: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze burden of proof for claims"""
         return {
             "standard": "preponderance_of_evidence",  # Default for civil cases
@@ -833,31 +767,23 @@ class KnowledgeGraphIntegration:
             "challenges": "To be determined from claim analysis",
         }
 
-    def _identify_potential_defenses(
-        self, case_foundation: Dict[str, Any]
-    ) -> List[str]:
+    def _identify_potential_defenses(self, case_foundation: Dict[str, Any]) -> List[str]:
         """Identify potential defenses"""
         # This would analyze the case structure for potential defenses
         return ["Potential defenses to be analyzed"]
 
-    def _generate_health_improvements(
-        self, health_score: int, issues: List[str]
-    ) -> List[str]:
+    def _generate_health_improvements(self, health_score: int, issues: List[str]) -> List[str]:
         """Generate health improvement suggestions"""
         improvements = []
 
         if health_score < 50:
-            improvements.append(
-                "Consider reprocessing documents with higher confidence thresholds"
-            )
+            improvements.append("Consider reprocessing documents with higher confidence thresholds")
 
         if "Low relationship density" in str(issues):
             improvements.append("Add more documents to improve entity interconnections")
 
         if "Unresolved conflicts" in str(issues):
-            improvements.append(
-                "Schedule attorney review session to resolve fact conflicts"
-            )
+            improvements.append("Schedule attorney review session to resolve fact conflicts")
 
         return improvements
 
@@ -876,9 +802,7 @@ class KnowledgeGraphIntegration:
         try:
             kg_stats = self.kg.get_enhanced_statistics() if self.kg else {}
             processor_stats = (
-                self.draft_processor.get_processing_statistics()
-                if self.draft_processor
-                else {}
+                self.draft_processor.get_processing_statistics() if self.draft_processor else {}
             )
 
             return {
@@ -968,17 +892,11 @@ if __name__ == "__main__":
         ]
 
         # Process drafts comprehensively
-        results = integration.process_draft_documents_comprehensive(
-            test_drafts, "test_session_001"
-        )
-        print(
-            f"Processing Results: {json.dumps(results['final_statistics'], indent=2)}"
-        )
+        results = integration.process_draft_documents_comprehensive(test_drafts, "test_session_001")
+        print(f"Processing Results: {json.dumps(results['final_statistics'], indent=2)}")
 
         # Generate facts matrix and statement
-        facts_output = integration.generate_facts_matrix_and_statement(
-            "test_session_001", results
-        )
+        facts_output = integration.generate_facts_matrix_and_statement("test_session_001", results)
         print(
             f"Facts Matrix Generated: {len(facts_output.get('facts_matrix', {}).get('chronological_facts', []))} facts"
         )

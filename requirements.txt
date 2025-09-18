@@ -40,6 +40,11 @@ uvicorn
 fastapi
 aiohttp
 
+# Legal Research and Web Search
+tavily-python==0.7.6
+langchain-tavily==0.2.6
+weave
+
 #aws-fileservice
 boto3
 python-dotenv

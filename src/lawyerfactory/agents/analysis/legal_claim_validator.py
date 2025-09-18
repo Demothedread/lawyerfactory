@@ -27,6 +27,19 @@ from typing import Any, Dict, List, Optional
 from ...compose.maestro.registry import AgentCapability, AgentInterface
 from ...compose.maestro.workflow_models import WorkflowTask
 
+# Import Tavily integration for claim substantiation
+try:
+    from ...research.precision_citation_service import (
+        PrecisionCitationService,
+        perform_background_research,
+        substantiate_claims,
+        verify_facts
+    )
+    TAVILY_AVAILABLE = True
+except ImportError:
+    TAVILY_AVAILABLE = False
+    logger.warning("Precision citation service not available - claim validation will be limited")
+
 logger = logging.getLogger(__name__)
 
 
@@ -53,6 +66,15 @@ class LegalClaimValidatorAgent(AgentInterface):
             AgentCapability.LEGAL_RESEARCH,
             AgentCapability.CASE_ANALYSIS,
         ]
+
+        # Initialize precision citation service for claim substantiation
+        self.citation_service = None
+        if TAVILY_AVAILABLE:
+            try:
+                self.citation_service = PrecisionCitationService()
+                logger.info("Precision citation service initialized for claim validation")
+            except Exception as e:
+                logger.warning(f"Failed to initialize precision citation service: {e}")
 
         # Load claim validation rules
         self._load_claim_validation_rules()
@@ -118,8 +140,11 @@ class LegalClaimValidatorAgent(AgentInterface):
             # Extract claims from the message
             claims = self._extract_claims_from_text(message)
 
-            # Validate claims
-            validations = await self.validate_claims(claims)
+            # Extract jurisdiction from context
+            jurisdiction = context.get("jurisdiction") or context.get("case_jurisdiction")
+
+            # Validate claims with research substantiation
+            validations = await self.validate_claims(claims, jurisdiction)
 
             # Generate response
             response = "Legal Claim Validation Analysis:\n\n"
@@ -210,12 +235,24 @@ class LegalClaimValidatorAgent(AgentInterface):
             for keyword in ["claim", "validate", "pleading", "12(b)(6)", "sufficiency"]
         )
 
-    async def validate_claims(self, claims: List[str]) -> List[ClaimValidation]:
-        """Validate a list of legal claims"""
+    async def validate_claims(self, claims: List[str], jurisdiction: Optional[str] = None) -> List[ClaimValidation]:
+        """Validate a list of legal claims with optional research substantiation"""
         validations = []
 
         for claim in claims:
             validation = await self._validate_single_claim(claim)
+
+            # Perform claim substantiation research if citation service is available
+            if self.citation_service and jurisdiction:
+                try:
+                    substantiation_result = await self._perform_claim_substantiation_research(
+                        claim, jurisdiction
+                    )
+                    validation = self._integrate_substantiation_results(validation, substantiation_result)
+                    logger.info(f"Integrated substantiation research for claim: {claim}")
+                except Exception as e:
+                    logger.warning(f"Claim substantiation research failed for '{claim}': {e}")
+
             validations.append(validation)
 
         return validations
@@ -412,6 +449,65 @@ class LegalClaimValidatorAgent(AgentInterface):
                 claims.extend(context_claims)
 
         return list(set(claims))  # Remove duplicates
+
+    async def _perform_claim_substantiation_research(self, claim: str, jurisdiction: str) -> Dict[str, Any]:
+        """Perform claim substantiation research using precision citation service"""
+        try:
+            # Use the precision citation service for claim substantiation
+            substantiation_results = await self.citation_service.search_claim_substantiation(
+                [claim], jurisdiction, max_sources_per_claim=3
+            )
+
+            return {
+                "claim": claim,
+                "citations": substantiation_results.get(claim, []),
+                "citations_found": len(substantiation_results.get(claim, [])),
+                "research_performed": True
+            }
+
+        except Exception as e:
+            logger.error(f"Claim substantiation research failed for '{claim}': {e}")
+            return {
+                "claim": claim,
+                "citations": [],
+                "citations_found": 0,
+                "research_performed": False,
+                "error": str(e)
+            }
+
+    def _integrate_substantiation_results(self, validation: ClaimValidation, substantiation_result: Dict[str, Any]) -> ClaimValidation:
+        """Integrate substantiation research results into claim validation"""
+        if not substantiation_result.get("research_performed", False):
+            return validation
+
+        citations = substantiation_result.get("citations", [])
+        if not citations:
+            return validation
+
+        # Boost confidence score based on research results
+        base_confidence = validation.confidence_score
+        research_boost = min(0.3, len(citations) * 0.1)  # Up to 0.3 boost for 3+ citations
+        validation.confidence_score = min(1.0, base_confidence + research_boost)
+
+        # Add research-based recommendations
+        if citations:
+            validation.recommendations.append(
+                f"Found {len(citations)} substantiating sources - review for additional legal authority"
+            )
+
+            # Check for high-quality academic sources
+            academic_sources = [c for c in citations if c.source_type == "academic"]
+            if academic_sources:
+                validation.recommendations.append(
+                    f"Includes {len(academic_sources)} academic sources for legal analysis"
+                )
+
+        # Update validation status if confidence improved significantly
+        if validation.confidence_score >= 0.8 and validation.validation_status == "needs_amendment":
+            validation.validation_status = "valid"
+            validation.rule_12b6_compliant = True
+
+        return validation
 
     def _generate_validation_summary(self, validations: List[ClaimValidation]) -> str:
         """Generate a summary of claim validations"""

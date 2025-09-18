@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 import logging
 from typing import Any, Dict, List, Optional
 
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph, JurisdictionAuthority
+from lawyerfactory.kg.enhanced_graph import JurisdictionAuthority
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class JurisdictionConfig:
 class JurisdictionManager:
     """Manages jurisdiction selection and legal authority hierarchy for Claims Matrix"""
 
-    def __init__(self, enhanced_kg: EnhancedKnowledgeGraph):
+    def __init__(self, enhanced_kg):  # Accept any KG type that has conn and _fetchall methods
         self.kg = enhanced_kg
         self.jurisdictions = self._initialize_jurisdictions()
         self.current_jurisdiction = None
@@ -246,9 +246,7 @@ class JurisdictionManager:
             return authorities
 
         except Exception as e:
-            logger.exception(
-                f"Failed to get jurisdiction authorities for {jurisdiction}: {e}"
-            )
+            logger.exception(f"Failed to get jurisdiction authorities for {jurisdiction}: {e}")
             return []
 
     def resolve_authority_conflict(
@@ -287,9 +285,7 @@ class JurisdictionManager:
             # If not preempted, use precedence level
             if not preempted:
                 # Sort by precedence level (lower number = higher precedence)
-                sorted_authorities = sorted(
-                    authorities, key=lambda x: x["precedence_level"]
-                )
+                sorted_authorities = sorted(authorities, key=lambda x: x["precedence_level"])
                 controlling_authority = sorted_authorities[0]
 
             return {
@@ -298,9 +294,7 @@ class JurisdictionManager:
                 "preemption_reason": (
                     f"Federal law preempts in area: {legal_area}" if preempted else None
                 ),
-                "alternative_authorities": [
-                    a for a in authorities if a != controlling_authority
-                ],
+                "alternative_authorities": [a for a in authorities if a != controlling_authority],
                 "resolution_method": (
                     "federal_preemption" if preempted else "precedence_hierarchy"
                 ),
@@ -310,24 +304,18 @@ class JurisdictionManager:
             logger.exception(f"Failed to resolve authority conflict: {e}")
             return {"error": str(e)}
 
-    def get_jurisdiction_causes_of_action(
-        self, jurisdiction: str
-    ) -> List[Dict[str, Any]]:
+    def get_jurisdiction_causes_of_action(self, jurisdiction: str) -> List[Dict[str, Any]]:
         """Get all causes of action available for a jurisdiction"""
         if not self._validate_jurisdiction(jurisdiction):
             return []
 
         return self.kg.get_causes_of_action_by_jurisdiction(jurisdiction)
 
-    def validate_cause_for_jurisdiction(
-        self, cause_name: str, jurisdiction: str
-    ) -> Dict[str, Any]:
+    def validate_cause_for_jurisdiction(self, cause_name: str, jurisdiction: str) -> Dict[str, Any]:
         """Validate if a cause of action is available in the specified jurisdiction"""
         try:
             causes = self.get_jurisdiction_causes_of_action(jurisdiction)
-            matching_cause = next(
-                (c for c in causes if c["cause_name"] == cause_name), None
-            )
+            matching_cause = next((c for c in causes if c["cause_name"] == cause_name), None)
 
             if not matching_cause:
                 return {
@@ -367,14 +355,9 @@ class JurisdictionManager:
 
     def _validate_jurisdiction(self, jurisdiction: str) -> bool:
         """Validate jurisdiction code"""
-        return (
-            jurisdiction in self.jurisdictions
-            and self.jurisdictions[jurisdiction].active
-        )
+        return jurisdiction in self.jurisdictions and self.jurisdictions[jurisdiction].active
 
-    def _suggest_alternative_causes(
-        self, cause_name: str, jurisdiction: str
-    ) -> List[str]:
+    def _suggest_alternative_causes(self, cause_name: str, jurisdiction: str) -> List[str]:
         """Suggest alternative causes of action for the jurisdiction"""
         try:
             causes = self.get_jurisdiction_causes_of_action(jurisdiction)
@@ -383,9 +366,7 @@ class JurisdictionManager:
             cause_lower = cause_name.lower()
 
             for cause in causes:
-                if any(
-                    word in cause["cause_name"].lower() for word in cause_lower.split()
-                ):
+                if any(word in cause["cause_name"].lower() for word in cause_lower.split()):
                     alternatives.append(cause["cause_name"])
 
             return alternatives[:3]  # Return top 3 matches

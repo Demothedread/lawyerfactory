@@ -1,0 +1,371 @@
+{
+  "00e8eb70-6331-4c3b-ae32-e4bb99ec3d10": {
+    "metadata": {
+      "object_id": "00e8eb70-6331-4c3b-ae32-e4bb99ec3d10",
+      "original_filename": "intake_output_test_connectivity_workflow_001.json",
+      "content_type": "application/json",
+      "file_size": 155,
+      "upload_timestamp": "2025-09-14T04:21:43.807936",
+      "source_phase": "phaseA01_intake",
+      "custom_metadata": {
+        "workflow_id": "test_connectivity_workflow_001",
+        "phase": "phaseA01_intake",
+        "content_type": "phase_output",
+        "data_type": "intake_analysis"
+      }
+    },
+    "storage_results": {
+      "vector": {
+        "success": true,
+        "vector_ids": [
+          "general_rag_adbe342c-4ee6-49b8-af65-65e890f62540"
+        ],
+        "store_type": "general_rag",
+        "validation_types": []
+      },
+      "cloud": {
+        "error": "'CloudStorageManager' object has no attribute 'store_with_tier'"
+      },
+      "evidence": {
+        "success": true,
+        "evidence_id": "6488b24a-f9b4-468f-bcb6-ab5f0ced32e8",
+        "evidence_type": "documentary",
+        "relevance_level": "high"
+      }
+    },
+    "created_at": "2025-09-14T04:21:43.808671",
+    "source_phase": "phaseA01_intake"
+  },
+  "9efa605a-8eaf-4059-8d5c-58746e237f24": {
+    "metadata": {
+      "object_id": "9efa605a-8eaf-4059-8d5c-58746e237f24",
+      "original_filename": "research_output_test_connectivity_workflow_001.json",
+      "content_type": "application/json",
+      "file_size": 199,
+      "upload_timestamp": "2025-09-14T04:21:43.808966",
+      "source_phase": "phaseA02_research",
+      "custom_metadata": {
+        "workflow_id": "test_connectivity_workflow_001",
+        "phase": "phaseA02_research",
+        "content_type": "phase_output",
+        "data_type": "research_analysis",
+        "parent_object_id": "00e8eb70-6331-4c3b-ae32-e4bb99ec3d10"
+      }
+    },
+    "storage_results": {
+      "vector": {
+        "success": true,
+        "vector_ids": [
+          "general_rag_20a4c4b8-2fdd-44e7-b765-ae8a6f81ee0d"
+        ],
+        "store_type": "general_rag",
+        "validation_types": []
+      },
+      "cloud": {
+        "error": "'CloudStorageManager' object has no attribute 'store_with_tier'"
+      },
+      "evidence": {
+        "success": true,
+        "evidence_id": "1454313e-e8ce-4286-a7d0-c0d7bb8405d2",
+        "evidence_type": "documentary",
+        "relevance_level": "low"
+      }
+    },
+    "created_at": "2025-09-14T04:21:43.809321",
+    "source_phase": "phaseA02_research"
+  },
+  "37c44c97-0a58-4417-ad71-1a5d8719099b": {
+    "metadata": {
+      "object_id": "37c44c97-0a58-4417-ad71-1a5d8719099b",
+      "original_filename": "intake_output_test_connectivity_workflow_001.json",
+      "content_type": "application/json",
+      "file_size": 155,
+      "upload_timestamp": "2025-09-14T04:22:49.165692",
+      "source_phase": "phaseA01_intake",
+      "custom_metadata": {
+        "workflow_id": "test_connectivity_workflow_001",
+        "phase": "phaseA01_intake",
+        "content_type": "phase_output",
+        "data_type": "intake_analysis"
+      }
+    },
+    "storage_results": {
+      "vector": {
+        "success": true,
+        "vector_ids": [
+          "general_rag_626341b1-70ae-4c3e-8719-ec629c73da6a"
+        ],
+        "store_type": "general_rag",
+        "validation_types": []
+      },
+      "cloud": {
+        "error": "'CloudStorageManager' object has no attribute 'store_with_tier'"
+      },
+      "evidence": {
+        "success": true,
+        "evidence_id": "39192034-2e4f-4629-829e-ffc18062036d",
+        "evidence_type": "documentary",
+        "relevance_level": "high"
+      }
+    },
+    "created_at": "2025-09-14T04:22:49.166312",
+    "source_phase": "phaseA01_intake"
+  },
+  "15038f19-5fb3-4afb-87eb-2b023137a0a4": {
+    "metadata": {
+      "object_id": "15038f19-5fb3-4afb-87eb-2b023137a0a4",
+      "original_filename": "research_output_test_connectivity_workflow_001.json",
+      "content_type": "application/json",
+      "file_size": 199,
+      "upload_timestamp": "2025-09-14T04:22:49.166611",
+      "source_phase": "phaseA02_research",
+      "custom_metadata": {
+        "workflow_id": "test_connectivity_workflow_001",
+        "phase": "phaseA02_research",
+        "content_type": "phase_output",
+        "data_type": "research_analysis",
+        "parent_object_id": "37c44c97-0a58-4417-ad71-1a5d8719099b"
+      }
+    },
+    "storage_results": {
+      "vector": {
+        "success": true,
+        "vector_ids": [
+          "general_rag_97ebb267-ec2e-4231-9ad0-d19ef942015d"
+        ],
+        "store_type": "general_rag",
+        "validation_types": []
+      },
+      "cloud": {
+        "error": "'CloudStorageManager' object has no attribute 'store_with_tier'"
+      },
+      "evidence": {
+        "success": true,
+        "evidence_id": "3a928b54-3e23-4302-a1cc-3e808f39e8d3",
+        "evidence_type": "documentary",
+        "relevance_level": "low"
+      }
+    },
+    "created_at": "2025-09-14T04:22:49.167036",
+    "source_phase": "phaseA02_research"
+  },
+  "fb2db054-25ba-44e5-8166-405164b054ac": {
+    "metadata": {
+      "object_id": "fb2db054-25ba-44e5-8166-405164b054ac",
+      "original_filename": "intake_output_test_connectivity_workflow_001.json",
+      "content_type": "application/json",
+      "file_size": 155,
+      "upload_timestamp": "2025-09-14T04:24:34.448797",
+      "source_phase": "phaseA01_intake",
+      "custom_metadata": {
+        "workflow_id": "test_connectivity_workflow_001",
+        "phase": "phaseA01_intake",
+        "content_type": "phase_output",
+        "data_type": "intake_analysis"
+      }
+    },
+    "storage_results": {
+      "vector": {
+        "success": true,
+        "vector_ids": [
+          "general_rag_2d8b0761-b134-4fa0-81c8-0e270c7f536d"
+        ],
+        "store_type": "general_rag",
+        "validation_types": []
+      },
+      "cloud": {
+        "error": "'CloudStorageManager' object has no attribute 'store_with_tier'"
+      },
+      "evidence": {
+        "success": true,
+        "evidence_id": "ff2f5fd9-a1ee-40c8-9f8a-ae5cd3e07026",
+        "evidence_type": "documentary",
+        "relevance_level": "high"
+      }
+    },
+    "created_at": "2025-09-14T04:24:34.449474",
+    "source_phase": "phaseA01_intake"
+  },
+  "475b014d-d79d-4514-829e-73c9895b696e": {
+    "metadata": {
+      "object_id": "475b014d-d79d-4514-829e-73c9895b696e",
+      "original_filename": "research_output_test_connectivity_workflow_001.json",
+      "content_type": "application/json",
+      "file_size": 199,
+      "upload_timestamp": "2025-09-14T04:24:34.449774",
+      "source_phase": "phaseA02_research",
+      "custom_metadata": {
+        "workflow_id": "test_connectivity_workflow_001",
+        "phase": "phaseA02_research",
+        "content_type": "phase_output",
+        "data_type": "research_analysis",
+        "parent_object_id": "fb2db054-25ba-44e5-8166-405164b054ac"
+      }
+    },
+    "storage_results": {
+      "vector": {
+        "success": true,
+        "vector_ids": [
+          "general_rag_7eae22b8-5fcd-4990-8491-c91c494905bc"
+        ],
+        "store_type": "general_rag",
+        "validation_types": []
+      },
+      "cloud": {
+        "error": "'CloudStorageManager' object has no attribute 'store_with_tier'"
+      },
+      "evidence": {
+        "success": true,
+        "evidence_id": "929a2c7b-ca50-4f23-9d65-c24fc9741005",
+        "evidence_type": "documentary",
+        "relevance_level": "low"
+      }
+    },
+    "created_at": "2025-09-14T04:24:34.450168",
+    "source_phase": "phaseA02_research"
+  },
+  "bbe97e96-057c-400b-8401-66cce2262d18": {
+    "metadata": {
+      "object_id": "bbe97e96-057c-400b-8401-66cce2262d18",
+      "original_filename": "case_intake_workflow_0.json",
+      "content_type": "application/json",
+      "file_size": 82,
+      "upload_timestamp": "2025-09-14T11:04:03.407240",
+      "source_phase": "orchestration",
+      "custom_metadata": {
+        "workflow_id": "workflow_0",
+        "phase": "A01_intake",
+        "content_type": "case_data"
+      }
+    },
+    "storage_results": {
+      "vector": {
+        "success": true,
+        "vector_ids": [
+          "general_rag_278a6f7c-8e89-4450-82de-86af1afb2708"
+        ],
+        "store_type": "general_rag",
+        "validation_types": []
+      },
+      "cloud": {
+        "error": "'CloudStorageManager' object has no attribute 'store_with_tier'"
+      },
+      "evidence": {
+        "success": true,
+        "evidence_id": "a7c84002-1565-436a-8d51-3962678b6b29",
+        "evidence_type": "documentary",
+        "relevance_level": "low"
+      }
+    },
+    "created_at": "2025-09-14T11:04:03.408326",
+    "source_phase": "orchestration"
+  },
+  "a6ea5d03-39d1-4221-86e9-0d01967fc96b": {
+    "metadata": {
+      "object_id": "a6ea5d03-39d1-4221-86e9-0d01967fc96b",
+      "original_filename": "phase_phaseA01_intake_workflow_0.txt",
+      "content_type": "text/plain",
+      "file_size": 68,
+      "upload_timestamp": "2025-09-14T11:04:03.408985",
+      "source_phase": "orchestration",
+      "custom_metadata": {
+        "workflow_id": "workflow_0",
+        "phase": "phaseA01_intake",
+        "content_type": "phase_result"
+      }
+    },
+    "storage_results": {
+      "vector": {
+        "success": true,
+        "vector_ids": [
+          "general_rag_69776f41-a098-4538-84ec-02791e569921"
+        ],
+        "store_type": "general_rag",
+        "validation_types": []
+      },
+      "cloud": {
+        "error": "'CloudStorageManager' object has no attribute 'store_with_tier'"
+      },
+      "evidence": {
+        "success": true,
+        "evidence_id": "75c82903-8e0e-447c-9343-eb4075373bd4",
+        "evidence_type": "documentary",
+        "relevance_level": "low"
+      }
+    },
+    "created_at": "2025-09-14T11:04:03.409491",
+    "source_phase": "orchestration"
+  },
+  "dc0a7a71-776b-4577-85fb-7bea175e597c": {
+    "metadata": {
+      "object_id": "dc0a7a71-776b-4577-85fb-7bea175e597c",
+      "original_filename": "test_simple_integration.txt",
+      "content_type": "text/plain",
+      "file_size": 52,
+      "upload_timestamp": "2025-09-15T15:03:04.247884",
+      "source_phase": "simple_integration_test",
+      "custom_metadata": {
+        "case_id": "test_case_simple",
+        "source_phase": "simple_integration_test",
+        "content_type": "text/plain"
+      }
+    },
+    "storage_results": {
+      "vector": {
+        "success": true,
+        "vector_ids": [
+          "general_rag_c03eec74-e1b6-4ba8-b401-17d0fd956aaf"
+        ],
+        "store_type": "general_rag",
+        "validation_types": []
+      },
+      "cloud": {
+        "error": "'CloudStorageManager' object has no attribute 'store_with_tier'"
+      },
+      "evidence": {
+        "success": true,
+        "evidence_id": "0fc75186-546a-43cf-b0b4-dd62081ffc5b",
+        "evidence_type": "documentary",
+        "relevance_level": "low"
+      }
+    },
+    "created_at": "2025-09-15T15:03:04.261773",
+    "source_phase": "simple_integration_test"
+  },
+  "24a60736-8c43-4959-b750-e6abd2281c0f": {
+    "metadata": {
+      "object_id": "24a60736-8c43-4959-b750-e6abd2281c0f",
+      "original_filename": "test_simple_integration.txt",
+      "content_type": "text/plain",
+      "file_size": 52,
+      "upload_timestamp": "2025-09-15T15:04:35.194566",
+      "source_phase": "simple_integration_test",
+      "custom_metadata": {
+        "case_id": "test_case_simple",
+        "source_phase": "simple_integration_test",
+        "content_type": "text/plain"
+      }
+    },
+    "storage_results": {},
+    "created_at": "2025-09-15T15:04:35.194654",
+    "source_phase": "simple_integration_test"
+  },
+  "6df2c3ae-07e2-4058-a1ba-12c43a65ab74": {
+    "metadata": {
+      "object_id": "6df2c3ae-07e2-4058-a1ba-12c43a65ab74",
+      "original_filename": "test_integration_doc.txt",
+      "content_type": "text/plain",
+      "file_size": 45,
+      "upload_timestamp": "2025-09-16T11:09:14.132737",
+      "source_phase": "integration_test",
+      "custom_metadata": {
+        "case_id": "test_case_001",
+        "source_phase": "integration_test",
+        "content_type": "text/plain"
+      }
+    },
+    "storage_results": {},
+    "created_at": "2025-09-16T11:09:14.132748",
+    "source_phase": "integration_test"
+  }
+}

@@ -5,3 +5,10 @@
 #   - Directory Group: Research
 #   - Group Tags: knowledge-graph
 """Package initialization file"""
+
+# Canonical KnowledgeGraph exports
+from .enhanced_graph import EnhancedKnowledgeGraph
+from .graph_api import KnowledgeGraph
+
+# Make EnhancedKnowledgeGraph the primary export
+__all__ = ["EnhancedKnowledgeGraph", "KnowledgeGraph"]
