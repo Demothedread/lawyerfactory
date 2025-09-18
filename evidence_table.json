@@ -1,3 +1,206 @@
 {
-  "rows": []
+  "evidence_entries": [
+    {
+      "evidence_id": "6488b24a-f9b4-468f-bcb6-ab5f0ced32e8",
+      "object_id": null,
+      "source_document": "intake_output_test_connectivity_workflow_001.json",
+      "page_section": "Full Document",
+      "content": "{'document_type': 'complaint', 'extracted_facts': ['Fact 1', 'Fact 2'], 'parties': ['Plaintiff', 'Defendant'], 'case_id': 'test_connectivity_workflow_001'}",
+      "evidence_type": "documentary",
+      "relevance_score": 0.0,
+      "relevance_level": "high",
+      "supporting_facts": [
+        "{'document_type': 'complaint', 'extracted_facts': ['Fact 1', 'Fact 2'], 'parties': ['Plaintiff', 'Defendant'], 'case_id': 'test_connectivity_workflow_001'}"
+      ],
+      "bluebook_citation": "",
+      "privilege_marker": "none",
+      "extracted_date": null,
+      "witness_name": null,
+      "key_terms": [],
+      "notes": "Source: phaseA01_intake | ObjectID: 00e8eb70-6331-4c3b-ae32-e4bb99ec3d10",
+      "created_at": "2025-09-14T04:21:43.808186",
+      "last_modified": "2025-09-14T04:21:43.808190",
+      "created_by": "unified_storage_api"
+    },
+    {
+      "evidence_id": "1454313e-e8ce-4286-a7d0-c0d7bb8405d2",
+      "object_id": null,
+      "source_document": "research_output_test_connectivity_workflow_001.json",
+      "page_section": "Full Document",
+      "content": "{'legal_authorities': ['Case A', 'Statute B'], 'research_findings': ['Finding 1', 'Finding 2'], 'case_id': 'test_connectivity_workflow_001', 'based_on_intake': '00e8eb70-6331-4c3b-ae32-e4bb99ec3d10'}",
+      "evidence_type": "documentary",
+      "relevance_score": 0.0,
+      "relevance_level": "low",
+      "supporting_facts": [
+        "{'legal_authorities': ['Case A', 'Statute B'], 'research_findings': ['Finding 1', 'Finding 2'], 'case_id': 'test_connectivity_workflow_001', 'based_on_intake': '00e8eb70-6331-4c3b-ae32-e4bb99ec3d10'}"
+      ],
+      "bluebook_citation": "",
+      "privilege_marker": "none",
+      "extracted_date": null,
+      "witness_name": null,
+      "key_terms": [],
+      "notes": "Source: phaseA02_research | ObjectID: 9efa605a-8eaf-4059-8d5c-58746e237f24",
+      "created_at": "2025-09-14T04:21:43.809127",
+      "last_modified": "2025-09-14T04:21:43.809129",
+      "created_by": "unified_storage_api"
+    },
+    {
+      "evidence_id": "39192034-2e4f-4629-829e-ffc18062036d",
+      "object_id": null,
+      "source_document": "intake_output_test_connectivity_workflow_001.json",
+      "page_section": "Full Document",
+      "content": "{'document_type': 'complaint', 'extracted_facts': ['Fact 1', 'Fact 2'], 'parties': ['Plaintiff', 'Defendant'], 'case_id': 'test_connectivity_workflow_001'}",
+      "evidence_type": "documentary",
+      "relevance_score": 0.0,
+      "relevance_level": "high",
+      "supporting_facts": [
+        "{'document_type': 'complaint', 'extracted_facts': ['Fact 1', 'Fact 2'], 'parties': ['Plaintiff', 'Defendant'], 'case_id': 'test_connectivity_workflow_001'}"
+      ],
+      "bluebook_citation": "",
+      "privilege_marker": "none",
+      "extracted_date": null,
+      "witness_name": null,
+      "key_terms": [],
+      "notes": "Source: phaseA01_intake | ObjectID: 37c44c97-0a58-4417-ad71-1a5d8719099b",
+      "created_at": "2025-09-14T04:22:49.165898",
+      "last_modified": "2025-09-14T04:22:49.165900",
+      "created_by": "unified_storage_api"
+    },
+    {
+      "evidence_id": "3a928b54-3e23-4302-a1cc-3e808f39e8d3",
+      "object_id": null,
+      "source_document": "research_output_test_connectivity_workflow_001.json",
+      "page_section": "Full Document",
+      "content": "{'legal_authorities': ['Case A', 'Statute B'], 'research_findings': ['Finding 1', 'Finding 2'], 'case_id': 'test_connectivity_workflow_001', 'based_on_intake': '37c44c97-0a58-4417-ad71-1a5d8719099b'}",
+      "evidence_type": "documentary",
+      "relevance_score": 0.0,
+      "relevance_level": "low",
+      "supporting_facts": [
+        "{'legal_authorities': ['Case A', 'Statute B'], 'research_findings': ['Finding 1', 'Finding 2'], 'case_id': 'test_connectivity_workflow_001', 'based_on_intake': '37c44c97-0a58-4417-ad71-1a5d8719099b'}"
+      ],
+      "bluebook_citation": "",
+      "privilege_marker": "none",
+      "extracted_date": null,
+      "witness_name": null,
+      "key_terms": [],
+      "notes": "Source: phaseA02_research | ObjectID: 15038f19-5fb3-4afb-87eb-2b023137a0a4",
+      "created_at": "2025-09-14T04:22:49.166724",
+      "last_modified": "2025-09-14T04:22:49.166725",
+      "created_by": "unified_storage_api"
+    },
+    {
+      "evidence_id": "ff2f5fd9-a1ee-40c8-9f8a-ae5cd3e07026",
+      "object_id": null,
+      "source_document": "intake_output_test_connectivity_workflow_001.json",
+      "page_section": "Full Document",
+      "content": "{'document_type': 'complaint', 'extracted_facts': ['Fact 1', 'Fact 2'], 'parties': ['Plaintiff', 'Defendant'], 'case_id': 'test_connectivity_workflow_001'}",
+      "evidence_type": "documentary",
+      "relevance_score": 0.0,
+      "relevance_level": "high",
+      "supporting_facts": [
+        "{'document_type': 'complaint', 'extracted_facts': ['Fact 1', 'Fact 2'], 'parties': ['Plaintiff', 'Defendant'], 'case_id': 'test_connectivity_workflow_001'}"
+      ],
+      "bluebook_citation": "",
+      "privilege_marker": "none",
+      "extracted_date": null,
+      "witness_name": null,
+      "key_terms": [],
+      "notes": "Source: phaseA01_intake | ObjectID: fb2db054-25ba-44e5-8166-405164b054ac",
+      "created_at": "2025-09-14T04:24:34.448985",
+      "last_modified": "2025-09-14T04:24:34.448988",
+      "created_by": "unified_storage_api"
+    },
+    {
+      "evidence_id": "929a2c7b-ca50-4f23-9d65-c24fc9741005",
+      "object_id": null,
+      "source_document": "research_output_test_connectivity_workflow_001.json",
+      "page_section": "Full Document",
+      "content": "{'legal_authorities': ['Case A', 'Statute B'], 'research_findings': ['Finding 1', 'Finding 2'], 'case_id': 'test_connectivity_workflow_001', 'based_on_intake': 'fb2db054-25ba-44e5-8166-405164b054ac'}",
+      "evidence_type": "documentary",
+      "relevance_score": 0.0,
+      "relevance_level": "low",
+      "supporting_facts": [
+        "{'legal_authorities': ['Case A', 'Statute B'], 'research_findings': ['Finding 1', 'Finding 2'], 'case_id': 'test_connectivity_workflow_001', 'based_on_intake': 'fb2db054-25ba-44e5-8166-405164b054ac'}"
+      ],
+      "bluebook_citation": "",
+      "privilege_marker": "none",
+      "extracted_date": null,
+      "witness_name": null,
+      "key_terms": [],
+      "notes": "Source: phaseA02_research | ObjectID: 475b014d-d79d-4514-829e-73c9895b696e",
+      "created_at": "2025-09-14T04:24:34.449882",
+      "last_modified": "2025-09-14T04:24:34.449883",
+      "created_by": "unified_storage_api"
+    },
+    {
+      "evidence_id": "a7c84002-1565-436a-8d51-3962678b6b29",
+      "object_id": null,
+      "source_document": "case_intake_workflow_0.json",
+      "page_section": "Full Document",
+      "content": "{'case_type': 'test_case', 'content': 'Test case for phase transition validation'}",
+      "evidence_type": "documentary",
+      "relevance_score": 0.0,
+      "relevance_level": "low",
+      "supporting_facts": [
+        "{'case_type': 'test_case', 'content': 'Test case for phase transition validation'}"
+      ],
+      "bluebook_citation": "",
+      "privilege_marker": "none",
+      "extracted_date": null,
+      "witness_name": null,
+      "key_terms": [],
+      "notes": "Source: orchestration | ObjectID: bbe97e96-057c-400b-8401-66cce2262d18",
+      "created_at": "2025-09-14T11:04:03.407474",
+      "last_modified": "2025-09-14T11:04:03.407476",
+      "created_by": "unified_storage_api"
+    },
+    {
+      "evidence_id": "75c82903-8e0e-447c-9343-eb4075373bd4",
+      "object_id": null,
+      "source_document": "phase_phaseA01_intake_workflow_0.txt",
+      "page_section": "Full Document",
+      "content": "Phase phaseA01_intake completed successfully for workflow workflow_0",
+      "evidence_type": "documentary",
+      "relevance_score": 0.0,
+      "relevance_level": "low",
+      "supporting_facts": [
+        "Phase phaseA01_intake completed successfully for workflow workflow_0"
+      ],
+      "bluebook_citation": "",
+      "privilege_marker": "none",
+      "extracted_date": null,
+      "witness_name": null,
+      "key_terms": [],
+      "notes": "Source: orchestration | ObjectID: a6ea5d03-39d1-4221-86e9-0d01967fc96b",
+      "created_at": "2025-09-14T11:04:03.409116",
+      "last_modified": "2025-09-14T11:04:03.409117",
+      "created_by": "unified_storage_api"
+    },
+    {
+      "evidence_id": "0fc75186-546a-43cf-b0b4-dd62081ffc5b",
+      "object_id": null,
+      "source_document": "test_simple_integration.txt",
+      "page_section": "Full Document",
+      "content": "Test document content for simple integration testing",
+      "evidence_type": "documentary",
+      "relevance_score": 0.0,
+      "relevance_level": "low",
+      "supporting_facts": [
+        "Test document content for simple integration testing"
+      ],
+      "bluebook_citation": "",
+      "privilege_marker": "none",
+      "extracted_date": null,
+      "witness_name": null,
+      "key_terms": [],
+      "notes": "Source: simple_integration_test | ObjectID: dc0a7a71-776b-4577-85fb-7bea175e597c",
+      "created_at": "2025-09-15T15:03:04.254097",
+      "last_modified": "2025-09-15T15:03:04.254224",
+      "created_by": "unified_storage_api"
+    }
+  ],
+  "fact_assertions": [],
+  "claim_entries": [],
+  "last_updated": "2025-09-15T15:03:04.255123",
+  "version": "2.0"
 }

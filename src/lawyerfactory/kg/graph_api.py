@@ -37,9 +37,7 @@ try:
     HAS_EMBEDDINGS = True
 except ImportError:
     HAS_EMBEDDINGS = False
-    logger.warning(
-        "sentence-transformers or numpy not available, semantic search disabled"
-    )
+    logger.warning("sentence-transformers or numpy not available, semantic search disabled")
 
 try:
     import spacy
@@ -216,9 +214,7 @@ class KnowledgeGraph:
 
             for eid, etype, name, emb_blob in rows:
                 emb = np.frombuffer(emb_blob, dtype=np.float32)
-                score = np.dot(q_emb, emb) / (
-                    np.linalg.norm(q_emb) * np.linalg.norm(emb)
-                )
+                score = np.dot(q_emb, emb) / (np.linalg.norm(q_emb) * np.linalg.norm(emb))
                 sims.append((score, eid, etype, name))
 
             sims.sort(reverse=True, key=lambda x: x[0])
@@ -230,9 +226,7 @@ class KnowledgeGraph:
             logger.exception("Semantic search failed for query '%s': %s", query, e)
             return []
 
-    def query_entities(
-        self, entity_type: Optional[str] = None, name: Optional[str] = None
-    ):
+    def query_entities(self, entity_type: Optional[str] = None, name: Optional[str] = None):
         """Retrieve entities filtered by type and/or name."""
         try:
             sql = "SELECT * FROM entities"
@@ -267,23 +261,23 @@ class KnowledgeGraph:
             for eid in entity_ids:
                 ent = self._fetchone("SELECT * FROM entities WHERE id = ?", (eid,))
                 if ent:
-                    entities.append(
-                        dict(id=ent[0], type=ent[1], name=ent[2], source_text=ent[5])
-                    )
+                    entities.append(dict(id=ent[0], type=ent[1], name=ent[2], source_text=ent[5]))
 
             rels = self._fetchall(
                 "SELECT * FROM relationships WHERE supporting_text = ?", (document_id,)
             )
-            relationships = [
-                {"id": r[0], "from": r[1], "to": r[2], "type": r[3]} for r in rels
-            ]
+            relationships = [{"id": r[0], "from": r[1], "to": r[2], "type": r[3]} for r in rels]
 
             return {"entities": entities, "relationships": relationships}
         except Exception as e:
-            logger.exception(
-                "Get case facts failed for document '%s': %s", document_id, e
-            )
+            logger.exception("Get case facts failed for document '%s': %s", document_id, e)
             return {}
+
+    def get_causes_of_action_by_jurisdiction(self, jurisdiction: str) -> List[Dict[str, Any]]:
+        """Get all causes of action available for a jurisdiction (placeholder implementation)"""
+        # Placeholder implementation - returns empty list until full implementation is available
+        logger.info(f"get_causes_of_action_by_jurisdiction called for jurisdiction: {jurisdiction}")
+        return []
 
     def close(self):
         """Close the database connection."""
@@ -499,9 +493,7 @@ class DocumentIngestionPipeline:
                     (from_id, to_id, "co_occurrence", document_id),
                 )
         except Exception as e:
-            logger.exception(
-                "Failed to map relationships for document %s: %s", document_id, e
-            )
+            logger.exception("Failed to map relationships for document %s: %s", document_id, e)
 
 
 class KnowledgeGraphExtensions:
@@ -585,9 +577,7 @@ class KnowledgeGraphExtensions:
     def get_entity_by_id(self, entity_id: str) -> Optional[Dict[str, Any]]:
         """Get a specific entity by ID"""
         try:
-            entity = self.kg._fetchone(
-                "SELECT * FROM entities WHERE id = ?", (entity_id,)
-            )
+            entity = self.kg._fetchone("SELECT * FROM entities WHERE id = ?", (entity_id,))
 
             if entity:
                 return {
@@ -698,16 +688,12 @@ class KnowledgeGraphExtensions:
 
             # Total counts
             total_entities = self.kg._fetchone("SELECT COUNT(*) FROM entities")[0]
-            total_relationships = self.kg._fetchone(
-                "SELECT COUNT(*) FROM relationships"
-            )[0]
+            total_relationships = self.kg._fetchone("SELECT COUNT(*) FROM relationships")[0]
 
             return {
                 "total_entities": total_entities,
                 "total_relationships": total_relationships,
-                "entity_types": [
-                    {"type": row[0], "count": row[1]} for row in entity_counts
-                ],
+                "entity_types": [{"type": row[0], "count": row[1]} for row in entity_counts],
                 "relationship_types": [
                     {"type": row[0], "count": row[1]} for row in relationship_counts
                 ],
@@ -775,9 +761,7 @@ if __name__ == "__main__":
             logger.info("Completed ingestion for %s", args.ingest_dir)
 
         elif args.query_type or args.query_name:
-            results = kg.query_entities(
-                entity_type=args.query_type, name=args.query_name
-            )
+            results = kg.query_entities(entity_type=args.query_type, name=args.query_name)
             logger.info("Query results: %s", results)
 
         elif args.case_facts:
@@ -849,9 +833,7 @@ def add_observation(graph: Dict[str, Any], observation: str) -> None:
 # If the KnowledgeGraph class does not implement `query_relationships`,
 # provide a safe fallback that returns an empty relationships list.
 try:
-    if "KnowledgeGraph" in globals() and not hasattr(
-        KnowledgeGraph, "query_relationships"
-    ):
+    if "KnowledgeGraph" in globals() and not hasattr(KnowledgeGraph, "query_relationships"):
 
         def query_relationships(self, *args, **kwargs):
             return {"success": True, "relationships": []}
@@ -865,9 +847,7 @@ except Exception:
 # If the KnowledgeGraph class does not implement `query_relationships`,
 # provide a safe fallback that returns an empty relationships list.
 try:
-    if "KnowledgeGraph" in globals() and not hasattr(
-        KnowledgeGraph, "query_relationships"
-    ):
+    if "KnowledgeGraph" in globals() and not hasattr(KnowledgeGraph, "query_relationships"):
 
         def _fallback_query_relationships(self, *args, **kwargs):
             return {"success": True, "relationships": []}

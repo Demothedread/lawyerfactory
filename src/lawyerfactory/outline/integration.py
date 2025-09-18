@@ -17,13 +17,10 @@ import json
 import logging
 from typing import Any, Dict, List, Optional
 
+from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
 from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
-from maestro.evidence_api import EvidenceAPI
-from skeletal_outline_integration import SkeletalOutlineIntegration
-
-from src.claims_matrix.comprehensive_claims_matrix_integration import (
-    ComprehensiveClaimsMatrixIntegration,
-)
+from lawyerfactory.outline.integration_legacy import SkeletalOutlineIntegration
+from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
 
 logger = logging.getLogger(__name__)
 
@@ -96,14 +93,10 @@ class MaestroSkeletalOutlineBot:
 
         logger.info(f"Maestro Skeletal Outline Bot v{self.bot_version} initialized")
 
-    async def execute_task(
-        self, task: OutlineTask, context: Dict[str, Any]
-    ) -> OutlineResult:
+    async def execute_task(self, task: OutlineTask, context: Dict[str, Any]) -> OutlineResult:
         """Execute skeletal outline generation task"""
         try:
-            logger.info(
-                f"Executing outline task {task.task_id} for case {task.case_id}"
-            )
+            logger.info(f"Executing outline task {task.task_id} for case {task.case_id}")
 
             # Validate prerequisites
             validation_result = await self._validate_prerequisites(task, context)
@@ -117,10 +110,8 @@ class MaestroSkeletalOutlineBot:
                 )
 
             # Start skeletal outline workflow
-            workflow_id = (
-                await self.outline_integration.start_skeletal_outline_workflow(
-                    task.case_id, task.session_id, task.document_type
-                )
+            workflow_id = await self.outline_integration.start_skeletal_outline_workflow(
+                task.case_id, task.session_id, task.document_type
             )
 
             # Wait for completion (with timeout)
@@ -129,9 +120,7 @@ class MaestroSkeletalOutlineBot:
             # Package results for Maestro
             outline_result = self._package_results(task.task_id, workflow_id, result)
 
-            logger.info(
-                f"Outline task {task.task_id} completed: {outline_result.success}"
-            )
+            logger.info(f"Outline task {task.task_id} completed: {outline_result.success}")
             return outline_result
 
         except Exception as e:
@@ -153,9 +142,7 @@ class MaestroSkeletalOutlineBot:
             # Check if claims matrix session exists
             if task.session_id not in self.claims_matrix.active_sessions:
                 validation["valid"] = False
-                validation["error"] = (
-                    f"Claims matrix session {task.session_id} not found"
-                )
+                validation["error"] = f"Claims matrix session {task.session_id} not found"
                 return validation
 
             # Check if evidence table has data
@@ -256,12 +243,8 @@ class MaestroSkeletalOutlineBot:
             sections_generated=generation_results.get("sections_generated", 0),
             word_count=generation_results.get("word_count", 0),
             estimated_pages=generation_results.get("estimated_pages", 0),
-            rule_12b6_compliance_score=generation_results.get(
-                "rule_12b6_compliance_score", 0.0
-            ),
-            generation_time_seconds=generation_results.get(
-                "generation_time_seconds", 0.0
-            ),
+            rule_12b6_compliance_score=generation_results.get("rule_12b6_compliance_score", 0.0),
+            generation_time_seconds=generation_results.get("generation_time_seconds", 0.0),
             final_document_path=document_path,
             warnings=generation_results.get("warnings", []),
         )
@@ -304,9 +287,7 @@ class MaestroSkeletalOutlineBot:
             # Add section progress if available
             outline_summary = status.get("outline_summary", {})
             if outline_summary:
-                progress_data["total_sections"] = outline_summary.get(
-                    "section_count", 0
-                )
+                progress_data["total_sections"] = outline_summary.get("section_count", 0)
 
             generation_results = status.get("generation_results", {})
             if generation_results:
@@ -330,16 +311,10 @@ class MaestroSkeletalOutlineBot:
             # Estimate based on time elapsed (rough approximation)
             if status.get("created_at"):
                 try:
-                    created = datetime.fromisoformat(
-                        status["created_at"].replace("Z", "+00:00")
-                    )
-                    elapsed = (
-                        datetime.now() - created.replace(tzinfo=None)
-                    ).total_seconds()
+                    created = datetime.fromisoformat(status["created_at"].replace("Z", "+00:00"))
+                    elapsed = (datetime.now() - created.replace(tzinfo=None)).total_seconds()
                     # Assume 5 minute average generation time
-                    return min(
-                        90.0, (elapsed / 300) * 90
-                    )  # Cap at 90% until confirmed complete
+                    return min(90.0, (elapsed / 300) * 90)  # Cap at 90% until confirmed complete
                 except:
                     pass
             return 10.0  # Default progress for generating state
@@ -364,12 +339,8 @@ class MaestroSkeletalOutlineBot:
 
         if status.get("created_at"):
             try:
-                created = datetime.fromisoformat(
-                    status["created_at"].replace("Z", "+00:00")
-                )
-                elapsed = (
-                    datetime.now() - created.replace(tzinfo=None)
-                ).total_seconds()
+                created = datetime.fromisoformat(status["created_at"].replace("Z", "+00:00"))
+                elapsed = (datetime.now() - created.replace(tzinfo=None)).total_seconds()
                 # Estimate 5 minutes total, subtract elapsed time
                 remaining = max(0, 300 - elapsed)
                 completion = datetime.now().timestamp() + remaining
@@ -440,12 +411,9 @@ class MaestroSkeletalOutlineBot:
 async def test_maestro_skeletal_outline_bot():
     """Test the Maestro skeletal outline bot"""
     try:
+        from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
         from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
-        from maestro.evidence_api import EvidenceAPI
-
-        from src.claims_matrix.comprehensive_claims_matrix_integration import (
-            ComprehensiveClaimsMatrixIntegration,
-        )
+        from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
 
         # Initialize components
         kg = EnhancedKnowledgeGraph()

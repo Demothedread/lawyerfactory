@@ -4,11 +4,23 @@
 #   - Entity Type: Agent
 #   - Directory Group: Workflow
 #   - Group Tags: null
+"""
+# Script Name: editor_bot.py
+# Description: DEPRECATED shim. Use lawyerfactory.compose.bots.editor instead.
+# Relationships:
+#   - Entity Type: Agent
+#   - Directory Group: Workflow
+#   - Group Tags: deprecation-shim
+"""
+
 import warnings as _w
 
 _w.warn(
-    "Module maestro/bots/legal_editor.py is deprecated; import lawyerfactory.compose.bots.editor instead.",
+    "Module lawyerfactory.phases.phaseB02_drafting.generator.editor_bot is deprecated; use lawyerfactory.compose.bots.editor",
     DeprecationWarning,
     stacklevel=2,
 )
-from lawyerfactory.compose.bots.editor import *  # noqa: F401,F403
+
+from lawyerfactory.compose.bots.editor import LegalEditorBot as _CanonicalLegalEditorBot
+
+LegalEditorBot = _CanonicalLegalEditorBot

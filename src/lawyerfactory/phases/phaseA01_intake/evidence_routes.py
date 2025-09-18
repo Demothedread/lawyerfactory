@@ -19,7 +19,7 @@ except ImportError:
     web = None
     AIOHTTP_AVAILABLE = False
 
-from .evidence_table import (
+from src.lawyerfactory.storage.evidence.table import (
     ClaimEntry,
     EnhancedEvidenceTable,
     EvidenceEntry,
@@ -104,9 +104,7 @@ class EvidenceAPI:
                     {"success": True, "message": "Evidence entry updated successfully"}
                 )
             else:
-                return web.json_response(
-                    {"error": "Evidence entry not found"}, status=404
-                )
+                return web.json_response({"error": "Evidence entry not found"}, status=404)
 
         except Exception as e:
             logger.error(f"Failed to update evidence entry: {e}")
@@ -124,9 +122,7 @@ class EvidenceAPI:
                     {"success": True, "message": "Evidence entry deleted successfully"}
                 )
             else:
-                return web.json_response(
-                    {"error": "Evidence entry not found"}, status=404
-                )
+                return web.json_response({"error": "Evidence entry not found"}, status=404)
 
         except Exception as e:
             logger.error(f"Failed to delete evidence entry: {e}")
@@ -218,9 +214,7 @@ class EvidenceAPI:
                     {"success": True, "message": "Evidence linked to fact successfully"}
                 )
             else:
-                return web.json_response(
-                    {"error": "Evidence or fact not found"}, status=404
-                )
+                return web.json_response({"error": "Evidence or fact not found"}, status=404)
 
         except Exception as e:
             logger.error(f"Failed to link evidence to fact: {e}")
@@ -318,9 +312,7 @@ class EvidenceAPI:
                 return web.Response(
                     text=csv_content,
                     content_type="text/csv",
-                    headers={
-                        "Content-Disposition": "attachment; filename=evidence_table.csv"
-                    },
+                    headers={"Content-Disposition": "attachment; filename=evidence_table.csv"},
                 )
 
             else:
@@ -340,12 +332,8 @@ def setup_evidence_routes(app, api_instance: EvidenceAPI):
     # Evidence management routes
     app.router.add_get("/api/evidence", api_instance.get_evidence_table)
     app.router.add_post("/api/evidence", api_instance.add_evidence_entry)
-    app.router.add_put(
-        "/api/evidence/{evidence_id}", api_instance.update_evidence_entry
-    )
-    app.router.add_delete(
-        "/api/evidence/{evidence_id}", api_instance.delete_evidence_entry
-    )
+    app.router.add_put("/api/evidence/{evidence_id}", api_instance.update_evidence_entry)
+    app.router.add_delete("/api/evidence/{evidence_id}", api_instance.delete_evidence_entry)
 
     # Filtering and search routes
     app.router.add_get("/api/evidence/filter", api_instance.get_filtered_evidence)

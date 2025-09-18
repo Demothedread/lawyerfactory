@@ -20,15 +20,12 @@ from dataclasses import dataclass, field
 import logging
 from typing import Any, Dict, List, Optional
 
-from ...agents.research.court_authority_helper import (
-    CourtAuthorityHelper,
-    JurisdictionContext,
-)
+from ...agents.research.court_authority_helper import CourtAuthorityHelper, JurisdictionContext
 from ...agents.research.court_authority_integration import EnhancedCaselawResearcher
 from ...compose.bots.caselaw_researcher import CaseLawResult
 from ...compose.maestro.registry import AgentCapability, AgentInterface
 from ...compose.maestro.workflow_models import WorkflowTask
-from ...storage.unified_storage_api import UnifiedStorageAPI, get_unified_storage_api
+from ...storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
 
 logger = logging.getLogger(__name__)
 
@@ -95,12 +92,10 @@ class EnhancedResearchBot(AgentInterface):
             question_type = "substantive"
 
         # Set jurisdiction context
-        self.jurisdiction_context = (
-            self.authority_helper.determine_jurisdiction_context(
-                jurisdiction=jurisdiction,
-                question_type=question_type,
-                event_location=event_location,
-            )
+        self.jurisdiction_context = self.authority_helper.determine_jurisdiction_context(
+            jurisdiction=jurisdiction,
+            question_type=question_type,
+            event_location=event_location,
         )
 
         # Also set in enhanced researcher
@@ -121,20 +116,16 @@ class EnhancedResearchBot(AgentInterface):
             legal_issues = self._extract_legal_issues(message)
 
             # Perform enhanced search
-            enhanced_results = (
-                await self.enhanced_researcher.search_caselaw_with_authority(
-                    legal_issues=legal_issues,
-                    intake_form_data=self._get_intake_form_data(),
-                )
+            enhanced_results = await self.enhanced_researcher.search_caselaw_with_authority(
+                legal_issues=legal_issues,
+                intake_form_data=self._get_intake_form_data(),
             )
 
             # Generate enhanced response
             response = "=== ENHANCED CASELAW RESEARCH RESULTS ===\n\n"
 
             # Group results by authority level
-            binding_cases = [
-                r for r in enhanced_results if r.authority_assessment.is_binding
-            ]
+            binding_cases = [r for r in enhanced_results if r.authority_assessment.is_binding]
             persuasive_cases = [
                 r for r in enhanced_results if not r.authority_assessment.is_binding
             ]
@@ -152,11 +143,11 @@ class EnhancedResearchBot(AgentInterface):
                     response += f"{i}. **{case.case_name}**\n"
                     response += f"   Citation: {case.citation}\n"
                     response += f"   Court: {case.court} ({case.year})\n"
-                    response += f"   Authority: {'★' * auth.star_rating} ({auth.authority_level.name})\n"
-                    response += f"   Reasoning: {auth.reasoning}\n"
                     response += (
-                        f"   Relevance: {result.enhanced_relevance_score:.2f}/1.0\n\n"
+                        f"   Authority: {'★' * auth.star_rating} ({auth.authority_level.name})\n"
                     )
+                    response += f"   Reasoning: {auth.reasoning}\n"
+                    response += f"   Relevance: {result.enhanced_relevance_score:.2f}/1.0\n\n"
 
             if persuasive_cases:
                 response += "🟠 **PERSUASIVE AUTHORITY CASES**\n"
@@ -166,18 +157,16 @@ class EnhancedResearchBot(AgentInterface):
                     response += f"{i}. **{case.case_name}**\n"
                     response += f"   Citation: {case.citation}\n"
                     response += f"   Court: {case.court} ({case.year})\n"
-                    response += f"   Authority: {'★' * auth.star_rating} ({auth.authority_level.name})\n"
-                    response += f"   Reasoning: {auth.reasoning}\n"
                     response += (
-                        f"   Relevance: {result.enhanced_relevance_score:.2f}/1.0\n\n"
+                        f"   Authority: {'★' * auth.star_rating} ({auth.authority_level.name})\n"
                     )
+                    response += f"   Reasoning: {auth.reasoning}\n"
+                    response += f"   Relevance: {result.enhanced_relevance_score:.2f}/1.0\n\n"
 
             # Add search recommendations if needed
             if len(enhanced_results) < 2:
-                recommendations = (
-                    await self.enhanced_researcher.get_search_recommendations(
-                        found_cases=len(enhanced_results), min_cases_needed=2
-                    )
+                recommendations = await self.enhanced_researcher.get_search_recommendations(
+                    found_cases=len(enhanced_results), min_cases_needed=2
                 )
                 if recommendations:
                     response += "💡 **SEARCH RECOMMENDATIONS**\n"
@@ -192,9 +181,7 @@ class EnhancedResearchBot(AgentInterface):
             logger.error(f"Error in enhanced research process: {e}")
             return f"Enhanced research failed: {str(e)}"
 
-    async def execute_task(
-        self, task: WorkflowTask, context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    async def execute_task(self, task: WorkflowTask, context: Dict[str, Any]) -> Dict[str, Any]:
         """Execute research task with authority enhancement and unified storage integration"""
         try:
             # Extract legal issues from context
@@ -209,10 +196,8 @@ class EnhancedResearchBot(AgentInterface):
                 self.set_jurisdiction_from_intake(intake_data)
 
             # Perform enhanced search
-            enhanced_results = (
-                await self.enhanced_researcher.search_caselaw_with_authority(
-                    legal_issues=legal_issues, intake_form_data=intake_data
-                )
+            enhanced_results = await self.enhanced_researcher.search_caselaw_with_authority(
+                legal_issues=legal_issues, intake_form_data=intake_data
             )
 
             # Convert to EnhancedResearchResult format for unified storage
@@ -227,7 +212,7 @@ class EnhancedResearchBot(AgentInterface):
                     is_binding=auth.is_binding,
                     reasoning=auth.reasoning,
                     search_priority=auth.search_priority,
-                    color_code=self._get_color_code(auth.star_rating)
+                    color_code=self._get_color_code(auth.star_rating),
                 )
                 research_results.append(research_result)
 
@@ -236,20 +221,27 @@ class EnhancedResearchBot(AgentInterface):
                 "task_id": task.id,
                 "workflow_phase": "research",
                 "legal_issues": legal_issues,
-                "jurisdiction_context": {
-                    "primary_jurisdiction": (
-                        self.jurisdiction_context.primary_jurisdiction
-                        if self.jurisdiction_context else None
-                    ),
-                    "court_type": (
-                        self.jurisdiction_context.court_type
-                        if self.jurisdiction_context else None
-                    ),
-                    "event_location": (
-                        self.jurisdiction_context.event_location
-                        if self.jurisdiction_context else None
-                    )
-                } if self.jurisdiction_context else None
+                "jurisdiction_context": (
+                    {
+                        "primary_jurisdiction": (
+                            self.jurisdiction_context.primary_jurisdiction
+                            if self.jurisdiction_context
+                            else None
+                        ),
+                        "court_type": (
+                            self.jurisdiction_context.court_type
+                            if self.jurisdiction_context
+                            else None
+                        ),
+                        "event_location": (
+                            self.jurisdiction_context.event_location
+                            if self.jurisdiction_context
+                            else None
+                        ),
+                    }
+                    if self.jurisdiction_context
+                    else None
+                ),
             }
 
             storage_result = await self.store_research_results(
@@ -282,9 +274,7 @@ class EnhancedResearchBot(AgentInterface):
                 )
 
             # Generate authority report
-            authority_report = self.enhanced_researcher.generate_authority_report(
-                enhanced_results
-            )
+            authority_report = self.enhanced_researcher.generate_authority_report(enhanced_results)
 
             return {
                 "status": "completed",
@@ -317,10 +307,8 @@ class EnhancedResearchBot(AgentInterface):
         try:
             # Test basic functionality
             test_issues = ["negligence"]
-            enhanced_results = (
-                await self.enhanced_researcher.search_caselaw_with_authority(
-                    legal_issues=test_issues, intake_form_data={}
-                )
+            enhanced_results = await self.enhanced_researcher.search_caselaw_with_authority(
+                legal_issues=test_issues, intake_form_data={}
             )
             return True
         except Exception as e:
@@ -390,9 +378,7 @@ class EnhancedResearchBot(AgentInterface):
 
         # Check claim description
         if "claim_description" in context:
-            legal_issues.extend(
-                self._extract_legal_issues(context["claim_description"])
-            )
+            legal_issues.extend(self._extract_legal_issues(context["claim_description"]))
 
         # Check selected causes
         if "selected_causes" in context:
@@ -423,9 +409,7 @@ class EnhancedResearchBot(AgentInterface):
         if not self.jurisdiction_context:
             return []
 
-        hierarchy = self.authority_helper.get_search_hierarchy(
-            self.jurisdiction_context
-        )
+        hierarchy = self.authority_helper.get_search_hierarchy(self.jurisdiction_context)
         return hierarchy
 
     # Integration method for evidence table processing
@@ -463,7 +447,7 @@ class EnhancedResearchBot(AgentInterface):
         self,
         research_results: List[EnhancedResearchResult],
         case_id: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Store research results through unified storage pipeline.
@@ -486,7 +470,7 @@ class EnhancedResearchBot(AgentInterface):
 
                 # Store through unified storage
                 storage_result = await self.unified_storage.store_evidence(
-                    file_content=research_content.encode('utf-8'),
+                    file_content=research_content.encode("utf-8"),
                     filename=f"research_{result.case.citation.replace('/', '_')}.txt",
                     metadata={
                         "case_id": case_id,
@@ -496,32 +480,40 @@ class EnhancedResearchBot(AgentInterface):
                         "authority_level": result.authority_level,
                         "is_binding": result.is_binding,
                         "research_phase": "caselaw_research",
-                        "jurisdiction": self.jurisdiction_context.primary_jurisdiction if self.jurisdiction_context else None,
-                        **(metadata or {})
+                        "jurisdiction": (
+                            self.jurisdiction_context.primary_jurisdiction
+                            if self.jurisdiction_context
+                            else None
+                        ),
+                        **(metadata or {}),
                     },
-                    source_phase="research"
+                    source_phase="research",
                 )
 
                 if storage_result.success:
                     object_ids.append(storage_result.object_id)
-                    stored_results.append({
-                        "object_id": storage_result.object_id,
-                        "citation": result.case.citation,
-                        "authority_level": result.authority_level,
-                        "storage_urls": {
-                            "s3": storage_result.s3_url,
-                            "evidence": storage_result.evidence_id,
-                            "vector": storage_result.vector_ids
+                    stored_results.append(
+                        {
+                            "object_id": storage_result.object_id,
+                            "citation": result.case.citation,
+                            "authority_level": result.authority_level,
+                            "storage_urls": {
+                                "s3": storage_result.s3_url,
+                                "evidence": storage_result.evidence_id,
+                                "vector": storage_result.vector_ids,
+                            },
                         }
-                    })
+                    )
                 else:
-                    logger.warning(f"Failed to store research result {result.case.citation}: {storage_result.error}")
+                    logger.warning(
+                        f"Failed to store research result {result.case.citation}: {storage_result.error}"
+                    )
 
             return {
                 "success": True,
                 "stored_count": len(stored_results),
                 "object_ids": object_ids,
-                "results": stored_results
+                "results": stored_results,
             }
 
         except Exception as e:
@@ -531,7 +523,7 @@ class EnhancedResearchBot(AgentInterface):
                 "error": str(e),
                 "stored_count": 0,
                 "object_ids": [],
-                "results": []
+                "results": [],
             }
 
     async def retrieve_research_by_object_id(self, object_id: str) -> Dict[str, Any]:
@@ -563,7 +555,7 @@ class EnhancedResearchBot(AgentInterface):
                 "available_tiers": evidence_data.get("available_tiers", []),
                 "content": None,
                 "evidence_data": evidence_data.get("evidence_data"),
-                "vector_data": evidence_data.get("vector_data")
+                "vector_data": evidence_data.get("vector_data"),
             }
 
             # Try to get content from S3 if available
@@ -571,7 +563,7 @@ class EnhancedResearchBot(AgentInterface):
                 s3_content = evidence_data.get("s3_data")
                 if s3_content and isinstance(s3_content, bytes):
                     try:
-                        research_data["content"] = s3_content.decode('utf-8')
+                        research_data["content"] = s3_content.decode("utf-8")
                     except UnicodeDecodeError:
                         research_data["content"] = f"[Binary content: {len(s3_content)} bytes]"
 
@@ -600,7 +592,8 @@ class EnhancedResearchBot(AgentInterface):
             # Filter by case_id if provided
             if case_id:
                 search_results = [
-                    result for result in search_results
+                    result
+                    for result in search_results
                     if result.get("metadata", {}).get("case_id") == case_id
                 ]
 
@@ -608,16 +601,18 @@ class EnhancedResearchBot(AgentInterface):
             enhanced_results = []
             for result in search_results:
                 metadata = result.get("metadata", {})
-                enhanced_results.append({
-                    "object_id": result.get("object_id"),
-                    "citation": metadata.get("citation"),
-                    "court": metadata.get("court"),
-                    "year": metadata.get("year"),
-                    "authority_level": metadata.get("authority_level"),
-                    "is_binding": metadata.get("is_binding"),
-                    "relevance_score": result.get("relevance_score", 0.0),
-                    "jurisdiction": metadata.get("jurisdiction")
-                })
+                enhanced_results.append(
+                    {
+                        "object_id": result.get("object_id"),
+                        "citation": metadata.get("citation"),
+                        "court": metadata.get("court"),
+                        "year": metadata.get("year"),
+                        "authority_level": metadata.get("authority_level"),
+                        "is_binding": metadata.get("is_binding"),
+                        "relevance_score": result.get("relevance_score", 0.0),
+                        "jurisdiction": metadata.get("jurisdiction"),
+                    }
+                )
 
             return enhanced_results
 
@@ -710,10 +705,8 @@ async def integrate_enhanced_research_phase(
     research_bot.set_jurisdiction_from_intake(intake_form_data)
 
     # Perform enhanced research
-    enhanced_results = (
-        await research_bot.enhanced_researcher.search_caselaw_with_authority(
-            legal_issues=legal_issues, intake_form_data=intake_form_data
-        )
+    enhanced_results = await research_bot.enhanced_researcher.search_caselaw_with_authority(
+        legal_issues=legal_issues, intake_form_data=intake_form_data
     )
 
     # Convert to EnhancedResearchResult format for unified storage
@@ -728,7 +721,7 @@ async def integrate_enhanced_research_phase(
             is_binding=auth.is_binding,
             reasoning=auth.reasoning,
             search_priority=auth.search_priority,
-            color_code=research_bot._get_color_code(auth.star_rating)
+            color_code=research_bot._get_color_code(auth.star_rating),
         )
         research_results.append(research_result)
 
@@ -736,24 +729,32 @@ async def integrate_enhanced_research_phase(
     storage_metadata = {
         "integration_function": "integrate_enhanced_research_phase",
         "legal_issues": legal_issues,
-        "jurisdiction_context": {
-            "primary_jurisdiction": (
-                research_bot.jurisdiction_context.primary_jurisdiction
-                if research_bot.jurisdiction_context else None
-            ),
-            "court_type": (
-                research_bot.jurisdiction_context.court_type
-                if research_bot.jurisdiction_context else None
-            ),
-            "event_location": (
-                research_bot.jurisdiction_context.event_location
-                if research_bot.jurisdiction_context else None
-            ),
-            "question_type": (
-                research_bot.jurisdiction_context.question_type.value
-                if research_bot.jurisdiction_context else None
-            ),
-        } if research_bot.jurisdiction_context else None
+        "jurisdiction_context": (
+            {
+                "primary_jurisdiction": (
+                    research_bot.jurisdiction_context.primary_jurisdiction
+                    if research_bot.jurisdiction_context
+                    else None
+                ),
+                "court_type": (
+                    research_bot.jurisdiction_context.court_type
+                    if research_bot.jurisdiction_context
+                    else None
+                ),
+                "event_location": (
+                    research_bot.jurisdiction_context.event_location
+                    if research_bot.jurisdiction_context
+                    else None
+                ),
+                "question_type": (
+                    research_bot.jurisdiction_context.question_type.value
+                    if research_bot.jurisdiction_context
+                    else None
+                ),
+            }
+            if research_bot.jurisdiction_context
+            else None
+        ),
     }
 
     storage_result = await research_bot.store_research_results(
@@ -768,16 +769,12 @@ async def integrate_enhanced_research_phase(
         )
 
     # Generate comprehensive report
-    authority_report = research_bot.enhanced_researcher.generate_authority_report(
-        enhanced_results
-    )
+    authority_report = research_bot.enhanced_researcher.generate_authority_report(enhanced_results)
 
     return {
         "success": True,
         "cases_found": len(enhanced_results),
-        "binding_cases": len(
-            [r for r in enhanced_results if r.authority_assessment.is_binding]
-        ),
+        "binding_cases": len([r for r in enhanced_results if r.authority_assessment.is_binding]),
         "enhanced_results": enhanced_results,
         "authority_report": authority_report,
         "evidence_processing_success": evidence_success,

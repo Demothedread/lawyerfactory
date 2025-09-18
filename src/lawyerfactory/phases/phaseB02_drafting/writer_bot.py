@@ -1,14 +1,20 @@
+"""
 # Script Name: writer_bot.py
-# Description: AUTO-GENERATED SHIM: will be removed in next release.
+# Description: DEPRECATED shim. Use lawyerfactory.compose.bots.writer instead.
 # Relationships:
 #   - Entity Type: Agent
 #   - Directory Group: Workflow
-#   - Group Tags: null
+#   - Group Tags: deprecation-shim
+"""
+
 import warnings as _w
 
 _w.warn(
-    "Module maestro/bots/writer_bot.py is deprecated; import lawyerfactory.compose.bots.writer instead.",
+    "Module lawyerfactory.phases.phaseB02_drafting.writer_bot is deprecated; use lawyerfactory.compose.bots.writer",
     DeprecationWarning,
     stacklevel=2,
 )
-from lawyerfactory.compose.bots.writer import *  # noqa: F401,F403
+
+from lawyerfactory.compose.bots.writer import WriterBot as _CanonicalWriterBot
+
+WriterBot = _CanonicalWriterBot

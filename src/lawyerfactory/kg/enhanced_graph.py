@@ -18,7 +18,7 @@ import logging
 from typing import Any, Dict, List, Optional
 import uuid
 
-from knowledge_graph import KnowledgeGraph
+from .graph_api import KnowledgeGraph
 
 logger = logging.getLogger(__name__)
 
@@ -137,8 +137,7 @@ class ConfidenceFactors:
 
         weighted_sum = (
             self.source_credibility * weights["source_credibility"]
-            + self.extraction_method_reliability
-            * weights["extraction_method_reliability"]
+            + self.extraction_method_reliability * weights["extraction_method_reliability"]
             + self.evidence_support * weights["evidence_support"]
             + self.temporal_consistency * weights["temporal_consistency"]
             + self.cross_validation * weights["cross_validation"]
@@ -234,9 +233,7 @@ class LegalEntity:
     description: Optional[str] = None
     source_text: Optional[str] = None
     context_window: Optional[str] = None
-    confidence_factors: Optional[ConfidenceFactors] = field(
-        default_factory=ConfidenceFactors
-    )
+    confidence_factors: Optional[ConfidenceFactors] = field(default_factory=ConfidenceFactors)
     extraction_method: str = "manual"
     created_at: Optional[datetime] = field(default_factory=datetime.now)
     updated_at: Optional[datetime] = field(default_factory=datetime.now)
@@ -268,9 +265,7 @@ class LegalRelationship:
     from_entity: str
     to_entity: str
     relationship_type: LegalRelationshipType
-    confidence_factors: Optional[ConfidenceFactors] = field(
-        default_factory=ConfidenceFactors
-    )
+    confidence_factors: Optional[ConfidenceFactors] = field(default_factory=ConfidenceFactors)
     extraction_method: str = "manual"
     verified: bool = False
     supporting_text: Optional[str] = None
@@ -580,11 +575,7 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
                     entity.context_window,
                     entity.overall_confidence,
                     entity.extraction_method,
-                    (
-                        json.dumps(entity.legal_attributes)
-                        if entity.legal_attributes
-                        else None
-                    ),
+                    (json.dumps(entity.legal_attributes) if entity.legal_attributes else None),
                     entity.verified,
                     entity.verification_source,
                 ),
@@ -725,14 +716,10 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
             return relationships
 
         except Exception as e:
-            logger.exception(
-                f"Failed to get legal relationships for entity {entity_id}: {e}"
-            )
+            logger.exception(f"Failed to get legal relationships for entity {entity_id}: {e}")
             return []
 
-    def update_entity_confidence(
-        self, entity_id: str, confidence_factors: ConfidenceFactors
-    ):
+    def update_entity_confidence(self, entity_id: str, confidence_factors: ConfidenceFactors):
         """Update confidence factors for an entity"""
         try:
             overall_confidence = confidence_factors.calculate_overall_confidence()
@@ -768,17 +755,13 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
                 (overall_confidence, entity_id),
             )
 
-            logger.info(
-                f"Updated confidence for entity {entity_id}: {overall_confidence:.2f}"
-            )
+            logger.info(f"Updated confidence for entity {entity_id}: {overall_confidence:.2f}")
 
         except Exception as e:
             logger.exception(f"Failed to update confidence for entity {entity_id}: {e}")
             raise
 
-    def detect_fact_conflicts(
-        self, min_similarity_threshold: float = 0.7
-    ) -> List[Dict[str, Any]]:
+    def detect_fact_conflicts(self, min_similarity_threshold: float = 0.7) -> List[Dict[str, Any]]:
         """Detect potential conflicts between facts/entities"""
         try:
             # Simple implementation - can be enhanced with semantic similarity
@@ -884,15 +867,11 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
             base_stats = {}
             if hasattr(self, "get_entity_statistics"):
                 try:
-                    base_stats = super(
-                        EnhancedKnowledgeGraph, self
-                    ).get_entity_statistics()
+                    base_stats = super(EnhancedKnowledgeGraph, self).get_entity_statistics()
                 except AttributeError:
                     # Fallback to basic entity count
                     total_entities = self._fetchone("SELECT COUNT(*) FROM entities")
-                    base_stats = {
-                        "total_entities": total_entities[0] if total_entities else 0
-                    }
+                    base_stats = {"total_entities": total_entities[0] if total_entities else 0}
 
             # Enhanced statistics
             legal_relationship_counts = self._fetchall(
@@ -926,19 +905,12 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
             enhanced_stats = {
                 **base_stats,
                 "legal_relationships": [
-                    {"type": row[0], "count": row[1]}
-                    for row in legal_relationship_counts
+                    {"type": row[0], "count": row[1]} for row in legal_relationship_counts
                 ],
                 "confidence_metrics": {
-                    "average": (
-                        confidence_distribution[0] if confidence_distribution else 0
-                    ),
-                    "minimum": (
-                        confidence_distribution[1] if confidence_distribution else 0
-                    ),
-                    "maximum": (
-                        confidence_distribution[2] if confidence_distribution else 0
-                    ),
+                    "average": (confidence_distribution[0] if confidence_distribution else 0),
+                    "minimum": (confidence_distribution[1] if confidence_distribution else 0),
+                    "maximum": (confidence_distribution[2] if confidence_distribution else 0),
                     "entities_with_confidence": (
                         confidence_distribution[3] if confidence_distribution else 0
                     ),
@@ -982,18 +954,14 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
             cursor.close()
             self.conn.commit()
 
-            logger.info(
-                f"Added cause of action: {cause.cause_name} for {cause.jurisdiction}"
-            )
+            logger.info(f"Added cause of action: {cause.cause_name} for {cause.jurisdiction}")
             return cause_id
 
         except Exception as e:
             logger.exception(f"Failed to add cause of action: {e}")
             raise
 
-    def get_causes_of_action_by_jurisdiction(
-        self, jurisdiction: str
-    ) -> List[Dict[str, Any]]:
+    def get_causes_of_action_by_jurisdiction(self, jurisdiction: str) -> List[Dict[str, Any]]:
         """Get all causes of action for a specific jurisdiction"""
         try:
             rows = self._fetchall(
@@ -1027,9 +995,7 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
             return causes
 
         except Exception as e:
-            logger.exception(
-                f"Failed to get causes of action for jurisdiction {jurisdiction}: {e}"
-            )
+            logger.exception(f"Failed to get causes of action for jurisdiction {jurisdiction}: {e}")
             return []
 
     def add_legal_element(self, element: LegalElement) -> int:
@@ -1066,9 +1032,7 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
             logger.exception(f"Failed to add legal element: {e}")
             raise
 
-    def get_legal_elements_for_cause(
-        self, cause_of_action_id: int
-    ) -> List[Dict[str, Any]]:
+    def get_legal_elements_for_cause(self, cause_of_action_id: int) -> List[Dict[str, Any]]:
         """Get all legal elements for a specific cause of action"""
         try:
             rows = self._fetchall(
@@ -1104,9 +1068,7 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
             return elements
 
         except Exception as e:
-            logger.exception(
-                f"Failed to get legal elements for cause {cause_of_action_id}: {e}"
-            )
+            logger.exception(f"Failed to get legal elements for cause {cause_of_action_id}: {e}")
             return []
 
     def add_element_question(self, question: ElementQuestion) -> int:
@@ -1133,9 +1095,7 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
             cursor.close()
             self.conn.commit()
 
-            logger.info(
-                f"Added element question to legal element {question.legal_element_id}"
-            )
+            logger.info(f"Added element question to legal element {question.legal_element_id}")
             return question_id
 
         except Exception as e:
@@ -1167,9 +1127,7 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
                         "question_text": row[2],
                         "question_order": row[3],
                         "question_type": row[4],
-                        "suggested_evidence_types": (
-                            json.loads(row[5]) if row[5] else []
-                        ),
+                        "suggested_evidence_types": (json.loads(row[5]) if row[5] else []),
                         "created_at": row[6],
                         "element_name": row[7],
                     }
@@ -1218,9 +1176,7 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
             logger.exception(f"Failed to attach fact to element: {e}")
             raise
 
-    def get_fact_attachments_for_element(
-        self, legal_element_id: int
-    ) -> List[Dict[str, Any]]:
+    def get_fact_attachments_for_element(self, legal_element_id: int) -> List[Dict[str, Any]]:
         """Get all fact attachments for a legal element"""
         try:
             rows = self._fetchall(
@@ -1260,9 +1216,7 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
             return attachments
 
         except Exception as e:
-            logger.exception(
-                f"Failed to get fact attachments for element {legal_element_id}: {e}"
-            )
+            logger.exception(f"Failed to get fact attachments for element {legal_element_id}: {e}")
             return []
 
     def get_case_strength_analysis(self, cause_of_action_id: int) -> Dict[str, Any]:
@@ -1281,20 +1235,16 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
                 # Get fact attachments for this element
                 attachments = self.get_fact_attachments_for_element(element["id"])
 
-                supporting_facts = [
-                    a for a in attachments if a["attachment_type"] == "supports"
-                ]
+                supporting_facts = [a for a in attachments if a["attachment_type"] == "supports"]
                 contradicting_facts = [
                     a for a in attachments if a["attachment_type"] == "contradicts"
                 ]
 
                 support_score = sum(
-                    a["relevance_score"] * a["confidence_score"]
-                    for a in supporting_facts
+                    a["relevance_score"] * a["confidence_score"] for a in supporting_facts
                 )
                 contradiction_score = sum(
-                    a["relevance_score"] * a["confidence_score"]
-                    for a in contradicting_facts
+                    a["relevance_score"] * a["confidence_score"] for a in contradicting_facts
                 )
 
                 element_strength = max(0.0, support_score - contradiction_score)
@@ -1330,9 +1280,7 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
             }
 
         except Exception as e:
-            logger.exception(
-                f"Failed to analyze case strength for cause {cause_of_action_id}: {e}"
-            )
+            logger.exception(f"Failed to analyze case strength for cause {cause_of_action_id}: {e}")
             return {"error": str(e)}
 
     def search_entities_by_type(self, entity_types: List[str]) -> List[Dict[str, Any]]:

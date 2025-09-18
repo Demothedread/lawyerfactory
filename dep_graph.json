@@ -1,329 +1,221 @@
 {
-  "nodes": [
+  "entities": [
     {
-      "id": "app.py",
-      "type": "entrypoint",
-      "domain": "root",
-      "imports": []
+      "id": "Maestro",
+      "type": "agent",
+      "features": ["orchestration", "coordination"],
+      "relationships": ["directs_research_bot", "receives_feedback_editor", "passes_research_writer"],
+      "location": "src/lawyerfactory/agents/orchestration/maestro.py"
     },
     {
-      "id": "knowledge_graph.py",
-      "type": "module",
-      "domain": "knowledge_graph",
-      "imports": [],
-      "target_location": "src/knowledge_graph/api/knowledge_graph.py"
+      "id": "Reader",
+      "type": "agent",
+      "features": ["document_intake", "fact_extraction"],
+      "relationships": ["feeds_maestro", "uses_assessor"],
+      "location": "src/lawyerfactory/agents/intake/reader.py"
     },
     {
-      "id": "lawyerfactory/knowledge_graph.py",
-      "type": "module", 
-      "domain": "knowledge_graph",
-      "imports": [],
-      "target_location": "src/knowledge_graph/api/knowledge_graph.py",
-      "merge_with": "knowledge_graph.py"
+      "id": "Assessor",
+      "type": "agent",
+      "features": ["document_processing", "categorization", "AI_summarization"],
+      "relationships": ["adds_to_repository", "supports_reader"],
+      "location": "src/lawyerfactory/agents/intake/assessor.py"
     },
     {
-      "id": "enhanced_knowledge_graph.py",
-      "type": "module",
-      "domain": "knowledge_graph", 
-      "imports": ["knowledge_graph"],
-      "target_location": "src/knowledge_graph/api/enhanced_knowledge_graph.py"
+      "id": "LegalResearcher",
+      "type": "agent",
+      "features": ["research", "authority_assessment"],
+      "relationships": ["uses_repository", "integrates_courtlistener"],
+      "location": "src/lawyerfactory/agents/research/legal_researcher.py"
     },
     {
-      "id": "knowledge_graph_extensions.py",
-      "type": "module",
-      "domain": "knowledge_graph",
-      "imports": ["enhanced_knowledge_graph"],
-      "target_location": "src/knowledge_graph/api/knowledge_graph_extensions.py"
+      "id": "Writer",
+      "type": "agent",
+      "features": ["drafting", "Law_of_Threes"],
+      "relationships": ["receives_research", "produces_documents"],
+      "location": "src/lawyerfactory/agents/drafting/writer.py"
     },
     {
-      "id": "knowledge_graph_integration.py", 
-      "type": "module",
-      "domain": "knowledge_graph",
-      "imports": ["enhanced_knowledge_graph"],
-      "target_location": "src/knowledge_graph/api/knowledge_graph_integration.py"
+      "id": "Editor",
+      "type": "agent",
+      "features": ["style", "coherence", "quality_assurance"],
+      "relationships": ["reviews_documents", "provides_feedback_maestro"],
+      "location": "src/lawyerfactory/agents/review/editor.py"
     },
     {
-      "id": "lawyerfactory/enhanced_workflow.py",
-      "type": "module",
-      "domain": "workflow",
-      "imports": ["lawyerfactory.knowledge_graph", "lawyerfactory.document_generator"],
-      "target_location": "src/workflow/api/enhanced_workflow.py"
+      "id": "Repository",
+      "type": "database",
+      "features": ["metadata_storage", "CSV_persistence"],
+      "relationships": ["source_for_researcher", "updated_by_assessor"],
+      "location": "src/lawyerfactory/storage/repository.py"
     },
     {
-      "id": "lawyerfactory/workflow.py", 
-      "type": "module",
-      "domain": "workflow",
-      "imports": [],
-      "target_location": "src/workflow/api/workflow.py"
+      "id": "KnowledgeGraph",
+      "type": "data_structure",
+      "features": ["entity_relationships", "semantic_network"],
+      "relationships": ["enhances_all_agents"],
+      "location": "src/lawyerfactory/kg/enhanced_graph.py"
     },
     {
-      "id": "lawyerfactory/document_generator/ai_document_generator.py",
-      "type": "module",
-      "domain": "document_generator",
-      "imports": ["lawyerfactory.document_generator.modules"],
-      "target_location": "src/document_generator/api/ai_document_generator.py"
+      "id": "VectorStore",
+      "type": "data_structure",
+      "features": ["semantic_search", "RAG_enhancement"],
+      "relationships": ["supports_research", "enables_drafting"],
+      "location": "src/lawyerfactory/vectors/enhanced_vector_store.py"
     },
     {
-      "id": "lawyerfactory/document_generator/generator.py",
-      "type": "module", 
-      "domain": "document_generator",
-      "imports": ["modules"],
-      "target_location": "src/document_generator/api/generator.py"
-    },
-    {
-      "id": "document_export_system.py",
-      "type": "module",
-      "domain": "document_generator",
-      "imports": [],
-      "target_location": "src/document_generator/api/document_export_system.py"
-    },
-    {
-      "id": "enhanced_draft_processor.py",
-      "type": "module",
-      "domain": "document_generator", 
-      "imports": [],
-      "target_location": "src/document_generator/api/enhanced_draft_processor.py"
-    },
-    {
-      "id": "lawyerfactory/file-storage.py",
-      "type": "module",
-      "domain": "storage",
-      "imports": [],
-      "target_location": "src/storage/api/file_storage.py"
-    },
-    {
-      "id": "maestro/bots/ingest-server.py",
-      "type": "module",
-      "domain": "ingestion",
-      "imports": [],
-      "target_location": "src/ingestion/api/ingest_server.py"
-    },
-    {
-      "id": "maestro/bots/ai_document_agent.py",
-      "type": "module",
-      "domain": "ingestion",
-      "imports": ["lawyerfactory.document_generator.ai_document_generator"],
-      "target_location": "src/ingestion/api/ai_document_agent.py"
-    },
-    {
-      "id": "maestro/bots/writer_bot.py",
-      "type": "module", 
-      "domain": "ingestion",
-      "imports": ["lawyerfactory.document_generator.modules.fact_synthesis", "lawyerfactory.document_generator.modules.legal_theory_mapping"],
-      "target_location": "src/ingestion/api/writer_bot.py"
-    },
-    {
-      "id": "maestro/bots/legal_editor.py",
-      "type": "module",
-      "domain": "ingestion", 
-      "imports": ["lawyerfactory.document_generator.modules.compliance_checker"],
-      "target_location": "src/ingestion/api/legal_editor.py"
-    },
-    {
-      "id": "lawyerfactory/models.py",
-      "type": "module",
-      "domain": "shared",
-      "imports": [],
-      "target_location": "src/shared/models.py"
-    },
-    {
-      "id": "lawyerfactory/agent_config_system.py",
-      "type": "module",
-      "domain": "shared", 
-      "imports": [],
-      "target_location": "src/shared/agent_config_system.py"
-    },
-    {
-      "id": "lawyerfactory/document_type_framework.py",
-      "type": "module",
-      "domain": "shared",
-      "imports": [],
-      "target_location": "src/shared/document_type_framework.py"
-    },
-    {
-      "id": "tests/test_enhanced_integration.py",
-      "type": "test",
-      "domain": "tests",
-      "imports": ["lawyerfactory.enhanced_workflow"]
-    },
-    {
-      "id": "tests/test_comprehensive_integration.py", 
-      "type": "test",
-      "domain": "tests",
-      "imports": ["lawyerfactory.enhanced_workflow", "lawyerfactory.document_generator.generator"]
-    },
-    {
-      "id": "tests/test_ai_document_integration.py",
-      "type": "test",
-      "domain": "tests", 
-      "imports": ["lawyerfactory.enhanced_workflow"]
-    },
-    {
-      "id": "tests/test_workflow.py",
-      "type": "test",
-      "domain": "tests",
-      "imports": ["lawyerfactory.workflow"]
-    },
-    {
-      "id": "tests/test_kanban.py",
-      "type": "test", 
-      "domain": "tests",
-      "imports": ["lawyerfactory.kanban_cli"]
+      "id": "UnifiedStorage",
+      "type": "infrastructure",
+      "features": ["multi_backend_storage", "fallback_mechanisms"],
+      "relationships": ["provides_persistence"],
+      "location": "src/lawyerfactory/storage/unified_storage_api.py"
     }
   ],
-  "edges": [
+  "relationships": [
     {
-      "from": "enhanced_knowledge_graph.py",
-      "to": "knowledge_graph.py",
-      "type": "import"
+      "from": "Maestro",
+      "to": "LegalResearcher",
+      "type": "directs",
+      "description": "Central coordinator delegates research tasks"
     },
     {
-      "from": "knowledge_graph_extensions.py", 
-      "to": "enhanced_knowledge_graph.py",
-      "type": "import"
+      "from": "LegalResearcher",
+      "to": "Repository",
+      "type": "reads",
+      "description": "Research agent queries stored documents"
     },
     {
-      "from": "knowledge_graph_integration.py",
-      "to": "enhanced_knowledge_graph.py", 
-      "type": "import"
+      "from": "Assessor",
+      "to": "Repository",
+      "type": "writes",
+      "description": "Document processor stores analyzed content"
     },
     {
-      "from": "lawyerfactory/enhanced_workflow.py",
-      "to": "lawyerfactory/knowledge_graph.py",
-      "type": "import"
+      "from": "Maestro",
+      "to": "Writer",
+      "type": "feeds",
+      "description": "Coordinator passes research to drafting agent"
     },
     {
-      "from": "lawyerfactory/enhanced_workflow.py",
-      "to": "lawyerfactory/document_generator/ai_document_generator.py",
-      "type": "import"
+      "from": "Writer",
+      "to": "Editor",
+      "type": "produces",
+      "description": "Drafting agent creates documents for review"
     },
     {
-      "from": "maestro/bots/ai_document_agent.py",
-      "to": "lawyerfactory/document_generator/ai_document_generator.py", 
-      "type": "import"
+      "from": "Editor",
+      "to": "Maestro",
+      "type": "reports",
+      "description": "Review agent provides quality feedback"
     },
     {
-      "from": "maestro/bots/writer_bot.py",
-      "to": "lawyerfactory/document_generator/modules/fact_synthesis.py",
-      "type": "import"
+      "from": "Reader",
+      "to": "Assessor",
+      "type": "feeds",
+      "description": "Document intake feeds processing pipeline"
     },
     {
-      "from": "maestro/bots/writer_bot.py",
-      "to": "lawyerfactory/document_generator/modules/legal_theory_mapping.py",
-      "type": "import"
+      "from": "KnowledgeGraph",
+      "to": "all_agents",
+      "type": "enhances",
+      "description": "Semantic network improves all agent capabilities"
     },
     {
-      "from": "maestro/bots/legal_editor.py",
-      "to": "lawyerfactory/document_generator/modules/compliance_checker.py",
-      "type": "import"
+      "from": "VectorStore",
+      "to": "LegalResearcher",
+      "type": "supports",
+      "description": "Vector search enables semantic research"
     },
     {
-      "from": "tests/test_enhanced_integration.py",
-      "to": "lawyerfactory/enhanced_workflow.py",
-      "type": "import"
+      "from": "VectorStore",
+      "to": "Writer",
+      "type": "enables",
+      "description": "RAG capabilities enhance document generation"
     },
     {
-      "from": "tests/test_comprehensive_integration.py",
-      "to": "lawyerfactory/enhanced_workflow.py", 
-      "type": "import"
-    },
-    {
-      "from": "tests/test_comprehensive_integration.py",
-      "to": "lawyerfactory/document_generator/generator.py",
-      "type": "import"
-    },
-    {
-      "from": "tests/test_ai_document_integration.py",
-      "to": "lawyerfactory/enhanced_workflow.py",
-      "type": "import" 
-    },
-    {
-      "from": "tests/test_workflow.py",
-      "to": "lawyerfactory/workflow.py",
-      "type": "import"
-    },
-    {
-      "from": "tests/test_kanban.py",
-      "to": "lawyerfactory/kanban_cli.py",
-      "type": "import"
+      "from": "UnifiedStorage",
+      "to": "Repository",
+      "type": "backs",
+      "description": "Enterprise storage provides persistence layer"
     }
   ],
-  "clusters": {
-    "knowledge_graph": [
-      "knowledge_graph.py",
-      "lawyerfactory/knowledge_graph.py", 
-      "enhanced_knowledge_graph.py",
-      "knowledge_graph_extensions.py",
-      "knowledge_graph_integration.py"
-    ],
-    "document_generator": [
-      "lawyerfactory/document_generator/ai_document_generator.py",
-      "lawyerfactory/document_generator/generator.py",
-      "document_export_system.py",
-      "enhanced_draft_processor.py"
-    ],
-    "workflow": [
-      "lawyerfactory/enhanced_workflow.py",
-      "lawyerfactory/workflow.py"
-    ],
-    "storage": [
-      "lawyerfactory/file-storage.py"
-    ],
-    "ingestion": [
-      "maestro/bots/ingest-server.py",
-      "maestro/bots/ai_document_agent.py", 
-      "maestro/bots/writer_bot.py",
-      "maestro/bots/legal_editor.py"
-    ],
-    "shared": [
-      "lawyerfactory/models.py",
-      "lawyerfactory/agent_config_system.py",
-      "lawyerfactory/document_type_framework.py"
-    ],
-    "tests": [
-      "tests/test_enhanced_integration.py",
-      "tests/test_comprehensive_integration.py",
-      "tests/test_ai_document_integration.py", 
-      "tests/test_workflow.py",
-      "tests/test_kanban.py"
-    ]
-  },
-  "cycles": [],
-  "import_update_needed": [
+  "workflows": [
     {
-      "file": "tests/test_enhanced_integration.py",
-      "old_import": "from lawyerfactory.enhanced_workflow import EnhancedWorkflowManager",
-      "new_import": "from src.workflow.api.enhanced_workflow import EnhancedWorkflowManager"
+      "id": "intake_workflow",
+      "description": "Document intake and initial processing",
+      "steps": ["Reader", "Assessor", "Repository"],
+      "data_flow": ["raw_documents", "processed_content", "stored_metadata"]
     },
     {
-      "file": "tests/test_comprehensive_integration.py",
-      "old_import": "from lawyerfactory.enhanced_workflow import EnhancedWorkflowManager", 
-      "new_import": "from src.workflow.api.enhanced_workflow import EnhancedWorkflowManager"
+      "id": "research_workflow",
+      "description": "Legal research and authority identification",
+      "steps": ["Maestro", "LegalResearcher", "VectorStore"],
+      "data_flow": ["research_queries", "case_law_results", "authority_assessments"]
     },
     {
-      "file": "tests/test_ai_document_integration.py",
-      "old_import": "from lawyerfactory.enhanced_workflow import EnhancedWorkflowManager",
-      "new_import": "from src.workflow.api.enhanced_workflow import EnhancedWorkflowManager"
+      "id": "drafting_workflow",
+      "description": "Document composition and generation",
+      "steps": ["Maestro", "Writer", "KnowledgeGraph"],
+      "data_flow": ["research_findings", "draft_documents", "enhanced_content"]
     },
     {
-      "file": "tests/test_workflow.py",
-      "old_import": "from lawyerfactory.workflow import progress_task, is_complete",
-      "new_import": "from src.workflow.api.workflow import progress_task, is_complete"
+      "id": "review_workflow",
+      "description": "Quality assurance and editing",
+      "steps": ["Editor", "Maestro", "UnifiedStorage"],
+      "data_flow": ["draft_documents", "quality_feedback", "final_documents"]
+    }
+  ],
+  "external_integrations": [
+    {
+      "id": "courtlistener_api",
+      "type": "legal_database",
+      "usage": "LegalResearcher",
+      "description": "Federal and state court opinions database"
     },
     {
-      "file": "maestro/bots/ai_document_agent.py",
-      "old_import": "from lawyerfactory.document_generator.ai_document_generator import AIDocumentGenerator",
-      "new_import": "from src.document_generator.api.ai_document_generator import AIDocumentGenerator"
+      "id": "google_scholar",
+      "type": "academic_database",
+      "usage": "LegalResearcher",
+      "description": "Academic legal research and citations"
     },
     {
-      "file": "maestro/bots/writer_bot.py",
-      "old_import": "from lawyerfactory.document_generator.modules.fact_synthesis import synthesize_facts",
-      "new_import": "from src.document_generator.api.modules.fact_synthesis import synthesize_facts"
+      "id": "openai_api",
+      "type": "llm_service",
+      "usage": "Writer, Editor",
+      "description": "AI-powered document generation and editing"
     },
     {
-      "file": "maestro/bots/legal_editor.py", 
-      "old_import": "from lawyerfactory.document_generator.modules.compliance_checker import check_rule_12b6, validate_citations, flag_for_review",
-      "new_import": "from src.document_generator.api.modules.compliance_checker import check_rule_12b6, validate_citations, flag_for_review"
+      "id": "qdrant_vector_db",
+      "type": "vector_database",
+      "usage": "VectorStore",
+      "description": "High-performance vector similarity search"
+    }
+  ],
+  "circular_dependencies": [],
+  "optimization_opportunities": [
+    {
+      "type": "consolidation",
+      "description": "Merge infrastructure/ and infra/ directories",
+      "impact": "high",
+      "effort": "medium"
+    },
+    {
+      "type": "consolidation",
+      "description": "Merge knowledge_graph/ and kg/ directories",
+      "impact": "high",
+      "effort": "medium"
+    },
+    {
+      "type": "flattening",
+      "description": "Reduce phase directory depth (phaseA01_ → intake/)",
+      "impact": "medium",
+      "effort": "high"
+    },
+    {
+      "type": "reorganization",
+      "description": "Move UI components to dedicated ui/ directory",
+      "impact": "low",
+      "effort": "medium"
     }
   ]
 }

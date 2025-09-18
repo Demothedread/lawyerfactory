@@ -13,6 +13,10 @@ Features:
 - Validation type classification
 """
 
+import sys
+
+sys.path.insert(0, "/Users/jreback/Projects/LawyerFactory/src")
+
 import asyncio
 from datetime import datetime
 import logging
@@ -20,13 +24,11 @@ from pathlib import Path
 import re
 from typing import Any, Dict, List, Optional, Set
 
-from .cloud_storage_integration import (
+from lawyerfactory.storage import (
     CloudStorageManager,
+    EnhancedVectorStoreManager,
     IntegratedEvidenceIngestion,
     StorageTier,
-)
-from .enhanced_vector_store import (
-    EnhancedVectorStoreManager,
     ValidationType,
     VectorStoreType,
 )
@@ -39,9 +41,7 @@ class EvidenceIngestionPipeline:
     Automated pipeline for ingesting evidence and storing as vectors
     """
 
-    def __init__(
-        self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None
-    ):
+    def __init__(self, vector_store_manager: Optional[EnhancedVectorStoreManager] = None):
         self.vector_store = vector_store_manager or EnhancedVectorStoreManager()
         self.cloud_storage = CloudStorageManager(vector_store_manager)
         self.integrated_ingestion = IntegratedEvidenceIngestion(
@@ -59,7 +59,7 @@ class EvidenceIngestionPipeline:
             "documents_processed": 0,
             "vectors_created": 0,
             "errors": 0,
-            "processing_time": 0,
+            "processing_time": 0.0,
         }
 
     def _initialize_document_patterns(self) -> Dict[str, Dict[str, Any]]:
@@ -200,9 +200,7 @@ class EvidenceIngestionPipeline:
             case_info = {
                 "case_name": intake_data.get("claim_description", "Unknown Case"),
                 "plaintiff_name": intake_data.get("user_name", "Unknown Plaintiff"),
-                "defendant_name": intake_data.get(
-                    "opposing_party_names", "Unknown Defendant"
-                ),
+                "defendant_name": intake_data.get("opposing_party_names", "Unknown Defendant"),
                 "case_number": intake_data.get("case_number", ""),
                 "jurisdiction": intake_data.get("jurisdiction", "general"),
                 "claim_amount": intake_data.get("claim_amount", 0),
@@ -285,13 +283,11 @@ class EvidenceIngestionPipeline:
             }
 
             # Store with integrated cloud storage
-            storage_result = (
-                await self.integrated_ingestion.process_evidence_with_storage(
-                    content=content,
-                    metadata=enhanced_metadata,
-                    store_type=doc_type_info["store_type"],
-                    storage_tier=storage_tier,
-                )
+            storage_result = await self.integrated_ingestion.process_evidence_with_storage(
+                content=content,
+                metadata=enhanced_metadata,
+                store_type=doc_type_info["store_type"],
+                storage_tier=storage_tier,
             )
 
             processing_time = (datetime.now() - start_time).total_seconds()
@@ -306,9 +302,7 @@ class EvidenceIngestionPipeline:
                     "storage_id": storage_result.get("storage_id"),
                     "document_type": doc_type_info["type"],
                     "vector_store": doc_type_info["store_type"].value,
-                    "validation_types": [
-                        vt.value for vt in doc_type_info["validation_types"]
-                    ],
+                    "validation_types": [vt.value for vt in doc_type_info["validation_types"]],
                     "local_path": storage_result.get("local_path"),
                     "cloud_url": storage_result.get("cloud_url"),
                     "storage_tier": storage_result.get("storage_tier"),
@@ -367,9 +361,7 @@ class EvidenceIngestionPipeline:
             self.stats["errors"] += 1
             return {"success": False, "error": str(e)}
 
-    async def batch_process_evidence(
-        self, evidence_list: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    async def batch_process_evidence(self, evidence_list: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Batch process multiple evidence items
 
@@ -529,8 +521,7 @@ class EvidenceIngestionPipeline:
         return {
             **self.stats,
             "average_processing_time": (
-                self.stats["processing_time"]
-                / max(self.stats["documents_processed"], 1)
+                self.stats["processing_time"] / max(self.stats["documents_processed"], 1)
             ),
         }
 
