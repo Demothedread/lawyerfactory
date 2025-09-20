@@ -21,7 +21,6 @@ logger = logging.getLogger(__name__)
 # Import existing storage components
 try:
     from .cloud.cloud_storage_integration import CloudStorageManager, StorageTier
-    from .evidence.table import EnhancedEvidenceTable
     from .vectors.enhanced_vector_store import (
         EnhancedVectorStoreManager,
         ValidationType,
@@ -87,7 +86,14 @@ class EnhancedUnifiedStorageAPI:
             try:
                 self.vector_store_manager = EnhancedVectorStoreManager()
                 self.cloud_storage_manager = CloudStorageManager(self.vector_store_manager)
-                self.evidence_table = EnhancedEvidenceTable()
+                # Lazy import evidence table to avoid circular imports
+                try:
+                    from .evidence.table import EnhancedEvidenceTable
+
+                    self.evidence_table = EnhancedEvidenceTable()
+                except ImportError:
+                    self.evidence_table = None
+                    logger.warning("Evidence table not available due to import issues")
                 logger.info("Storage components initialized successfully")
             except Exception as e:
                 logger.warning(f"Failed to initialize storage components: {e}")
