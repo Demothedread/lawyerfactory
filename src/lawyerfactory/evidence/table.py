@@ -22,10 +22,11 @@ logger = logging.getLogger(__name__)
 
 # Import unified storage API
 try:
-    from lawyerfactory.storage.unified_storage_api import (
-        UnifiedStorageAPI,
-        get_unified_storage_api,
+    from lawyerfactory.storage.enhanced_unified_storage_api import (
+        EnhancedUnifiedStorageAPI,
+        get_enhanced_unified_storage_api,
     )
+
     UNIFIED_STORAGE_AVAILABLE = True
 except ImportError:
     UNIFIED_STORAGE_AVAILABLE = False
@@ -34,6 +35,7 @@ except ImportError:
 
 class EvidenceType(Enum):
     """Types of evidence for classification"""
+
     DOCUMENTARY = "documentary"
     TESTIMONIAL = "testimonial"
     EXPERT = "expert"
@@ -44,6 +46,7 @@ class EvidenceType(Enum):
 
 class PrivilegeMarker(Enum):
     """Privilege protection markers"""
+
     NONE = "none"
     ATTORNEY_CLIENT = "attorney_client"
     WORK_PRODUCT = "work_product"
@@ -53,6 +56,7 @@ class PrivilegeMarker(Enum):
 
 class RelevanceLevel(Enum):
     """Evidence relevance classification"""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -63,6 +67,7 @@ class RelevanceLevel(Enum):
 @dataclass
 class EvidenceEntry:
     """Enhanced evidence entry with comprehensive metadata"""
+
     evidence_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     object_id: Optional[str] = None  # Unified storage ObjectID
     source_document: str = ""
@@ -81,49 +86,50 @@ class EvidenceEntry:
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     last_modified: str = field(default_factory=lambda: datetime.now().isoformat())
     created_by: str = "system"
-    
+
     def update_modified(self):
         """Update the last modified timestamp"""
         self.last_modified = datetime.now().isoformat()
-    
+
     def add_supporting_fact(self, fact_id: str):
         """Add a fact ID to supporting facts"""
         if fact_id not in self.supporting_facts:
             self.supporting_facts.append(fact_id)
             self.update_modified()
-    
+
     def remove_supporting_fact(self, fact_id: str):
         """Remove a fact ID from supporting facts"""
         if fact_id in self.supporting_facts:
             self.supporting_facts.remove(fact_id)
             self.update_modified()
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization"""
         result = asdict(self)
         # Convert enums to their values
-        result['evidence_type'] = self.evidence_type.value
-        result['relevance_level'] = self.relevance_level.value
-        result['privilege_marker'] = self.privilege_marker.value
+        result["evidence_type"] = self.evidence_type.value
+        result["relevance_level"] = self.relevance_level.value
+        result["privilege_marker"] = self.privilege_marker.value
         return result
-    
+
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'EvidenceEntry':
+    def from_dict(cls, data: Dict[str, Any]) -> "EvidenceEntry":
         """Create from dictionary with enum conversion"""
         # Convert enum values back to enums
-        if 'evidence_type' in data:
-            data['evidence_type'] = EvidenceType(data['evidence_type'])
-        if 'relevance_level' in data:
-            data['relevance_level'] = RelevanceLevel(data['relevance_level'])
-        if 'privilege_marker' in data:
-            data['privilege_marker'] = PrivilegeMarker(data['privilege_marker'])
-        
+        if "evidence_type" in data:
+            data["evidence_type"] = EvidenceType(data["evidence_type"])
+        if "relevance_level" in data:
+            data["relevance_level"] = RelevanceLevel(data["relevance_level"])
+        if "privilege_marker" in data:
+            data["privilege_marker"] = PrivilegeMarker(data["privilege_marker"])
+
         return cls(**data)
 
 
 @dataclass
 class FactAssertion:
     """Fact assertion with evidence linking"""
+
     fact_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     fact_text: str = ""
     confidence_score: float = 0.0
@@ -135,23 +141,23 @@ class FactAssertion:
     parties_involved: List[str] = field(default_factory=list)
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     last_modified: str = field(default_factory=lambda: datetime.now().isoformat())
-    
+
     def update_modified(self):
         """Update the last modified timestamp"""
         self.last_modified = datetime.now().isoformat()
-    
+
     def add_supporting_evidence(self, evidence_id: str):
         """Add evidence ID to supporting evidence"""
         if evidence_id not in self.supporting_evidence:
             self.supporting_evidence.append(evidence_id)
             self.update_modified()
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization"""
         return asdict(self)
-    
+
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'FactAssertion':
+    def from_dict(cls, data: Dict[str, Any]) -> "FactAssertion":
         """Create from dictionary"""
         return cls(**data)
 
@@ -159,6 +165,7 @@ class FactAssertion:
 @dataclass
 class LegalElement:
     """Legal element for cause of action"""
+
     element_name: str = ""
     supporting_facts: List[str] = field(default_factory=list)
     legal_standard: str = ""
@@ -171,6 +178,7 @@ class LegalElement:
 @dataclass
 class ClaimEntry:
     """Claim/cause of action with legal elements"""
+
     claim_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     cause_of_action: str = ""
     legal_elements: List[LegalElement] = field(default_factory=list)
@@ -180,31 +188,31 @@ class ClaimEntry:
     damages_sought: str = ""
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     last_modified: str = field(default_factory=lambda: datetime.now().isoformat())
-    
+
     def update_modified(self):
         """Update the last modified timestamp"""
         self.last_modified = datetime.now().isoformat()
-    
+
     def add_element(self, element: LegalElement):
         """Add a legal element"""
         self.legal_elements.append(element)
         self.update_modified()
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization"""
         result = asdict(self)
         return result
-    
+
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'ClaimEntry':
+    def from_dict(cls, data: Dict[str, Any]) -> "ClaimEntry":
         """Create from dictionary"""
         # Convert legal elements
-        if 'legal_elements' in data:
+        if "legal_elements" in data:
             elements = []
-            for elem_data in data['legal_elements']:
+            for elem_data in data["legal_elements"]:
                 elements.append(LegalElement(**elem_data))
-            data['legal_elements'] = elements
-        
+            data["legal_elements"] = elements
+
         return cls(**data)
 
 
@@ -221,8 +229,7 @@ class EnhancedEvidenceTable:
         self.unified_storage = None
         if UNIFIED_STORAGE_AVAILABLE:
             try:
-                self.unified_storage = get_unified_storage_api()
-                self.unified_storage.register_storage_client("evidence", self)
+                self.unified_storage = get_enhanced_unified_storage_api()
                 logger.info("Evidence table integrated with unified storage API")
             except Exception as e:
                 logger.warning(f"Failed to initialize unified storage: {e}")
@@ -262,24 +269,32 @@ class EnhancedEvidenceTable:
 
             for entry in self.evidence_entries.values():
                 # Simple text search in content and notes
-                if (query_lower in entry.content.lower() or
-                    query_lower in entry.notes.lower() or
-                    any(query_lower in term.lower() for term in entry.key_terms)):
+                if (
+                    query_lower in entry.content.lower()
+                    or query_lower in entry.notes.lower()
+                    or any(query_lower in term.lower() for term in entry.key_terms)
+                ):
                     results.append(entry.to_dict())
 
             return results
         except Exception as e:
             logger.error(f"Failed to search evidence data: {e}")
-    async def add_evidence_with_unified_storage(self, file_content: bytes, filename: str,
-                                                metadata: Optional[Dict[str, Any]] = None,
-                                                source_phase: str = "intake") -> str:
+            return []
+
+    async def add_evidence_with_unified_storage(
+        self,
+        file_content: bytes,
+        filename: str,
+        metadata: Optional[Dict[str, Any]] = None,
+        source_phase: str = "intake",
+    ) -> str:
         """Add evidence using the unified storage API"""
         if not self.unified_storage:
             # Fallback to regular method
             evidence = EvidenceEntry(
                 source_document=filename,
                 content="",  # Will be populated if text extraction is available
-                created_by="system"
+                created_by="system",
             )
             return self.add_evidence(evidence)
 
@@ -289,7 +304,7 @@ class EnhancedEvidenceTable:
                 file_content=file_content,
                 filename=filename,
                 metadata=metadata,
-                source_phase=source_phase
+                source_phase=source_phase,
             )
 
             if result.success:
@@ -299,7 +314,7 @@ class EnhancedEvidenceTable:
                     object_id=result.object_id,
                     source_document=filename,
                     content="",  # Will be populated by unified storage
-                    created_by="system"
+                    created_by="system",
                 )
 
                 # Add to local table
@@ -314,21 +329,13 @@ class EnhancedEvidenceTable:
             else:
                 logger.error(f"Unified storage failed: {result.error}")
                 # Fallback to regular method
-                evidence = EvidenceEntry(
-                    source_document=filename,
-                    content="",
-                    created_by="system"
-                )
+                evidence = EvidenceEntry(source_document=filename, content="", created_by="system")
                 return self.add_evidence(evidence)
 
         except Exception as e:
             logger.error(f"Failed to add evidence with unified storage: {e}")
             # Fallback to regular method
-            evidence = EvidenceEntry(
-                source_document=filename,
-                content="",
-                created_by="system"
-            )
+            evidence = EvidenceEntry(source_document=filename, content="", created_by="system")
             return self.add_evidence(evidence)
 
     async def get_evidence_with_unified_storage(self, evidence_id: str) -> Optional[Dict[str, Any]]:
@@ -370,32 +377,32 @@ class EnhancedEvidenceTable:
 
         # Fallback to local search
         return await self.search_evidence_data(query)
-            return []</search>
-</search_and_replace>
-    
+
     def _load_data(self):
         """Load evidence table data from storage"""
         try:
             if self.storage_path.exists():
                 data = json.loads(self.storage_path.read_text(encoding="utf-8"))
-                
+
                 # Load evidence entries
                 for entry_data in data.get("evidence_entries", []):
                     entry = EvidenceEntry.from_dict(entry_data)
                     self.evidence_entries[entry.evidence_id] = entry
-                
+
                 # Load fact assertions
                 for fact_data in data.get("fact_assertions", []):
                     fact = FactAssertion.from_dict(fact_data)
                     self.fact_assertions[fact.fact_id] = fact
-                
+
                 # Load claim entries
                 for claim_data in data.get("claim_entries", []):
                     claim = ClaimEntry.from_dict(claim_data)
                     self.claim_entries[claim.claim_id] = claim
-                
-                logger.info(f"Loaded {len(self.evidence_entries)} evidence entries, "
-                          f"{len(self.fact_assertions)} facts, {len(self.claim_entries)} claims")
+
+                logger.info(
+                    f"Loaded {len(self.evidence_entries)} evidence entries, "
+                    f"{len(self.fact_assertions)} facts, {len(self.claim_entries)} claims"
+                )
             else:
                 logger.info("No existing evidence table found, starting fresh")
         except Exception as e:
@@ -404,7 +411,7 @@ class EnhancedEvidenceTable:
             self.evidence_entries = {}
             self.fact_assertions = {}
             self.claim_entries = {}
-    
+
     def _save_data(self):
         """Save evidence table data to storage"""
         try:
@@ -413,27 +420,26 @@ class EnhancedEvidenceTable:
                 "fact_assertions": [fact.to_dict() for fact in self.fact_assertions.values()],
                 "claim_entries": [claim.to_dict() for claim in self.claim_entries.values()],
                 "last_updated": datetime.now().isoformat(),
-                "version": "2.0"
+                "version": "2.0",
             }
-            
+
             self.storage_path.write_text(
-                json.dumps(data, ensure_ascii=False, indent=2),
-                encoding="utf-8"
+                json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
             )
             logger.debug(f"Saved evidence table with {len(self.evidence_entries)} entries")
         except Exception as e:
             logger.error(f"Failed to save evidence table: {e}")
-    
+
     def add_evidence(self, evidence: EvidenceEntry) -> str:
         """Add evidence entry"""
         self.evidence_entries[evidence.evidence_id] = evidence
         self._save_data()
         return evidence.evidence_id
-    
+
     def get_evidence(self, evidence_id: str) -> Optional[EvidenceEntry]:
         """Get evidence entry by ID"""
         return self.evidence_entries.get(evidence_id)
-    
+
     def update_evidence(self, evidence_id: str, updates: Dict[str, Any]) -> bool:
         """Update evidence entry"""
         if evidence_id in self.evidence_entries:
@@ -445,7 +451,7 @@ class EnhancedEvidenceTable:
             self._save_data()
             return True
         return False
-    
+
     def delete_evidence(self, evidence_id: str) -> bool:
         """Delete evidence entry"""
         if evidence_id in self.evidence_entries:
@@ -453,17 +459,17 @@ class EnhancedEvidenceTable:
             self._save_data()
             return True
         return False
-    
+
     def add_fact(self, fact: FactAssertion) -> str:
         """Add fact assertion"""
         self.fact_assertions[fact.fact_id] = fact
         self._save_data()
         return fact.fact_id
-    
+
     def get_fact(self, fact_id: str) -> Optional[FactAssertion]:
         """Get fact assertion by ID"""
         return self.fact_assertions.get(fact_id)
-    
+
     def link_evidence_to_fact(self, evidence_id: str, fact_id: str) -> bool:
         """Link evidence to fact assertion"""
         if evidence_id in self.evidence_entries and fact_id in self.fact_assertions:
@@ -472,18 +478,20 @@ class EnhancedEvidenceTable:
             self._save_data()
             return True
         return False
-    
+
     def add_claim(self, claim: ClaimEntry) -> str:
         """Add claim entry"""
         self.claim_entries[claim.claim_id] = claim
         self._save_data()
         return claim.claim_id
-    
-    def get_evidence_by_filters(self, 
-                               evidence_type: Optional[EvidenceType] = None,
-                               relevance_level: Optional[RelevanceLevel] = None,
-                               source_document: Optional[str] = None,
-                               min_relevance_score: Optional[float] = None) -> List[EvidenceEntry]:
+
+    def get_evidence_by_filters(
+        self,
+        evidence_type: Optional[EvidenceType] = None,
+        relevance_level: Optional[RelevanceLevel] = None,
+        source_document: Optional[str] = None,
+        min_relevance_score: Optional[float] = None,
+    ) -> List[EvidenceEntry]:
         """Get filtered evidence entries"""
         results = []
         for entry in self.evidence_entries.values():
@@ -496,36 +504,38 @@ class EnhancedEvidenceTable:
             if min_relevance_score and entry.relevance_score < min_relevance_score:
                 continue
             results.append(entry)
-        
+
         return sorted(results, key=lambda x: x.relevance_score, reverse=True)
-    
+
     def get_stats(self) -> Dict[str, Any]:
         """Get evidence table statistics"""
         evidence_by_type = {}
         total_relevance = 0
-        
+
         for entry in self.evidence_entries.values():
-            evidence_by_type[entry.evidence_type.value] = evidence_by_type.get(entry.evidence_type.value, 0) + 1
+            evidence_by_type[entry.evidence_type.value] = (
+                evidence_by_type.get(entry.evidence_type.value, 0) + 1
+            )
             total_relevance += entry.relevance_score
-        
+
         avg_relevance = total_relevance / len(self.evidence_entries) if self.evidence_entries else 0
-        
+
         return {
             "total_evidence": len(self.evidence_entries),
             "total_facts": len(self.fact_assertions),
             "total_claims": len(self.claim_entries),
             "evidence_by_type": evidence_by_type,
             "average_relevance_score": round(avg_relevance, 2),
-            "last_updated": datetime.now().isoformat()
+            "last_updated": datetime.now().isoformat(),
         }
-    
+
     def export_to_dict(self) -> Dict[str, Any]:
         """Export all data to dictionary for API responses"""
         return {
             "evidence_entries": [entry.to_dict() for entry in self.evidence_entries.values()],
             "fact_assertions": [fact.to_dict() for fact in self.fact_assertions.values()],
             "claim_entries": [claim.to_dict() for claim in self.claim_entries.values()],
-            "stats": self.get_stats()
+            "stats": self.get_stats(),
         }
 
 
@@ -535,17 +545,17 @@ def migrate_legacy_evidence_table(legacy_path: str, new_path: str) -> bool:
     try:
         legacy_data = json.loads(Path(legacy_path).read_text(encoding="utf-8"))
         enhanced_table = EnhancedEvidenceTable(new_path)
-        
+
         # Migrate legacy rows to new format
         for i, row in enumerate(legacy_data.get("rows", [])):
             evidence = EvidenceEntry(
                 source_document=row.get("source", "Unknown"),
                 content=row.get("content", ""),
                 evidence_type=EvidenceType.DOCUMENTARY,  # Default type
-                created_by="migration"
+                created_by="migration",
             )
             enhanced_table.add_evidence(evidence)
-        
+
         logger.info(f"Migrated {len(legacy_data.get('rows', []))} legacy evidence entries")
         return True
     except Exception as e:

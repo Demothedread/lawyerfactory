@@ -167,9 +167,9 @@ except Exception:
 
 # Unified Storage API import
 try:
-    from lawyerfactory.storage.unified_storage_api import (
-        UnifiedStorageAPI,
-        get_unified_storage_api,
+    from lawyerfactory.storage.enhanced_unified_storage_api import (
+        EnhancedUnifiedStorageAPI,
+        get_enhanced_unified_storage_api,
     )
 
     UNIFIED_STORAGE_AVAILABLE = True
@@ -180,7 +180,7 @@ except Exception:
 unified_storage = None
 if UNIFIED_STORAGE_AVAILABLE:
     try:
-        unified_storage = UnifiedStorageAPI(storage_path="data/intake_storage")
+        unified_storage = EnhancedUnifiedStorageAPI(storage_path="data/intake_storage")
         logger.info("Unified Storage API initialized for ingestion server")
     except Exception as e:
         logger.warning(f"Failed to initialize unified storage: {e}")

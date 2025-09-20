@@ -7,15 +7,12 @@ to perform background research using intake form data and existing evidence.
 
 import asyncio
 from datetime import datetime
-from typing import Any, Dict, List, Optional
 import logging
+from typing import Any, Dict, List, Optional
 
-from ...research.precision_citation_service import (
-    PrecisionCitationService,
-    PrecisionCitation
-)
 from ...evidence.table import EnhancedEvidenceTable
-from ...storage.unified_storage_api import get_unified_storage_api
+from ...research.precision_citation_service import PrecisionCitation, PrecisionCitationService
+from ...storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +29,7 @@ class BackgroundResearchIntegration:
 
         # Initialize unified storage if available
         try:
-            self.unified_storage = get_unified_storage_api()
+            self.unified_storage = get_enhanced_unified_storage_api()
         except Exception as e:
             logger.warning(f"Unified storage not available: {e}")
 
@@ -40,7 +37,7 @@ class BackgroundResearchIntegration:
         self,
         intake_data: Dict[str, Any],
         session_id: str,
-        existing_evidence: Optional[Dict[str, Any]] = None
+        existing_evidence: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Perform background research for Phase A01 intake
@@ -85,10 +82,12 @@ class BackgroundResearchIntegration:
                 "evidence_ids": stored_entries,
                 "research_summary": research_summary,
                 "citations": [self._citation_to_dict(c) for c in citations],
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
-            logger.info(f"Phase A01 background research complete: {len(citations)} citations, {len(evidence_entries)} evidence entries")
+            logger.info(
+                f"Phase A01 background research complete: {len(citations)} citations, {len(evidence_entries)} evidence entries"
+            )
             return result
 
         except Exception as e:
@@ -99,14 +98,11 @@ class BackgroundResearchIntegration:
                 "error": str(e),
                 "citations_found": 0,
                 "evidence_entries_created": 0,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
     async def _citations_to_evidence_entries(
-        self,
-        citations: List[PrecisionCitation],
-        intake_data: Dict[str, Any],
-        session_id: str
+        self, citations: List[PrecisionCitation], intake_data: Dict[str, Any], session_id: str
     ) -> List[Any]:
         """
         Convert precision citations to evidence table entries
@@ -164,9 +160,20 @@ class BackgroundResearchIntegration:
 
         # Extract legal keywords from title and content
         legal_keywords = [
-            "negligence", "breach", "contract", "tort", "damages",
-            "liability", "duty", "care", "injury", "property",
-            "jurisdiction", "venue", "case law", "precedent"
+            "negligence",
+            "breach",
+            "contract",
+            "tort",
+            "damages",
+            "liability",
+            "duty",
+            "care",
+            "injury",
+            "property",
+            "jurisdiction",
+            "venue",
+            "case law",
+            "precedent",
         ]
 
         text_to_check = f"{citation.title} {citation.content}".lower()
@@ -177,9 +184,7 @@ class BackgroundResearchIntegration:
         return list(set(terms))  # Remove duplicates
 
     def _create_evidence_notes(
-        self,
-        citation: PrecisionCitation,
-        intake_data: Dict[str, Any]
+        self, citation: PrecisionCitation, intake_data: Dict[str, Any]
     ) -> str:
         """Create notes for evidence entry"""
         notes_parts = [
@@ -187,7 +192,7 @@ class BackgroundResearchIntegration:
             f"Quality Score: {citation.quality_metrics.overall_quality_score:.1f}/5.0",
             f"Authority Score: {citation.quality_metrics.authority_score:.1f}/5.0",
             f"Source Type: {citation.source_type}",
-            f"Domain: {citation.quality_metrics.domain}"
+            f"Domain: {citation.quality_metrics.domain}",
         ]
 
         # Add jurisdiction context if available
@@ -204,9 +209,7 @@ class BackgroundResearchIntegration:
         return " | ".join(notes_parts)
 
     def _link_to_intake_facts(
-        self,
-        citation: PrecisionCitation,
-        intake_data: Dict[str, Any]
+        self, citation: PrecisionCitation, intake_data: Dict[str, Any]
     ) -> List[str]:
         """Link citation to relevant intake facts"""
         fact_links = []
@@ -237,7 +240,7 @@ class BackgroundResearchIntegration:
         self,
         citations: List[PrecisionCitation],
         evidence_entries: List[Any],
-        intake_data: Dict[str, Any]
+        intake_data: Dict[str, Any],
     ) -> Dict[str, Any]:
         """Create comprehensive research summary"""
         summary = {
@@ -249,7 +252,7 @@ class BackgroundResearchIntegration:
             "average_quality_score": 0.0,
             "highest_quality_source": None,
             "research_scope": self._determine_research_scope(intake_data),
-            "key_findings": []
+            "key_findings": [],
         }
 
         if citations:
@@ -261,18 +264,21 @@ class BackgroundResearchIntegration:
 
                 # Quality distribution
                 quality_bucket = f"{int(quality)}-{int(quality) + 1}"
-                summary["quality_distribution"][quality_bucket] = \
+                summary["quality_distribution"][quality_bucket] = (
                     summary["quality_distribution"].get(quality_bucket, 0) + 1
+                )
 
                 # Domain distribution
                 domain = citation.quality_metrics.domain
-                summary["domain_distribution"][domain] = \
+                summary["domain_distribution"][domain] = (
                     summary["domain_distribution"].get(domain, 0) + 1
+                )
 
                 # Source type distribution
                 source_type = citation.source_type
-                summary["source_type_distribution"][source_type] = \
+                summary["source_type_distribution"][source_type] = (
                     summary["source_type_distribution"].get(source_type, 0) + 1
+                )
 
             # Average quality
             summary["average_quality_score"] = sum(quality_scores) / len(quality_scores)
@@ -282,14 +288,14 @@ class BackgroundResearchIntegration:
             summary["highest_quality_source"] = {
                 "title": best_citation.title,
                 "domain": best_citation.quality_metrics.domain,
-                "quality_score": best_citation.quality_metrics.overall_quality_score
+                "quality_score": best_citation.quality_metrics.overall_quality_score,
             }
 
             # Key findings (simplified)
             summary["key_findings"] = [
                 f"Found {len(citations)} relevant sources across {len(summary['domain_distribution'])} domains",
                 f"Average quality score: {summary['average_quality_score']:.1f}/5.0",
-                f"Primary domains: {', '.join(list(summary['domain_distribution'].keys())[:3])}"
+                f"Primary domains: {', '.join(list(summary['domain_distribution'].keys())[:3])}",
             ]
 
         return summary
@@ -329,12 +335,12 @@ class BackgroundResearchIntegration:
                 "citation_count_weight": citation.quality_metrics.citation_count_weight,
                 "q_score_weight": citation.quality_metrics.q_score_weight,
                 "recency_score": citation.quality_metrics.recency_score,
-                "overall_quality_score": citation.quality_metrics.overall_quality_score
+                "overall_quality_score": citation.quality_metrics.overall_quality_score,
             },
             "citation_count": citation.citation_count,
             "author_q_score": citation.author_q_score,
             "publication_date": citation.publication_date,
-            "bluebook_citation": citation.bluebook_citation
+            "bluebook_citation": citation.bluebook_citation,
         }
 
     async def get_research_results(self, session_id: str) -> Optional[Dict[str, Any]]:
@@ -345,11 +351,7 @@ class BackgroundResearchIntegration:
         # For now, return None (would be implemented with persistent storage)
         return None
 
-    async def link_evidence_to_claims(
-        self,
-        evidence_ids: List[str],
-        claim_ids: List[str]
-    ) -> bool:
+    async def link_evidence_to_claims(self, evidence_ids: List[str], claim_ids: List[str]) -> bool:
         """
         Link research evidence to specific claims for later reference
         """
@@ -368,15 +370,11 @@ class BackgroundResearchIntegration:
 
 # Convenience functions for integration
 async def perform_a01_background_research(
-    intake_data: Dict[str, Any],
-    session_id: str,
-    existing_evidence: Optional[Dict[str, Any]] = None
+    intake_data: Dict[str, Any], session_id: str, existing_evidence: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """Convenience function for Phase A01 background research"""
     integration = BackgroundResearchIntegration()
-    return await integration.perform_background_research(
-        intake_data, session_id, existing_evidence
-    )
+    return await integration.perform_background_research(intake_data, session_id, existing_evidence)
 
 
 if __name__ == "__main__":
@@ -389,13 +387,11 @@ if __name__ == "__main__":
             "events_location": "Los Angeles, California",
             "events_date": "January 2023",
             "client_name": "John Doe",
-            "opposing_party_names": ["MegaCorp Properties"]
+            "opposing_party_names": ["MegaCorp Properties"],
         }
 
         integration = BackgroundResearchIntegration()
-        results = await integration.perform_background_research(
-            intake_data, "test_session_001"
-        )
+        results = await integration.perform_background_research(intake_data, "test_session_001")
 
         print("Phase A01 Background Research Results:")
         print(f"Citations Found: {results['citations_found']}")
