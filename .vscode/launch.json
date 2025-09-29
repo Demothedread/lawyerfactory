@@ -35,25 +35,18 @@
             "justMyCode": true
         },
         {
-            "name": "Python: Flask (app)",
+            "name": "Python: Flask-SocketIO (simple_server)",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/venv/bin/flask",
-            "args": [
-                "run",
-                "--no-debugger",
-                "--no-reload",
-                "--host=0.0.0.0"
-            ],
+            "program": "${workspaceFolder}/apps/api/simple_server.py",
             "console": "integratedTerminal",
             "preLaunchTask": "format-python",
             "env": {
-                "FLASK_APP": "app.py",
                 "FLASK_ENV": "development",
                 "PYTHONUNBUFFERED": "1"
             },
             "justMyCode": true
-        },
+     },
         {
             "name": "Python: pytest",
             "type": "debugpy",
@@ -82,9 +75,9 @@
         },
         {
             "name": "Node: Launch Program",
-            "type": "pwa-node",
+            "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/server.js",
+            "program": "${workspaceFolder}/launch-dev.sh",
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal",
             "env": {
@@ -93,7 +86,7 @@
         },
         {
             "name": "Node: Attach (9229)",
-            "type": "pwa-node",
+            "type": "node",
             "request": "attach",
             "port": 9229,
             "restart": false,
@@ -103,11 +96,52 @@
     ],
     "compounds": [
         {
-            "name": "Debug All (Python + Node)",
+            "name": "Debug All (Python + Node)",  
             "configurations": [
-                "Python Debugger: Python File",
-                "Node: Launch Program"
+                {  
+                    "name": "Node: Launch Program",
+                    "type": "node",
+                    "request": "launch",
+                    "program": "${workspaceFolder}/apps/ui/react-app/node_modules/.bin/vite",
+                    "args": ["--host", "0.0.0.0", "--port", "3000"],
+                    "cwd": "${workspaceFolder}/apps/ui/react-app",
+                    "console": "integratedTerminal",
+                    "env": {
+                        "NODE_ENV": "development"
+                    },
+                    "preLaunchTask": "npm: dev - apps/ui/react-app",
+                    "outFiles": [
+                        "${workspaceFolder}/apps/ui/react-app/dist/**/*.js"
+                    ]
+                },
+                "Python Debugger: Python File"
             ]
-        }
-    ]
+        },  
+            ],
+                "Python Debugger: Python File": {   
+                    "inputs": [],
+                    "options": {
+                        "cwd": "${workspaceFolder}"
+                    }
+                },
+
+                "Python: Django (manage.py runserver)": {
+                    "inputs": [],
+                    "options": {
+                        "cwd": "${workspaceFolder}"
+                    }
+                },
+                "Python: Flask-SocketIO (simple_server)": {
+                    "inputs": [],
+                    "options": {
+                        "cwd": "${workspaceFolder}"
+                    }
+                },
+                "Python: pytest": {
+                    "inputs": [],
+                    "options": {
+                        "cwd": "${workspaceFolder}"
+                    }
+                }
+
 }

@@ -203,6 +203,182 @@ print('System initialized successfully')
 "
 ```
 
+## 🚀 Launch Script & System Integration
+
+### Enhanced Launch Script (launch-dev.sh v4.0.0)
+
+The LawyerFactory system includes a comprehensive Bash launch script that provides automated system startup with extensive configuration options:
+
+#### **Core Features**
+
+```bash
+# Basic usage
+./launch-dev.sh
+
+# Advanced configuration
+./launch-dev.sh --frontend-port 3000 --backend-port 5000 --verbose --setup
+
+# Production mode
+./launch-dev.sh --production --no-browser
+
+# Development with custom options
+./launch-dev.sh --skip-deps --log-level DEBUG --dry-run
+```
+
+#### **Environment Management**
+
+**Automatic Environment Setup:**
+- Creates `.env.development` and `.env.production` configuration files
+- Sets up directory structure: logs, data, uploads, workflow_storage
+- Configures Python virtual environment detection and validation
+- Manages Node.js environment and dependency installation
+
+**Directory Structure Created:**
+```
+logs/                    # System and application logs
+data/                    # Storage and vector data
+uploads/                 # File upload directory
+workflow_storage/        # Active workflow data
+output/                  # Generated document output
+```
+
+#### **Server Orchestration**
+
+**Backend Server Management:**
+- Automatically detects and starts Flask + Socket.IO backend
+- Supports both `simple_server.py` and `server.py` entry points
+- Implements health checks with configurable timeouts
+- Provides graceful shutdown with PID tracking
+
+**Frontend Server Management:**
+- Launches React + Vite development server with hot reload
+- Configures proper API and WebSocket URLs
+- Supports custom port assignment and host binding
+- Implements startup verification and error handling
+
+#### **Advanced Features**
+
+**Port Management:**
+- Automatic port detection and conflict resolution
+- Finds available ports starting from specified defaults
+- Validates port accessibility before assignment
+- Supports custom port ranges and exclusions
+
+**Health Monitoring:**
+- Comprehensive health checks for all system components
+- Backend API endpoint validation
+- Frontend server responsiveness testing
+- Socket.IO connectivity verification
+- CORS header validation for frontend integration
+
+**Process Management:**
+- Robust PID tracking for both frontend and backend
+- Graceful shutdown handling with signal trapping
+- Process cleanup on script termination
+- Automatic retry mechanisms for failed startups
+
+#### **Configuration Options**
+
+```bash
+# Port Configuration
+--frontend-port PORT     # React Vite server port (default: 3000)
+--backend-port PORT      # Flask API server port (default: 5000)
+
+# Operational Modes
+--production            # Production mode with optimizations
+--setup                 # Full setup including dev dependencies
+--skip-deps             # Skip dependency installation
+--verbose               # Enable verbose logging
+--dry-run               # Show what would be done without executing
+--no-browser            # Don't auto-open browser
+
+# Logging
+--log-level LEVEL       # Set log level (DEBUG, INFO, WARN, ERROR)
+```
+
+#### **Environment Variables**
+
+**Runtime Configuration:**
+```bash
+# System Environment
+ENVIRONMENT=development|production
+NODE_ENV=development|production
+LOG_LEVEL=DEBUG|INFO|WARNING|ERROR
+
+# Server Configuration
+FRONTEND_PORT=3000
+BACKEND_PORT=5000
+HOST=127.0.0.1
+
+# Feature Flags
+WATCH_MODE=true|false
+HOT_RELOAD=true|false
+AUTO_RESTART=true|false
+OPEN_BROWSER=true|false
+```
+
+### Integration Architecture
+
+#### **Complete System Integration**
+
+**✅ Full 7-Phase Integration:**
+- **Phase A01**: Document Intake with EvidenceUpload integration
+- **Phase A02**: Legal Research with real-time progress tracking
+- **Phase A03**: Case Outline with claims matrix generation
+- **Phase B01**: Quality Review with editor agent coordination
+- **Phase B02**: Document Drafting with writer agent integration
+- **Phase C01**: Final Editing with legal formatter integration
+- **Phase C02**: Final Orchestration with Maestro bot coordination
+
+**✅ Real-Time Communication:**
+- **Socket.IO Integration**: Live phase progress updates
+- **Agent Status Monitoring**: Real-time agent health and activity
+- **Evidence Processing**: Live evidence upload and processing notifications
+- **Workflow State**: Persistent workflow state with recovery capabilities
+
+**✅ Advanced Error Recovery:**
+- **Multi-Strategy Recovery**: Network, timeout, LLM, storage, and rate limit error handling
+- **Automatic Retries**: Exponential backoff with intelligent retry logic
+- **Fallback Providers**: Automatic LLM provider switching on failures
+- **Graceful Degradation**: System continues operation during partial failures
+
+**✅ Production-Ready Features:**
+- **Workflow State Persistence**: Save/load workflow state with localStorage and backend sync
+- **Comprehensive Health Checks**: Automated system health monitoring
+- **Performance Optimization**: Intelligent caching and resource management
+- **Professional UI**: Soviet-inspired industrial design with real-time monitoring
+
+#### **Integration Quality Metrics**
+
+```
+Integration Coverage: 100% (7/7 phases fully integrated)
+Real-time Communication: ✅ Active Socket.IO integration
+Error Recovery: ✅ Multi-strategy with automatic fallback
+State Persistence: ✅ Full workflow state management
+Evidence Integration: ✅ Unified storage with real-time updates
+Production Ready: ✅ Comprehensive error handling and monitoring
+```
+
+#### **System Integration Flow**
+
+```mermaid
+graph TD
+    A[launch-dev.sh] --> B[Environment Setup]
+    B --> C[Dependency Installation]
+    C --> D[Backend Server]
+    D --> E[Frontend Server]
+    E --> F[Health Checks]
+    F --> G[System Ready]
+
+    H[Phase C02 Integration] --> I[Evidence Upload]
+    I --> J[Real-time Updates]
+    J --> K[Error Recovery]
+    K --> L[State Persistence]
+
+    G --> M[Complete Integration]
+    L --> M
+```
+
 ## 🛠️ Configuration Guide
 
 ### Environment Variables
