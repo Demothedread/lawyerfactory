@@ -54,6 +54,46 @@ class TaskPriority(Enum):
     CRITICAL = 4
 
 
+class WorkflowStatus(Enum):
+    """Workflow-level status values"""
+
+    NOT_STARTED = "not_started"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+    PAUSED = "paused"
+
+
+@dataclass
+class PhaseResult:
+    """Result of a completed phase execution"""
+
+    phase_id: str
+    status: PhaseStatus
+    output_data: Dict[str, Any] = field(default_factory=dict)
+    execution_time: float = 0.0
+    timestamp: Optional[datetime] = None
+    error_message: Optional[str] = None
+    quality_score: float = 0.0
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization"""
+        data = asdict(self)
+        data["status"] = self.status.value
+        if self.timestamp:
+            data["timestamp"] = self.timestamp.isoformat()
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "PhaseResult":
+        """Create from dictionary for JSON deserialization"""
+        data["status"] = PhaseStatus(data["status"])
+        if data.get("timestamp"):
+            data["timestamp"] = datetime.fromisoformat(data["timestamp"])
+        return cls(**data)
+
+
 @dataclass
 class WorkflowTask:
     """Individual task within a workflow phase"""
@@ -171,13 +211,9 @@ class WorkflowState:
         data["current_phase"] = self.current_phase.value
         data["overall_status"] = self.overall_status.value
         # Convert phases dict
-        data["phases"] = {
-            phase.value: status.value for phase, status in self.phases.items()
-        }
+        data["phases"] = {phase.value: status.value for phase, status in self.phases.items()}
         # Convert tasks dict
-        data["tasks"] = {
-            task_id: task.to_dict() for task_id, task in self.tasks.items()
-        }
+        data["tasks"] = {task_id: task.to_dict() for task_id, task in self.tasks.items()}
         # Convert datetime objects to ISO strings
         data["created_at"] = self.created_at.isoformat()
         data["updated_at"] = self.updated_at.isoformat()
@@ -195,8 +231,7 @@ class WorkflowState:
         data["overall_status"] = PhaseStatus(data["overall_status"])
         # Convert phases dict
         data["phases"] = {
-            WorkflowPhase(phase): PhaseStatus(status)
-            for phase, status in data["phases"].items()
+            WorkflowPhase(phase): PhaseStatus(status) for phase, status in data["phases"].items()
         }
         # Convert tasks dict
         data["tasks"] = {
@@ -207,9 +242,7 @@ class WorkflowState:
         data["created_at"] = datetime.fromisoformat(data["created_at"])
         data["updated_at"] = datetime.fromisoformat(data["updated_at"])
         if data.get("estimated_completion"):
-            data["estimated_completion"] = datetime.fromisoformat(
-                data["estimated_completion"]
-            )
+            data["estimated_completion"] = datetime.fromisoformat(data["estimated_completion"])
         if data.get("last_checkpoint"):
             data["last_checkpoint"] = datetime.fromisoformat(data["last_checkpoint"])
         return cls(**data)
@@ -308,9 +341,7 @@ class WorkflowStateManager:
                 row = cursor.fetchone()
 
                 if not row:
-                    raise ValueError(
-                        f"No workflow state found for session {session_id}"
-                    )
+                    raise ValueError(f"No workflow state found for session {session_id}")
 
                 state_data = json.loads(row[0])
                 workflow_state = WorkflowState.from_dict(state_data)
@@ -419,14 +450,10 @@ class WorkflowStateManager:
 
                 # Load the current workflow state and apply checkpoint data
                 workflow_state = await self.load_state(session_id)
-                workflow_state.global_context.update(
-                    checkpoint_data.get("global_context", {})
-                )
+                workflow_state.global_context.update(checkpoint_data.get("global_context", {}))
                 workflow_state.checkpoint_data = checkpoint_data
 
-                logger.info(
-                    f"Restored workflow from checkpoint for session {session_id}"
-                )
+                logger.info(f"Restored workflow from checkpoint for session {session_id}")
                 return workflow_state
 
         except Exception as e:

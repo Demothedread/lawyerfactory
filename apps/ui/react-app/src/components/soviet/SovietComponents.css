@@ -1,0 +1,378 @@
+/* Enhanced Soviet Industrial Component Styles */
+/* Professional control terminal components with authentic Soviet industrial aesthetic */
+
+/* Analog Gauge Enhancements */
+.analog-gauge {
+  position: relative;
+  display: inline-block;
+}
+
+.gauge-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid var(--soviet-brass);
+}
+
+.gauge-ring--outer {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: radial-gradient(circle, transparent 40%, rgba(184, 115, 51, 0.1) 100%);
+}
+
+.gauge-ring--middle {
+  width: 85%;
+  height: 85%;
+  top: 7.5%;
+  left: 7.5%;
+  background: radial-gradient(circle, transparent 30%, rgba(30, 33, 36, 0.3) 100%);
+}
+
+.gauge-ring--inner {
+  width: 70%;
+  height: 70%;
+  top: 15%;
+  left: 15%;
+  background: radial-gradient(circle, var(--soviet-charcoal) 0%, transparent 70%);
+}
+
+.gauge-ticks {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.gauge-tick {
+  position: absolute;
+  width: 1px;
+  height: 8px;
+  background: var(--soviet-silver);
+  top: 10px;
+  left: 50%;
+  transform-origin: 50% 100px;
+}
+
+.gauge-tick--major {
+  height: 12px;
+  background: var(--soviet-brass);
+}
+
+.gauge-tick--minor {
+  height: 6px;
+  background: var(--soviet-steel);
+}
+
+.gauge-value {
+  position: absolute;
+  bottom: 25%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: var(--soviet-amber);
+  font-family: "Orbitron", monospace;
+  font-weight: 700;
+}
+
+.gauge-value__number {
+  display: block;
+  font-size: 16px;
+  text-shadow: 0 0 4px var(--soviet-amber);
+}
+
+.gauge-value__label {
+  display: block;
+  font-size: 10px;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+.gauge-labels {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.gauge-label {
+  position: absolute;
+  font-size: 10px;
+  color: var(--soviet-steel);
+  font-weight: 700;
+}
+
+.gauge-label--min {
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.gauge-label--max {
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Toggle Switch Enhancements */
+.toggle-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  user-select: none;
+}
+
+.toggle-switch.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.toggle-label {
+  font-size: var(--text-xs);
+  color: var(--soviet-silver);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.toggle-track {
+  position: relative;
+  cursor: pointer;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.toggle-handle {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.toggle-switch.active .toggle-track {
+  background: linear-gradient(180deg, var(--soviet-emerald) 0%, var(--soviet-success) 100%);
+}
+
+.toggle-switch:not(.active) .toggle-track {
+  background: linear-gradient(180deg, var(--soviet-steel) 0%, var(--soviet-charcoal) 100%);
+}
+
+/* Nixie Display Enhancements */
+.nixie-container {
+  display: inline-block;
+}
+
+.nixie-display {
+  display: inline-flex;
+  gap: 2px;
+  padding: var(--space-sm) var(--space-md);
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+  border: 2px solid var(--soviet-brass);
+  border-radius: var(--radius-sm);
+  font-family: "Orbitron", monospace;
+  font-weight: 900;
+  position: relative;
+  overflow: hidden;
+}
+
+.nixie-display::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 176, 0, 0.3),
+    transparent
+  );
+  animation: nixieGlow 4s ease-in-out infinite;
+}
+
+.nixie-digit {
+  display: inline-block;
+  width: 20px;
+  text-align: center;
+  color: var(--soviet-amber);
+  text-shadow: 0 0 8px var(--soviet-amber);
+  transition: all 0.2s ease;
+}
+
+.nixie-digit.changing {
+  animation: digitFlip 0.3s ease-in-out;
+}
+
+@keyframes digitFlip {
+  0%, 100% { transform: scaleY(1); opacity: 1; }
+  50% { transform: scaleY(0.8); opacity: 0.7; }
+}
+
+.nixie-label {
+  text-align: center;
+  font-size: var(--text-xs);
+  color: var(--soviet-steel);
+  margin-top: var(--space-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Mechanical Button Enhancements */
+.mech-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.1s ease;
+}
+
+.mech-button__content {
+  position: relative;
+  z-index: 2;
+}
+
+.mech-button__shadow {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  transition: top 0.1s ease;
+}
+
+.mech-button:active .mech-button__shadow {
+  top: 0;
+}
+
+.mech-button.pressed {
+  transform: translateY(2px);
+}
+
+.mech-button.pressed .mech-button__shadow {
+  top: 0;
+}
+
+/* Button Size Variants */
+.mech-button--small {
+  padding: 8px 16px;
+  font-size: var(--text-xs);
+}
+
+.mech-button--large {
+  padding: 16px 32px;
+  font-size: var(--text-lg);
+}
+
+/* Button Color Variants */
+.mech-button--primary {
+  background: linear-gradient(135deg, var(--soviet-brass) 0%, var(--soviet-bronze) 100%);
+  border-color: var(--soviet-brass);
+  color: var(--soviet-charcoal);
+}
+
+.mech-button--secondary {
+  background: linear-gradient(135deg, var(--soviet-steel) 0%, var(--soviet-charcoal) 100%);
+  border-color: var(--soviet-silver);
+  color: var(--soviet-silver);
+}
+
+.mech-button--success {
+  background: linear-gradient(135deg, var(--soviet-emerald) 0%, var(--soviet-success) 100%);
+  border-color: var(--soviet-emerald);
+  color: white;
+}
+
+.mech-button--warning {
+  background: linear-gradient(135deg, var(--soviet-amber) 0%, #e6a500 100%);
+  border-color: var(--soviet-amber);
+  color: var(--soviet-charcoal);
+}
+
+.mech-button--danger {
+  background: linear-gradient(135deg, var(--soviet-crimson) 0%, #b91c1c 100%);
+  border-color: var(--soviet-crimson);
+  color: white;
+}
+
+/* Status Lights Enhancements */
+.status-lights--vertical {
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.status-lights--small .status-light {
+  width: 12px;
+  height: 12px;
+}
+
+.status-lights--large .status-light {
+  width: 20px;
+  height: 20px;
+}
+
+.status-label {
+  font-size: var(--text-xs);
+  color: var(--soviet-steel);
+  text-align: center;
+  min-width: 60px;
+}
+
+/* Panel Content Enhancements */
+.panel-content {
+  padding: var(--space-md);
+  position: relative;
+}
+
+.panel-header {
+  background: linear-gradient(180deg, var(--soviet-brass) 0%, var(--soviet-bronze) 100%);
+  border-bottom: 3px solid var(--soviet-charcoal);
+  padding: var(--space-sm) var(--space-md);
+  position: relative;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-family: "Orbitron", monospace;
+  font-weight: 700;
+  color: var(--soviet-charcoal);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: var(--text-sm);
+}
+
+/* Enhanced Animations */
+@keyframes nixieGlow {
+  0%, 100% { left: -100%; }
+  50% { left: 100%; }
+}
+
+@keyframes panelPulse {
+  0%, 100% {
+    box-shadow: inset 0 0 20px rgba(184, 115, 51, 0.2);
+  }
+  50% {
+    box-shadow: inset 0 0 30px rgba(184, 115, 51, 0.4);
+  }
+}
+
+/* Component Size Variants */
+.toggle-switch--small {
+  transform: scale(0.8);
+}
+
+.toggle-switch--large {
+  transform: scale(1.2);
+}
+
+.analog-gauge--small {
+  transform: scale(0.8);
+}
+
+.analog-gauge--large {
+  transform: scale(1.2);
+}
+
+/* Professional Hover Effects */
+.metal-panel:hover .panel-header {
+  background: linear-gradient(180deg, var(--soviet-amber) 0%, var(--soviet-brass) 100%);
+}
