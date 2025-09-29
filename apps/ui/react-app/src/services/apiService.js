@@ -301,13 +301,14 @@ export const isBackendAvailable = async () => {
 };
 
 /**
- * API service class for managing backend connections
- */
+  * API service class for managing backend connections
+  */
 export class LawyerFactoryAPI {
   constructor() {
     this.isConnected = false;
     this.currentCaseId = null;
     this.phaseUpdateHandlers = [];
+    this.workflowState = {};
   }
 
   /**
@@ -420,6 +421,87 @@ export class LawyerFactoryAPI {
     closeSocket();
     this.isConnected = false;
     console.log("🔌 LawyerFactory API disconnected");
+  }
+
+  /**
+   * Save workflow state for persistence
+   */
+  async saveWorkflowState(workflowState) {
+    try {
+      if (this.isConnected) {
+        const response = await apiClient.post(`/api/workflow/${this.currentCaseId}/state`, {
+          workflow_state: workflowState,
+          timestamp: new Date().toISOString(),
+        });
+        this.workflowState = workflowState;
+        return response.data;
+      } else {
+        // Store locally when backend unavailable
+        const stateKey = `workflow_state_${this.currentCaseId}`;
+        localStorage.setItem(stateKey, JSON.stringify({
+          workflow_state: workflowState,
+          timestamp: new Date().toISOString(),
+        }));
+        this.workflowState = workflowState;
+        return { success: true, source: 'localStorage' };
+      }
+    } catch (error) {
+      console.error("Failed to save workflow state:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Load workflow state for recovery
+   */
+  async loadWorkflowState() {
+    try {
+      if (this.isConnected) {
+        const response = await apiClient.get(`/api/workflow/${this.currentCaseId}/state`);
+        this.workflowState = response.data.workflow_state;
+        return response.data;
+      } else {
+        // Load from localStorage when backend unavailable
+        const stateKey = `workflow_state_${this.currentCaseId}`;
+        const savedState = localStorage.getItem(stateKey);
+        if (savedState) {
+          const parsedState = JSON.parse(savedState);
+          this.workflowState = parsedState.workflow_state;
+          return { success: true, source: 'localStorage', ...parsedState };
+        }
+        return null;
+      }
+    } catch (error) {
+      console.error("Failed to load workflow state:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Clear workflow state
+   */
+  async clearWorkflowState() {
+    try {
+      if (this.isConnected) {
+        await apiClient.delete(`/api/workflow/${this.currentCaseId}/state`);
+      } else {
+        // Clear from localStorage
+        const stateKey = `workflow_state_${this.currentCaseId}`;
+        localStorage.removeItem(stateKey);
+      }
+      this.workflowState = {};
+      return { success: true };
+    } catch (error) {
+      console.error("Failed to clear workflow state:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get current workflow state
+   */
+  getCurrentWorkflowState() {
+    return this.workflowState;
   }
 
   /**
