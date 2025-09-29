@@ -49,6 +49,7 @@ import {
 
 import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '../feedback/Toast';
+import { io } from 'socket.io-client';
 
 const EvidenceTable = ({
   caseId,
@@ -58,6 +59,8 @@ const EvidenceTable = ({
   apiEndpoint = '/api/evidence',
   showActions = true,
   compact = false,
+  phaseFilter = null,
+  socketEndpoint = 'http://localhost:5000',
 }) => {
   const [evidenceData, setEvidenceData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -71,6 +74,8 @@ const EvidenceTable = ({
   const [showDetails, setShowDetails] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuEvidence, setMenuEvidence] = useState(null);
+  const [socket, setSocket] = useState(null);
+  const [realTimeUpdates, setRealTimeUpdates] = useState(true);
 
   const { addToast } = useToast();
 
@@ -107,6 +112,84 @@ const EvidenceTable = ({
       setLoading(false);
     }
   }, [caseId, searchTerm, page, rowsPerPage, orderBy, order, apiEndpoint, addToast]);
+
+  // Initialize Socket.IO connection for real-time updates
+  useEffect(() => {
+    if (realTimeUpdates && socketEndpoint) {
+      const newSocket = io(socketEndpoint, {
+        transports: ['websocket', 'polling'],
+        timeout: 20000,
+      });
+
+      setSocket(newSocket);
+
+      // Socket event listeners
+      newSocket.on('connect', () => {
+        console.log('🔌 EvidenceTable connected to Socket.IO');
+      });
+
+      newSocket.on('disconnect', () => {
+        console.log('🔌 EvidenceTable disconnected from Socket.IO');
+      });
+
+      // Evidence processing events
+      newSocket.on('evidence_processed', (data) => {
+        if (!caseId || data.case_id === caseId) {
+          console.log('📄 Evidence processed:', data);
+          addToast(`Evidence processed: ${data.filename}`, {
+            severity: 'info',
+            title: 'Evidence Update',
+          });
+          // Refresh evidence list
+          loadEvidence();
+        }
+      });
+
+      // Evidence upload events
+      newSocket.on('evidence_uploaded', (data) => {
+        if (!caseId || data.case_id === caseId) {
+          console.log('📄 Evidence uploaded:', data);
+          addToast(`New evidence uploaded: ${data.filename}`, {
+            severity: 'success',
+            title: 'Evidence Added',
+          });
+          // Refresh evidence list
+          loadEvidence();
+        }
+      });
+
+      // Evidence status change events
+      newSocket.on('evidence_status_changed', (data) => {
+        if (!caseId || data.case_id === caseId) {
+          console.log('📄 Evidence status changed:', data);
+          // Update specific evidence item in state
+          setEvidenceData(prev => prev.map(evidence =>
+            evidence.evidence_id === data.evidence_id
+              ? { ...evidence, status: data.new_status }
+              : evidence
+          ));
+          
+          addToast(`Evidence status updated: ${data.filename} → ${data.new_status}`, {
+            severity: 'info',
+            title: 'Status Update',
+          });
+        }
+      });
+
+      // Phase progress events that might affect evidence
+      newSocket.on('phase_completed', (data) => {
+        if (!caseId || data.case_id === caseId) {
+          console.log('🎯 Phase completed, checking for evidence updates:', data);
+          // Refresh evidence list as phase completion might update evidence status
+          setTimeout(() => loadEvidence(), 1000); // Small delay to ensure backend processing is complete
+        }
+      });
+
+      return () => {
+        newSocket.disconnect();
+      };
+    }
+  }, [caseId, realTimeUpdates, socketEndpoint, loadEvidence, addToast]);
 
   // Load data on component mount and when dependencies change
   useEffect(() => {
@@ -260,8 +343,14 @@ const EvidenceTable = ({
     );
   };
 
-  // Filter evidence based on search
+  // Filter evidence based on search and phase
   const filteredEvidence = evidenceData.filter(evidence => {
+    // Phase filter
+    if (phaseFilter && evidence.phase !== phaseFilter) {
+      return false;
+    }
+
+    // Search filter
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return (

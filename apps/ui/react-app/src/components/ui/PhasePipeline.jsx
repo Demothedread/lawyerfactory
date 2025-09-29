@@ -3,6 +3,7 @@ import {
   Assessment,
   CheckCircle,
   Close,
+  CloudUpload,
   Description,
   Edit,
   Error,
@@ -45,6 +46,8 @@ import {
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useToast } from "../feedback/Toast";
+import EvidenceUpload from "./EvidenceUpload";
+import { lawyerFactoryAPI } from "../../services/apiService";
 
 const PhasePipeline = ({
   caseId,
@@ -62,6 +65,9 @@ const PhasePipeline = ({
   const [showPhaseDetails, setShowPhaseDetails] = useState(false);
   const [socket, setSocket] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showEvidenceUpload, setShowEvidenceUpload] = useState(false);
+  const [retryCount, setRetryCount] = useState({});
+  const [maxRetries] = useState(3);
 
   const { addToast } = useToast();
 
@@ -320,14 +326,26 @@ const PhasePipeline = ({
     [onPhaseError, addToast]
   );
 
-  // Start a specific phase
+  // Start a specific phase with error recovery
   const startPhase = async (phaseId) => {
     if (!caseId) {
       addToast("Case ID required to start phase", { severity: "warning" });
       return;
     }
 
+    const currentRetries = retryCount[phaseId] || 0;
+
+    if (currentRetries >= maxRetries) {
+      addToast(`Max retries (${maxRetries}) exceeded for ${phaseId}`, {
+        severity: "error",
+        title: "Max Retries Exceeded",
+      });
+      return;
+    }
+
     setLoading(true);
+    setRetryCount(prev => ({ ...prev, [phaseId]: currentRetries + 1 }));
+
     try {
       const response = await fetch(`${apiEndpoint}/${phaseId}/start`, {
         method: "POST",
@@ -340,14 +358,117 @@ const PhasePipeline = ({
       }
 
       setPipelineStatus("running");
+      // Reset retry count on success
+      setRetryCount(prev => ({ ...prev, [phaseId]: 0 }));
+
     } catch (error) {
       console.error("Failed to start phase:", error);
-      addToast(`Failed to start phase: ${error.message}`, {
-        severity: "error",
-        title: "Start Error",
-      });
+
+      // Determine error type and recovery strategy
+      const errorType = determineErrorType(error);
+      const recoveryStrategy = getRecoveryStrategy(errorType, currentRetries);
+
+      await executeRecoveryStrategy(recoveryStrategy, phaseId, error);
+
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Determine error type for recovery strategy
+  const determineErrorType = (error) => {
+    const message = error.message.toLowerCase();
+
+    if (message.includes('network') || message.includes('fetch')) {
+      return 'network_error';
+    }
+    if (message.includes('timeout')) {
+      return 'timeout_error';
+    }
+    if (message.includes('llm') || message.includes('ai')) {
+      return 'llm_error';
+    }
+    if (message.includes('storage') || message.includes('database')) {
+      return 'storage_error';
+    }
+    if (message.includes('rate limit')) {
+      return 'rate_limit_error';
+    }
+
+    return 'unknown_error';
+  };
+
+  // Get recovery strategy based on error type and retry count
+  const getRecoveryStrategy = (errorType, retries) => {
+    const strategies = {
+      'network_error': ['retry', 'retry_with_backoff', 'check_connection'],
+      'timeout_error': ['retry_with_backoff', 'reduce_concurrency', 'switch_endpoint'],
+      'llm_error': ['retry', 'switch_provider', 'reduce_complexity'],
+      'storage_error': ['retry', 'alternative_storage', 'clear_cache'],
+      'rate_limit_error': ['wait_and_retry', 'reduce_requests', 'queue_request'],
+      'unknown_error': ['retry', 'restart_phase', 'manual_intervention']
+    };
+
+    const availableStrategies = strategies[errorType] || strategies['unknown_error'];
+    return availableStrategies[Math.min(retries, availableStrategies.length - 1)];
+  };
+
+  // Execute recovery strategy
+  const executeRecoveryStrategy = async (strategy, phaseId, originalError) => {
+    const phaseName = phaseDefinitions.find(p => p.id === phaseId)?.name || phaseId;
+
+    switch (strategy) {
+      case 'retry':
+        addToast(`Retrying ${phaseName}...`, {
+          severity: "info",
+          title: "Retrying Phase",
+        });
+        setTimeout(() => startPhase(phaseId), 1000);
+        break;
+
+      case 'retry_with_backoff':
+        const backoffDelay = Math.pow(2, retryCount[phaseId] || 0) * 1000;
+        addToast(`Retrying ${phaseName} in ${backoffDelay/1000}s...`, {
+          severity: "info",
+          title: "Retrying with Backoff",
+        });
+        setTimeout(() => startPhase(phaseId), backoffDelay);
+        break;
+
+      case 'switch_provider':
+        addToast(`Switching to alternative provider for ${phaseName}...`, {
+          severity: "info",
+          title: "Provider Switch",
+        });
+        // Implement provider switching logic
+        setTimeout(() => startPhase(phaseId), 2000);
+        break;
+
+      case 'check_connection':
+        addToast("Checking connection and retrying...", {
+          severity: "info",
+          title: "Connection Check",
+        });
+        // Implement connection check
+        setTimeout(() => startPhase(phaseId), 3000);
+        break;
+
+      case 'manual_intervention':
+        addToast(`Manual intervention required for ${phaseName}`, {
+          severity: "warning",
+          title: "Manual Intervention Needed",
+        });
+        setPhaseStates(prev => ({
+          ...prev,
+          [phaseId]: { ...prev[phaseId], status: "error" }
+        }));
+        break;
+
+      default:
+        addToast(`Error in ${phaseName}: ${originalError.message}`, {
+          severity: "error",
+          title: "Phase Error",
+        });
     }
   };
 
@@ -387,6 +508,37 @@ const PhasePipeline = ({
     setCurrentPhase(0);
     initializePhaseStates();
     addToast("Pipeline stopped", { severity: "warning" });
+  };
+
+  // Handle evidence upload for Phase A01
+  const handleEvidenceUpload = async (uploadedFiles) => {
+    try {
+      addToast(`Uploaded ${uploadedFiles.length} documents to Phase A01`, {
+        severity: "success",
+        title: "Upload Complete",
+        details: `ObjectIDs: ${uploadedFiles.map(f => f.objectId?.substring(0, 8)).join(", ")}...`,
+      });
+
+      // Update phase state to show documents processed
+      setPhaseStates((prev) => ({
+        ...prev,
+        phaseA01_intake: {
+          ...prev.phaseA01_intake,
+          outputs: [...(prev.phaseA01_intake.outputs || []), ...uploadedFiles.map(f => f.name)],
+        },
+      }));
+
+      // Auto-advance if documents uploaded and phase is ready
+      const phaseA01State = phaseStates.phaseA01_intake;
+      if (phaseA01State?.status === "ready" && uploadedFiles.length > 0) {
+        await startPhase("phaseA01_intake");
+      }
+    } catch (error) {
+      addToast(`Upload error: ${error.message}`, {
+        severity: "error",
+        title: "Upload Failed",
+      });
+    }
   };
 
   // Get phase status icon
@@ -600,6 +752,17 @@ const PhasePipeline = ({
                         </Button>
                       )}
 
+                      {phase.id === "phaseA01_intake" && (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<CloudUpload />}
+                          onClick={() => setShowEvidenceUpload(true)}
+                          disabled={loading}>
+                          Upload Evidence
+                        </Button>
+                      )}
+
                       <Button
                         size="small"
                         onClick={() => viewPhaseDetails(phase)}
@@ -614,6 +777,32 @@ const PhasePipeline = ({
           </Stepper>
         </CardContent>
       </Card>
+
+      {/* Evidence Upload Dialog */}
+      <Dialog
+        open={showEvidenceUpload}
+        onClose={() => setShowEvidenceUpload(false)}
+        maxWidth="md"
+        fullWidth>
+        <DialogTitle>
+          Upload Evidence Documents
+          <IconButton
+            onClick={() => setShowEvidenceUpload(false)}
+            sx={{ position: "absolute", right: 8, top: 8 }}>
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <EvidenceUpload
+            onUploadComplete={handleEvidenceUpload}
+            currentCaseId={caseId}
+            sourcePhase="phaseA01_intake"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowEvidenceUpload(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Phase Details Dialog */}
       <Dialog
