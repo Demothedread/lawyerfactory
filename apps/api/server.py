@@ -1,4 +1,28 @@
 """
+LawyerFactory API Server with proper Flask-SocketIO configuration
+Handles real-time communication for the legal document automation system
+"""
+
+import eventlet
+
+# Monkey patch must be first for eventlet
+eventlet.monkey_patch()
+
+import os
+from pathlib import Path
+import sys
+
+# Add src to path for lawyerfactory imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
+
+import argparse
+import logging
+
+from flask import Flask, jsonify, render_template, request
+from flask_cors import CORS
+from flask_socketio import SocketIO, emit
+
+"""
 LawyerFactory API Server
 Flask-based REST API with Socket.IO for real-time communication
 """
@@ -11,10 +35,6 @@ from pathlib import Path
 import sys
 import time
 from typing import Any, Dict, Optional
-
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-from flask_socketio import SocketIO, emit
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -144,18 +164,21 @@ def initialize_components():
         return
 
     try:
-        # Initialize unified storage
+        # Initialize unified storage first (required by other components)
         if UNIFIED_STORAGE_AVAILABLE and get_enhanced_unified_storage_api:
             unified_storage = get_enhanced_unified_storage_api()
+            logger.info("Unified storage initialized")
         else:
             unified_storage = None
+            logger.warning("Unified storage not available")
 
         # Initialize research components
         if RESEARCH_BOT_AVAILABLE and ResearchBot:
-            # ResearchBot needs a knowledge graph - we'll create a mock one for now
             try:
                 research_bot = ResearchBot(knowledge_graph=None)
-            except:
+                logger.info("Research bot initialized")
+            except Exception as e:
+                logger.warning(f"Failed to initialize research bot: {e}")
                 research_bot = None
         else:
             research_bot = None
@@ -163,7 +186,9 @@ def initialize_components():
         if COURT_AUTHORITY_AVAILABLE and CourtAuthorityHelper:
             try:
                 court_authority_helper = CourtAuthorityHelper()
-            except:
+                logger.info("Court authority helper initialized")
+            except Exception as e:
+                logger.warning(f"Failed to initialize court authority helper: {e}")
                 court_authority_helper = None
         else:
             court_authority_helper = None
@@ -172,63 +197,75 @@ def initialize_components():
         if EVIDENCE_TABLE_AVAILABLE and EnhancedEvidenceTable:
             try:
                 evidence_table = EnhancedEvidenceTable()
-            except:
+                logger.info("Evidence table initialized")
+            except Exception as e:
+                logger.warning(f"Failed to initialize evidence table: {e}")
                 evidence_table = None
         else:
             evidence_table = None
 
-    # Import outline generator dependencies
-    try:
-        from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
-        from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
-        from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
-    except ImportError as e:
-        logger.error(f"Failed to import outline generator dependencies: {e}")
-        ComprehensiveClaimsMatrixIntegration = None
-        EnhancedKnowledgeGraph = None
-        EvidenceAPI = None
-
-    # Initialize components
-    try:
         # Initialize intake processor
         if INTAKE_PROCESSOR_AVAILABLE and EnhancedIntakeProcessor:
             try:
                 intake_processor = EnhancedIntakeProcessor()
-            except:
+                logger.info("Intake processor initialized")
+            except Exception as e:
+                logger.warning(f"Failed to initialize intake processor: {e}")
                 intake_processor = None
         else:
             intake_processor = None
 
-        # Initialize outline generator
-        if OUTLINE_GENERATOR_AVAILABLE and EnhancedSkeletalOutlineGenerator and ComprehensiveClaimsMatrixIntegration and EnhancedKnowledgeGraph and EvidenceAPI:
-            try:
-                kg = EnhancedKnowledgeGraph()
-                claims_matrix = ComprehensiveClaimsMatrixIntegration(kg)
-                evidence_api = EvidenceAPI()
+        # Import outline generator dependencies (only once)
+        try:
+            from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+            from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
 
-                outline_generator = EnhancedSkeletalOutlineGenerator(
-                    kg, claims_matrix, evidence_api
-                )
-            except Exception as e:
-                logger.warning(f"Failed to initialize outline generator dependencies: {e}")
+            # Initialize outline generator with proper dependencies
+            if (
+                OUTLINE_GENERATOR_AVAILABLE
+                and EnhancedSkeletalOutlineGenerator
+                and CLAIMS_MATRIX_AVAILABLE
+                and ComprehensiveClaimsMatrixIntegration
+            ):
+                try:
+                    kg = EnhancedKnowledgeGraph()
+                    evidence_api = EvidenceAPI()
+
+                    # Initialize claims matrix with unified storage if available
+                    if unified_storage:
+                        claims_matrix = ComprehensiveClaimsMatrixIntegration(unified_storage)
+                    else:
+                        claims_matrix = ComprehensiveClaimsMatrixIntegration(kg)
+
+                    outline_generator = EnhancedSkeletalOutlineGenerator(
+                        kg, claims_matrix, evidence_api
+                    )
+                    logger.info("Outline generator and claims matrix initialized")
+                except Exception as e:
+                    logger.warning(f"Failed to initialize outline generator: {e}")
+                    outline_generator = None
+                    claims_matrix = None
+            else:
                 outline_generator = None
-        else:
-            outline_generator = None
-
-        # Initialize claims matrix
-        if CLAIMS_MATRIX_AVAILABLE and ComprehensiveClaimsMatrixIntegration:
-            try:
-                # Claims matrix needs enhanced KG - we'll skip for now
-                claims_matrix = None  # ComprehensiveClaimsMatrixIntegration(enhanced_kg=None)
-            except:
                 claims_matrix = None
-        else:
+
+        except ImportError as e:
+            logger.warning(f"Failed to import outline generator dependencies: {e}")
+            outline_generator = None
             claims_matrix = None
 
-        logger.info("All LawyerFactory components initialized successfully")
+        logger.info("Component initialization completed")
 
     except Exception as e:
         logger.error(f"Failed to initialize components: {e}")
+        # Set all components to None on initialization failure
+        research_bot = None
+        court_authority_helper = None
+        evidence_table = None
+        intake_processor = None
+        outline_generator = None
+        claims_matrix = None
+        unified_storage = None
 
 
 # Initialize components on startup
@@ -640,6 +677,55 @@ def process_research_feedback(case_id: str, research_results: Dict[str, Any]):
         logger.error(f"Research feedback processing failed: {e}")
 
 
+def create_app():
+    """Create and configure Flask application with proper SocketIO setup."""
+    app = Flask(__name__, template_folder="../ui/templates", static_folder="../ui/static")
+
+    # Configure CORS
+    CORS(app, origins="*")
+    app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-key-change-in-production")
+
+    # Initialize SocketIO with eventlet (compatible with your system)
+    socketio = SocketIO(
+        app,
+        cors_allowed_origins="*",
+        async_mode="eventlet",  # Explicitly set async mode
+        logger=True,
+        engineio_logger=True,
+    )
+
+    return app, socketio
+
+
+def main():
+    """Main server entry point with proper error handling."""
+    parser = argparse.ArgumentParser(description="LawyerFactory API Server")
+    parser.add_argument("--port", type=int, default=5000, help="Port to run server on")
+    parser.add_argument("--host", type=str, default="127.0.0.1", help="Host to run server on")
+    parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+    args = parser.parse_args()
+
+    try:
+        app, socketio = create_app()
+
+        print(f"🚀 Starting LawyerFactory API server...")
+        print(f"🌐 Server: http://{args.host}:{args.port}")
+        print(f"📡 SocketIO async mode: {socketio.async_mode}")
+
+        # Run with eventlet
+        socketio.run(
+            app,
+            host=args.host,
+            port=args.port,
+            debug=args.debug,
+            use_reloader=False,  # Disable reloader with eventlet
+        )
+
+    except Exception as e:
+        print(f"❌ Server startup failed: {e}")
+        logging.exception("Server startup error")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
-    logger.info("Starting LawyerFactory API Server...")
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True, allow_unsafe_werkzeug=True)
+    main()

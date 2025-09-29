@@ -12,6 +12,14 @@
 				"panel": "shared"
 			},
 			"problemMatcher": []
+		},
+		{
+			"type": "npm",
+			"script": "dev",
+			"path": "apps/ui/react-app",
+			"problemMatcher": [],
+			"label": "npm: dev - apps/ui/react-app",
+			"detail": "vite"
 		}
 	]
 }

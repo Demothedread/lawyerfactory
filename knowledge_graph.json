@@ -529,6 +529,51 @@
         "Includes startFinalOrchestration, getOrchestrationStatus, getFinalDeliverables",
         "Integrated with LawyerFactoryAPI class for orchestration phase workflow"
       ]
+    },
+    {
+      "name": "EvidenceUploadIntegration",
+      "entityType": "UIIntegration",
+      "observations": [
+        "Integrated EvidenceUpload component with Phase A01 workflow",
+        "Added unified storage API integration for evidence management",
+        "Implemented real-time upload progress and notifications"
+      ]
+    },
+    {
+      "name": "RealTimeUpdateSystem",
+      "entityType": "CommunicationSystem",
+      "observations": [
+        "Enhanced EvidenceTable.jsx with Socket.IO real-time updates",
+        "Added phase-specific evidence filtering and live refresh",
+        "Implemented live connection status indicators and notifications"
+      ]
+    },
+    {
+      "name": "WorkflowStatePersistence",
+      "entityType": "DataManagement",
+      "observations": [
+        "Implemented comprehensive workflow state persistence in apiService.js",
+        "Added state recovery on application restart functionality",
+        "Supports both backend and localStorage state management"
+      ]
+    },
+    {
+      "name": "ErrorRecoverySystem",
+      "entityType": "SystemComponent",
+      "observations": [
+        "Added comprehensive error recovery strategies for different error types",
+        "Implemented retry mechanisms with exponential backoff",
+        "Added fallback provider switching capabilities"
+      ]
+    },
+    {
+      "name": "LaunchScriptV4",
+      "entityType": "SystemScript",
+      "observations": [
+        "Enhanced launch-dev.sh v4.0.0 with comprehensive system integration",
+        "Automated environment setup, dependency management, health checks",
+        "Advanced port management, process tracking, graceful shutdown"
+      ]
     }
   ],
   "relations": [
@@ -546,6 +591,56 @@
       "from": "PhaseC02Integration",
       "to": "OrchestrationAPIEndpoints",
       "relationType": "uses"
+    },
+    {
+      "from": "EvidenceUploadIntegration",
+      "to": "PhaseA01Workflow",
+      "relationType": "enhances"
+    },
+    {
+      "from": "EvidenceUploadIntegration",
+      "to": "UnifiedStorageAPI",
+      "relationType": "uses"
+    },
+    {
+      "from": "RealTimeUpdateSystem",
+      "to": "EvidenceTableComponent",
+      "relationType": "enhances"
+    },
+    {
+      "from": "RealTimeUpdateSystem",
+      "to": "SocketIOEvents",
+      "relationType": "uses"
+    },
+    {
+      "from": "WorkflowStatePersistence",
+      "to": "ApiService",
+      "relationType": "extends"
+    },
+    {
+      "from": "WorkflowStatePersistence",
+      "to": "LocalStorage",
+      "relationType": "uses"
+    },
+    {
+      "from": "ErrorRecoverySystem",
+      "to": "PhasePipeline",
+      "relationType": "enhances"
+    },
+    {
+      "from": "ErrorRecoverySystem",
+      "to": "RetryMechanisms",
+      "relationType": "implements"
+    },
+    {
+      "from": "LaunchScriptV4",
+      "to": "EnvironmentSetup",
+      "relationType": "executes"
+    },
+    {
+      "from": "LaunchScriptV4",
+      "to": "ServerOrchestration",
+      "relationType": "manages"
     }
   ]
 }

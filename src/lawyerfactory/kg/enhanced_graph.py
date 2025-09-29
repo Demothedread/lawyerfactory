@@ -490,9 +490,7 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
             result_data TEXT, -- JSON response
             relevance_score REAL DEFAULT 0.5,
             cache_expiry TIMESTAMP,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            INDEX idx_research_cache_jurisdiction_query (jurisdiction, search_query),
-            INDEX idx_research_cache_expiry (cache_expiry)
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
         
         -- Legal definition cache per jurisdiction
@@ -519,9 +517,7 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
             authority_level INTEGER DEFAULT 5, -- 1=supreme_court, 5=trial_court
             decision_date DATE,
             cache_expiry TIMESTAMP,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            INDEX idx_case_law_jurisdiction_cause (jurisdiction, cause_of_action),
-            INDEX idx_case_law_relevance (relevance_score DESC)
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
 
         -- Indexes for performance
@@ -541,6 +537,12 @@ class EnhancedKnowledgeGraph(KnowledgeGraph):
         CREATE INDEX IF NOT EXISTS idx_jurisdiction_authorities_jurisdiction ON jurisdiction_authorities(jurisdiction);
         CREATE INDEX IF NOT EXISTS idx_fact_attachments_element ON fact_element_attachments(legal_element_id);
         CREATE INDEX IF NOT EXISTS idx_fact_attachments_fact ON fact_element_attachments(fact_entity_id);
+        
+        -- Additional indexes for the research and case law cache tables
+        CREATE INDEX IF NOT EXISTS idx_research_cache_jurisdiction_query ON legal_research_cache(jurisdiction, search_query);
+        CREATE INDEX IF NOT EXISTS idx_research_cache_expiry ON legal_research_cache(cache_expiry);
+        CREATE INDEX IF NOT EXISTS idx_case_law_jurisdiction_cause ON case_law_cache(jurisdiction, cause_of_action);
+        CREATE INDEX IF NOT EXISTS idx_case_law_relevance ON case_law_cache(relevance_score DESC);
         """
 
         try:

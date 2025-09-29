@@ -19,18 +19,19 @@ readonly BACKEND_DIR="$SCRIPT_DIR/apps/api"
 ENVIRONMENT="${ENVIRONMENT:-development}"
 NODE_ENV="${NODE_ENV:-development}"
 
-# Default configuration
+# Default configuration - Force real data mode, no dry-run
 FRONTEND_PORT="${FRONTEND_PORT:-3000}"  # Standard development port
 BACKEND_PORT="${BACKEND_PORT:-5000}"
 SKIP_DEPS="${SKIP_DEPS:-false}"
 VERBOSE="${VERBOSE:-false}"
-DRY_RUN="${DRY_RUN:-false}"
+DRY_RUN="false"  # Force disable dry-run mode
 LOG_LEVEL="${LOG_LEVEL:-INFO}"
 SETUP_MODE="${SETUP_MODE:-false}"
 OPEN_BROWSER="${OPEN_BROWSER:-true}"
 PRODUCTION_MODE="${PRODUCTION_MODE:-false}"
 USE_HTTPS="${USE_HTTPS:-false}"
 WATCH_MODE="${WATCH_MODE:-true}"
+USE_REAL_DATA="true"  # Force real data usage
 
 # Process tracking
 FRONTEND_PID=""
@@ -335,13 +336,13 @@ VITE_WS_URL=ws://localhost:$BACKEND_PORT
 # CORS Configuration
 CORS_ORIGINS=http://localhost:3000,http://localhost:5173,http://localhost:8000,http://127.0.0.1:5173
 
-# AI Services (Development - use your API keys)
-OPENAI_API_KEY=\${OPENAI_API_KEY:-your_openai_key_here}
-ANTHROPIC_API_KEY=\${ANTHROPIC_API_KEY:-your_anthropic_key_here}
-GROQ_API_KEY=\${GROQ_API_KEY:-your_groq_key_here}
+# AI Services (Development - use your API keys - REAL APIS, NO MOCKS)
+OPENAI_API_KEY=\${OPENAI_API_KEY:-}
+ANTHROPIC_API_KEY=\${ANTHROPIC_API_KEY:-}
+GROQ_API_KEY=\${GROQ_API_KEY:-}
 
-# Legal Research APIs
-COURTLISTENER_API_KEY=\${COURTLISTENER_API_KEY:-your_courtlistener_key_here}
+# Legal Research APIs (REAL APIS, NO MOCKS)
+COURTLISTENER_API_KEY=\${COURTLISTENER_API_KEY:-}
 
 # Storage Configuration
 WORKFLOW_STORAGE_PATH=./workflow_storage
@@ -362,10 +363,13 @@ SESSION_SECRET=dev_session_secret
 LOG_LEVEL=DEBUG
 PYTHONPATH=./src:\${PYTHONPATH:-}
 
-# Development Features
+# Development Features - Real Data Mode
 HOT_RELOAD=true
 WATCH_FILES=true
 AUTO_RESTART=true
+USE_REAL_DATA=true
+USE_MOCK_DATA=false
+ENABLE_UNIFIED_STORAGE=true
 
 # Database (if using)
 DATABASE_URL=sqlite:///./data/lawyerfactory_dev.db
@@ -499,7 +503,7 @@ validate_system_requirements() {
     local required_files=(
         "$VITE_APP_DIR/package.json"
         "$VITE_APP_DIR/src/App.jsx"
-        "$BACKEND_DIR/simple_server.py"
+        "$BACKEND_DIR/server.py"
     )
     
     for file in "${required_files[@]}"; do
@@ -512,7 +516,7 @@ validate_system_requirements() {
     # Check for optional but important files
     local important_files=(
         "$VITE_APP_DIR/vite.config.js"
-        "$BACKEND_DIR/server.py"
+        "$BACKEND_DIR/Server.py"
     )
     
     for file in "${important_files[@]}"; do
@@ -535,12 +539,12 @@ start_backend_server() {
     cd "$BACKEND_DIR"
     
     local server_file
-    if [[ -f "simple_server.py" ]]; then
-        server_file="simple_server.py"
-    elif [[ -f "server.py" ]]; then
+    if [[ -f "server.py" ]]; then
         server_file="server.py"
+    elif [[ -f "simple_server.py" ]]; then
+        server_file="simple_server.py"
     else
-        error "No backend server file found (simple_server.py or server.py)"
+        error "No backend server file found (server.py or simple_server.py)"
         return 1
     fi
     
@@ -552,9 +556,15 @@ start_backend_server() {
     # Create backend log file
     local backend_log="$LOG_DIR/backend-$(date '+%Y%m%d-%H%M%S').log"
     
-    # Start backend server in background
-    info "Starting backend: $PYTHON_CMD $server_file"
-    $PYTHON_CMD "$server_file" > "$backend_log" 2>&1 &
+    # Set environment variables for real data usage
+    export USE_REAL_DATA="true"
+    export USE_MOCK_DATA="false"
+    export ENABLE_UNIFIED_STORAGE="true"
+    export DRY_RUN="false"
+    
+    # Start backend server in background with real data configuration
+    info "Starting backend with real data: $PYTHON_CMD $server_file"
+    $PYTHON_CMD "$server_file" --port="$BACKEND_PORT" > "$backend_log" 2>&1 &
     BACKEND_PID=$!
     
     # Wait for backend to start
@@ -942,7 +952,8 @@ parse_arguments() {
                 shift
                 ;;
             --dry-run)
-                DRY_RUN="true"
+                warn "Dry-run mode is disabled - script will always run in real mode"
+                # DRY_RUN remains "false" - force real execution
                 shift
                 ;;
             --no-browser)
