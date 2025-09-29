@@ -8,32 +8,15 @@ LawyerFactory is a comprehensive legal document automation platform that orchest
 
 ## 🚀 Quick Start - Complete System Launch
 
-### Canonical Launch Scripts (Recommended)
-
-**Development Mode (Default):**
+### One-Command Launch (Recommended)
 
 ```bash
-# Make executable and launch development environment
-chmod +x launch.sh launch-dev.sh
-./launch.sh
-# OR directly:
+# Make executable and launch complete system
+chmod +x launch-dev.sh
 ./launch-dev.sh
 ```
 
-**Production Mode:**
-
-```bash
-# Launch production environment with optimizations
-chmod +x launch-prod.sh
-./launch.sh --production
-# OR directly:
-./launch-prod.sh
-```
-
-**System URLs:**
-
-- **Development:** http://localhost:3000 (Frontend) + http://localhost:5000 (Backend)
-- **Production:** http://localhost:80 (Frontend) + http://localhost:5000 (Backend)
+**System automatically opens to:** http://127.0.0.1:3000
 
 **Expected Components:**
 
@@ -42,7 +25,6 @@ chmod +x launch-prod.sh
 - ✅ Real-time Agent Orchestration
 - ✅ 7-Phase Legal Workflow Processing
 - ✅ Advanced Document Generation Pipeline
-- ✅ Unified Storage Integration with ObjectID tracking
 
 ### Alternative Launch Methods
 
@@ -55,17 +37,7 @@ cd apps/ui/react-app && npm run dev
 **Backend-Only (API Server):**
 
 ```bash
-cd apps/api && python simple_server.py
-```
-
-**Custom Ports:**
-
-```bash
-# Development with custom ports
-./launch-dev.sh --frontend-port 3000 --backend-port 5000
-
-# Production with custom ports
-./launch-prod.sh --frontend-port 443 --backend-port 8000
+cd apps/api && python server.py
 ```
 
 ---

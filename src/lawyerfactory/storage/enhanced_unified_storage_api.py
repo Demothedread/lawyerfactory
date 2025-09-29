@@ -118,6 +118,12 @@ class EnhancedUnifiedStorageAPI:
         except Exception as e:
             logger.error(f"Failed to save object registry: {e}")
 
+    def register_storage_client(self, client_type: str, client_instance):
+        """Register a storage client for integration"""
+        logger.info(f"Registered {client_type} storage client")
+        # This method allows storage clients to register themselves
+        # Currently just logs the registration for future integration
+
     async def store_evidence(
         self,
         file_content: bytes,
@@ -643,6 +649,49 @@ class EnhancedUnifiedStorageAPI:
         except Exception as e:
             logger.error(f"Vector store search error: {e}")
             return []
+
+    async def get_research_status(self, object_id: str) -> Dict[str, Any]:
+        """Get the research status of a given ObjectID"""
+        if object_id not in self.object_registry:
+            return {"error": "ObjectID not found"}
+
+        registry_entry = self.object_registry[object_id]
+        storage_results = registry_entry.get("storage_results", {})
+
+        status = {
+            "object_id": object_id,
+            "metadata": registry_entry.get("metadata", {}),
+            "storage_status": {},
+        }
+
+        # Check vector store status
+        if "vector" in storage_results:
+            status["storage_status"]["vector_store"] = {
+                "stored": True,
+                "vector_ids": storage_results["vector"].get("vector_ids", []),
+            }
+        else:
+            status["storage_status"]["vector_store"] = {"stored": False}
+
+        # Check cloud storage status
+        if "cloud" in storage_results:
+            status["storage_status"]["cloud_storage"] = {
+                "stored": True,
+                "url": storage_results["cloud"].get("url"),
+            }
+        else:
+            status["storage_status"]["cloud_storage"] = {"stored": False}
+
+        # Check evidence table status
+        if "evidence" in storage_results:
+            status["storage_status"]["evidence_table"] = {
+                "stored": True,
+                "evidence_id": storage_results["evidence"].get("evidence_id"),
+            }
+        else:
+            status["storage_status"]["evidence_table"] = {"stored": False}
+
+        return status
 
     async def _search_evidence_table(self, query: str) -> List[Dict[str, Any]]:
         """Search evidence table and return results with ObjectIDs"""

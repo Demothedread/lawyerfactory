@@ -1,0 +1,12 @@
+{
+  "case_overview": {
+    "case_id": "TEST_CASE_001",
+    "compilation_date": "2025-09-29T06:16:05.027144",
+    "total_phases_completed": 4
+  },
+  "document_inventory": 2,
+  "evidence_count": 2,
+  "research_authorities": 2,
+  "validation_status": false,
+  "quality_metrics": {}
+}

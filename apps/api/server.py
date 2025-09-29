@@ -177,6 +177,19 @@ def initialize_components():
         else:
             evidence_table = None
 
+    # Import outline generator dependencies
+    try:
+        from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
+        from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+        from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
+    except ImportError as e:
+        logger.error(f"Failed to import outline generator dependencies: {e}")
+        ComprehensiveClaimsMatrixIntegration = None
+        EnhancedKnowledgeGraph = None
+        EvidenceAPI = None
+
+    # Initialize components
+    try:
         # Initialize intake processor
         if INTAKE_PROCESSOR_AVAILABLE and EnhancedIntakeProcessor:
             try:
@@ -187,10 +200,17 @@ def initialize_components():
             intake_processor = None
 
         # Initialize outline generator
-        if OUTLINE_GENERATOR_AVAILABLE and EnhancedSkeletalOutlineGenerator:
+        if OUTLINE_GENERATOR_AVAILABLE and EnhancedSkeletalOutlineGenerator and ComprehensiveClaimsMatrixIntegration and EnhancedKnowledgeGraph and EvidenceAPI:
             try:
-                outline_generator = EnhancedSkeletalOutlineGenerator()
-            except:
+                kg = EnhancedKnowledgeGraph()
+                claims_matrix = ComprehensiveClaimsMatrixIntegration(kg)
+                evidence_api = EvidenceAPI()
+
+                outline_generator = EnhancedSkeletalOutlineGenerator(
+                    kg, claims_matrix, evidence_api
+                )
+            except Exception as e:
+                logger.warning(f"Failed to initialize outline generator dependencies: {e}")
                 outline_generator = None
         else:
             outline_generator = None
@@ -323,6 +343,13 @@ def upload_case_documents(case_id):
         return jsonify({"error": str(e)}), 500
 
 
+# Global storage for workflow states (temporary - in production use database)
+research_status_store = {}
+research_results_store = {}
+outline_status_store = {}
+outline_results_store = {}
+
+
 @app.route("/api/research/start", methods=["POST"])
 def start_research():
     """Start research for a case"""
@@ -354,8 +381,10 @@ def get_research_status(case_id):
         return jsonify({"error": "Research bot not available"}), 503
 
     try:
-        # Get research status from storage
-        status = unified_storage.get_research_status(case_id)
+        # Get research status from temporary store
+        status = research_status_store.get(
+            case_id, {"status": "not_started", "progress": 0, "message": "Research not yet started"}
+        )
 
         return jsonify(
             {
@@ -378,8 +407,17 @@ def get_research_results(case_id):
         return jsonify({"error": "Research bot not available"}), 503
 
     try:
-        # Get research results from storage
-        results = unified_storage.get_research_results(case_id)
+        # Get research results from temporary store
+        results = research_results_store.get(
+            case_id,
+            {
+                "sources": [],
+                "legal_principles": [],
+                "gaps": [],
+                "recommendations": [],
+                "confidence_score": 0.0,
+            },
+        )
 
         return jsonify(
             {
@@ -426,8 +464,15 @@ def get_outline_status(case_id):
         return jsonify({"error": "Outline generator not available"}), 503
 
     try:
-        # Get outline status from storage
-        status = unified_storage.get_outline_status(case_id)
+        # Get outline status from temporary store
+        status = outline_status_store.get(
+            case_id,
+            {
+                "status": "not_started",
+                "progress": 0,
+                "message": "Outline generation not yet started",
+            },
+        )
 
         return jsonify(
             {
@@ -448,7 +493,11 @@ def run_research(case_id: str, research_query: str):
     """Run research in background"""
     try:
         # Update status to running
-        unified_storage.update_research_status(case_id, "running", 10, "Initializing research...")
+        research_status_store[case_id] = {
+            "status": "running",
+            "progress": 10,
+            "message": "Initializing research...",
+        }
 
         # Emit progress update
         socketio.emit(
@@ -460,8 +509,12 @@ def run_research(case_id: str, research_query: str):
         results = research_bot.research_case(case_id, research_query)
 
         # Update status to completed
-        unified_storage.update_research_status(case_id, "completed", 100, "Research completed")
-        unified_storage.save_research_results(case_id, results)
+        research_status_store[case_id] = {
+            "status": "completed",
+            "progress": 100,
+            "message": "Research completed",
+        }
+        research_results_store[case_id] = results
 
         # Emit completion update
         socketio.emit(
@@ -479,7 +532,7 @@ def run_research(case_id: str, research_query: str):
 
     except Exception as e:
         logger.error(f"Research failed: {e}")
-        unified_storage.update_research_status(case_id, "failed", 0, str(e))
+        research_status_store[case_id] = {"status": "failed", "progress": 0, "message": str(e)}
 
         socketio.emit(
             "phase_progress_update",
@@ -491,9 +544,11 @@ def run_outline_generation(case_id: str):
     """Run outline generation in background"""
     try:
         # Update status to running
-        unified_storage.update_outline_status(
-            case_id, "running", 10, "Initializing outline generation..."
-        )
+        outline_status_store[case_id] = {
+            "status": "running",
+            "progress": 10,
+            "message": "Initializing outline generation...",
+        }
 
         # Emit progress update
         socketio.emit(
@@ -502,13 +557,24 @@ def run_outline_generation(case_id: str):
         )
 
         # Generate outline
-        outline = outline_generator.generate_enhanced_outline(case_id, f"session_{case_id}")
+        import asyncio
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            outline = loop.run_until_complete(
+                outline_generator.generate_enhanced_outline(case_id, f"session_{case_id}")
+            )
+        finally:
+            loop.close()
 
         # Update status to completed
-        unified_storage.update_outline_status(
-            case_id, "completed", 100, "Outline generation completed"
-        )
-        unified_storage.save_outline(case_id, outline)
+        outline_status_store[case_id] = {
+            "status": "completed",
+            "progress": 100,
+            "message": "Outline generation completed",
+        }
+        outline_results_store[case_id] = outline
 
         # Emit completion update
         socketio.emit(
@@ -522,7 +588,7 @@ def run_outline_generation(case_id: str):
 
     except Exception as e:
         logger.error(f"Outline generation failed: {e}")
-        unified_storage.update_outline_status(case_id, "failed", 0, str(e))
+        outline_status_store[case_id] = {"status": "failed", "progress": 0, "message": str(e)}
 
         socketio.emit(
             "phase_progress_update",
@@ -576,4 +642,4 @@ def process_research_feedback(case_id: str, research_results: Dict[str, Any]):
 
 if __name__ == "__main__":
     logger.info("Starting LawyerFactory API Server...")
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True, allow_unsafe_werkzeug=True)

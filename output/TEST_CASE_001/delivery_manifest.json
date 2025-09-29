@@ -1,0 +1,37 @@
+{
+  "case_id": "TEST_CASE_001",
+  "delivery_date": "2025-09-29T06:16:05.160774",
+  "total_deliverables": 5,
+  "file_inventory": [
+    {
+      "type": "main_document",
+      "title": "Document Generation Error",
+      "format": "text",
+      "description": ""
+    },
+    {
+      "type": "evidence_summary",
+      "title": "Evidence Summary",
+      "format": "structured",
+      "description": ""
+    },
+    {
+      "type": "research_compilation",
+      "title": "Legal Research Compilation",
+      "format": "citation_standard",
+      "description": ""
+    },
+    {
+      "type": "case_summary",
+      "title": "Case Summary - TEST_CASE_001",
+      "format": "executive_summary",
+      "description": ""
+    },
+    {
+      "type": "custom_document",
+      "title": "Executive Summary",
+      "format": "pdf",
+      "description": ""
+    }
+  ]
+}
