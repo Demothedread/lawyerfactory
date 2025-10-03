@@ -1,15 +1,15 @@
 // Main App component integrating lawsuit workflow UI components
 import {
-  Box,
-  Card,
-  CardContent,
-  Container,
-  createTheme,
-  CssBaseline,
-  Grid,
-  Paper,
-  ThemeProvider,
-  Typography,
+    Box,
+    Card,
+    CardContent,
+    Container,
+    createTheme,
+    CssBaseline,
+    Grid,
+    Paper,
+    ThemeProvider,
+    Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import ProgressBar from "./components/feedback/ProgressBar";
@@ -24,8 +24,7 @@ import EvidenceUpload from "./components/ui/EvidenceUpload";
 import Modal, { ConfirmationModal } from "./components/ui/Modal";
 import PhasePipeline from "./components/ui/PhasePipeline";
 import lawyerFactoryAPI, {
-  getCaseDocuments,
-  uploadDocumentsUnified,
+    getCaseDocuments
 } from "./services/apiService";
 
 // Import modular terminal components
@@ -40,6 +39,12 @@ import MechanicalButton from "./components/soviet/MechanicalButton";
 import NixieDisplay from "./components/soviet/NixieDisplay";
 import StatusLights from "./components/soviet/StatusLights";
 import ToggleSwitch from "./components/soviet/ToggleSwitch";
+
+// Import grid framework components for zero vertical scroll architecture
+import GridContainer, {
+    GridItem,
+    GridSection,
+} from "./components/layout/GridContainer";
 
 // Create Soviet Industrial theme
 const theme = createTheme({
@@ -814,9 +819,9 @@ const App = () => {
     </Container>
   );
 
-  // Enhanced Orchestration Workspace
+  // Enhanced Orchestration Workspace with Zero Vertical Scroll
   const renderOrchestrationView = () => (
-    <Container maxWidth="xl" sx={{ mt: 2, mb: 4 }}>
+    <Box sx={{ width: "100%", height: "100vh", overflow: "hidden", p: 2 }}>
       <Box
         sx={{
           display: "flex",
@@ -841,111 +846,106 @@ const App = () => {
         </Box>
       </Box>
 
-      <Grid container spacing={3}>
-        {/* Main Agent Orchestration Panel */}
-        <Grid item xs={12}>
-          <AgentOrchestrationPanel
-            currentCaseId={currentCaseId}
-            socket={null} // Will be connected to actual Socket.IO in production
-            collapsed={false}
-            onToggleCollapsed={() => {}}
-            showDetails={true}
-          />
-        </Grid>
+      <GridContainer
+        minColumns={1}
+        maxColumns={2}
+        gap="24px"
+        autoOptimize={true}
+        layoutMode="grid"
+        noVerticalScroll={true}
+        goldenRatio={true}
+        density="comfortable">
+        {/* Main Agent Orchestration Panel - Full Width */}
+        <GridItem colSpan={2}>
+          <GridSection
+            title="🤖 Agent Swarm Coordination Matrix"
+            collapsible={false}
+            icon="⚡">
+            <AgentOrchestrationPanel
+              currentCaseId={currentCaseId}
+              socket={null} // Will be connected to actual Socket.IO in production
+              collapsed={false}
+              onToggleCollapsed={() => {}}
+              showDetails={true}
+            />
+          </GridSection>
+        </GridItem>
 
-        {/* Additional System Monitoring */}
-        <Grid item xs={12} md={6}>
-          <Card
-            sx={{
-              backgroundColor: "var(--soviet-bg)",
-              border: "1px solid var(--soviet-brass)",
-              borderRadius: "4px",
-            }}>
-            <CardContent>
-              <Typography
-                variant="h6"
-                gutterBottom
-                sx={{ color: "var(--soviet-amber)" }}>
-                System Resource Monitor
-              </Typography>
-              <Box
-                sx={{ display: "flex", justifyContent: "space-around", mt: 2 }}>
-                <Box sx={{ textAlign: "center" }}>
-                  <AnalogGauge
-                    value={overallProgress}
-                    label="System Load"
-                    max={100}
-                  />
-                </Box>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                  <StatusLights statuses={systemStatus} />
-                  <Typography
-                    variant="caption"
-                    sx={{ color: "var(--soviet-silver)" }}>
-                    Agent Health Status
-                  </Typography>
-                </Box>
+        {/* System Resource Monitor */}
+        <GridItem colSpan={1}>
+          <GridSection
+            title="📊 System Resource Monitor"
+            collapsible={true}
+            defaultCollapsed={false}
+            icon="🔧">
+            <Box
+              sx={{ display: "flex", justifyContent: "space-around", mt: 2 }}>
+              <Box sx={{ textAlign: "center" }}>
+                <AnalogGauge
+                  value={overallProgress}
+                  label="System Load"
+                  max={100}
+                />
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <StatusLights statuses={systemStatus} />
+                <Typography
+                  variant="caption"
+                  sx={{ color: "var(--soviet-silver)" }}>
+                  Agent Health Status
+                </Typography>
+              </Box>
+            </Box>
+          </GridSection>
+        </GridItem>
 
         {/* Workflow Integration */}
-        <Grid item xs={12} md={6}>
-          <Card
-            sx={{
-              backgroundColor: "var(--soviet-bg)",
-              border: "1px solid var(--soviet-brass)",
-              borderRadius: "4px",
-            }}>
-            <CardContent>
-              <Typography
-                variant="h6"
-                gutterBottom
-                sx={{ color: "var(--soviet-amber)" }}>
-                Workflow Integration Status
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                {currentCaseId ? (
-                  <Box>
-                    <Typography
-                      variant="body1"
-                      sx={{ mb: 2, color: "var(--soviet-green)" }}>
-                      ✅ Active Case: {currentCaseId}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "var(--soviet-silver)" }}>
-                      Agent swarm is coordinating on active case. Monitor
-                      real-time collaboration above.
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Box>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 2 }}>
-                      No active case detected. Upload evidence or start a new
-                      case to activate agent coordination.
-                    </Typography>
-                    <MechanicalButton
-                      onClick={() => setCurrentView("evidence")}
-                      variant="primary"
-                      style={{
-                        backgroundColor: "var(--soviet-green)",
-                        borderColor: "var(--soviet-green)",
-                      }}>
-                      Start Evidence Upload →
-                    </MechanicalButton>
-                  </Box>
-                )}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Container>
+        <GridItem colSpan={1}>
+          <GridSection
+            title="🔄 Workflow Integration Status"
+            collapsible={true}
+            defaultCollapsed={false}
+            icon="📋">
+            <Box sx={{ mt: 2 }}>
+              {currentCaseId ? (
+                <Box>
+                  <Typography
+                    variant="body1"
+                    sx={{ mb: 2, color: "var(--soviet-green)" }}>
+                    ✅ Active Case: {currentCaseId}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "var(--soviet-silver)" }}>
+                    Agent swarm is coordinating on active case. Monitor
+                    real-time collaboration above.
+                  </Typography>
+                </Box>
+              ) : (
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 2 }}>
+                    No active case detected. Upload evidence or start a new case
+                    to activate agent coordination.
+                  </Typography>
+                  <MechanicalButton
+                    onClick={() => setCurrentView("evidence")}
+                    variant="primary"
+                    style={{
+                      backgroundColor: "var(--soviet-green)",
+                      borderColor: "var(--soviet-green)",
+                    }}>
+                    Start Evidence Upload →
+                  </MechanicalButton>
+                </Box>
+              )}
+            </Box>
+          </GridSection>
+        </GridItem>
+      </GridContainer>
+    </Box>
   );
 
   const renderContent = () => {
@@ -974,150 +974,133 @@ const App = () => {
     }
   };
 
-  // Enhanced Evidence Workspace
+  // Enhanced Evidence Workspace with Zero Vertical Scroll Architecture
   const renderEvidenceWorkspace = () => (
-    <Container maxWidth="xl" sx={{ mt: 2, mb: 4 }}>
+    <Box sx={{ width: "100%", height: "100vh", overflow: "hidden", p: 2 }}>
       <Typography
         variant="h4"
         gutterBottom
-        sx={{ color: "var(--soviet-brass)" }}>
+        sx={{ color: "var(--soviet-brass)", mb: 3 }}>
         Evidence Management System
       </Typography>
 
-      <Grid container spacing={3}>
+      <GridContainer
+        minColumns={1}
+        maxColumns={2}
+        gap="24px"
+        autoOptimize={true}
+        layoutMode="grid"
+        noVerticalScroll={true}
+        goldenRatio={true}
+        density="comfortable">
         {/* Evidence Upload Section */}
-        <Grid item xs={12} lg={6}>
-          <Card
-            sx={{
-              backgroundColor: "var(--soviet-bg)",
-              border: "1px solid var(--soviet-brass)",
-              borderRadius: "4px",
-            }}>
-            <CardContent>
-              <Typography
-                variant="h6"
-                gutterBottom
-                sx={{ color: "var(--soviet-amber)" }}>
-                Document Upload
-              </Typography>
-              <EvidenceUpload
-                currentCaseId={currentCaseId}
-                onUploadComplete={(files) => {
-                  addToast(`✅ Uploaded ${files.length} documents`, {
-                    severity: "success",
-                    title: "Upload Complete",
-                  });
+        <GridItem colSpan={1}>
+          <GridSection
+            title="📄 Document Upload"
+            collapsible={false}
+            icon="📤">
+            <EvidenceUpload
+              currentCaseId={currentCaseId}
+              onUploadComplete={(files) => {
+                addToast(`✅ Uploaded ${files.length} documents`, {
+                  severity: "success",
+                  title: "Upload Complete",
+                });
 
-                  // Set case ID from first upload if not set
-                  if (!currentCaseId && files.length > 0) {
-                    const newCaseId =
-                      files[0].evidenceId?.split("_")[0] ||
-                      "case_" + Date.now();
-                    setCurrentCaseId(newCaseId);
-                  }
+                // Set case ID from first upload if not set
+                if (!currentCaseId && files.length > 0) {
+                  const newCaseId =
+                    files[0].evidenceId?.split("_")[0] || "case_" + Date.now();
+                  setCurrentCaseId(newCaseId);
+                }
 
-                  // Trigger evidence table refresh
-                  setRealTimeProgress((prev) => ({
-                    ...prev,
-                    evidenceRefresh: Date.now(),
-                  }));
-                }}
-                apiEndpoint="/api/storage/documents"
-              />
-            </CardContent>
-          </Card>
-        </Grid>
+                // Trigger evidence table refresh
+                setRealTimeProgress((prev) => ({
+                  ...prev,
+                  evidenceRefresh: Date.now(),
+                }));
+              }}
+              apiEndpoint="/api/storage/documents"
+            />
+          </GridSection>
+        </GridItem>
 
         {/* Phase Pipeline Preview */}
-        <Grid item xs={12} lg={6}>
-          <Card
-            sx={{
-              backgroundColor: "var(--soviet-bg)",
-              border: "1px solid var(--soviet-brass)",
-              borderRadius: "4px",
-            }}>
-            <CardContent>
-              <Typography
-                variant="h6"
-                gutterBottom
-                sx={{ color: "var(--soviet-amber)" }}>
-                Phase Pipeline Preview
-              </Typography>
-              <Box sx={{ textAlign: "center", py: 4 }}>
-                {currentCaseId ? (
-                  <Box>
-                    <Typography variant="body1" sx={{ mb: 2 }}>
-                      Case: {currentCaseId}
-                    </Typography>
-                    <MechanicalButton
-                      onClick={() => setCurrentView("pipeline")}
-                      variant="primary"
-                      style={{
-                        backgroundColor: "var(--soviet-green)",
-                        borderColor: "var(--soviet-green)",
-                      }}>
-                      Start Phase Pipeline →
-                    </MechanicalButton>
-                  </Box>
-                ) : (
-                  <Box>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 2 }}>
-                      Upload evidence to create a case and enable phase
-                      processing
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "var(--soviet-silver)" }}>
-                      Phase A01 → A02 → A03 → B01 → B02 → C01
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+        <GridItem colSpan={1}>
+          <GridSection
+            title="⚡ Phase Pipeline Preview"
+            collapsible={false}
+            icon="🔄">
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              {currentCaseId ? (
+                <Box>
+                  <Typography variant="body1" sx={{ mb: 2 }}>
+                    Case: {currentCaseId}
+                  </Typography>
+                  <MechanicalButton
+                    onClick={() => setCurrentView("pipeline")}
+                    variant="primary"
+                    style={{
+                      backgroundColor: "var(--soviet-green)",
+                      borderColor: "var(--soviet-green)",
+                    }}>
+                    Start Phase Pipeline →
+                  </MechanicalButton>
+                </Box>
+              ) : (
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 2 }}>
+                    Upload evidence to create a case and enable phase processing
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "var(--soviet-silver)" }}>
+                    Phase A01 → A02 → A03 → B01 → B02 → C01
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </GridSection>
+        </GridItem>
 
-        {/* Evidence Table */}
-        <Grid item xs={12}>
-          <Card
-            sx={{
-              backgroundColor: "var(--soviet-bg)",
-              border: "1px solid var(--soviet-brass)",
-              borderRadius: "4px",
-            }}>
-            <CardContent>
-              <EvidenceTable
-                caseId={currentCaseId}
-                refreshTrigger={realTimeProgress.evidenceRefresh}
-                onEvidenceSelect={(evidence) => {
-                  addToast(`Selected: ${evidence.filename}`, {
-                    severity: "info",
-                    title: "Evidence Selected",
+        {/* Evidence Table - Full Width */}
+        <GridItem colSpan={2}>
+          <GridSection
+            title="📊 Evidence Registry"
+            collapsible={true}
+            defaultCollapsed={false}
+            icon="📋">
+            <EvidenceTable
+              caseId={currentCaseId}
+              refreshTrigger={realTimeProgress.evidenceRefresh}
+              onEvidenceSelect={(evidence) => {
+                addToast(`Selected: ${evidence.filename}`, {
+                  severity: "info",
+                  title: "Evidence Selected",
+                });
+              }}
+              onEvidenceUpdate={(action, evidence) => {
+                if (action === "deleted") {
+                  addToast(`Deleted: ${evidence.filename}`, {
+                    severity: "success",
+                    title: "Evidence Deleted",
                   });
-                }}
-                onEvidenceUpdate={(action, evidence) => {
-                  if (action === "deleted") {
-                    addToast(`Deleted: ${evidence.filename}`, {
-                      severity: "success",
-                      title: "Evidence Deleted",
-                    });
-                  }
-                }}
-                apiEndpoint="/api/evidence"
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Container>
+                }
+              }}
+              apiEndpoint="/api/evidence"
+            />
+          </GridSection>
+        </GridItem>
+      </GridContainer>
+    </Box>
   );
 
-  // Enhanced Pipeline Workspace
+  // Enhanced Pipeline Workspace with Zero Vertical Scroll
   const renderPipelineWorkspace = () => (
-    <Container maxWidth="xl" sx={{ mt: 2, mb: 4 }}>
+    <Box sx={{ width: "100%", height: "100vh", overflow: "hidden", p: 2 }}>
       <Box
         sx={{
           display: "flex",
@@ -1142,118 +1125,121 @@ const App = () => {
         </Box>
       </Box>
 
-      <Grid container spacing={3}>
+      <GridContainer
+        minColumns={1}
+        maxColumns={1}
+        gap="24px"
+        autoOptimize={false}
+        layoutMode="grid"
+        noVerticalScroll={true}
+        density="comfortable">
         {/* Phase Pipeline Component */}
-        <Grid item xs={12}>
-          <Card
-            sx={{
-              backgroundColor: "var(--soviet-bg)",
-              border: "1px solid var(--soviet-brass)",
-              borderRadius: "4px",
-            }}>
-            <CardContent>
-              <PhasePipeline
-                caseId={currentCaseId}
-                onPhaseComplete={(phaseId, outputs) => {
-                  addToast(
-                    `✅ Phase ${phaseId} completed with ${
-                      outputs?.length || 0
-                    } outputs`,
-                    {
-                      severity: "success",
-                      title: "Phase Complete",
-                      details: `Phase ${phaseId} processing finished successfully`,
-                    }
-                  );
+        <GridItem colSpan={1}>
+          <GridSection
+            title="⚙️ Phase Workflow Pipeline"
+            collapsible={false}
+            icon="🔄">
+            <PhasePipeline
+              caseId={currentCaseId}
+              onPhaseComplete={(phaseId, outputs) => {
+                addToast(
+                  `✅ Phase ${phaseId} completed with ${
+                    outputs?.length || 0
+                  } outputs`,
+                  {
+                    severity: "success",
+                    title: "Phase Complete",
+                    details: `Phase ${phaseId} processing finished successfully`,
+                  }
+                );
 
-                  // Update phase statuses
-                  setPhaseStatuses((prev) => ({
-                    ...prev,
-                    [phaseId]: "completed",
-                  }));
+                // Update phase statuses
+                setPhaseStatuses((prev) => ({
+                  ...prev,
+                  [phaseId]: "completed",
+                }));
 
-                  // Update overall progress
-                  const totalPhases = 6;
-                  const completedPhases = Object.values({
-                    ...phaseStatuses,
-                    [phaseId]: "completed",
-                  }).filter((status) => status === "completed").length;
-                  setOverallProgress(
-                    Math.round((completedPhases / totalPhases) * 100)
-                  );
-                }}
-                onPhaseError={(phaseId, error) => {
-                  addToast(`❌ Phase ${phaseId} failed: ${error}`, {
-                    severity: "error",
-                    title: "Phase Error",
-                  });
+                // Update overall progress
+                const totalPhases = 6;
+                const completedPhases = Object.values({
+                  ...phaseStatuses,
+                  [phaseId]: "completed",
+                }).filter((status) => status === "completed").length;
+                setOverallProgress(
+                  Math.round((completedPhases / totalPhases) * 100)
+                );
+              }}
+              onPhaseError={(phaseId, error) => {
+                addToast(`❌ Phase ${phaseId} failed: ${error}`, {
+                  severity: "error",
+                  title: "Phase Error",
+                });
 
-                  setPhaseStatuses((prev) => ({
-                    ...prev,
-                    [phaseId]: "error",
-                  }));
-                }}
-                autoAdvance={true}
-                showDetails={true}
-                apiEndpoint="/api/phases"
-                socketEndpoint="/phases"
-              />
-            </CardContent>
-          </Card>
-        </Grid>
+                setPhaseStatuses((prev) => ({
+                  ...prev,
+                  [phaseId]: "error",
+                }));
+              }}
+              autoAdvance={true}
+              showDetails={true}
+              apiEndpoint="/api/phases"
+              socketEndpoint="/phases"
+            />
+          </GridSection>
+        </GridItem>
 
-        {/* Pipeline Status and Results */}
-        <Grid item xs={12}>
-          <Card
-            sx={{
-              backgroundColor: "var(--soviet-bg)",
-              border: "1px solid var(--soviet-brass)",
-              borderRadius: "4px",
-            }}>
-            <CardContent>
-              <Typography
-                variant="h6"
-                gutterBottom
-                sx={{ color: "var(--soviet-amber)" }}>
-                Pipeline Results & Deliverables
-              </Typography>
-              <Box sx={{ mt: 2 }}>
-                {Object.keys(phaseStatuses).length > 0 ? (
-                  <Grid container spacing={2}>
-                    {Object.entries(phaseStatuses).map(([phaseId, status]) => (
-                      <Grid item xs={12} sm={6} md={4} key={phaseId}>
-                        <Paper
-                          sx={{ p: 2, backgroundColor: "var(--soviet-panel)" }}>
-                          <Typography
-                            variant="subtitle2"
-                            sx={{ color: "var(--soviet-brass)" }}>
-                            {phaseId}
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color:
-                                status === "completed"
-                                  ? "var(--soviet-green)"
-                                  : "var(--soviet-amber)",
-                            }}>
-                            Status: {status.toUpperCase()}
-                          </Typography>
-                        </Paper>
-                      </Grid>
-                    ))}
-                  </Grid>
-                ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    No phase results yet. Start the pipeline to see progress.
-                  </Typography>
-                )}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Container>
+        {/* Pipeline Status and Results - Collapsible */}
+        <GridItem colSpan={1}>
+          <GridSection
+            title="📊 Pipeline Results & Deliverables"
+            collapsible={true}
+            defaultCollapsed={false}
+            icon="📋">
+            <Box sx={{ mt: 2 }}>
+              {Object.keys(phaseStatuses).length > 0 ? (
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fit, minmax(250px, 1fr))",
+                    gap: 2,
+                  }}>
+                  {Object.entries(phaseStatuses).map(([phaseId, status]) => (
+                    <Paper
+                      key={phaseId}
+                      sx={{
+                        p: 2,
+                        backgroundColor: "var(--soviet-panel)",
+                        border: "1px solid var(--soviet-brass)",
+                      }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ color: "var(--soviet-brass)" }}>
+                        {phaseId}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color:
+                            status === "completed"
+                              ? "var(--soviet-green)"
+                              : "var(--soviet-amber)",
+                        }}>
+                        Status: {status.toUpperCase()}
+                      </Typography>
+                    </Paper>
+                  ))}
+                </Box>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  No phase results yet. Start the pipeline to see progress.
+                </Typography>
+              )}
+            </Box>
+          </GridSection>
+        </GridItem>
+      </GridContainer>
+    </Box>
   );
 
   return (

@@ -1,20 +1,20 @@
 // Toast notification component for user feedback
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CloseIcon from '@mui/icons-material/Close';
+import ErrorIcon from '@mui/icons-material/Error';
+import InfoIcon from '@mui/icons-material/Info';
+import WarningIcon from '@mui/icons-material/Warning';
 import {
-  Snackbar,
   Alert,
   AlertTitle,
-  IconButton,
   Box,
-  Slide,
+  Fade,
   Grow,
-  Fade
+  IconButton,
+  Slide,
+  Snackbar
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
-import WarningIcon from '@mui/icons-material/Warning';
-import InfoIcon from '@mui/icons-material/Info';
+import { createContext, useContext, useState } from 'react';
 
 // Toast Context
 const ToastContext = createContext();
@@ -23,8 +23,15 @@ const ToastContext = createContext();
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
-  const addToast = (toast) => {
+  const addToast = (messageOrToast, options = {}) => {
     const id = Date.now() + Math.random();
+    
+    // Handle both calling patterns:
+    // addToast(message, options) OR addToast({message, ...})
+    const toast = typeof messageOrToast === 'string' 
+      ? { message: messageOrToast, ...options }
+      : messageOrToast;
+    
     const newToast = {
       id,
       ...toast,

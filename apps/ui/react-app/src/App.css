@@ -4,7 +4,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Russo+One&family=Share+Tech+Mono:wght@400&family=JetBrains+Mono:wght@400;700&display=swap");
 
 :root {
-  /* Briefcaser Soviet Industrial Color Palette */
+  /* Briefcaser Soviet Industrial Color Palette - Enhanced Brutalism */
   --soviet-brass: #b87333;
   --soviet-bronze: #cd7f32;
   --soviet-emerald: #00563f;
@@ -17,13 +17,151 @@
   --soviet-success: #00a878;
   --panel-rivets: #8b8680;
 
-  /* Professional Terminal Colors */
-  --terminal-bg: #0a0a0a;
-  --terminal-border: #2c2c2c;
-  --panel-bg: linear-gradient(135deg, #141414 0%, #1a1a1a 50%, #0f0f0f 100%);
-  --panel-active: linear-gradient(135deg, #1a2f1a 0%, #0f1f0f 100%);
-  --panel-warning: linear-gradient(135deg, #2f2f1a 0%, #1f1f0f 100%);
-  --panel-danger: linear-gradient(135deg, #2f1a1a 0%, #1f0f0f 100%);
+  /* Weathered Metallic Surfaces - Enhanced Patina & Textures */
+  --gunmetal-base: #2a3439;
+  --gunmetal-dark: #1a2025;
+  --gunmetal-highlight: #3a444a;
+  --gunmetal-patina: linear-gradient(135deg, #2a3439 0%, #1e2528 25%, #2f3740 50%, #242b30 75%, #1a2025 100%);
+  
+  --oxidized-copper: #7c4f3e;
+  --oxidized-copper-light: #a66b56;
+  --oxidized-copper-dark: #5c3729;
+  --oxidized-copper-gradient: linear-gradient(135deg, #8a5a48 0%, #7c4f3e 25%, #6b4434 50%, #5c3729 75%, #4d2e1f 100%);
+  
+  --patina-green: #4a7c59;
+  --patina-green-light: #5a9069;
+  --patina-green-dark: #3a6449;
+  --verdigris-texture: linear-gradient(135deg, 
+    rgba(74, 124, 89, 0.3) 0%, 
+    rgba(90, 144, 105, 0.2) 25%,
+    rgba(58, 100, 73, 0.35) 50%,
+    rgba(74, 124, 89, 0.25) 75%,
+    rgba(58, 100, 73, 0.3) 100%);
+  
+  --rust-orange: #cd853f;
+  --rust-brown: #8b4513;
+  --rust-texture: linear-gradient(135deg, 
+    #cd853f 0%, 
+    #b87333 25%, 
+    #8b4513 50%, 
+    #a0522d 75%, 
+    #cd853f 100%);
+  
+  --tarnished-silver: #9a9a9a;
+  --tarnished-silver-dark: #6a6a6a;
+  --tarnish-texture: linear-gradient(135deg,
+    #c0c0c0 0%,
+    #9a9a9a 25%,
+    #7a7a7a 50%,
+    #6a6a6a 75%,
+    #8a8a8a 100%);
+  
+  --worn-brass: #996633;
+  --worn-brass-dark: #775522;
+  --brass-patina: linear-gradient(135deg,
+    #b8860b 0%,
+    #996633 25%,
+    #775522 50%,
+    #886644 75%,
+    #aa7744 100%);
+
+  /* Mechanical Component Colors - Enhanced Realism */
+  --gauge-bezel: linear-gradient(135deg, #b8860b 0%, #cd9945 25%, #9b7233 50%, #b8860b 100%);
+  --gauge-bezel-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), 
+                        inset 0 -1px 2px rgba(255, 255, 255, 0.15);
+  --gauge-needle: #ff4500;
+  --gauge-needle-glow: 0 0 8px #ff4500, 0 0 16px rgba(255, 69, 0, 0.5);
+  
+  --toggle-handle: linear-gradient(135deg, 
+    #c0c0c0 0%, 
+    #b8b8b8 15%, 
+    #a0a0a0 30%, 
+    #888888 50%, 
+    #a0a0a0 70%, 
+    #b8b8b8 85%, 
+    #c0c0c0 100%);
+  --toggle-handle-shadow: 0 2px 4px rgba(0, 0, 0, 0.7),
+                          inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  
+  --actuator-chrome: linear-gradient(135deg, 
+    #e0e0e0 0%, 
+    #c0c0c0 20%, 
+    #a0a0a0 40%, 
+    #888888 50%, 
+    #a0a0a0 60%, 
+    #c0c0c0 80%, 
+    #e0e0e0 100%);
+  --actuator-shadow: 0 3px 6px rgba(0, 0, 0, 0.8),
+                     inset 0 1px 3px rgba(255, 255, 255, 0.4);
+  
+  --rivet-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), 
+                  inset 0 -1px 1px rgba(0, 0, 0, 0.5);
+  --rivet-highlight: inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  
+  --metal-shine: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.15) 0%, 
+    transparent 25%, 
+    transparent 75%, 
+    rgba(255, 255, 255, 0.1) 100%);
+  --metal-grain: repeating-linear-gradient(90deg,
+    transparent 0px,
+    rgba(255, 255, 255, 0.02) 1px,
+    transparent 2px,
+    transparent 4px);
+
+  /* Industrial Fastener & Rivet System */
+  --rivet-small: 6px;
+  --rivet-medium: 8px;
+  --rivet-large: 12px;
+  --bolt-head: 16px;
+  --rivet-bronze: radial-gradient(circle at 30% 30%, 
+    #cd9945 0%, 
+    #b87333 40%, 
+    #8b5a3c 70%, 
+    #5c3729 100%);
+  --bolt-steel: radial-gradient(circle at 30% 30%,
+    #c0c0c0 0%,
+    #a0a0a0 40%,
+    #808080 70%,
+    #606060 100%);
+
+  /* Weathering & Aging Effects */
+  --scratch-overlay: linear-gradient(35deg,
+    transparent 0%,
+    transparent 48%,
+    rgba(255, 255, 255, 0.03) 49%,
+    rgba(255, 255, 255, 0.03) 51%,
+    transparent 52%,
+    transparent 100%);
+  --wear-pattern: radial-gradient(ellipse at 20% 30%,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 40%),
+    radial-gradient(ellipse at 80% 70%,
+    rgba(0, 0, 0, 0.1) 0%,
+    transparent 50%);
+  --edge-highlight: inset 1px 1px 2px rgba(255, 255, 255, 0.15),
+                    inset -1px -1px 2px rgba(0, 0, 0, 0.3);
+
+  /* Professional Terminal Colors - Enhanced Metallic Surfaces */
+  --terminal-bg: radial-gradient(ellipse at center, var(--gunmetal-base) 0%, var(--gunmetal-dark) 100%);
+  --terminal-border: var(--oxidized-copper);
+  --panel-bg: linear-gradient(135deg, 
+    var(--gunmetal-base) 0%, 
+    var(--gunmetal-highlight) 25%,
+    var(--gunmetal-dark) 50%,
+    var(--gunmetal-base) 100%);
+  --panel-active: linear-gradient(135deg, 
+    var(--patina-green) 0%, 
+    rgba(74, 124, 89, 0.8) 50%,
+    var(--gunmetal-dark) 100%);
+  --panel-warning: linear-gradient(135deg, 
+    var(--rust-orange) 0%, 
+    rgba(205, 133, 63, 0.6) 50%,
+    var(--gunmetal-dark) 100%);
+  --panel-danger: linear-gradient(135deg, 
+    var(--soviet-crimson) 0%, 
+    rgba(220, 20, 60, 0.7) 50%,
+    var(--gunmetal-dark) 100%);
 
   /* Trading Terminal Dimensions - Professional Layout */
   --header-height: 64px;
@@ -352,54 +490,239 @@ body {
   );
 }
 
-/* Professional Metal Panel Component */
+/* Professional Metal Panel Component - Enhanced Accordion System */
 .metal-panel {
-  background: var(--panel-bg);
-  border: 1px solid var(--terminal-border);
-  border-radius: var(--radius-md);
+  background: 
+    linear-gradient(135deg, 
+      var(--gunmetal-highlight) 0%,
+      var(--gunmetal-base) 50%,
+      var(--gunmetal-dark) 100%);
+  border: 3px solid var(--oxidized-copper);
+  border-radius: 8px;
   position: relative;
-  box-shadow: inset 0 1px 0 rgba(184, 115, 51, 0.1),
-    0 2px 4px rgba(0, 0, 0, 0.3);
-  margin-bottom: var(--space-sm);
-  transition: all 0.2s ease;
+  box-shadow: 
+    inset 0 2px 0 var(--metal-shine),
+    inset 0 -2px 0 var(--rivet-shadow),
+    0 4px 8px rgba(0, 0, 0, 0.6);
+  margin-bottom: 16px;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
 }
 
 .metal-panel:hover {
-  border-color: var(--soviet-brass);
-  box-shadow: inset 0 1px 0 rgba(184, 115, 51, 0.2),
-    0 4px 8px rgba(0, 0, 0, 0.4);
+  border-color: var(--weathered-brass);
+  box-shadow: 
+    inset 0 3px 0 var(--metal-shine),
+    inset 0 -3px 0 var(--rivet-shadow),
+    0 6px 12px rgba(0, 0, 0, 0.7),
+    0 0 15px rgba(184, 134, 11, 0.2);
+  transform: translateY(-2px);
 }
 
-/* Rivet Decoration */
+/* Accordion Panel States */
+.metal-panel.collapsible {
+  cursor: pointer;
+}
+
+.metal-panel.expanded {
+  border-color: var(--weathered-brass);
+  box-shadow: 
+    inset 0 3px 0 var(--metal-shine),
+    inset 0 -3px 0 var(--rivet-shadow),
+    0 8px 16px rgba(0, 0, 0, 0.8),
+    0 0 25px rgba(184, 134, 11, 0.3);
+}
+
+.metal-panel.collapsed .panel-body {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.metal-panel .panel-body {
+  max-height: 1000px;
+  padding: 20px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: 
+    max-height 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    padding 0.3s ease,
+    opacity 0.4s ease 0.1s,
+    transform 0.4s ease 0.1s;
+  overflow: hidden;
+}
+
+/* Enhanced Rivet Decoration with Industrial Details */
 .rivets::before,
 .rivets::after {
-  content: "⬢ ⬢ ⬢ ⬢";
+  content: "◆ ◆ ◆ ◆ ◆";
   position: absolute;
-  color: var(--panel-rivets);
-  font-size: 10px;
-  letter-spacing: 20px;
-  left: 10px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  color: var(--rivet-shadow);
+  font-size: 12px;
+  letter-spacing: 24px;
+  left: 16px;
+  text-shadow: 
+    0 1px 0 var(--metal-shine),
+    1px 2px 3px rgba(0, 0, 0, 0.7);
+  font-weight: 900;
 }
 
 .rivets::before {
-  top: 8px;
+  top: 12px;
 }
 
 .rivets::after {
-  bottom: 8px;
+  bottom: 12px;
 }
 
-/* Panel Headers */
+/* Nested Manifold Accordion System */
+.nested-accordion {
+  margin-left: 20px;
+  border-left: 3px solid var(--oxidized-copper);
+  position: relative;
+}
+
+.nested-accordion::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: 
+    repeating-linear-gradient(
+      to bottom,
+      var(--weathered-brass) 0px,
+      var(--weathered-brass) 8px,
+      transparent 8px,
+      transparent 16px
+    );
+}
+
+/* Recursive Nested Panels */
+.accordion-level-1 {
+  margin-left: 16px;
+  border-left: 2px solid var(--patina-green);
+}
+
+.accordion-level-2 {
+  margin-left: 12px;
+  border-left: 2px solid var(--gunmetal-grey);
+}
+
+.accordion-level-3 {
+  margin-left: 8px;
+  border-left: 1px solid var(--tarnished-silver);
+}
+
+/* Context-Aware Overlay System */
+.context-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(135deg, 
+      rgba(47, 79, 79, 0.9) 0%,
+      rgba(139, 69, 19, 0.85) 100%);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: 
+    opacity 0.4s ease,
+    visibility 0.4s ease,
+    backdrop-filter 0.3s ease;
+}
+
+.context-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Enhanced Panel Headers - Industrial Control Interface */
 .panel-header {
   height: var(--panel-header);
-  background: linear-gradient(
-    180deg,
-    var(--soviet-brass) 0%,
-    var(--soviet-bronze) 100%
-  );
-  border-bottom: 3px solid var(--soviet-charcoal);
+  background: 
+    linear-gradient(135deg, 
+      var(--weathered-brass) 0%,
+      var(--oxidized-copper) 40%,
+      var(--soviet-bronze) 100%);
+  border-bottom: 4px solid var(--rivet-shadow);
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.panel-header:hover {
+  background: 
+    linear-gradient(135deg, 
+      #c9ab6f 0%,
+      #a0652a 40%,
+      var(--soviet-bronze) 100%);
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Add header rivet details */
+.panel-header::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 30% 30%, var(--metal-shine) 0%, var(--rivet-shadow) 100%);
+  box-shadow: 
+    0 0 0 1px var(--gunmetal-dark),
+    16px 0 0 0 var(--rivet-shadow),
+    32px 0 0 0 var(--rivet-shadow);
+}
+
+/* Accordion toggle indicator */
+.panel-header .toggle-indicator {
+  width: 24px;
+  height: 24px;
+  background: var(--gunmetal-base);
+  border: 2px solid var(--rivet-shadow);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--weathered-brass);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.panel-header.expanded .toggle-indicator {
+  transform: rotate(90deg);
+  background: var(--oxidized-copper);
+  color: var(--soviet-charcoal);
+}
+
+.toggle-indicator::before {
+  content: '▶';
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+}
+/* Panel Title */
+.panel-title {
   align-items: center;
   padding: 0 20px;
   position: relative;
@@ -422,91 +745,287 @@ body {
   );
 }
 
-/* Analog Gauge Component */
+/* Analog Gauge Component - Enhanced Brass Bezel */
 .analog-gauge {
   width: 120px;
   height: 120px;
   position: relative;
-  background: radial-gradient(circle at center, #1a1a1a 0%, #0f0f0f 100%);
-  border: 3px solid var(--soviet-brass);
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at center, var(--gunmetal-base) 0%, var(--gunmetal-dark) 100%);
+  border: 5px solid transparent;
+  border-image: linear-gradient(45deg, 
+    var(--gauge-bezel) 0%, 
+    var(--worn-brass) 25%,
+    var(--oxidized-copper) 50%,
+    var(--gauge-bezel) 75%,
+    var(--tarnished-silver) 100%) 1;
   border-radius: 50%;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 2px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 
+    inset 0 0 30px rgba(0, 0, 0, 0.9),
+    inset 0 2px 0 var(--metal-shine),
+    0 4px 15px rgba(0, 0, 0, 0.7),
+    0 0 0 2px var(--rivet-shadow);
+  overflow: hidden;
+}
+
+/* Add weathered texture overlay */
+.analog-gauge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-conic-gradient(from 0deg at center, 
+      transparent 0deg, 
+      rgba(255, 255, 255, 0.02) 2deg,
+      transparent 4deg);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Brass rivet details */
+.analog-gauge::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--gauge-bezel);
+  border-radius: 50%;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 
+    0 0 0 1px var(--rivet-shadow),
+    inset 0 1px 0 var(--metal-shine);
 }
 
 .gauge-needle {
   position: absolute;
-  width: 2px;
+  width: 3px;
   height: 45px;
-  background: var(--soviet-crimson);
+  background: linear-gradient(180deg, 
+    var(--gauge-needle) 0%,
+    #cc4400 30%,
+    #ff6600  70%,
+    var(--gauge-needle) 100%);
   left: 50%;
   top: 15%;
   transform-origin: center bottom;
   transform: translateX(-50%) rotate(0deg);
-  transition: transform 0.3s ease-out;
-  box-shadow: 0 0 4px var(--soviet-crimson);
+  transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+  box-shadow: 
+    0 0 6px var(--gauge-needle),
+    inset 1px 0 0 rgba(255, 255, 255, 0.3),
+    2px 2px 4px rgba(0, 0, 0, 0.8);
+  border-radius: 1px;
+}
+
+/* Add needle tip detail */
+.gauge-needle::before {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--gauge-needle);
+  border-radius: 50%;
+  top: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 
+    0 0 3px var(--gauge-needle),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .gauge-center {
   position: absolute;
   width: 20px;
   height: 20px;
-  background: var(--soviet-brass);
+  background: 
+    radial-gradient(circle at 30% 30%, var(--metal-shine) 0%, transparent 40%),
+    var(--toggle-handle);
   border-radius: 50%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--rivet-shadow);
+  box-shadow: 
+    inset 0 0 8px rgba(0, 0, 0, 0.8),
+    inset 0 2px 0 var(--metal-shine),
+    0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
-/* Toggle Switch Component */
+/* Add center screw detail */
+.gauge-center::before {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 1px;
+  background: var(--rivet-shadow);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 0 var(--rivet-shadow);
+}
+
+.gauge-center::after {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 8px;
+  background: var(--rivet-shadow);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Toggle Switch Component - Heavy-Throw Mechanical Actuator */
 .toggle-switch {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px;
-  background: var(--soviet-charcoal);
-  border: 2px solid var(--soviet-brass);
-  border-radius: 4px;
+  gap: 12px;
+  padding: 10px 14px;
+  background: 
+    linear-gradient(135deg, var(--gunmetal-highlight) 0%, var(--gunmetal-base) 100%);
+  border: 3px solid var(--oxidized-copper);
+  border-radius: 6px;
+  box-shadow: 
+    inset 0 1px 0 var(--metal-shine),
+    inset 0 -1px 0 var(--rivet-shadow),
+    0 4px 8px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+/* Add rivet details */
+.toggle-switch::before {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--worn-brass);
+  border-radius: 50%;
+  top: 4px;
+  left: 4px;
+  box-shadow: 
+    6px 0 0 var(--worn-brass),
+    0 6px 0 var(--worn-brass),
+    6px 6px 0 var(--worn-brass),
+    inset 0 0 1px var(--rivet-shadow);
 }
 
 .toggle-track {
-  width: 60px;
-  height: 30px;
-  background: linear-gradient(180deg, #0f0f0f 0%, #2a2a2a 100%);
-  border-radius: 15px;
+  width: 70px;
+  height: 35px;
+  background: 
+    linear-gradient(180deg, 
+      var(--gunmetal-dark) 0%, 
+      var(--gunmetal-base) 20%,
+      var(--gunmetal-dark) 50%,
+      var(--gunmetal-highlight) 100%);
+  border-radius: 8px;
   position: relative;
   cursor: pointer;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
+  border: 2px solid var(--rivet-shadow);
+  box-shadow: 
+    inset 0 3px 6px rgba(0, 0, 0, 0.9),
+    inset 0 -1px 0 var(--metal-shine),
+    0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Add track grooves */
+.toggle-track::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: var(--rivet-shadow);
+  transform: translateY(-50%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .toggle-handle {
-  width: 26px;
-  height: 26px;
-  background: linear-gradient(
-    135deg,
-    var(--soviet-brass) 0%,
-    var(--soviet-bronze) 100%
-  );
+  width: 31px;
+  height: 31px;
+  background: 
+    radial-gradient(circle at 25% 25%, var(--metal-shine) 0%, transparent 50%),
+    var(--actuator-chrome);
   border-radius: 50%;
   position: absolute;
   top: 2px;
   left: 2px;
-  transition: transform 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  border: 2px solid var(--worn-brass);
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.7),
+    inset 0 2px 0 var(--metal-shine),
+    inset 0 -1px 0 var(--rivet-shadow);
+}
+
+/* Add handle texture */
+.toggle-handle::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 2px;
+  background: var(--rivet-shadow);
+  transform: translate(-50%, -50%);
+  box-shadow: 
+    0 4px 0 var(--rivet-shadow),
+    0 -4px 0 var(--rivet-shadow),
+    0 1px 0 rgba(255, 255, 255, 0.1),
+    0 5px 0 rgba(255, 255, 255, 0.1),
+    0 -3px 0 rgba(255, 255, 255, 0.1);
 }
 
 .toggle-switch.active .toggle-handle {
-  transform: translateX(30px);
+  transform: translateX(37px);
+  background: 
+    radial-gradient(circle at 25% 25%, var(--metal-shine) 0%, transparent 50%),
+    linear-gradient(135deg, var(--patina-green) 0%, var(--soviet-emerald) 100%);
+  border-color: var(--soviet-emerald);
+  box-shadow: 
+    0 0 12px rgba(0, 168, 120, 0.4),
+    0 4px 8px rgba(0, 0, 0, 0.7),
+    inset 0 2px 0 var(--metal-shine),
+    inset 0 -1px 0 var(--rivet-shadow);
 }
 
 .led-indicator {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: var(--soviet-crimson);
-  box-shadow: 0 0 8px var(--soviet-crimson);
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+    var(--soviet-crimson);
+  border: 2px solid var(--gunmetal-dark);
+  box-shadow: 
+    0 0 12px var(--soviet-crimson),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.8);
   opacity: 0.3;
-  transition: opacity 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* Add LED housing detail */
+.led-indicator::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--rivet-shadow);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--gunmetal-base);
+  z-index: -1;
 }
 
 .toggle-switch.active .led-indicator {
@@ -515,105 +1034,347 @@ body {
   opacity: 1;
 }
 
-/* Nixie Tube Display */
+/* Nixie Tube Display - Authentic Vacuum Tube Styling */
 .nixie-display {
   display: inline-block;
-  padding: 10px 15px;
-  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
-  border: 2px solid var(--soviet-brass);
-  border-radius: 6px;
+  padding: 12px 18px;
+  background: 
+    radial-gradient(ellipse at center, 
+      rgba(255, 120, 0, 0.1) 0%,
+      rgba(51, 25, 0, 0.8) 40%,
+      rgba(20, 10, 0, 0.95) 100%);
+  border: 3px solid var(--oxidized-copper);
+  border-radius: 8px;
   font-family: "Orbitron", monospace;
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 900;
-  color: var(--soviet-amber);
-  text-shadow: 0 0 10px var(--soviet-amber);
-  box-shadow: inset 0 0 20px rgba(255, 176, 0, 0.2),
-    0 2px 10px rgba(0, 0, 0, 0.8);
+  color: #ff7800;
+  text-shadow: 
+    0 0 15px #ff7800,
+    0 0 25px #ff5500,
+    0 0 35px #ff3300;
+  box-shadow: 
+    inset 0 0 30px rgba(255, 120, 0, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.9),
+    0 0 0 1px var(--rivet-shadow);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Mechanical Button */
+/* Add tube glass reflection */
+.nixie-display::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 15%;
+  width: 30%;
+  height: 60%;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.2) 0%,
+    transparent 50%);
+  border-radius: 50% 20% 50% 20%;
+  pointer-events: none;
+}
+
+/* Add filament glow effect */
+.nixie-display::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: 80%;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%,
+    rgba(255, 100, 0, 0.6) 50%,
+    transparent 100%);
+  transform: translateX(-50%);
+  animation: filament-flicker 2s ease-in-out infinite alternate;
+}
+
+@keyframes filament-flicker {
+  0% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+/* Mechanical Button - Heavy-Duty Industrial Actuator */
 .mech-button {
   display: inline-block;
-  padding: 12px 24px;
-  background: linear-gradient(
-    135deg,
-    var(--soviet-brass) 0%,
-    var(--soviet-bronze) 50%,
-    var(--soviet-brass) 100%
-  );
-  border: 3px solid var(--soviet-charcoal);
-  border-radius: 6px;
+  padding: 14px 28px;
+  background: 
+    linear-gradient(135deg, 
+      var(--weathered-brass) 0%,
+      var(--oxidized-copper) 30%,
+      var(--soviet-bronze) 60%,
+      var(--weathered-brass) 100%);
+  border: 4px solid var(--rivet-shadow);
+  border-radius: 8px;
   font-family: "Russo One", sans-serif;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   color: var(--soviet-charcoal);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
   cursor: pointer;
   position: relative;
-  transition: all 0.1s ease;
-  box-shadow: 0 4px 0 var(--soviet-charcoal), 0 6px 8px rgba(0, 0, 0, 0.5);
+  transition: all 0.15s ease;
+  box-shadow: 
+    0 6px 0 var(--gunmetal-dark),
+    0 8px 12px rgba(0, 0, 0, 0.7),
+    inset 0 2px 0 var(--metal-shine),
+    inset 0 -2px 0 var(--rivet-shadow);
+}
+
+/* Add rivet details */
+.mech-button::before {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 30% 30%, var(--metal-shine) 0%, var(--rivet-shadow) 100%);
+  top: 8px;
+  left: 12px;
+  box-shadow: 
+    0 0 0 1px var(--gunmetal-dark),
+    16px 0 0 0 var(--rivet-shadow),
+    32px 0 0 0 var(--rivet-shadow),
+    48px 0 0 0 var(--rivet-shadow);
+}
+
+/* Add corner rivets */
+.mech-button::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 30% 30%, var(--metal-shine) 0%, var(--rivet-shadow) 100%);
+  bottom: 8px;
+  right: 12px;
+  box-shadow: 
+    0 0 0 1px var(--gunmetal-dark),
+    -16px 0 0 0 var(--rivet-shadow),
+    -32px 0 0 0 var(--rivet-shadow),
+    -48px 0 0 0 var(--rivet-shadow);
+}
+
+.mech-button:hover {
+  background: 
+    linear-gradient(135deg, 
+      #c9ab6f 0%,
+      var(--oxidized-copper) 30%,
+      var(--soviet-bronze) 60%,
+      #c9ab6f 100%);
+  box-shadow: 
+    0 6px 0 var(--gunmetal-dark),
+    0 8px 15px rgba(0, 0, 0, 0.8),
+    inset 0 3px 0 var(--metal-shine),
+    inset 0 -2px 0 var(--rivet-shadow);
 }
 
 .mech-button:active {
-  transform: translateY(4px);
-  box-shadow: 0 0 0 var(--soviet-charcoal), 0 2px 4px rgba(0, 0, 0, 0.5);
+  transform: translateY(6px);
+  box-shadow: 
+    0 0 0 var(--gunmetal-dark),
+    0 2px 6px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 var(--rivet-shadow),
+    inset 0 -1px 0 var(--metal-shine);
 }
 
 .mech-button.danger {
-  background: linear-gradient(
-    135deg,
-    var(--soviet-crimson) 0%,
-    #b91c1c 50%,
-    var(--soviet-crimson) 100%
-  );
+  background: 
+    linear-gradient(135deg, 
+      #cc2936 0%,
+      var(--soviet-crimson) 40%,
+      #8b0000 70%,
+      #cc2936 100%);
   color: white;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
+  border-color: var(--gunmetal-dark);
+  animation: warning-pulse 2s ease-in-out infinite;
+}
+
+@keyframes warning-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 6px 0 var(--gunmetal-dark),
+      0 8px 12px rgba(0, 0, 0, 0.7),
+      inset 0 2px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -2px 0 var(--rivet-shadow);
+  }
+  50% {
+    box-shadow: 
+      0 6px 0 var(--gunmetal-dark),
+      0 8px 12px rgba(0, 0, 0, 0.7),
+      0 0 20px rgba(220, 20, 60, 0.4),
+      inset 0 2px 0 rgba(255, 255, 255, 0.2),
+      inset 0 -2px 0 var(--rivet-shadow);
+  }
 }
 
 .mech-button.success {
-  background: linear-gradient(
-    135deg,
-    var(--soviet-emerald) 0%,
-    #00a878 50%,
-    var(--soviet-emerald) 100%
-  );
+  background: 
+    linear-gradient(135deg, 
+      #16a085 0%,
+      var(--soviet-emerald) 40%,
+      #006644 70%,
+      #16a085 100%);
   color: white;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+  border-color: var(--gunmetal-dark);
 }
 
-/* Status Light Array */
+.mech-button.success:hover {
+  background: 
+    linear-gradient(135deg, 
+      #1abc9c 0%,
+      #00c896 40%,
+      #007755 70%,
+      #1abc9c 100%);
+  box-shadow: 
+    0 6px 0 var(--gunmetal-dark),
+    0 8px 15px rgba(0, 0, 0, 0.8),
+    0 0 15px rgba(22, 188, 156, 0.3),
+    inset 0 3px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -2px 0 var(--rivet-shadow);
+}
+
+/* Status Light Array - Industrial Control Panel */
 .status-lights {
   display: flex;
-  gap: 8px;
-  padding: 10px;
-  background: var(--soviet-charcoal);
-  border: 2px solid var(--soviet-steel);
-  border-radius: 4px;
+  gap: 12px;
+  padding: 14px 18px;
+  background: 
+    linear-gradient(135deg, 
+      var(--gunmetal-highlight) 0%,
+      var(--gunmetal-base) 50%,
+      var(--gunmetal-dark) 100%);
+  border: 3px solid var(--oxidized-copper);
+  border-radius: 6px;
+  box-shadow: 
+    inset 0 1px 0 var(--metal-shine),
+    inset 0 -2px 0 var(--rivet-shadow),
+    0 4px 8px rgba(0, 0, 0, 0.7);
+  position: relative;
+}
+
+/* Add panel label area */
+.status-lights::before {
+  content: 'SYSTEM STATUS';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gunmetal-base);
+  color: var(--tarnished-silver);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border: 1px solid var(--rivet-shadow);
+  border-radius: 2px;
 }
 
 .status-light {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--soviet-steel);
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2) 0%, transparent 60%),
+    var(--gunmetal-dark);
+  border: 2px solid var(--rivet-shadow);
   position: relative;
-  transition: all 0.3s ease;
+  transition: all 0.4s ease;
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -2px 0 var(--rivet-shadow),
+    0 2px 6px rgba(0, 0, 0, 0.8);
+}
+
+/* Add lamp housing */
+.status-light::before {
+  content: '';
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--oxidized-copper-dark);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: 
+    radial-gradient(circle at center, transparent 60%, var(--gunmetal-base) 60%);
+  z-index: -1;
 }
 
 .status-light.green {
-  background: var(--soviet-success);
-  box-shadow: 0 0 10px var(--soviet-success);
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, transparent 50%),
+    radial-gradient(circle at center, #00ff88 0%, var(--soviet-success) 100%);
+  box-shadow: 
+    0 0 15px var(--soviet-success),
+    0 0 25px rgba(0, 255, 136, 0.4),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.8);
 }
 
 .status-light.amber {
-  background: var(--soviet-amber);
-  box-shadow: 0 0 10px var(--soviet-amber);
-  animation: pulse 1s infinite;
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, transparent 50%),
+    radial-gradient(circle at center, #ffcc00 0%, var(--soviet-amber) 100%);
+  box-shadow: 
+    0 0 15px var(--soviet-amber),
+    0 0 25px rgba(255, 176, 0, 0.5),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.8);
+  animation: pulse-amber 1.5s ease-in-out infinite;
 }
 
 .status-light.red {
-  background: var(--soviet-crimson);
-  box-shadow: 0 0 10px var(--soviet-crimson);
-  animation: blink 0.5s infinite;
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6) 0%, transparent 50%),
+    radial-gradient(circle at center, #ff4444 0%, var(--soviet-crimson) 100%);
+  box-shadow: 
+    0 0 15px var(--soviet-crimson),
+    0 0 25px rgba(220, 20, 60, 0.6),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.8);
+  animation: blink-alarm 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse-amber {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes blink-alarm {
+  0%, 40%, 100% {
+    opacity: 1;
+    box-shadow: 
+      0 0 15px var(--soviet-crimson),
+      0 0 25px rgba(220, 20, 60, 0.6),
+      inset 0 2px 0 rgba(255, 255, 255, 0.4),
+      0 2px 6px rgba(0, 0, 0, 0.8);
+  }
+  20%, 60% {
+    opacity: 0.3;
+    box-shadow: 
+      0 0 5px var(--soviet-crimson),
+      inset 0 2px 0 rgba(255, 255, 255, 0.2),
+      0 2px 6px rgba(0, 0, 0, 0.8);
+  }
 }
 
 @keyframes pulse {
@@ -638,32 +1399,107 @@ body {
   }
 }
 
-/* Panel Layouts */
+/* Enhanced Panel Layouts - Sliding Array System */
 .panel-left {
   width: var(--panel-left);
-  transition: width 0.3s ease;
-  border-right: 3px solid var(--soviet-brass);
+  transition: 
+    width 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.4s ease,
+    opacity 0.3s ease;
+  border-right: 4px solid var(--oxidized-copper);
+  background: 
+    linear-gradient(90deg, 
+      var(--gunmetal-base) 0%,
+      var(--gunmetal-highlight) 100%);
+  box-shadow: 
+    inset -2px 0 0 var(--metal-shine),
+    4px 0 8px rgba(0, 0, 0, 0.3);
+  position: relative;
 }
 
 .panel-center {
   flex: 1;
   min-width: var(--panel-center);
+  background: var(--gunmetal-base);
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  z-index: 1;
 }
 
 .panel-right {
   width: var(--panel-right);
-  transition: width 0.3s ease;
-  border-left: 3px solid var(--soviet-brass);
+  transition: 
+    width 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+    transform 0.4s ease,
+    opacity 0.3s ease;
+  border-left: 4px solid var(--oxidized-copper);
+  background: 
+    linear-gradient(270deg, 
+      var(--gunmetal-base) 0%,
+      var(--gunmetal-highlight) 100%);
+  box-shadow: 
+    inset 2px 0 0 var(--metal-shine),
+    -4px 0 8px rgba(0, 0, 0, 0.3);
+  position: relative;
 }
 
+/* Progressive Collapse States */
 .panel-collapsed {
-  width: var(--panel-collapsed) !important;
+  width: 48px;
+  opacity: 0.7;
+  transform: translateX(-10px);
 }
 
+.panel-collapsed:hover {
+  opacity: 1;
+  transform: translateX(0);
+  width: 60px;
+}
+
+/* Enhanced Panel Content with Context Revelation */
 .panel-content {
-  padding: 20px;
+  padding: 24px;
   height: calc(100vh - var(--panel-header));
   overflow-y: auto;
+  position: relative;
+  background: 
+    radial-gradient(ellipse at center top, 
+      rgba(184, 134, 11, 0.05) 0%,
+      transparent 70%);
+}
+
+/* Sliding Panel Animation States */
+.panels-container {
+  display: flex;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.panel-slide-enter {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.panel-slide-enter-active {
+  transform: translateX(0);
+  opacity: 1;
+  transition: 
+    transform 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 0.4s ease 0.2s;
+}
+
+.panel-slide-exit {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.panel-slide-exit-active {
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: 
+    transform 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 0.4s ease;
 }
 
 /* Scrollbar Styling */
@@ -1373,3 +2209,104 @@ body {
     max-width: calc(100% - var(--space-xl));
   }
 }
+
+/* ========================================
+   PROGRESSIVE COMPLEXITY REVELATION SYSTEM
+   ======================================== */
+
+/* Progressive Complexity Revelation System */
+.complexity-level {
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.complexity-level.level-basic {
+  max-height: 200px;
+  opacity: 0.7;
+}
+
+.complexity-level.level-intermediate {
+  max-height: 400px;
+  opacity: 0.85;
+}
+
+.complexity-level.level-advanced {
+  max-height: none;
+  opacity: 1;
+}
+
+.complexity-indicator {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  width: 32px;
+  height: 16px;
+  background: var(--gunmetal-base);
+  border: 1px solid var(--oxidized-copper);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.complexity-indicator::before {
+  content: attr(data-level);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--weathered-brass);
+  text-transform: uppercase;
+}
+
+/* Controlled Revelation Animation */
+@keyframes reveal-complexity {
+  0% {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    max-height: var(--reveal-height, 400px);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal-animation {
+  animation: reveal-complexity 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+/* Enhanced Spatial Choreography Controls */
+.spatial-control-interface {
+  position: relative;
+  background: 
+    radial-gradient(ellipse at center, 
+      rgba(184, 134, 11, 0.1) 0%,
+      transparent 60%);
+  border: 2px solid var(--oxidized-copper);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 16px 0;
+}
+
+.spatial-control-interface::before {
+  content: 'SPATIAL CHOREOGRAPHY';
+  position: absolute;
+  top: -8px;
+  left: 20px;
+  background: var(--gunmetal-base);
+  color: var(--weathered-brass);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border: 1px solid var(--oxidized-copper);
+  border-radius: 4px;
+}
+
+/* Final Enhancement Complete */

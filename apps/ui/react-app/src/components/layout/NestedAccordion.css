@@ -1,0 +1,474 @@
+/* NestedAccordion - Recursive Nested Manifold System Styles */
+/* Soviet Industrial Brutalism with Hierarchical Depth Indicators */
+
+/* ========================================
+   CORE ACCORDION CONTAINER
+   ======================================== */
+
+.nested-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+/* Root Level Accordion */
+.nested-accordion--root {
+  gap: 12px;
+}
+
+/* Nested Level Accordions */
+.nested-accordion--level-1 {
+  margin-left: 20px;
+  border-left: 3px solid var(--oxidized-copper);
+  padding-left: 12px;
+  position: relative;
+}
+
+.nested-accordion--level-2 {
+  margin-left: 16px;
+  border-left: 2px solid var(--patina-green);
+  padding-left: 10px;
+}
+
+.nested-accordion--level-3-plus {
+  margin-left: 12px;
+  border-left: 1px solid var(--tarnished-silver);
+  padding-left: 8px;
+}
+
+/* Connector Line Pattern for Nested Levels */
+.nested-accordion--level-1::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: 
+    repeating-linear-gradient(
+      to bottom,
+      var(--worn-brass) 0px,
+      var(--worn-brass) 8px,
+      transparent 8px,
+      transparent 16px
+    );
+}
+
+/* ========================================
+   ACCORDION ITEM
+   ======================================== */
+
+.accordion-item {
+  background: 
+    linear-gradient(135deg, 
+      var(--gunmetal-highlight) 0%,
+      var(--gunmetal-base) 50%,
+      var(--gunmetal-dark) 100%);
+  border: 2px solid var(--oxidized-copper);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  box-shadow: 
+    inset 0 1px 0 var(--metal-shine),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.accordion-item:hover {
+  border-color: var(--worn-brass);
+  box-shadow: 
+    inset 0 1px 0 var(--metal-shine),
+    0 3px 6px rgba(0, 0, 0, 0.5),
+    0 0 12px rgba(184, 134, 11, 0.15);
+}
+
+/* Open State */
+.accordion-item--open {
+  border-color: var(--worn-brass);
+  box-shadow: 
+    inset 0 2px 0 var(--metal-shine),
+    0 4px 8px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(184, 134, 11, 0.2);
+}
+
+/* Item with Children Indicator */
+.accordion-item--has-children {
+  border-left-width: 4px;
+  border-left-color: var(--worn-brass);
+}
+
+/* ========================================
+   ACCORDION HEADER
+   ======================================== */
+
+.accordion-header {
+  padding: 12px 16px;
+  background: 
+    linear-gradient(135deg, 
+      var(--worn-brass) 0%,
+      var(--oxidized-copper) 50%,
+      var(--soviet-bronze) 100%);
+  border-bottom: 2px solid var(--rivet-shadow);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.accordion-header:hover {
+  background: 
+    linear-gradient(135deg, 
+      #c9ab6f 0%,
+      var(--oxidized-copper) 50%,
+      var(--soviet-bronze) 100%);
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.accordion-header:focus {
+  outline: 2px solid var(--soviet-amber);
+  outline-offset: -2px;
+}
+
+.accordion-header:active {
+  background: 
+    linear-gradient(135deg, 
+      var(--oxidized-copper) 0%,
+      var(--worn-brass) 50%,
+      var(--soviet-bronze) 100%);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Header Rivets */
+.accordion-header::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 30% 30%, var(--metal-shine) 0%, var(--rivet-shadow) 100%);
+  box-shadow: 
+    0 0 0 1px var(--gunmetal-dark),
+    12px 0 0 0 var(--rivet-shadow);
+}
+
+/* ========================================
+   HEADER ELEMENTS
+   ======================================== */
+
+/* Depth Indicator Line */
+.accordion-depth-line {
+  position: absolute;
+  left: -2px;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--oxidized-copper);
+  border-radius: 1px;
+}
+
+/* Icon */
+.accordion-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--soviet-charcoal);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* Title */
+.accordion-title {
+  flex: 1;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--soviet-charcoal);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Children Count */
+.accordion-children-count {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.15);
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: auto;
+}
+
+/* Toggle Indicator */
+.accordion-toggle {
+  width: 20px;
+  height: 20px;
+  background: var(--gunmetal-base);
+  border: 2px solid var(--rivet-shadow);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--worn-brass);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.accordion-toggle--open {
+  transform: rotate(90deg);
+  background: var(--oxidized-copper);
+  color: var(--soviet-charcoal);
+}
+
+/* Depth Badge */
+.accordion-depth-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--soviet-charcoal);
+  background: var(--gunmetal-base);
+  padding: 2px 5px;
+  border-radius: 3px;
+  border: 1px solid var(--rivet-shadow);
+  margin-left: 4px;
+}
+
+/* ========================================
+   ACCORDION CONTENT
+   ======================================== */
+
+.accordion-content {
+  padding: 16px;
+  background: 
+    radial-gradient(ellipse at center, 
+      rgba(184, 134, 11, 0.05) 0%,
+      transparent 60%);
+  border-top: 1px solid var(--rivet-shadow);
+  animation: accordion-expand 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
+}
+
+@keyframes accordion-expand {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 2000px;
+  }
+}
+
+/* Main Content Area */
+.accordion-content-main {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--soviet-silver);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.accordion-content-main p {
+  margin: 8px 0;
+}
+
+.accordion-content-main strong {
+  color: var(--worn-brass);
+  font-weight: 700;
+}
+
+/* Nested Container */
+.accordion-nested-container {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--oxidized-copper);
+}
+
+/* Max Depth Warning */
+.accordion-max-depth-warning {
+  padding: 8px 12px;
+  background: rgba(220, 20, 60, 0.1);
+  border: 1px solid var(--soviet-crimson);
+  border-radius: 4px;
+  color: var(--soviet-crimson);
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 8px;
+}
+
+/* ========================================
+   VARIANT STYLES
+   ======================================== */
+
+/* Compact Variant */
+.nested-accordion--compact .accordion-header {
+  padding: 8px 12px;
+}
+
+.nested-accordion--compact .accordion-title {
+  font-size: 12px;
+}
+
+.nested-accordion--compact .accordion-content {
+  padding: 12px;
+}
+
+/* Minimal Variant */
+.nested-accordion--minimal .accordion-item {
+  border: 1px solid var(--oxidized-copper);
+  border-radius: 4px;
+}
+
+.nested-accordion--minimal .accordion-header {
+  padding: 10px 14px;
+  background: linear-gradient(135deg, var(--gunmetal-base), var(--gunmetal-dark));
+}
+
+.nested-accordion--minimal .accordion-header::before {
+  display: none;
+}
+
+/* ========================================
+   PHASE ACCORDION SPECIFIC STYLES
+   ======================================== */
+
+.phase-accordion-content {
+  font-size: 13px;
+}
+
+.phase-accordion-content p {
+  margin: 6px 0;
+}
+
+.phase-progress {
+  margin: 12px 0;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--rivet-shadow);
+}
+
+.phase-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--soviet-emerald), var(--soviet-amber));
+  border-radius: 4px;
+  transition: width 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+}
+
+.phase-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.phase-progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--soviet-charcoal);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+  z-index: 1;
+}
+
+.phase-outputs,
+.phase-errors {
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  border: 1px solid var(--rivet-shadow);
+}
+
+.phase-outputs ul,
+.phase-errors ul {
+  margin: 6px 0 0 20px;
+  padding: 0;
+}
+
+.phase-outputs li,
+.phase-errors li {
+  margin: 4px 0;
+  font-size: 12px;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 767px) {
+  .accordion-header {
+    padding: 10px 12px;
+  }
+
+  .accordion-title {
+    font-size: 12px;
+  }
+
+  .accordion-content {
+    padding: 12px;
+  }
+
+  .nested-accordion--level-1,
+  .nested-accordion--level-2,
+  .nested-accordion--level-3-plus {
+    margin-left: 8px;
+    padding-left: 8px;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .accordion-item,
+  .accordion-toggle,
+  .accordion-content,
+  .phase-progress-bar {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Focus visible for keyboard navigation */
+.accordion-header:focus-visible {
+  outline: 3px solid var(--soviet-amber);
+  outline-offset: 2px;
+}

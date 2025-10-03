@@ -641,6 +641,48 @@
       "from": "LaunchScriptV4",
       "to": "ServerOrchestration",
       "relationType": "manages"
+    },
+    {
+      "from": "AutomatedUITestSuite",
+      "to": "ReactFrontend",
+      "relationType": "tests"
+    },
+    {
+      "from": "AutomatedUITestSuite",
+      "to": "GridFrameworkComponents",
+      "relationType": "validates"
+    }
+  ],
+  "entities": [
+    {
+      "name": "AutomatedUITestSuite",
+      "entityType": "TestingFramework",
+      "observations": [
+        "Puppeteer-based UI testing suite for http://localhost:3000",
+        "11 automated tests: page load (3), grid layout (2), responsive (3), accessibility (2), performance (1)",
+        "Test results: 45% pass rate (5/11), identified grid framework integration gap",
+        "Located at tests/run-ui-tests.js with JSON results output"
+      ]
+    },
+    {
+      "name": "GridFrameworkComponents",
+      "entityType": "UIComponentLibrary",
+      "observations": [
+        "Grid layout framework components exist but not integrated into current views",
+        "Components: GridContainer.jsx, NestedAccordion.jsx, ContextOverlay.jsx",
+        "Zero-scroll architecture not detected in DOM during testing",
+        "Requires integration verification and selector updates"
+      ]
+    },
+    {
+      "name": "TestResultsOct2025",
+      "entityType": "TestReport",
+      "observations": [
+        "React app renders successfully with 81 focusable elements, 104 ARIA attributes",
+        "Grid containers not found - integration gap between components and views",
+        "Page load time 8.4s exceeds 3s target (likely dev mode HMR overhead)",
+        "5 screenshots captured across mobile/tablet/desktop viewports"
+      ]
     }
   ]
 }

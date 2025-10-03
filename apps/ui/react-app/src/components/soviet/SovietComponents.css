@@ -1,16 +1,22 @@
 /* Enhanced Soviet Industrial Component Styles */
 /* Professional control terminal components with authentic Soviet industrial aesthetic */
+/* v2.0.0 - Weathered Metallics, Analog Instrumentation & Mechanical Interactions */
 
-/* Analog Gauge Enhancements */
+/* ============================================================================
+   ANALOG GAUGE ENHANCEMENTS - Brass-Bezeled Industrial Instrumentation
+   ============================================================================ */
+
 .analog-gauge {
   position: relative;
   display: inline-block;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
 }
 
+/* Weathered Brass Bezel Ring System */
 .gauge-ring {
   position: absolute;
   border-radius: 50%;
-  border: 2px solid var(--soviet-brass);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .gauge-ring--outer {
@@ -18,7 +24,33 @@
   height: 100%;
   top: 0;
   left: 0;
-  background: radial-gradient(circle, transparent 40%, rgba(184, 115, 51, 0.1) 100%);
+  background: var(--gauge-bezel);
+  border: 3px solid #775522;
+  box-shadow: var(--gauge-bezel-shadow),
+              0 4px 12px rgba(0, 0, 0, 0.7);
+  /* Weathered brass texture overlay */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--brass-patina);
+    opacity: 0.8;
+    mix-blend-mode: overlay;
+  }
+  /* Tarnish spots */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 25% 35%, 
+      rgba(58, 100, 73, 0.3) 0%, 
+      transparent 30%),
+      radial-gradient(circle at 75% 65%,
+      rgba(139, 69, 19, 0.2) 0%,
+      transparent 25%);
+  }
 }
 
 .gauge-ring--middle {
@@ -26,7 +58,13 @@
   height: 85%;
   top: 7.5%;
   left: 7.5%;
-  background: radial-gradient(circle, transparent 30%, rgba(30, 33, 36, 0.3) 100%);
+  background: radial-gradient(circle, 
+    var(--gunmetal-highlight) 0%,
+    var(--gunmetal-base) 40%,
+    var(--gunmetal-dark) 100%);
+  border: 2px solid var(--oxidized-copper);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8),
+              0 1px 3px rgba(205, 133, 63, 0.3);
 }
 
 .gauge-ring--inner {
@@ -34,7 +72,12 @@
   height: 70%;
   top: 15%;
   left: 15%;
-  background: radial-gradient(circle, var(--soviet-charcoal) 0%, transparent 70%);
+  background: radial-gradient(circle, 
+    var(--gunmetal-dark) 0%,
+    var(--soviet-charcoal) 60%,
+    #000000 100%);
+  border: 1px solid var(--gunmetal-base);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.9);
 }
 
 .gauge-ticks {

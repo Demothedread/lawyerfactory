@@ -525,6 +525,145 @@ def get_outline_status(case_id):
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/storage/documents", methods=["POST"])
+def upload_documents_unified():
+    """Upload documents using unified storage API"""
+    if not unified_storage:
+        return jsonify({"error": "Unified storage not available"}), 503
+
+    try:
+        files = request.files.getlist("files")
+        case_id = request.form.get("case_id", "default")
+        phase = request.form.get("phase", "phaseA01_intake")
+
+        if not files:
+            return jsonify({"error": "No files provided"}), 400
+
+        results = []
+
+        for file in files:
+            if file.filename == "":
+                continue
+
+            # Read file content
+            file_content = file.read()
+
+            # Create metadata for evidence storage
+            metadata = {
+                "case_id": case_id,
+                "filename": file.filename,
+                "content_type": file.content_type or "application/octet-stream",
+                "uploaded_at": time.time(),
+                "phase": phase,
+                "source": "frontend_upload",
+            }
+
+            # Store using unified storage API
+            result = unified_storage.store_evidence(
+                file_content=file_content,
+                filename=file.filename,
+                metadata=metadata,
+                source_phase=phase,
+            )
+
+            if result.success:
+                results.append(
+                    {
+                        "filename": file.filename,
+                        "object_id": result.object_id,
+                        "evidence_id": result.evidence_id,
+                        "s3_url": result.s3_url,
+                        "size": len(file_content),
+                        "processing_time": result.processing_time,
+                    }
+                )
+            else:
+                logger.error(f"Failed to store {file.filename}: {result.error}")
+                return jsonify({"error": f"Failed to store {file.filename}: {result.error}"}), 500
+
+        # Emit progress update
+        socketio.emit(
+            "phase_progress_update",
+            {
+                "phase": phase,
+                "progress": 100,
+                "message": f"Stored {len(results)} documents in unified storage",
+                "case_id": case_id,
+                "object_ids": [r["object_id"] for r in results],
+            },
+        )
+
+        logger.info(
+            f"Successfully stored {len(results)} documents via unified storage for case {case_id}"
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "case_id": case_id,
+                "stored_documents": results,
+                "total": len(results),
+                "message": f"Successfully stored {len(results)} documents",
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Unified document storage failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/storage/documents/<object_id>", methods=["GET"])
+def get_document_by_object_id(object_id):
+    """Retrieve document from unified storage by ObjectID"""
+    if not unified_storage:
+        return jsonify({"error": "Unified storage not available"}), 503
+
+    try:
+        # Retrieve document using unified storage API
+        document_data = unified_storage.retrieve_evidence_by_id(object_id)
+
+        if document_data:
+            return jsonify(
+                {
+                    "success": True,
+                    "object_id": object_id,
+                    "document": document_data,
+                    "retrieved_at": time.time(),
+                }
+            )
+        else:
+            return jsonify({"error": "Document not found"}), 404
+
+    except Exception as e:
+        logger.error(f"Failed to retrieve document {object_id}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/storage/cases/<case_id>/documents", methods=["GET"])
+def get_case_documents(case_id):
+    """Retrieve all documents for a case from unified storage"""
+    if not unified_storage:
+        return jsonify({"error": "Unified storage not available"}), 503
+
+    try:
+        # Search for documents by case_id in metadata
+        documents = unified_storage.search_evidence_by_metadata({"case_id": case_id})
+
+        return jsonify(
+            {
+                "success": True,
+                "case_id": case_id,
+                "documents": documents,
+                "total": len(documents),
+                "retrieved_at": time.time(),
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to retrieve documents for case {case_id}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 # Background task functions
 def run_research(case_id: str, research_query: str):
     """Run research in background"""
@@ -677,26 +816,6 @@ def process_research_feedback(case_id: str, research_results: Dict[str, Any]):
         logger.error(f"Research feedback processing failed: {e}")
 
 
-def create_app():
-    """Create and configure Flask application with proper SocketIO setup."""
-    app = Flask(__name__, template_folder="../ui/templates", static_folder="../ui/static")
-
-    # Configure CORS
-    CORS(app, origins="*")
-    app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-key-change-in-production")
-
-    # Initialize SocketIO with eventlet (compatible with your system)
-    socketio = SocketIO(
-        app,
-        cors_allowed_origins="*",
-        async_mode="eventlet",  # Explicitly set async mode
-        logger=True,
-        engineio_logger=True,
-    )
-
-    return app, socketio
-
-
 def main():
     """Main server entry point with proper error handling."""
     parser = argparse.ArgumentParser(description="LawyerFactory API Server")
@@ -706,13 +825,15 @@ def main():
     args = parser.parse_args()
 
     try:
-        app, socketio = create_app()
-
+        # Use the globally configured Flask app and SocketIO instance
+        # All routes are already registered on the global `app` and `socketio` instances
+        
         print(f"🚀 Starting LawyerFactory API server...")
         print(f"🌐 Server: http://{args.host}:{args.port}")
         print(f"📡 SocketIO async mode: {socketio.async_mode}")
+        print(f"✅ Health endpoint: http://{args.host}:{args.port}/api/health")
 
-        # Run with eventlet
+        # Run with eventlet using the global app and socketio instances
         socketio.run(
             app,
             host=args.host,
