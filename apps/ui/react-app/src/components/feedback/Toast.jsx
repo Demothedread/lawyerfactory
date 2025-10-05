@@ -61,10 +61,14 @@ export const ToastProvider = ({ children }) => {
   };
 
   const clearAllToasts = () => {
-    setToasts([]);
+    setToasts(prev => prev.map(toast => ({ ...toast, open: false })));
+    setTimeout(() => {
+      setToasts([]);
+    }, 300);
   };
 
   const value = {
+    toasts,
     addToast,
     removeToast,
     clearAllToasts
@@ -95,12 +99,10 @@ export const useToast = () => {
 
 // Individual Toast Component
 const Toast = ({
-  id,
   message,
   title,
   severity = 'info',
   variant = 'filled',
-  autoHideDuration,
   onClose,
   action,
   position = 'bottom-right',
@@ -156,9 +158,20 @@ const Toast = ({
   const TransitionComponent = getTransitionComponent();
   const anchorOrigin = getAnchorOrigin();
 
+  const handleClose = (event, reason) => {
+    // Prevent closing on clickaway for better UX
+    if (reason === 'clickaway') {
+      return;
+    }
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
     <Snackbar
       open={open}
+      onClose={handleClose}
       anchorOrigin={anchorOrigin}
       TransitionComponent={TransitionComponent}
       sx={{
@@ -173,14 +186,21 @@ const Toast = ({
         severity={severity}
         variant={variant}
         icon={getSeverityIcon()}
+        onClose={handleClose}
         action={
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
             {action}
             <IconButton
               size="small"
               color="inherit"
-              onClick={onClose}
-              sx={{ ml: 0.5 }}
+              onClick={handleClose}
+              aria-label="close notification"
+              sx={{ 
+                ml: action ? 0.5 : 0,
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                }
+              }}
             >
               <CloseIcon fontSize="small" />
             </IconButton>
@@ -188,6 +208,7 @@ const Toast = ({
         }
         sx={{
           minWidth: 300,
+          maxWidth: 500,
           boxShadow: 3,
           '& .MuiAlert-message': {
             width: '100%'
@@ -205,7 +226,7 @@ const Toast = ({
   );
 };
 
-// Toast Container for multiple toasts
+// Toast Container for multiple toasts (optional advanced usage)
 export const ToastContainer = ({
   position = 'bottom-right',
   maxToasts = 3,
@@ -237,54 +258,53 @@ export const ToastContainer = ({
   );
 };
 
-// Predefined toast functions
-export const toast = {
-  success: (message, options = {}) => {
-    const { addToast } = useToast();
-    return addToast({
-      message,
-      severity: 'success',
-      ...options
-    });
-  },
+// Helper component to use toast functions properly
+export const useToastHelpers = () => {
+  const { addToast } = useToast();
 
-  error: (message, options = {}) => {
-    const { addToast } = useToast();
-    return addToast({
-      message,
-      severity: 'error',
-      autoHideDuration: 8000, // Longer for errors
-      ...options
-    });
-  },
+  return {
+    success: (message, options = {}) => {
+      return addToast({
+        message,
+        severity: 'success',
+        ...options
+      });
+    },
 
-  warning: (message, options = {}) => {
-    const { addToast } = useToast();
-    return addToast({
-      message,
-      severity: 'warning',
-      ...options
-    });
-  },
+    error: (message, options = {}) => {
+      return addToast({
+        message,
+        severity: 'error',
+        autoHideDuration: 8000,
+        ...options
+      });
+    },
 
-  info: (message, options = {}) => {
-    const { addToast } = useToast();
-    return addToast({
-      message,
-      severity: 'info',
-      ...options
-    });
-  },
+    warning: (message, options = {}) => {
+      return addToast({
+        message,
+        severity: 'warning',
+        ...options
+      });
+    },
 
-  loading: (message, options = {}) => {
-    const { addToast } = useToast();
-    return addToast({
-      message,
-      severity: 'info',
-      autoHideDuration: 0, // Don't auto-hide loading toasts
-      ...options
-    });
-  }
+    info: (message, options = {}) => {
+      return addToast({
+        message,
+        severity: 'info',
+        ...options
+      });
+    },
+
+    loading: (message, options = {}) => {
+      return addToast({
+        message,
+        severity: 'info',
+        autoHideDuration: 0,
+        ...options
+      });
+    }
+  };
 };
 
 export default Toast;

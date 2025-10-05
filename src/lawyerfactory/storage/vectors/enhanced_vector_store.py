@@ -28,6 +28,15 @@ import uuid
 
 import numpy as np
 
+# Try to import Qdrant client
+try:
+    from qdrant_client import QdrantClient
+    from qdrant_client.http import models
+    QDRANT_AVAILABLE = True
+except ImportError:
+    QDRANT_AVAILABLE = False
+    QdrantClient = None
+
 try:
     import boto3  # optional; only used if S3 is configured
     from botocore.exceptions import ClientError
@@ -218,7 +227,34 @@ class EnhancedVectorStoreManager:
         self.embedding_service = embedding_service
         self.memory_manager: MCPMemoryManager = memory_manager or MCPMemoryManager()
 
-        # Initialize specialized vector stores (simple in-memory maps)
+        # Initialize Qdrant client if available
+        self.qdrant_client = None
+        self.qdrant_collection = os.getenv("QDRANT_COLLECTION", "lawyerfactory_vectors")
+        
+        if QDRANT_AVAILABLE:
+            try:
+                qdrant_host = os.getenv("QDRANT_HOST", "localhost")
+                qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
+                qdrant_api_key = os.getenv("QDRANT_API_KEY")
+                
+                # Use URL format for Qdrant client
+                qdrant_url = f"http://{qdrant_host}:{qdrant_port}"
+                
+                self.qdrant_client = QdrantClient(
+                    url=qdrant_url,
+                    api_key=qdrant_api_key,
+                )
+                
+                # Test connection and create collection if needed
+                asyncio.create_task(self._ensure_qdrant_collection())
+                logger.info("Qdrant client initialized successfully")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Qdrant client: {e}")
+                self.qdrant_client = None
+        else:
+            logger.warning("Qdrant client not available, using in-memory storage")
+
+        # Initialize specialized vector stores (in-memory fallback)
         self.vector_stores: Dict[VectorStoreType, Dict[str, VectorDocument]] = {
             store_type: {} for store_type in VectorStoreType
         }
@@ -239,6 +275,140 @@ class EnhancedVectorStoreManager:
         self.default_validation_type = ValidationType.COMPLAINTS_AGAINST_TESLA
 
         logger.info("Enhanced Vector Store Manager initialized")
+
+    async def _ensure_qdrant_collection(self):
+        """Ensure Qdrant collection exists with proper configuration"""
+        if not self.qdrant_client:
+            return
+            
+        try:
+            # Check if collection exists
+            collections = self.qdrant_client.get_collections()
+            collection_names = [c.name for c in collections.collections]
+            
+            if self.qdrant_collection not in collection_names:
+                # Create collection with vector configuration
+                self.qdrant_client.create_collection(
+                    collection_name=self.qdrant_collection,
+                    vectors_config=models.VectorParams(
+                        size=self.embedding_dim,
+                        distance=models.Distance.COSINE
+                    )
+                )
+                logger.info(f"Created Qdrant collection: {self.qdrant_collection}")
+            else:
+                logger.info(f"Qdrant collection already exists: {self.qdrant_collection}")
+                
+        except Exception as e:
+            logger.error(f"Failed to ensure Qdrant collection: {e}")
+            self.qdrant_client = None  # Fall back to in-memory
+
+    async def _store_in_qdrant(self, vector_doc: VectorDocument):
+        """Store a vector document in Qdrant"""
+        if not self.qdrant_client:
+            raise RuntimeError("Qdrant client not available")
+            
+        try:
+            # Prepare payload for Qdrant
+            payload = {
+                "id": vector_doc.id,
+                "content": vector_doc.content,
+                "store_type": vector_doc.store_type.value,
+                "validation_types": [vt.value for vt in vector_doc.validation_types],
+                "created_at": vector_doc.created_at.isoformat(),
+                "metadata": json.dumps(vector_doc.metadata),
+            }
+            
+            # Add vector to Qdrant
+            self.qdrant_client.upsert(
+                collection_name=self.qdrant_collection,
+                points=[
+                    models.PointStruct(
+                        id=vector_doc.id,
+                        vector=vector_doc.vector,
+                        payload=payload
+                    )
+                ]
+            )
+            
+            logger.debug(f"Stored vector document {vector_doc.id} in Qdrant")
+            
+        except Exception as e:
+            logger.error(f"Failed to store in Qdrant: {e}")
+            raise
+
+    async def _search_qdrant(
+        self, 
+        query_vector: List[float], 
+        store_type: Optional[VectorStoreType], 
+        top_k: int
+    ) -> List[Tuple[VectorDocument, float]]:
+        """Search Qdrant for similar vectors"""
+        if not self.qdrant_client:
+            return []
+            
+        try:
+            # Prepare search filter if store_type is specified
+            filter_conditions = []
+            if store_type:
+                filter_conditions.append(
+                    models.FieldCondition(
+                        key="store_type",
+                        match=models.MatchValue(value=store_type.value)
+                    )
+                )
+            
+            search_filter = models.Filter(
+                must=filter_conditions
+            ) if filter_conditions else None
+            
+            # Perform vector search
+            search_result = self.qdrant_client.search(
+                collection_name=self.qdrant_collection,
+                query_vector=query_vector,
+                limit=top_k,
+                query_filter=search_filter
+            )
+            
+            results = []
+            for hit in search_result:
+                # Reconstruct VectorDocument from payload
+                payload = hit.payload
+                metadata = json.loads(payload.get("metadata", "{}"))
+                
+                # Parse validation types
+                validation_type_strings = payload.get("validation_types", [])
+                validation_types = []
+                for vt_str in validation_type_strings:
+                    try:
+                        validation_types.append(ValidationType(vt_str))
+                    except ValueError:
+                        pass  # Skip invalid validation types
+                
+                # Parse store type
+                store_type_value = payload.get("store_type", "primary_evidence")
+                try:
+                    doc_store_type = VectorStoreType(store_type_value)
+                except ValueError:
+                    doc_store_type = VectorStoreType.PRIMARY_EVIDENCE
+                
+                vector_doc = VectorDocument(
+                    id=payload["id"],
+                    content=payload["content"],
+                    vector=[],  # We don't store the full vector in payload
+                    metadata=metadata,
+                    store_type=doc_store_type,
+                    validation_types=validation_types,
+                    created_at=datetime.fromisoformat(payload.get("created_at", datetime.now().isoformat()))
+                )
+                
+                results.append((vector_doc, hit.score))
+            
+            return results
+            
+        except Exception as e:
+            logger.error(f"Qdrant search failed: {e}")
+            return []
 
     # -------------
     # Core helpers
@@ -414,22 +584,37 @@ class EnhancedVectorStoreManager:
                 validation_types=validation_types or [],
             )
 
-            # Put into primary store
-            self.vector_stores[store_type][doc_id] = vector_doc
+            # Store in Qdrant if available, otherwise use in-memory
+            if self.qdrant_client:
+                try:
+                    await self._store_in_qdrant(vector_doc)
+                except Exception as e:
+                    logger.warning(f"Qdrant storage failed, falling back to in-memory: {e}")
+                    self.vector_stores[store_type][doc_id] = vector_doc
+            else:
+                # Fallback to in-memory storage
+                self.vector_stores[store_type][doc_id] = vector_doc
 
-            # Also into GENERAL_RAG for broad search
+            # Also into GENERAL_RAG for broad search (in-memory for now)
             if store_type != VectorStoreType.GENERAL_RAG:
                 rag_id = f"rag_{doc_id}"
-                self.vector_stores[VectorStoreType.GENERAL_RAG][rag_id] = (
-                    VectorDocument(
-                        id=rag_id,
-                        content=content,
-                        vector=vector,
-                        metadata={**metadata, "source_store": store_type.value},
-                        store_type=VectorStoreType.GENERAL_RAG,
-                        validation_types=validation_types or [],
-                    )
+                rag_doc = VectorDocument(
+                    id=rag_id,
+                    content=content,
+                    vector=vector,
+                    metadata={**metadata, "source_store": store_type.value},
+                    store_type=VectorStoreType.GENERAL_RAG,
+                    validation_types=validation_types or [],
                 )
+                
+                if self.qdrant_client:
+                    try:
+                        await self._store_in_qdrant(rag_doc)
+                    except Exception as e:
+                        logger.warning(f"Qdrant RAG storage failed: {e}")
+                        self.vector_stores[VectorStoreType.GENERAL_RAG][rag_id] = rag_doc
+                else:
+                    self.vector_stores[VectorStoreType.GENERAL_RAG][rag_id] = rag_doc
 
             # Update validation sub-vectors
             if validation_types:
@@ -527,14 +712,24 @@ class EnhancedVectorStoreManager:
             query_vector = await self._generate_embedding(query)
             results: List[Tuple[VectorDocument, float]] = []
 
-            stores_to_search = [store_type] if store_type else list(VectorStoreType)
-            for store in stores_to_search:
-                if store not in self.vector_stores:
-                    continue
-                for doc in self.vector_stores[store].values():
-                    sim = self._calculate_cosine_similarity(query_vector, doc.vector)
-                    if sim >= threshold:
-                        results.append((doc, sim))
+            # Try Qdrant search first if available
+            if self.qdrant_client:
+                try:
+                    qdrant_results = await self._search_qdrant(query_vector, store_type, top_k)
+                    results.extend(qdrant_results)
+                except Exception as e:
+                    logger.warning(f"Qdrant search failed, falling back to in-memory: {e}")
+
+            # Fallback to in-memory search
+            if not results:
+                stores_to_search = [store_type] if store_type else list(VectorStoreType)
+                for store in stores_to_search:
+                    if store not in self.vector_stores:
+                        continue
+                    for doc in self.vector_stores[store].values():
+                        sim = self._calculate_cosine_similarity(query_vector, doc.vector)
+                        if sim >= threshold:
+                            results.append((doc, sim))
 
             results.sort(key=lambda x: x[1], reverse=True)
             return results[:top_k]

@@ -38,9 +38,10 @@ Verify zero vertical scroll architecture works correctly across all workspace vi
 ### 1. Evidence Workspace (Dashboard → Evidence)
 
 **Layout:**
-- [ ] 2-column GridContainer layout renders correctly
-- [ ] Left column: Document Upload panel (📄 📤 icon)
-- [ ] Right column: Phase Pipeline Preview (⚡ 🔄 icon)
+- [ ] 3-column GridContainer layout renders correctly
+- [ ] Left column: Menu options -> new project, settings, history, evidence table
+- [ ] middle column: phase-by-phase pipeline
+- [ ] Right column: deliverable outputs 
 - [ ] Full-width: Evidence Registry table (📊 📋 icon, collapsible)
 
 **Zero Scroll:**

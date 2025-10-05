@@ -34,6 +34,7 @@ import {
 } from '@mui/icons-material';
 import { useToast } from '../feedback/Toast';
 import TooltipGuide from '../guidance/TooltipGuide';
+import EvidenceUpload from '../ui/EvidenceUpload';
 
 const STEPS = [
   {
@@ -184,27 +185,95 @@ const LawsuitWizard = ({
     }
   };
 
+  // Enhanced API call with retry logic and timeout
+  const apiCallWithRetry = async (url, options, maxRetries = 3, timeout = 30000) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(url, {
+          ...options,
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          return response;
+        } else if (response.status >= 500 && attempt < maxRetries) {
+          // Retry on server errors
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000); // Exponential backoff
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        } else {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+      } catch (error) {
+        clearTimeout(timeoutId);
+
+        if (error.name === 'AbortError') {
+          throw new Error(`Request timeout after ${timeout}ms`);
+        }
+
+        if (attempt === maxRetries) {
+          throw error;
+        }
+
+        // Exponential backoff for retries
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  };
+
   const handleComplete = async () => {
     setLoading(true);
     try {
-      const response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await apiCallWithRetry(
+        apiEndpoint,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
         },
-        body: JSON.stringify(formData),
+        3, // maxRetries
+        30000 // timeout in ms
+      );
+
+      const result = await response.json().catch(() => ({}));
+
+      addToast('Lawsuit created successfully!', {
+        severity: 'success',
+        title: 'Success'
       });
 
-      if (response.ok) {
-        addToast('Lawsuit created successfully!', { severity: 'success' });
-        if (onComplete) {
-          onComplete(formData);
-        }
-      } else {
-        throw new Error('Failed to create lawsuit');
+      if (onComplete) {
+        onComplete(formData);
       }
     } catch (error) {
-      addToast('Failed to create lawsuit. Please try again.', { severity: 'error' });
+      console.error('Lawsuit creation failed:', error);
+
+      let errorMessage = 'Failed to create lawsuit. Please try again.';
+      let errorTitle = 'Error';
+
+      if (error.message.includes('timeout')) {
+        errorMessage = 'Request timed out. Please check your connection and try again.';
+        errorTitle = 'Timeout Error';
+      } else if (error.message.includes('NetworkError') || error.message.includes('fetch')) {
+        errorMessage = 'Network error. Please check your internet connection.';
+        errorTitle = 'Network Error';
+      } else if (error.message.includes('HTTP 5')) {
+        errorMessage = 'Server error. Please try again in a few moments.';
+        errorTitle = 'Server Error';
+      }
+
+      addToast(errorMessage, {
+        severity: 'error',
+        title: errorTitle
+      });
     } finally {
       setLoading(false);
     }
@@ -449,35 +518,86 @@ const CaseDetailsStep = ({ data, onChange, errors }) => (
     </Grid>
   </Box>
 );
+const EvidenceCollectionStep = ({ data, onChange }) => {
+  const { addToast } = useToast();
+  
+  const handleUploadComplete = (uploadedFiles) => {
+    // Update evidence documents array
+    const newDocuments = uploadedFiles.map(file => ({
+      id: file.objectId,
+      name: file.name,
+      objectId: file.objectId,
+      evidenceId: file.evidenceId,
+      s3Url: file.s3Url,
+      uploadDate: new Date().toISOString(),
+    }));
+    
+    onChange('documents', [...data.documents, ...newDocuments]);
+    
+    addToast(`✅ ${uploadedFiles.length} documents added to evidence`, {
+      severity: 'success',
+      title: 'Evidence Updated',
+    });
+  };
 
-const EvidenceCollectionStep = ({ data, onChange }) => (
-  <Box>
-    <Typography variant="h6" gutterBottom>
-      Evidence Collection
-      <TooltipGuide
-        title="Evidence Collection"
-        content="Organize and categorize evidence that supports your case. This will help build a strong legal argument."
-        type="tip"
-      />
-    </Typography>
+  return (
+    <Box>
+      <Typography variant="h6" gutterBottom>
+        Evidence Collection
+        <TooltipGuide
+          title="Evidence Collection"
+          content="Upload documents, identify witnesses, and create a timeline of events to strengthen your case."
+          type="tip"
+        />
+      </Typography>
 
-    <Alert severity="info" sx={{ mb: 3 }}>
-      Upload documents, identify witnesses, and create a timeline of events to strengthen your case.
-    </Alert>
+      <Alert severity="info" sx={{ mb: 3 }}>
+        Upload supporting documents such as contracts, correspondence, photos, or any evidence relevant to your case.
+      </Alert>
 
-    <Typography variant="subtitle1" gutterBottom>
-      Documents Uploaded: {data.documents.length}
-    </Typography>
+      {/* Integrated Evidence Upload */}
+      <Box sx={{ mb: 3 }}>
+        <EvidenceUpload
+          onUploadComplete={handleUploadComplete}
+          currentCaseId={null} // Will be set when case is created
+          sourcePhase="phaseA01_intake"
+          apiEndpoint="/api/storage/documents"
+        />
+      </Box>
 
-    <Typography variant="subtitle1" gutterBottom>
-      Witnesses Identified: {data.witnesses.length}
-    </Typography>
+      {/* Evidence Summary */}
+      <Card sx={{ mt: 2 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>Evidence Summary</Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+              <Chip
+                label={`${data.documents.length} Documents`}
+                color={data.documents.length > 0 ? 'success' : 'default'}
+                sx={{ width: '100%' }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Chip
+                label={`${data.witnesses.length} Witnesses`}
+                color={data.witnesses.length > 0 ? 'success' : 'default'}
+                sx={{ width: '100%' }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Chip
+                label={`${data.timeline.length} Timeline Events`}
+                color={data.timeline.length > 0 ? 'success' : 'default'}
+                sx={{ width: '100%' }}
+              />
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    </Box>
+  );
+};
 
-    <Typography variant="subtitle1" gutterBottom>
-      Timeline Events: {data.timeline.length}
-    </Typography>
-  </Box>
-);
 
 const DocumentDraftingStep = ({ data, onChange }) => (
   <Box>

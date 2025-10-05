@@ -1,17 +1,17 @@
 // Main App component integrating lawsuit workflow UI components
 import {
-    Box,
-    Card,
-    CardContent,
-    Container,
-    createTheme,
-    CssBaseline,
-    Grid,
-    Paper,
-    ThemeProvider,
-    Typography,
+  Box,
+  Card,
+  CardContent,
+  Container,
+  createTheme,
+  CssBaseline,
+  Grid,
+  Paper,
+  ThemeProvider,
+  Typography
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ProgressBar from "./components/feedback/ProgressBar";
 import Toast, { useToast } from "./components/feedback/Toast";
 import LawsuitWizard from "./components/forms/LawsuitWizard";
@@ -24,7 +24,7 @@ import EvidenceUpload from "./components/ui/EvidenceUpload";
 import Modal, { ConfirmationModal } from "./components/ui/Modal";
 import PhasePipeline from "./components/ui/PhasePipeline";
 import lawyerFactoryAPI, {
-    getCaseDocuments
+  getCaseDocuments
 } from "./services/apiService";
 
 // Import modular terminal components
@@ -42,9 +42,18 @@ import ToggleSwitch from "./components/soviet/ToggleSwitch";
 
 // Import grid framework components for zero vertical scroll architecture
 import GridContainer, {
-    GridItem,
-    GridSection,
+  GridItem,
+  GridSection,
 } from "./components/layout/GridContainer";
+
+// Import legal analysis components
+import ClaimsMatrix from "./components/ui/ClaimsMatrix";
+import ShotList from "./components/ui/ShotList";
+import SkeletalOutlineSystem from "./components/ui/SkeletalOutlineSystem";
+
+// Import Magic UI components for enhanced visual design
+
+
 
 // Create Soviet Industrial theme
 const theme = createTheme({
@@ -193,12 +202,71 @@ const App = () => {
   const [userResearchFiles, setUserResearchFiles] = useState([]);
   const [currentWorkspace, setCurrentWorkspace] = useState("dashboard");
 
+  // Legal Analysis State
+  const [claimsMatrix, setClaimsMatrix] = useState([]);
+  const [shotList, setShotList] = useState([]);
+  const [skeletalOutline, setSkeletalOutline] = useState(null);
+  const [selectedClaim, setSelectedClaim] = useState(null);
+
+  // Ref to track backend initialization (prevents duplicate connections)
+  const backendInitialized = useRef(false);
+
+  // Settings state with localStorage persistence
+  const [settings, setSettings] = useState(() => {
+    const savedSettings = localStorage.getItem('lawyerfactory_settings');
+    return savedSettings ? JSON.parse(savedSettings) : {
+      // AI Model Configuration
+      aiModel: 'gpt-4',
+      llmProvider: 'openai', // openai, anthropic, groq
+      researchMode: true,
+      citationValidation: true,
+      
+      // General Settings
+      autoSave: true,
+      notifications: true,
+      darkMode: true,
+      
+      // Legal Configuration
+      jurisdiction: 'federal',
+      citationStyle: 'bluebook',
+      strictCompliance: true,
+      
+      // Agent Configuration
+      agentConcurrency: 3,
+      agentTimeout: 300,
+      
+      // Export Settings
+      exportFormat: 'pdf',
+      includeMetadata: true,
+    };
+  });
+
+  // Persist settings to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('lawyerfactory_settings', JSON.stringify(settings));
+  }, [settings]);
+
+  // Settings change handler
+  const handleSettingsChange = (newSettings) => {
+    setSettings(newSettings);
+    addToast('⚙️ Settings updated', {
+      severity: 'success',
+      title: 'Settings Saved',
+    });
+  };
+
   // Backend connection initialization
   useEffect(() => {
+    // Only initialize once
+    if (backendInitialized.current) {
+      return;
+    }
+
     const initializeBackend = async () => {
       try {
         const connected = await lawyerFactoryAPI.connect();
         setIsBackendConnected(connected);
+        backendInitialized.current = true;
 
         if (connected) {
           addToast("✅ Connected to LawyerFactory backend", {
@@ -225,6 +293,8 @@ const App = () => {
     // Setup phase update handler
     const handlePhaseUpdate = (phaseData) => {
       console.log("📊 Phase update received:", phaseData);
+      
+      // Update real-time progress state
       setRealTimeProgress((prev) => ({
         ...prev,
         [phaseData.phase]: {
@@ -234,9 +304,43 @@ const App = () => {
         },
       }));
 
-      addToast(`${phaseData.phase}: ${phaseData.message}`, {
+      // Update phase statuses for visual indicators
+      setPhaseStatuses((prev) => ({
+        ...prev,
+        [phaseData.phase]: phaseData.progress === 100 ? 'completed' : 'in-progress',
+      }));
+
+      // Update overall progress based on phase completion
+      const phaseWeights = {
+        'A01': 10,  // Document Intake
+        'A02': 20,  // Legal Research
+        'A03': 15,  // Case Outline
+        'B01': 15,  // Quality Review
+        'B02': 25,  // Document Drafting
+        'C01': 10,  // Document Editing
+        'C02': 5,   // Final Orchestration
+      };
+      
+      if (phaseData.progress === 100) {
+        const completedWeight = phaseWeights[phaseData.phase] || 0;
+        setOverallProgress((prev) => Math.min(prev + completedWeight, 100));
+      }
+
+      // Show detailed toast notification
+      const phaseEmoji = {
+        'A01': '📥',  // Document Intake
+        'A02': '🔍',  // Legal Research
+        'A03': '📋',  // Case Outline
+        'B01': '✅',  // Quality Review
+        'B02': '✍️',  // Document Drafting
+        'C01': '✏️',  // Document Editing
+        'C02': '🎯',  // Final Orchestration
+      };
+
+      addToast(`${phaseEmoji[phaseData.phase] || '📊'} ${phaseData.phase}: ${phaseData.message}`, {
         severity: phaseData.progress === 100 ? "success" : "info",
-        title: "Workflow Update",
+        title: phaseData.progress === 100 ? "Phase Complete" : "Phase Progress",
+        details: `Progress: ${phaseData.progress}% | LLM: ${settings.aiModel}`,
       });
     };
 
@@ -246,8 +350,15 @@ const App = () => {
     return () => {
       lawyerFactoryAPI.offPhaseUpdate(handlePhaseUpdate);
       lawyerFactoryAPI.disconnect();
+      backendInitialized.current = false;
     };
-  }, [addToast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - only run once on mount
+
+  // Sync settings with API service whenever they change
+  useEffect(() => {
+    lawyerFactoryAPI.updateSettings(settings);
+  }, [settings]);
 
   // Load case documents when currentCaseId changes
   useEffect(() => {
@@ -488,7 +599,7 @@ const App = () => {
   const handleQuickAction = (action) => {
     switch (action) {
       case "new_case":
-        setShowWizard(true);
+        setShowLegalIntake(true);
         break;
       case "search":
         handleSemanticSearch();
@@ -819,6 +930,74 @@ const App = () => {
     </Container>
   );
 
+  // Legal Analysis Views
+  const renderClaimsView = () => (
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Claims Matrix Analysis
+        <TooltipGuide
+          title="Claims Matrix"
+          content="Interactive legal analysis of causes of action with evidentiary requirements and Rule 12(b)(6) compliance checking."
+          type="info"
+        />
+      </Typography>
+      <ClaimsMatrix
+        caseId={currentCaseId}
+        onClaimSelect={setSelectedClaim}
+        onMatrixUpdate={setClaimsMatrix}
+      />
+    </Container>
+  );
+
+  const renderShotListView = () => (
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Shot List - Evidence Organization
+        <TooltipGuide
+          title="Shot List"
+          content="Fact-by-fact organization of evidence with claim linkages and citation management."
+          type="info"
+        />
+      </Typography>
+      <ShotList
+        caseId={currentCaseId}
+        evidenceData={userResearchFiles}
+        onShotUpdate={setShotList}
+        onEvidenceLink={(shotId, claimId) => {
+          addToast(`Linked evidence ${shotId} to claim ${claimId}`, {
+            severity: "success",
+            title: "Evidence Linked",
+          });
+        }}
+      />
+    </Container>
+  );
+
+  const renderOutlineView = () => (
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Skeletal Outline System
+        <TooltipGuide
+          title="Skeletal Outline"
+          content="FRCP-compliant blueprint for complaint creation, generated from claims matrix and evidence analysis."
+          type="info"
+        />
+      </Typography>
+      <SkeletalOutlineSystem
+        caseId={currentCaseId}
+        claimsMatrix={claimsMatrix}
+        shotList={shotList}
+        onOutlineGenerated={setSkeletalOutline}
+        onSectionUpdate={(sectionId) => {
+          addToast(`Section ${sectionId} updated`, {
+            severity: "success",
+            title: "Outline Updated",
+          });
+        }}
+      />
+    </Container>
+  );
+
   // Enhanced Orchestration Workspace with Zero Vertical Scroll
   const renderOrchestrationView = () => (
     <Box sx={{ width: "100%", height: "100vh", overflow: "hidden", p: 2 }}>
@@ -954,6 +1133,7 @@ const App = () => {
         <LawsuitWizard
           onComplete={handleWizardComplete}
           onCancel={handleWizardCancel}
+          apiEndpoint="/api/intake"
         />
       );
     }
@@ -963,6 +1143,12 @@ const App = () => {
         return renderCases();
       case "documents":
         return renderDocuments();
+      case "claims":
+        return renderClaimsView();
+      case "shotlist":
+        return renderShotListView();
+      case "outline":
+        return renderOutlineView();
       case "orchestration":
         return renderOrchestrationView();
       case "evidence":
@@ -1058,7 +1244,7 @@ const App = () => {
                   <Typography
                     variant="caption"
                     sx={{ color: "var(--soviet-silver)" }}>
-                    Phase A01 → A02 → A03 → B01 → B02 → C01
+                    Phase A01 → A02 → A03 → B01 → B02 → C01 → C02
                   </Typography>
                 </Box>
               )}
@@ -1231,7 +1417,7 @@ const App = () => {
                   ))}
                 </Box>
               ) : (
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" align="center">
                   No phase results yet. Start the pipeline to see progress.
                 </Typography>
               )}
@@ -1319,7 +1505,7 @@ const App = () => {
                 color: "var(--soviet-silver)",
                 fontSize: "var(--text-lg)",
               }}>
-              Legal Document Control Station
+               Main Terminal Control
             </h2>
             <div
               style={{
@@ -1335,12 +1521,15 @@ const App = () => {
                   backgroundColor: "var(--soviet-amber)",
                   borderColor: "var(--soviet-amber)",
                 }}>
-                🔍 Search
+                🔍 SEARCH
               </MechanicalButton>
               <MechanicalButton
-                onClick={() => setShowWizard(true)}
+                onClick={() => setShowLegalIntake(true)}
                 variant="success">
-                New Case
+                NEW CASE
+              </MechanicalButton>
+              <MechanicalButton>
+                onClick={() => handleQuickAction("upload")}
               </MechanicalButton>
             </div>
           </div>
@@ -1441,6 +1630,57 @@ const App = () => {
               📄 Documents
             </MechanicalButton>
             <MechanicalButton
+              onClick={() => setCurrentView("claims")}
+              variant={currentView === "claims" ? "primary" : "default"}
+              style={{
+                fontSize: "12px",
+                padding: "6px 12px",
+                backgroundColor:
+                  currentView === "claims"
+                    ? "var(--soviet-green)"
+                    : "var(--soviet-panel)",
+                borderColor:
+                  currentView === "claims"
+                    ? "var(--soviet-green)"
+                    : "var(--soviet-brass)",
+              }}>
+              🏗️ Claims
+            </MechanicalButton>
+            <MechanicalButton
+              onClick={() => setCurrentView("shotlist")}
+              variant={currentView === "shotlist" ? "primary" : "default"}
+              style={{
+                fontSize: "12px",
+                padding: "6px 12px",
+                backgroundColor:
+                  currentView === "shotlist"
+                    ? "var(--soviet-green)"
+                    : "var(--soviet-panel)",
+                borderColor:
+                  currentView === "shotlist"
+                    ? "var(--soviet-green)"
+                    : "var(--soviet-brass)",
+              }}>
+              🎯 Shot List
+            </MechanicalButton>
+            <MechanicalButton
+              onClick={() => setCurrentView("outline")}
+              variant={currentView === "outline" ? "primary" : "default"}
+              style={{
+                fontSize: "12px",
+                padding: "6px 12px",
+                backgroundColor:
+                  currentView === "outline"
+                    ? "var(--soviet-green)"
+                    : "var(--soviet-panel)",
+                borderColor:
+                  currentView === "outline"
+                    ? "var(--soviet-green)"
+                    : "var(--soviet-brass)",
+              }}>
+              📋 Outline
+            </MechanicalButton>
+            <MechanicalButton
               onClick={() => setCurrentView("orchestration")}
               variant={currentView === "orchestration" ? "primary" : "default"}
               style={{
@@ -1527,7 +1767,12 @@ const App = () => {
         open={showSettings}
         onClose={() => setShowSettings(false)}
         title="Briefcaser Settings">
-        <SettingsPanel />
+        <SettingsPanel 
+          showSettings={showSettings}
+          onClose={() => setShowSettings(false)}
+          settings={settings}
+          onSettingsChange={handleSettingsChange}
+        />
       </Modal>
 
       {/* Confirmation Modal */}

@@ -1,14 +1,23 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+
+// Global styles first
 import "./App.css";
-import App from "./App.jsx";
-import { ToastProvider } from "./components/feedback/Toast";
+import "./index.css";
+
+// Component-specific styles
 import "./components/layout/ContextOverlay.css";
 import "./components/layout/GridContainer.css";
 import "./components/layout/NestedAccordion.css";
-import "./index.css";
 
-createRoot(document.getElementById("root")).render(
+// Components
+import App from "./App.jsx";
+import { ToastProvider } from "./components/feedback/Toast";
+
+// Error boundary wrapper
+const root = createRoot(document.getElementById("root"));
+
+root.render(
   <StrictMode>
     <ToastProvider>
       <App />

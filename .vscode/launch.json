@@ -5,6 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Site with Puppeteer",
+            "program": "${workspaceFolder}/${input:puppeteerScript}",
+            "console": "integratedTerminal",
+            "env": {
+                "NODE_ENV": "development"
+            }
+        },
+        {
             "name": "Python Debugger: Python File",
             "type": "debugpy",
             "request": "launch",
@@ -46,7 +56,7 @@
                 "PYTHONUNBUFFERED": "1"
             },
             "justMyCode": true
-     },
+        },
         {
             "name": "Python: pytest",
             "type": "debugpy",
@@ -96,14 +106,19 @@
     ],
     "compounds": [
         {
-            "name": "Debug All (Python + Node)",  
+            "name": "Debug All (Python + Node)",
             "configurations": [
-                {  
+                {
                     "name": "Node: Launch Program",
                     "type": "node",
                     "request": "launch",
                     "program": "${workspaceFolder}/apps/ui/react-app/node_modules/.bin/vite",
-                    "args": ["--host", "0.0.0.0", "--port", "3000"],
+                    "args": [
+                        "--host",
+                        "0.0.0.0",
+                        "--port",
+                        "3000"
+                    ],
                     "cwd": "${workspaceFolder}/apps/ui/react-app",
                     "console": "integratedTerminal",
                     "env": {
@@ -116,32 +131,37 @@
                 },
                 "Python Debugger: Python File"
             ]
-        },  
-            ],
-                "Python Debugger: Python File": {   
-                    "inputs": [],
-                    "options": {
-                        "cwd": "${workspaceFolder}"
-                    }
-                },
-
-                "Python: Django (manage.py runserver)": {
-                    "inputs": [],
-                    "options": {
-                        "cwd": "${workspaceFolder}"
-                    }
-                },
-                "Python: Flask-SocketIO (simple_server)": {
-                    "inputs": [],
-                    "options": {
-                        "cwd": "${workspaceFolder}"
-                    }
-                },
-                "Python: pytest": {
-                    "inputs": [],
-                    "options": {
-                        "cwd": "${workspaceFolder}"
-                    }
-                }
-
+        },
+    ],
+    "Python Debugger: Python File": {
+        "inputs": [],
+        "options": {
+            "cwd": "${workspaceFolder}"
+        }
+    },
+    "Python: Django (manage.py runserver)": {
+        "inputs": [],
+        "options": {
+            "cwd": "${workspaceFolder}"
+        }
+    },
+    "Python: Flask-SocketIO (simple_server)": {
+        "inputs": [],
+        "options": {
+            "cwd": "${workspaceFolder}"
+        }
+    },
+    "Python: pytest": {
+        "inputs": [],
+        "options": {
+            "cwd": "${workspaceFolder}"
+        }
+    },
+    "inputs": [
+        {
+            "type": "promptString",
+            "id": "puppeteerScript",
+            "description": "Path to your Puppeteer evaluation script (e.g., test/evaluate-site.js)"
+        }
+    ]
 }

@@ -6,7 +6,6 @@
 #   - Group Tags: evidence-processing, api
 Enhanced Evidence Table API for LawyerFactory
 RESTful API endpoints for evidence, facts, and claims management.
-"""
 
 import logging
 

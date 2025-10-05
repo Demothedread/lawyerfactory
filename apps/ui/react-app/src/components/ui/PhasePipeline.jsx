@@ -1,53 +1,57 @@
 // Phase Pipeline component for workflow visualization and control
 import {
-  Assessment,
-  CheckCircle,
-  Close,
-  CloudUpload,
-  Description,
-  Edit,
-  Error,
-  ExpandMore,
-  Gavel,
-  Pause,
-  PlayArrow,
-  Schedule,
-  Search,
-  Stop,
-  Timeline,
-  Visibility,
+    Assessment,
+    CheckCircle,
+    Close,
+    CloudUpload,
+    Description,
+    Edit,
+    Error,
+    ExpandMore,
+    Gavel,
+    Pause,
+    PlayArrow,
+    Schedule,
+    Search,
+    Stop,
+    Timeline,
+    Visibility,
 } from "@mui/icons-material";
 import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Step,
-  StepContent,
-  StepLabel,
-  Stepper,
-  Tooltip,
-  Typography,
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Alert,
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    LinearProgress,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Step,
+    StepContent,
+    StepLabel,
+    Stepper,
+    Tab,
+    Tabs,
+    Tooltip,
+    Typography,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { useToast } from "../feedback/Toast";
 import EvidenceUpload from "./EvidenceUpload";
-import { lawyerFactoryAPI } from "../../services/apiService";
+
+// Import the new drafting phase components
+import DraftingPhase from "../DraftingPhase";
 
 const PhasePipeline = ({
   caseId,
@@ -68,6 +72,7 @@ const PhasePipeline = ({
   const [showEvidenceUpload, setShowEvidenceUpload] = useState(false);
   const [retryCount, setRetryCount] = useState({});
   const [maxRetries] = useState(3);
+  const [activeTab, setActiveTab] = useState(0); // 0: Pipeline, 1: Drafting Phase
 
   const { addToast } = useToast();
 
@@ -596,185 +601,219 @@ const PhasePipeline = ({
     <Box>
       <Card>
         <CardContent>
-          {/* Pipeline Controls */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 3,
-            }}>
-            <Typography variant="h5">
-              Phase Pipeline
-              {caseId && (
-                <Chip label={`Case: ${caseId}`} size="small" sx={{ ml: 1 }} />
-              )}
-            </Typography>
+          {/* Tab Navigation */}
+          <Tabs
+            value={activeTab}
+            onChange={(event, newValue) => setActiveTab(newValue)}
+            sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}
+          >
+            <Tab label="Phase Pipeline" />
+            <Tab label="Drafting Phase (B02)" />
+          </Tabs>
 
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <Chip
-                label={pipelineStatus.toUpperCase()}
-                color={
-                  pipelineStatus === "completed"
-                    ? "success"
-                    : pipelineStatus === "running"
-                    ? "warning"
-                    : pipelineStatus === "error"
-                    ? "error"
-                    : "default"
-                }
-              />
+          {/* Pipeline Controls - Only show on Pipeline tab */}
+          {activeTab === 0 && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 3,
+              }}>
+              <Typography variant="h5">
+                Phase Pipeline
+                {caseId && (
+                  <Chip label={`Case: ${caseId}`} size="small" sx={{ ml: 1 }} />
+                )}
+              </Typography>
 
-              <Button
-                variant="contained"
-                startIcon={<PlayArrow />}
-                onClick={startPipeline}
-                disabled={pipelineStatus === "running" || loading || !caseId}>
-                Start Pipeline
-              </Button>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Chip
+                  label={pipelineStatus.toUpperCase()}
+                  color={
+                    pipelineStatus === "completed"
+                      ? "success"
+                      : pipelineStatus === "running"
+                      ? "warning"
+                      : pipelineStatus === "error"
+                      ? "error"
+                      : "default"
+                  }
+                />
 
-              {pipelineStatus === "running" && (
+                <Button
+                  variant="contained"
+                  startIcon={<PlayArrow />}
+                  onClick={startPipeline}
+                  disabled={pipelineStatus === "running" || loading || !caseId}>
+                  Start Pipeline
+                </Button>
+
+                {pipelineStatus === "running" && (
+                  <Button
+                    variant="outlined"
+                    startIcon={<Pause />}
+                    onClick={pausePipeline}>
+                    Pause
+                  </Button>
+                )}
+
                 <Button
                   variant="outlined"
-                  startIcon={<Pause />}
-                  onClick={pausePipeline}>
-                  Pause
+                  startIcon={<Stop />}
+                  onClick={stopPipeline}
+                  disabled={pipelineStatus === "idle"}>
+                  Stop
                 </Button>
-              )}
-
-              <Button
-                variant="outlined"
-                startIcon={<Stop />}
-                onClick={stopPipeline}
-                disabled={pipelineStatus === "idle"}>
-                Stop
-              </Button>
+              </Box>
             </Box>
-          </Box>
+          )}
 
-          {!caseId && (
+          {!caseId && activeTab === 0 && (
             <Alert severity="warning" sx={{ mb: 2 }}>
               Case ID required to run phases. Please upload evidence first.
             </Alert>
           )}
 
-          {/* Phase Stepper */}
-          <Stepper activeStep={currentPhase} orientation="vertical">
-            {phases.map((phase, index) => {
-              const state = phaseStates[phase.id];
-              const isCompleted = state?.status === "completed";
-              const hasError = state?.status === "error";
+          {/* Tab Content */}
+          {activeTab === 0 ? (
+            /* Phase Pipeline Tab */
+            <Box>
+              {/* Phase Stepper */}
+              <Stepper activeStep={currentPhase} orientation="vertical">
+                {phases.map((phase, index) => {
+                  const state = phaseStates[phase.id];
+                  const isCompleted = state?.status === "completed";
+                  const hasError = state?.status === "error";
 
-              return (
-                <Step key={phase.id} completed={isCompleted}>
-                  <StepLabel
-                    error={hasError}
-                    icon={phase.icon}
-                    optional={
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        {getPhaseStatusChip(phase.id)}
-                        <Typography variant="caption">
-                          {phase.estimatedTime}
-                        </Typography>
-                      </Box>
-                    }>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Typography variant="h6">{phase.name}</Typography>
-                      <Tooltip title="View Details">
-                        <IconButton
-                          size="small"
-                          onClick={() => viewPhaseDetails(phase)}>
-                          <Visibility />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </StepLabel>
-
-                  <StepContent>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 2 }}>
-                      {phase.description}
-                    </Typography>
-
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="subtitle2" gutterBottom>
-                        Agent: {phase.agent}
-                      </Typography>
-
-                      {state?.progress > 0 && state.status === "running" && (
-                        <Box sx={{ mb: 1 }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={state.progress}
-                            sx={{ mb: 0.5 }}
-                          />
-                          <Typography variant="caption">
-                            Progress: {state.progress}%
-                          </Typography>
-                        </Box>
-                      )}
-
-                      {state?.outputs && state.outputs.length > 0 && (
-                        <Box sx={{ mb: 1 }}>
-                          <Typography variant="subtitle2" gutterBottom>
-                            Outputs:
-                          </Typography>
-                          {state.outputs.map((output, idx) => (
-                            <Chip
-                              key={idx}
-                              label={output}
+                  return (
+                    <Step key={phase.id} completed={isCompleted}>
+                      <StepLabel
+                        error={hasError}
+                        icon={phase.icon}
+                        optional={
+                          <Box
+                            sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            {getPhaseStatusChip(phase.id)}
+                            <Typography variant="caption">
+                              {phase.estimatedTime}
+                            </Typography>
+                          </Box>
+                        }>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Typography variant="h6">{phase.name}</Typography>
+                          <Tooltip title="View Details">
+                            <IconButton
                               size="small"
-                              sx={{ mr: 0.5, mb: 0.5 }}
-                            />
-                          ))}
+                              onClick={() => viewPhaseDetails(phase)}>
+                              <Visibility />
+                            </IconButton>
+                          </Tooltip>
                         </Box>
-                      )}
+                      </StepLabel>
 
-                      {state?.errors && state.errors.length > 0 && (
-                        <Alert severity="error" sx={{ mb: 1 }}>
-                          {state.errors[state.errors.length - 1].error}
-                        </Alert>
-                      )}
-                    </Box>
+                      <StepContent>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mb: 2 }}>
+                          {phase.description}
+                        </Typography>
 
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      {state?.status === "ready" && (
-                        <Button
-                          size="small"
-                          variant="contained"
-                          startIcon={<PlayArrow />}
-                          onClick={() => startPhase(phase.id)}
-                          disabled={loading}>
-                          Start Phase
-                        </Button>
-                      )}
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            Agent: {phase.agent}
+                          </Typography>
 
-                      {phase.id === "phaseA01_intake" && (
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          startIcon={<CloudUpload />}
-                          onClick={() => setShowEvidenceUpload(true)}
-                          disabled={loading}>
-                          Upload Evidence
-                        </Button>
-                      )}
+                          {state?.progress > 0 && state.status === "running" && (
+                            <Box sx={{ mb: 1 }}>
+                              <LinearProgress
+                                variant="determinate"
+                                value={state.progress}
+                                sx={{ mb: 0.5 }}
+                              />
+                              <Typography variant="caption">
+                                Progress: {state.progress}%
+                              </Typography>
+                            </Box>
+                          )}
 
-                      <Button
-                        size="small"
-                        onClick={() => viewPhaseDetails(phase)}
-                        startIcon={<Visibility />}>
-                        View Details
-                      </Button>
-                    </Box>
-                  </StepContent>
-                </Step>
-              );
-            })}
-          </Stepper>
+                          {state?.outputs && state.outputs.length > 0 && (
+                            <Box sx={{ mb: 1 }}>
+                              <Typography variant="subtitle2" gutterBottom>
+                                Outputs:
+                              </Typography>
+                              {state.outputs.map((output, idx) => (
+                                <Chip
+                                  key={idx}
+                                  label={output}
+                                  size="small"
+                                  sx={{ mr: 0.5, mb: 0.5 }}
+                                />
+                              ))}
+                            </Box>
+                          )}
+
+                          {state?.errors && state.errors.length > 0 && (
+                            <Alert severity="error" sx={{ mb: 1 }}>
+                              {state.errors[state.errors.length - 1].error}
+                            </Alert>
+                          )}
+                        </Box>
+
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          {state?.status === "ready" && (
+                            <Button
+                              size="small"
+                              variant="contained"
+                              startIcon={<PlayArrow />}
+                              onClick={() => startPhase(phase.id)}
+                              disabled={loading}>
+                              Start Phase
+                            </Button>
+                          )}
+
+                          {phase.id === "phaseA01_intake" && (
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              startIcon={<CloudUpload />}
+                              onClick={() => setShowEvidenceUpload(true)}
+                              disabled={loading}>
+                              Upload Evidence
+                            </Button>
+                          )}
+
+                          <Button
+                            size="small"
+                            onClick={() => viewPhaseDetails(phase)}
+                            startIcon={<Visibility />}>
+                            View Details
+                          </Button>
+                        </Box>
+                      </StepContent>
+                    </Step>
+                  );
+                })}
+              </Stepper>
+            </Box>
+          ) : (
+            /* Drafting Phase Tab */
+            <Box>
+              <DraftingPhase
+                caseId={caseId}
+                onPhaseComplete={(phaseId, outputs) => {
+                  addToast(`✅ Drafting phase ${phaseId} completed`, {
+                    severity: "success",
+                    title: "Drafting Complete",
+                  });
+                  if (onPhaseComplete) {
+                    onPhaseComplete(phaseId, outputs);
+                  }
+                }}
+              />
+            </Box>
+          )}
         </CardContent>
       </Card>
 

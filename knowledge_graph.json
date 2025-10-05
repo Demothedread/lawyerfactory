@@ -674,6 +674,44 @@
         "Requires integration verification and selector updates"
       ]
     },
+    },
+    {
+      "name": "GridFrameworkIntegrationOct2025",
+      "entityType": "IntegrationVerification",
+      "observations": [
+        "GridContainer CONFIRMED integrated in App.jsx (lines 44-47, 849, 987, 1128)",
+        "Used in 3 views: orchestration, evidence, pipeline with noVerticalScroll=true",
+        "CSS loaded via main.jsx, 500-line stylesheet with Soviet Industrial design",
+        "Test failures due to wrong view tested (dashboard lacks GridContainer)"
+      ]
+    },
+    {
+      "name": "UITestingFindings",
+      "entityType": "TestAnalysis",
+      "observations": [
+        "Grid components only render in specific views, not dashboard default",
+        "Puppeteer needs view navigation + 2s wait for React hydration",
+        "Dev mode adds 2-3s performance overhead vs production build",
+        "Production build required for accurate performance metrics"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "from": "GridFrameworkIntegrationOct2025",
+      "to": "GridFrameworkComponents",
+      "relationType": "verifies"
+    },
+    {
+      "from": "UITestingFindings",
+      "to": "AutomatedUITestSuite",
+      "relationType": "improves"
+    },
+    {
+      "from": "GridFrameworkIntegrationOct2025",
+      "to": "TestResultsOct2025",
+      "relationType": "explains"
+    }
     {
       "name": "TestResultsOct2025",
       "entityType": "TestReport",

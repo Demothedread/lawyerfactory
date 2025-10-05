@@ -5,7 +5,7 @@
 
 /* GAUGE NEEDLE - High-visibility pressure gauge needle with glow effect */
 .gauge-needle {
-  position: absolute;
+  position: relative;
   width: 3px;
   height: 45%;
   bottom: 50%;

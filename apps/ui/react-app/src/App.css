@@ -5,47 +5,47 @@
 
 :root {
   /* Briefcaser Soviet Industrial Color Palette - Enhanced Brutalism */
-  --soviet-brass: #b87333;
-  --soviet-bronze: #cd7f32;
-  --soviet-emerald: #00563f;
-  --soviet-crimson: #dc143c;
-  --soviet-silver: #c0c0c0;
-  --soviet-charcoal: #0f0f0f;
-  --soviet-steel: #1e2124;
+  --soviet-brass: #b58558ab;
+  --soviet-bronze: #945f2ab6;
+  --soviet-emerald: #1cb089a6;
+  --soviet-crimson: #9d263eff;
+  --soviet-silver: #ccc4c4c1;
+  --soviet-charcoal: #0e0d0de7;
+  --soviet-steel: #3c3c3dff;
   --soviet-amber: #ffb000;
-  --soviet-warning: #ff6b35;
-  --soviet-success: #00a878;
-  --panel-rivets: #8b8680;
+  --soviet-warning: #be3005c7;
+  --soviet-success: #3dc39dff;
+  --panel-rivets: #b9e5e2ce;
 
   /* Weathered Metallic Surfaces - Enhanced Patina & Textures */
-  --gunmetal-base: #2a3439;
-  --gunmetal-dark: #1a2025;
-  --gunmetal-highlight: #3a444a;
-  --gunmetal-patina: linear-gradient(135deg, #2a3439 0%, #1e2528 25%, #2f3740 50%, #242b30 75%, #1a2025 100%);
+  --gunmetal-base: #44535ad3;
+  --gunmetal-dark: #192d3dd4;
+  --gunmetal-highlight: #b4cad7d3;
+  --gunmetal-patina: linear-gradient(135deg, #2d3e46 0%, rgba(40, 58, 66, 1) 25%, #526d8b 50%, rgba(30, 57, 78, 1) 75%, #263d50 100%);
   
-  --oxidized-copper: #7c4f3e;
-  --oxidized-copper-light: #a66b56;
-  --oxidized-copper-dark: #5c3729;
-  --oxidized-copper-gradient: linear-gradient(135deg, #8a5a48 0%, #7c4f3e 25%, #6b4434 50%, #5c3729 75%, #4d2e1f 100%);
+  --oxidized-copper: #97533bff;
+  --oxidized-copper-light: #c49381cc;
+  --oxidized-copper-dark: #40251bff;
+  --oxidized-copper-gradient: linear-gradient(135deg, #8f6c5fff 0%, #903e21be 25%, #7e5747c7 50%, #92472cdc 75%, #442211ff 100%);
   
   --patina-green: #4a7c59;
   --patina-green-light: #5a9069;
-  --patina-green-dark: #3a6449;
+  --patina-green-dark: #326142ff;
   --verdigris-texture: linear-gradient(135deg, 
-    rgba(74, 124, 89, 0.3) 0%, 
-    rgba(90, 144, 105, 0.2) 25%,
+    rgba(115, 201, 141, 0.21) 0%, 
+    rgba(113, 172, 130, 0.35) 25%,
     rgba(58, 100, 73, 0.35) 50%,
-    rgba(74, 124, 89, 0.25) 75%,
-    rgba(58, 100, 73, 0.3) 100%);
+    rgba(58, 146, 84, 0.42) 75%,
+    rgba(32, 90, 52, 0.53) 100%);
   
   --rust-orange: #cd853f;
   --rust-brown: #8b4513;
   --rust-texture: linear-gradient(135deg, 
     #cd853f 0%, 
-    #b87333 25%, 
-    #8b4513 50%, 
-    #a0522d 75%, 
-    #cd853f 100%);
+    #9c6737ff 25%, 
+    #9b521a9d 50%, 
+    #91380fbb 75%, 
+    #ab5a09b7 100%);
   
   --tarnished-silver: #9a9a9a;
   --tarnished-silver-dark: #6a6a6a;
@@ -69,8 +69,8 @@
   --gauge-bezel: linear-gradient(135deg, #b8860b 0%, #cd9945 25%, #9b7233 50%, #b8860b 100%);
   --gauge-bezel-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6), 
                         inset 0 -1px 2px rgba(255, 255, 255, 0.15);
-  --gauge-needle: #ff4500;
-  --gauge-needle-glow: 0 0 8px #ff4500, 0 0 16px rgba(255, 69, 0, 0.5);
+  --gauge-needle: #e96231ff;
+  --gauge-needle-glow: 0 0 8px #ff7f51ff, 0 0 16px hsla(16, 83%, 58%, 0.40);
   
   --toggle-handle: linear-gradient(135deg, 
     #c0c0c0 0%, 
@@ -99,7 +99,7 @@
   --rivet-highlight: inset 0 1px 1px rgba(255, 255, 255, 0.6);
   
   --metal-shine: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.15) 0%, 
+    rgba(255, 255, 255, 0.19) 0%, 
     transparent 25%, 
     transparent 75%, 
     rgba(255, 255, 255, 0.1) 100%);
@@ -117,8 +117,8 @@
   --rivet-bronze: radial-gradient(circle at 30% 30%, 
     #cd9945 0%, 
     #b87333 40%, 
-    #8b5a3c 70%, 
-    #5c3729 100%);
+    #9f6d4eff 70%, 
+    #5d301fccff 100%);
   --bolt-steel: radial-gradient(circle at 30% 30%,
     #c0c0c0 0%,
     #a0a0a0 40%,
@@ -129,7 +129,7 @@
   --scratch-overlay: linear-gradient(35deg,
     transparent 0%,
     transparent 48%,
-    rgba(255, 255, 255, 0.03) 49%,
+    rgba(236, 222, 222, 0.6) 49%,
     rgba(255, 255, 255, 0.03) 51%,
     transparent 52%,
     transparent 100%);
@@ -202,6 +202,7 @@
   --text-lg: 16px;
   --text-xl: 18px;
   --text-xxl: 24px;
+  --text-xxxl: 40px;
 }
 
 /* Global Reset and Base Styles */
@@ -211,6 +212,30 @@
   padding: 0;
 }
 
+/* Custom Font Declarations - Fixed for proper decoding */
+@font-face {
+  font-family: "athene";
+  src: local('Athene'), 
+       local('athene'),
+       url('./fonts/Athene.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Bauhhl';
+  src: local('Bauhhl'),
+       local('BAUHHL'),
+       url('./fonts/BAUHHL.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Fallback to web fonts if local fonts fail */
 html,
 body {
   height: 100%;
@@ -245,17 +270,17 @@ body {
   width: 100vw;
   background: radial-gradient(
       ellipse at top left,
-      rgba(184, 115, 51, 0.03) 0%,
+      rgba(167, 105, 48, 0.2) 0%,
       transparent 50%
     ),
     radial-gradient(
       ellipse at bottom right,
-      rgba(220, 20, 60, 0.02) 0%,
+      rgba(96, 17, 33, 0.51) 0%,
       transparent 50%
     ),
     var(--terminal-bg);
   position: relative;
-  gap: 2px;
+  gap: 2px;  
 }
 
 /* Professional Trading Terminal Scanlines Effect */
@@ -271,7 +296,8 @@ body {
     transparent,
     transparent 2px,
     rgba(0, 168, 120, 0.015) 2px,
-    rgba(0, 168, 120, 0.015) 4px
+    rgba(0, 168, 120, 0.21) 4px,
+    rgba(244, 255, 252, 0.27) 8px
   );
   pointer-events: none;
   z-index: var(--z-background);
@@ -310,7 +336,7 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
+  right: 1px;
   height: 2px;
   background: linear-gradient(
     90deg,
@@ -321,13 +347,13 @@ body {
 }
 
 .briefcaser-logo {
-  font-family: "Orbitron", monospace;
+  font-family: "Bauhhl", "Orbitron", monospace;
   font-weight: 900;
-  font-size: var(--text-xl);
+  font-size: var(--text-xxxl);
   color: var(--soviet-brass);
   text-transform: uppercase;
   letter-spacing: 2px;
-  text-shadow: 0 0 10px rgba(184, 115, 51, 0.3);
+  text-shadow: 0 0 10px rgba(146, 175, 208, 0.38);
 }
 
 .system-status-bar {
@@ -2152,7 +2178,7 @@ body {
 
 /* Panel Titles */
 .panel-title {
-  font-family: "Orbitron", monospace;
+  font-family: "Jetbrains Mono", "Orbitron", monospace;
   font-weight: 700;
   color: var(--soviet-brass);
   font-size: var(--text-sm);

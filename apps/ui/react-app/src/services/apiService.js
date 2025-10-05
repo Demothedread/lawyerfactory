@@ -54,13 +54,10 @@ export const initializeSocket = (onPhaseUpdate, onError) => {
 };
 
 /**
- * Close Socket.IO connection
+ * Get the current socket instance
  */
-export const closeSocket = () => {
-  if (socket) {
-    socket.close();
-    socket = null;
-  }
+export const getSocket = () => {
+  return socket;
 };
 
 /**
@@ -78,10 +75,21 @@ export const healthCheck = async () => {
 
 /**
  * Process legal intake form data
+ * @param {Object} intakeData - The intake form data
+ * @param {Object} settings - User settings including aiModel (LLM provider)
  */
-export const processIntake = async (intakeData) => {
+export const processIntake = async (intakeData, settings = {}) => {
   try {
-    const response = await apiClient.post("/api/intake", intakeData);
+    const payload = {
+      ...intakeData,
+      llm_provider: settings.aiModel || 'gpt-4',
+      research_mode: settings.researchMode !== undefined ? settings.researchMode : true,
+      citation_validation: settings.citationValidation !== undefined ? settings.citationValidation : true,
+      jurisdiction: settings.jurisdiction || 'federal',
+      citation_style: settings.citationStyle || 'bluebook',
+    };
+    
+    const response = await apiClient.post("/api/intake", payload);
     return response.data;
   } catch (error) {
     console.error("Intake processing failed:", error);
@@ -117,13 +125,21 @@ export const uploadCaseDocuments = async (caseId, files) => {
 
 /**
  * Start research phase for a case
+ * @param {string} caseId - The case ID
+ * @param {string} researchQuery - The research query
+ * @param {Object} settings - User settings including aiModel (LLM provider)
  */
-export const startResearch = async (caseId, researchQuery) => {
+export const startResearch = async (caseId, researchQuery, settings = {}) => {
   try {
-    const response = await apiClient.post("/api/research/start", {
+    const payload = {
       case_id: caseId,
       research_query: researchQuery,
-    });
+      llm_provider: settings.aiModel || 'gpt-4',
+      enhanced_mode: settings.researchMode !== undefined ? settings.researchMode : true,
+      citation_validation: settings.citationValidation !== undefined ? settings.citationValidation : true,
+    };
+    
+    const response = await apiClient.post("/api/research/start", payload);
     return response.data;
   } catch (error) {
     console.error("Research start failed:", error);
@@ -159,12 +175,18 @@ export const getResearchResults = async (caseId) => {
 
 /**
  * Generate document outline for a case
+ * @param {string} caseId - The case ID
+ * @param {Object} settings - User settings including aiModel (LLM provider)
  */
-export const generateOutline = async (caseId) => {
+export const generateOutline = async (caseId, settings = {}) => {
   try {
-    const response = await apiClient.post("/api/outline/generate", {
+    const payload = {
       case_id: caseId,
-    });
+      llm_provider: settings.aiModel || 'gpt-4',
+      citation_style: settings.citationStyle || 'bluebook',
+    };
+    
+    const response = await apiClient.post("/api/outline/generate", payload);
     return response.data;
   } catch (error) {
     console.error("Outline generation failed:", error);
@@ -289,14 +311,55 @@ export const getCaseDocuments = async (caseId) => {
 };
 
 /**
- * Check if backend is available
+ * Start a specific phase for a case
+ * @param {string} phaseId - The phase ID (e.g., "phaseB02_drafting")
+ * @param {string} caseId - The case ID
+ * @param {Object} phaseData - Additional data for the phase
  */
-export const isBackendAvailable = async () => {
+export const startPhase = async (phaseId, caseId, phaseData = {}) => {
   try {
-    await healthCheck();
-    return true;
+    const payload = {
+      case_id: caseId,
+      ...phaseData,
+    };
+
+    const response = await apiClient.post(`/api/phases/${phaseId}/start`, payload);
+    return response.data;
   } catch (error) {
-    return false;
+    console.error(`Phase ${phaseId} start failed:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Get claims matrix for a case
+ */
+export const getClaimsMatrix = async (caseId) => {
+  try {
+    const response = await apiClient.get(`/api/claims/matrix/${caseId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Claims matrix fetch failed:", error);
+    throw error;
+  }
+};
+
+/**
+ * Generate skeletal outline for a case
+ */
+export const generateSkeletalOutline = async (caseId, claimsMatrix = [], shotList = []) => {
+  try {
+    const payload = {
+      case_id: caseId,
+      claims_matrix: claimsMatrix,
+      shot_list: shotList,
+    };
+
+    const response = await apiClient.post(`/api/outline/generate/${caseId}`, payload);
+    return response.data;
+  } catch (error) {
+    console.error("Skeletal outline generation failed:", error);
+    throw error;
   }
 };
 
@@ -309,12 +372,19 @@ export class LawyerFactoryAPI {
     this.currentCaseId = null;
     this.phaseUpdateHandlers = [];
     this.workflowState = {};
+    this.settings = {}; // User settings including LLM provider
   }
 
   /**
    * Initialize connection to LawyerFactory backend
    */
   async connect() {
+    // Prevent duplicate connections
+    if (this.isConnected) {
+      console.log("⚠️ Already connected to LawyerFactory backend");
+      return true;
+    }
+
     try {
       // Check if backend is available
       const isAvailable = await isBackendAvailable();
@@ -505,6 +575,21 @@ export class LawyerFactoryAPI {
   }
 
   /**
+   * Update settings (including LLM provider)
+   */
+  updateSettings(newSettings) {
+    this.settings = { ...this.settings, ...newSettings };
+    console.log('⚙️ LawyerFactoryAPI settings updated:', this.settings);
+  }
+
+  /**
+   * Get current settings
+   */
+  getSettings() {
+    return this.settings;
+  }
+
+  /**
    * Add handler for phase updates
    */
   onPhaseUpdate(handler) {
@@ -527,7 +612,7 @@ export class LawyerFactoryAPI {
   async createCase(intakeData) {
     try {
       if (this.isConnected) {
-        const result = await processIntake(intakeData);
+        const result = await processIntake(intakeData, this.settings);
         this.currentCaseId = result.case_id;
         return result;
       } else {
@@ -557,7 +642,7 @@ export class LawyerFactoryAPI {
 
     try {
       if (this.isConnected) {
-        return await startResearch(this.currentCaseId, researchQuery);
+        return await startResearch(this.currentCaseId, researchQuery, this.settings);
       } else {
         // Mock response
         return {
@@ -582,7 +667,7 @@ export class LawyerFactoryAPI {
 
     try {
       if (this.isConnected) {
-        return await generateOutline(this.currentCaseId);
+        return await generateOutline(this.currentCaseId, this.settings);
       } else {
         // Mock response
         return {
