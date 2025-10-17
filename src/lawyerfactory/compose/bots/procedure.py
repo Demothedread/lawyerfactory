@@ -12,9 +12,9 @@ Ensures documents meet specific court requirements and procedural standards.
 import logging
 from typing import Any, Dict
 
-from ..agent_registry import AgentConfig, AgentInterface
-from ..bot_interface import Bot
-from ..workflow_models import WorkflowTask
+from lawyerfactory.compose.agent_registry import AgentConfig, AgentInterface
+from lawyerfactory.compose.maestro.base import Bot
+from lawyerfactory.compose.maestro.workflow import WorkflowTask
 
 logger = logging.getLogger(__name__)
 

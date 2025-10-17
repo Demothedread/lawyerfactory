@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 import logging
 from typing import Any, Dict, List, Optional
 
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph, JurisdictionAuthority
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph, JurisdictionAuthority
 
 logger = logging.getLogger(__name__)
 
@@ -492,7 +492,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+    from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 
     kg = EnhancedKnowledgeGraph("test_jurisdiction.db")
     manager = JurisdictionManager(kg)

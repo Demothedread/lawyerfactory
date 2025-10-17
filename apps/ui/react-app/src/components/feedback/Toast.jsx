@@ -104,12 +104,14 @@ const Toast = ({
   severity = 'info',
   variant = 'filled',
   onClose,
-  action,
   position = 'bottom-right',
   transition = 'grow',
   open = true,
   sx = {}
 }) => {
+  // Don't render anything if toast is not open
+  if (!open) return null;
+
   const getSeverityIcon = () => {
     switch (severity) {
       case 'success':
@@ -163,6 +165,7 @@ const Toast = ({
     if (reason === 'clickaway') {
       return;
     }
+    
     if (onClose) {
       onClose();
     }
@@ -186,25 +189,23 @@ const Toast = ({
         severity={severity}
         variant={variant}
         icon={getSeverityIcon()}
-        onClose={handleClose}
         action={
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            {action}
-            <IconButton
-              size="small"
-              color="inherit"
-              onClick={handleClose}
-              aria-label="close notification"
-              sx={{ 
-                ml: action ? 0.5 : 0,
-                '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                }
-              }}
-            >
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </Box>
+          <IconButton
+            size="small"
+            color="inherit"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleClose(e, 'closeButton');
+            }}
+            aria-label="close notification"
+            sx={{ 
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)'
+              }
+            }}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
         }
         sx={{
           minWidth: 300,

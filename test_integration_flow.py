@@ -13,7 +13,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # Import unified storage API
-from lawyerfactory.storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
+from lawyerfactory.storage.core.unified_storage_api import get_enhanced_unified_storage_api
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

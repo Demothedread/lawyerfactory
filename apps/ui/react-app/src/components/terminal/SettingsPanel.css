@@ -1,0 +1,684 @@
+/* SettingsPanel.css - 1950s Retrofuturistic Mechanical Control Console */
+
+/* Global box-sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Overlay - Industrial Workshop Backdrop */
+.settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 30% 40%, rgba(139, 69, 19, 0.15), transparent 60%),
+    linear-gradient(180deg, rgba(20, 20, 25, 0.92) 0%, rgba(35, 35, 40, 0.95) 100%);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(12px);
+  }
+}
+
+/* Main Console - Chunky 1950s Control Panel */
+.mechanical-settings-console {
+  max-width: 800px;
+  max-height: 90vh;
+  background: 
+    linear-gradient(135deg, #3d3d42 0%, #2a2a2e 50%, #35353a 100%),
+    repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 11px);
+  border: 6px solid #1a1a1c;
+  border-radius: 12px;
+  box-shadow: 
+    0 0 0 3px #4a4a4f,
+    0 0 0 6px #2a2a2e,
+    0 12px 48px rgba(0, 0, 0, 0.85),
+    inset 0 2px 8px rgba(0, 0, 0, 0.6),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.08);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  animation: consoleSlideIn 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+@keyframes consoleSlideIn {
+  0% {
+    transform: translateY(-100px) scale(0.9);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(10px) scale(1.02);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Chunky Rivets - Mechanical Fasteners */
+.panel-rivet {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 35% 35%, #6b6b70, #2a2a2e 60%),
+    radial-gradient(circle at 50% 50%, #4a4a4f, transparent);
+  box-shadow: 
+    inset 0 2px 3px rgba(255, 255, 255, 0.25),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.6),
+    0 1px 2px rgba(0, 0, 0, 0.8);
+  border: 2px solid #1a1a1c;
+}
+
+.panel-rivet::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
+}
+
+.rivet-tl { top: 12px; left: 12px; }
+.rivet-tr { top: 12px; right: 12px; }
+.rivet-bl { bottom: 12px; left: 12px; }
+.rivet-br { bottom: 12px; right: 12px; }
+
+/* Top Panel - Bakelite-Style Header */
+.console-top-panel {
+  position: relative;
+  background: 
+    linear-gradient(180deg, #4a4338 0%, #3d3832 50%, #32302b 100%),
+    repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(0,0,0,0.1) 20px, rgba(0,0,0,0.1) 21px);
+  border-bottom: 4px solid #b87333;
+  padding: 24px 32px;
+  box-shadow: 
+    inset 0 3px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.5),
+    0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.console-title {
+  font-family: 'Orbitron', 'Russo One', monospace;
+  font-size: 26px;
+  color: #d4a574;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin: 0;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(212, 165, 116, 0.4),
+    2px 2px 0 rgba(139, 69, 19, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-left: 32px;
+  filter: drop-shadow(0 0 12px rgba(184, 115, 51, 0.3));
+}
+
+/* Tabs Panel - Vacuum Tube Switch Bank */
+.settings-tabs-panel {
+  background: 
+    linear-gradient(180deg, #1a1a1c 0%, #25252a 50%, #1a1a1c 100%),
+    repeating-linear-gradient(0deg, transparent, transparent 4px, rgba(0,0,0,0.15) 4px, rgba(0,0,0,0.15) 5px);
+  border-bottom: 3px solid #b87333;
+  padding: 20px 24px;
+  box-shadow: 
+    inset 0 4px 8px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.tabs-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.settings-tab {
+  position: relative;
+  background: 
+    linear-gradient(180deg, #4a4a4f 0%, #35353a 50%, #2a2a2e 100%);
+  border: none;
+  outline: 3px solid #1a1a1c;
+  outline-offset: -3px;
+  border-radius: 6px;
+  padding: 12px 18px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: #d4a574;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 2px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.settings-tab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent 50%);
+  pointer-events: none;
+}
+
+.settings-tab:hover {
+  outline-color: #b87333;
+  background: linear-gradient(180deg, #5a5a5f 0%, #45454a 50%, #3a3a3e 100%);
+  box-shadow: 
+    0 6px 12px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(184, 115, 51, 0.25),
+    inset 0 2px 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.settings-tab.active {
+  background: 
+    linear-gradient(180deg, #b87333 0%, #a06528 50%, #8b5a23 100%);
+  outline-color: #ffd700;
+  color: #1a1a1c;
+  font-weight: bold;
+  box-shadow: 
+    0 0 24px rgba(184, 115, 51, 0.7),
+    inset 0 3px 0 rgba(255, 215, 0, 0.4),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.6),
+    0 8px 16px rgba(0, 0, 0, 0.7);
+  transform: translateY(-3px);
+}
+
+.tab-rivet {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #6b6b70, #1a1a1c);
+  box-shadow: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.6),
+    0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.tab-icon {
+  font-size: 18px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.tab-label {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.tab-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ff4444, #dc143c);
+  margin-left: auto;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 0 10px rgba(220, 20, 60, 0.8),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.settings-tab.active .tab-indicator {
+  background: radial-gradient(circle at 30% 30%, #44ff44, #00ff41);
+  box-shadow: 
+    0 0 16px rgba(0, 255, 65, 0.9),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Content Area - Industrial Interior */
+.settings-content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px;
+  background: 
+    linear-gradient(180deg, rgba(26, 26, 28, 0.98) 0%, rgba(35, 35, 40, 0.98) 100%),
+    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px),
+    repeating-linear-gradient(90deg, transparent, transparent 3px, rgba(0,0,0,0.05) 3px, rgba(0,0,0,0.05) 4px);
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+/* Custom scrollbar - Mechanical Track */
+.settings-content-area::-webkit-scrollbar {
+  width: 14px;
+}
+
+.settings-content-area::-webkit-scrollbar-track {
+  background: 
+    linear-gradient(90deg, #1a1a1c 0%, #25252a 50%, #1a1a1c 100%);
+  border-left: 3px solid #b87333;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6);
+}
+
+.settings-content-area::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #b87333 0%, #8b5a23 100%);
+  border-radius: 8px;
+  border: 3px solid #1a1a1c;
+  box-shadow: 
+    inset 0 0 8px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(184, 115, 51, 0.4);
+}
+
+.settings-content-area::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #d49857 0%, #b87333 100%);
+  box-shadow: 
+    inset 0 0 8px rgba(0, 0, 0, 0.4),
+    0 0 12px rgba(184, 115, 51, 0.6);
+}
+
+/* Section Styling */
+.settings-section {
+  margin-bottom: 36px;
+}
+
+.section-header {
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.section-header h3 {
+  font-family: 'Orbitron', monospace;
+  font-size: 19px;
+  color: #d4a574;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  margin: 0 0 10px 0;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.8),
+    0 0 12px rgba(212, 165, 116, 0.3);
+}
+
+.header-line {
+  height: 3px;
+  background: linear-gradient(90deg, 
+    #b87333 0%, 
+    rgba(184, 115, 51, 0.4) 60%,
+    transparent 100%
+  );
+  box-shadow: 0 0 12px rgba(184, 115, 51, 0.4);
+  border-radius: 2px;
+}
+
+.section-description {
+  font-size: 13px;
+  color: #a0a0a8;
+  line-height: 1.6;
+  margin-bottom: 22px;
+  font-family: 'Share Tech Mono', monospace;
+  opacity: 0.85;
+}
+
+/* Control Groups */
+.control-group {
+  margin-bottom: 26px;
+}
+
+.control-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  color: #d4a574;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 10px;
+}
+
+.label-indicator {
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle at 30% 30%, #44ff44, #00ff41);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 12px rgba(0, 255, 65, 0.7),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.4);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.95); }
+}
+
+.value-display {
+  color: #00ff41;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.6);
+  margin-left: auto;
+  font-size: 13px;
+}
+
+/* Control Frame - Metal Housing */
+.control-frame {
+  background: linear-gradient(180deg, #1a1a1c 0%, #25252a 100%);
+  outline: 3px solid #35353a;
+  outline-offset: -3px;
+  border-radius: 6px;
+  padding: 6px;
+  box-shadow: 
+    inset 0 3px 6px rgba(0, 0, 0, 0.7),
+    0 2px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Industrial Inputs */
+.industrial-select,
+.industrial-input {
+  width: 100%;
+  background: #0d0d0f;
+  outline: 2px solid #2a2a2e;
+  outline-offset: -2px;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 14px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  color: #00ff41;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.industrial-select:focus,
+.industrial-input:focus {
+  outline-color: #b87333;
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.6),
+    0 0 16px rgba(184, 115, 51, 0.5);
+}
+
+.industrial-select option {
+  background: #1a1a1c;
+  color: #00ff41;
+  padding: 10px;
+}
+
+.industrial-input::placeholder {
+  color: rgba(160, 160, 168, 0.4);
+}
+
+/* Slider Container - Analog Gauge */
+.slider-container {
+  padding: 14px 10px;
+}
+
+.slider-track {
+  position: relative;
+  height: 36px;
+  background: 
+    linear-gradient(180deg, #0d0d0f 0%, #1a1a1c 100%);
+  outline: 3px solid #35353a;
+  outline-offset: -3px;
+  border-radius: 18px;
+  box-shadow: 
+    inset 0 4px 8px rgba(0, 0, 0, 0.7),
+    0 2px 0 rgba(255, 255, 255, 0.05);
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+}
+
+.industrial-slider {
+  width: 100%;
+  height: 10px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+  position: relative;
+  z-index: 2;
+  cursor: grab;
+}
+
+.industrial-slider:active {
+  cursor: grabbing;
+}
+
+.industrial-slider::-webkit-slider-track {
+  width: 100%;
+  height: 10px;
+  background: linear-gradient(90deg, 
+    #00ff41 0%, 
+    #ffa500 50%, 
+    #dc143c 100%
+  );
+  border-radius: 5px;
+  box-shadow: 
+    inset 0 2px 5px rgba(0, 0, 0, 0.6),
+    0 0 12px rgba(0, 255, 65, 0.3);
+}
+
+.industrial-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  background: 
+    radial-gradient(circle at 35% 35%, #d4a574, #b87333 50%, #8b5a23);
+  outline: 4px solid #1a1a1c;
+  outline-offset: -4px;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 
+    0 0 16px rgba(184, 115, 51, 0.7),
+    inset 0 2px 3px rgba(255, 215, 0, 0.3),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.6),
+    0 6px 12px rgba(0, 0, 0, 0.7);
+  transition: all 0.2s ease;
+}
+
+.industrial-slider::-webkit-slider-thumb:hover {
+  background: radial-gradient(circle at 35% 35%, #ffd700, #d4a574 50%, #b87333);
+  box-shadow: 
+    0 0 24px rgba(184, 115, 51, 0.9),
+    inset 0 2px 3px rgba(255, 215, 0, 0.4),
+    0 6px 12px rgba(0, 0, 0, 0.7);
+  transform: scale(1.15);
+}
+
+.industrial-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.05);
+}
+
+.industrial-slider::-moz-range-track {
+  width: 100%;
+  height: 10px;
+  background: linear-gradient(90deg, 
+    #00ff41 0%, 
+    #ffa500 50%, 
+    #dc143c 100%
+  );
+  border-radius: 5px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
+}
+
+.industrial-slider::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  background: radial-gradient(circle at 35% 35%, #d4a574, #b87333 50%, #8b5a23);
+  border: 4px solid #1a1a1c;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 
+    0 0 16px rgba(184, 115, 51, 0.7),
+    inset 0 2px 3px rgba(255, 215, 0, 0.3);
+}
+
+/* Slider Notches */
+.slider-notches {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  right: 14px;
+  transform: translateY(-50%);
+  height: 100%;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.notch {
+  position: absolute;
+  width: 3px;
+  height: 14px;
+  background: rgba(212, 165, 116, 0.4);
+  box-shadow: 0 0 3px rgba(184, 115, 51, 0.3);
+  border-radius: 2px;
+}
+
+/* Control Hint */
+.control-hint {
+  display: block;
+  font-size: 11px;
+  color: rgba(160, 160, 168, 0.65);
+  font-family: 'Share Tech Mono', monospace;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* Toggle Group */
+.toggle-group {
+  background: linear-gradient(180deg, #25252a 0%, #1a1a1c 100%);
+  outline: 2px solid #35353a;
+  outline-offset: -2px;
+  border-radius: 6px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 0.05),
+    0 3px 6px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s ease;
+}
+
+.toggle-group:hover {
+  outline-color: #b87333;
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 0.05),
+    0 0 16px rgba(184, 115, 51, 0.25);
+}
+
+/* Status Message */
+.status-message {
+  padding: 14px 18px;
+  border-radius: 6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  outline: 3px solid;
+  outline-offset: -3px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.status-message.success {
+  background: rgba(0, 255, 65, 0.18);
+  outline-color: #00ff41;
+  color: #00ff41;
+}
+
+.status-message.error {
+  background: rgba(220, 20, 60, 0.18);
+  outline-color: #dc143c;
+  color: #dc143c;
+}
+
+.status-icon {
+  font-size: 20px;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+/* Save Button */
+.save-config-btn {
+  width: 100%;
+  font-size: 14px;
+  padding: 14px;
+  margin-top: 10px;
+}
+
+/* Bottom Panel - Riveted Action Bar */
+.console-bottom-panel {
+  position: relative;
+  background: 
+    linear-gradient(180deg, #3d3832 0%, #4a4338 50%, #32302b 100%),
+    repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(0,0,0,0.1) 20px, rgba(0,0,0,0.1) 21px);
+  border-top: 4px solid #b87333;
+  padding: 24px 32px;
+  box-shadow: 
+    inset 0 3px 0 rgba(255, 255, 255, 0.12),
+    inset 0 3px 12px rgba(0, 0, 0, 0.5),
+    0 -6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.footer-actions {
+  display: flex;
+  gap: 18px;
+  justify-content: flex-end;
+  padding: 0 32px;
+}
+
+.footer-actions button {
+  min-width: 160px;
+  font-size: 13px;
+  padding: 12px 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mechanical-settings-console {
+    max-width: 95%;
+    max-height: 95vh;
+  }
+  
+  .console-title {
+    font-size: 20px;
+  }
+  
+  .tabs-container {
+    flex-direction: column;
+  }
+  
+  .settings-tab {
+    width: 100%;
+  }
+  
+  .footer-actions {
+    flex-direction: column;
+    padding: 0;
+  }
+  
+  .footer-actions button {
+    width: 100%;
+  }
+}

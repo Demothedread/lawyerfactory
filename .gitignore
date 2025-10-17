@@ -1,21 +1,71 @@
-
+# Python Virtual Environments
 env312/*
 lawenv/*
-/env312/bin
-env312/bin
-.env
-.roo
-.github         
-.env.production
 law_venv/
-*.log
-tests/*.json
-# Ignore Python cache files
+venv/
+env/
+ENV/
+.venv/
+.Python
+.env
+.env.development
+.env.production
+.env.*
+
+
+
+# Python Cache & Compiled Files
+__pycache__/
 *.py[cod]
 *.pyo
 *.pyd
-# Ignore IDE specific files
-# Security-sensitive files
+*$py.class
+*.so
+.Python
+
+# Distribution / Packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+tests/*.json
+.hypothesis/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment & Configuration
+.env
+.env.production
+.env.local
+.env.*.local
+.roo
+
+# Security-Sensitive Files
 .vault_pass
 *.key
 *.pem
@@ -24,24 +74,34 @@ tests/*.json
 secrets.*
 config/secrets.*
 *.secret
-
-# Terraform state files (contain sensitive data)
-*.tfstate
-*.tfstate.backup
-.terraform/
-
-# AWS credentials
 .aws/
 credentials
 config
 
-# Database files
+# Database Files
 *.db
 *.sqlite
 *.sqlite3
+*.db-journal
 
-# OS generated files
-__pycache__/
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS Generated Files
 .DS_Store
 .DS_Store?
 ._*
@@ -49,9 +109,49 @@ __pycache__/
 .Trashes
 ehthumbs.db
 Thumbs.db
-.env
-.env.production
-law_venv/ 
-logs/
-misc/
+Desktop.ini
+
+# Node.js / Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+.yarn/
+
+# LawyerFactory Specific
+workflow_storage/
+uploads/
 PAN/*
+misc/
+.github/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Pytype static type analyzer
+.pytype/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject

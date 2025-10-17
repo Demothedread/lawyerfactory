@@ -876,7 +876,7 @@ def process_uploaded_document(upload_session_id, file_path):
 
 # Initialize Claims Matrix integration
 try:
-    from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+    from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 
     from src.claims_matrix.comprehensive_claims_matrix_integration import (
         ComprehensiveClaimsMatrixIntegration,

@@ -129,7 +129,7 @@ try:
         logger.warning("ComprehensiveClaimsMatrixIntegration not available")
 
     try:
-        from lawyerfactory.storage.enhanced_unified_storage_api import (
+        from lawyerfactory.storage.core.unified_storage_api import (
             get_enhanced_unified_storage_api,
         )
 
@@ -138,6 +138,35 @@ try:
         get_enhanced_unified_storage_api = None
         UNIFIED_STORAGE_AVAILABLE = False
         logger.warning("EnhancedUnifiedStorageAPI not available")
+
+    try:
+        from lawyerfactory.phases.phaseB02_drafting.drafting_validator import (
+            DraftingValidator,
+        )
+        from lawyerfactory.phases.phaseA01_intake.vector_cluster_manager import (
+            VectorClusterManager,
+        )
+
+        DRAFTING_VALIDATOR_AVAILABLE = True
+    except ImportError:
+        DraftingValidator = None
+        VectorClusterManager = None
+        DRAFTING_VALIDATOR_AVAILABLE = False
+        logger.warning("DraftingValidator not available")
+    
+    # Import Phase A03 components (shotlist, claims matrix, outline)
+    try:
+        from lawyerfactory.phases.phaseA03_outline.shotlist.shotlist import build_shot_list, validate_evidence_rows
+        from lawyerfactory.phases.phaseA03_outline.claims_matrix import ComprehensiveClaimsMatrixIntegration as ClaimsMatrixPhaseA03
+        
+        PHASE_A03_AVAILABLE = True
+        logger.info("Phase A03 components imported successfully")
+    except ImportError as e:
+        build_shot_list = None
+        validate_evidence_rows = None
+        ClaimsMatrixPhaseA03 = None
+        PHASE_A03_AVAILABLE = False
+        logger.warning(f"Phase A03 components not available: {e}")
 
     LAWYERFACTORY_AVAILABLE = True
     logger.info("LawyerFactory components imported successfully")
@@ -153,12 +182,24 @@ intake_processor = None
 outline_generator = None
 claims_matrix = None
 unified_storage = None
+drafting_validator = None
+vector_cluster_manager = None
+
+# LLM Configuration (loaded from environment or user settings)
+llm_config = {
+    "provider": os.getenv("LLM_PROVIDER", "openai"),
+    "model": os.getenv("LLM_MODEL", "gpt-4"),
+    "api_key": os.getenv("OPENAI_API_KEY") or os.getenv("ANTHROPIC_API_KEY") or os.getenv("GROQ_API_KEY"),
+    "temperature": float(os.getenv("LLM_TEMPERATURE", "0.1")),
+    "max_tokens": int(os.getenv("LLM_MAX_TOKENS", "2000")),
+}
 
 
 def initialize_components():
     """Initialize LawyerFactory components"""
     global research_bot, court_authority_helper, evidence_table
     global intake_processor, outline_generator, claims_matrix, unified_storage
+    global drafting_validator, vector_cluster_manager
 
     if not LAWYERFACTORY_AVAILABLE:
         return
@@ -215,10 +256,35 @@ def initialize_components():
         else:
             intake_processor = None
 
+        # Initialize vector cluster manager
+        if DRAFTING_VALIDATOR_AVAILABLE and VectorClusterManager:
+            try:
+                vector_cluster_manager = VectorClusterManager()
+                logger.info("Vector cluster manager initialized")
+            except Exception as e:
+                logger.warning(f"Failed to initialize vector cluster manager: {e}")
+                vector_cluster_manager = None
+        else:
+            vector_cluster_manager = None
+
+        # Initialize drafting validator
+        if DRAFTING_VALIDATOR_AVAILABLE and DraftingValidator:
+            try:
+                drafting_validator = DraftingValidator(
+                    intake_processor=intake_processor,
+                    cluster_manager=vector_cluster_manager
+                )
+                logger.info("Drafting validator initialized")
+            except Exception as e:
+                logger.warning(f"Failed to initialize drafting validator: {e}")
+                drafting_validator = None
+        else:
+            drafting_validator = None
+
         # Import outline generator dependencies (only once)
         try:
-            from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
-            from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
+            from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
+            from src.lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
 
             # Initialize outline generator with proper dependencies
             if (
@@ -254,6 +320,23 @@ def initialize_components():
             outline_generator = None
             claims_matrix = None
 
+        # Initialize Flask-compatible evidence API and register routes
+        try:
+            from apps.api.routes.evidence_flask import FlaskEvidenceAPI
+            from apps.api.routes.research_flask import FlaskResearchAPI
+            
+            flask_evidence_api = FlaskEvidenceAPI(app=app, storage_path="evidence_table.json")
+            flask_research_api = FlaskResearchAPI(app=app, socketio=socketio)
+            logger.info("Flask Evidence and Research API routes registered successfully")
+        except ImportError as e:
+            logger.warning(f"Failed to import Flask Evidence/Research API: {e}")
+            flask_evidence_api = None
+            flask_research_api = None
+        except Exception as e:
+            logger.warning(f"Failed to initialize Flask Evidence/Research API: {e}")
+            flask_evidence_api = None
+            flask_research_api = None
+
         logger.info("Component initialization completed")
 
     except Exception as e:
@@ -270,6 +353,19 @@ def initialize_components():
 
 # Initialize components on startup
 initialize_components()
+
+# Test route to verify Flask is working
+@app.route("/api/test")
+def test_route():
+    return jsonify({"status": "Flask routes working"})
+
+# Register Socket.IO instance for phase events
+try:
+    from src.lawyerfactory.phases.socket_events import set_socketio_instance
+    set_socketio_instance(socketio)
+    logger.info("Socket.IO instance registered for phase events")
+except ImportError as e:
+    logger.warning(f"Could not import phase socket events: {e}")
 
 
 # Socket.IO event handlers
@@ -611,10 +707,19 @@ def handle_intake_phase(case_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
     Phase A01: Document Intake
     Categorizes documents and extracts facts using Reader agent
     """
+    # Extract LLM config from request data
+    llm_config_request = {
+        "provider": data.get("llm_provider", llm_config.get("provider", "openai")),
+        "model": data.get("llm_model", llm_config.get("model", "gpt-4")),
+        "temperature": float(data.get("llm_temperature", llm_config.get("temperature", 0.1))),
+        "max_tokens": int(data.get("llm_max_tokens", llm_config.get("max_tokens", 2000))),
+        "api_key": data.get("llm_api_key", llm_config.get("api_key"))
+    }
+    
     socketio.emit("phase_progress_update", {
         "phase": "A01_Intake",
         "progress": 10,
-        "message": "Initializing intake processor..."
+        "message": f"Initializing intake processor with {llm_config_request['provider']}/{llm_config_request['model']}..."
     })
     
     if not intake_processor or not INTAKE_PROCESSOR_AVAILABLE:
@@ -671,10 +776,19 @@ def handle_research_phase(case_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
     Phase A02: Legal Research
     Gathers legal authorities and precedents using Paralegal and Researcher agents
     """
+    # Extract LLM config from request data
+    llm_config_request = {
+        "provider": data.get("llm_provider", llm_config.get("provider", "openai")),
+        "model": data.get("llm_model", llm_config.get("model", "gpt-4")),
+        "temperature": float(data.get("llm_temperature", llm_config.get("temperature", 0.1))),
+        "max_tokens": int(data.get("llm_max_tokens", llm_config.get("max_tokens", 2000))),
+        "api_key": data.get("llm_api_key", llm_config.get("api_key"))
+    }
+    
     socketio.emit("phase_progress_update", {
         "phase": "A02_Research",
         "progress": 10,
-        "message": "Initializing research agents..."
+        "message": f"Initializing research agents with {llm_config_request['provider']}/{llm_config_request['model']}..."
     })
     
     if not research_bot or not RESEARCH_BOT_AVAILABLE:
@@ -730,10 +844,19 @@ def handle_outline_phase(case_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
     Phase A03: Case Outline
     Structures claims and develops case theory using Outliner agent
     """
+    # Extract LLM config from request data
+    llm_config_request = {
+        "provider": data.get("llm_provider", llm_config.get("provider", "openai")),
+        "model": data.get("llm_model", llm_config.get("model", "gpt-4")),
+        "temperature": float(data.get("llm_temperature", llm_config.get("temperature", 0.1))),
+        "max_tokens": int(data.get("llm_max_tokens", llm_config.get("max_tokens", 2000))),
+        "api_key": data.get("llm_api_key", llm_config.get("api_key"))
+    }
+    
     socketio.emit("phase_progress_update", {
         "phase": "A03_Outline",
         "progress": 10,
-        "message": "Initializing outline generator..."
+        "message": f"Initializing outline generator with {llm_config_request['provider']}/{llm_config_request['model']}..."
     })
     
     if not outline_generator or not OUTLINE_GENERATOR_AVAILABLE:
@@ -785,338 +908,537 @@ def handle_outline_phase(case_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
 def handle_review_phase(case_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Phase B01: Quality Review
-    Validates facts, claims, and legal theories using Editor agent
-    (STUB - To be implemented with proper review agent integration)
+    Validates deliverables from Phase A03 before allowing drafting to proceed.
+    Checks:
+    - Shotlist has minimum facts (10+)
+    - Claims matrix has all required elements
+    - Skeletal outline has required sections
+    - Rule 12(b)(6) compliance score >= 75
     """
     socketio.emit("phase_progress_update", {
-        "phase": "B01_Review",
-        "progress": 30,
-        "message": "Running quality checks..."
-    })
-    
-    time.sleep(1)  # Simulate processing
-    
-    socketio.emit("phase_progress_update", {
-        "phase": "B01_Review",
-        "progress": 70,
-        "message": "Validating legal theories..."
-    })
-    
-    time.sleep(1)
-    
-    socketio.emit("phase_progress_update", {
-        "phase": "B01_Review",
-        "progress": 100,
-        "message": "✅ Review complete (mock)"
-    })
-    
-    return {
-        "status": "mock",
-        "message": "Review phase not yet implemented - placeholder complete",
+        "phase": "phaseB01_review",
         "case_id": case_id,
-        "review_passed": True
-    }
+        "progress": 10,
+        "message": "Loading Phase A03 deliverables..."
+    })
+    
+    try:
+        deliverables_dir = Path(f"./workflow_storage/cases/{case_id}/deliverables")
+        
+        if not deliverables_dir.exists():
+            return {
+                "status": "error",
+                "message": "No deliverables found. Please complete Phase A03 first.",
+                "case_id": case_id,
+                "ready_for_drafting": False
+            }
+        
+        validations = {}
+        
+        # Validate Shotlist
+        socketio.emit("phase_progress_update", {
+            "phase": "phaseB01_review",
+            "case_id": case_id,
+            "progress": 25,
+            "message": "Validating shotlist timeline..."
+        })
+        
+        shotlist_path = deliverables_dir / "shotlist.csv"
+        if shotlist_path.exists():
+            import csv
+            with open(shotlist_path, 'r') as f:
+                reader = csv.DictReader(f)
+                shotlist_facts = list(reader)
+                fact_count = len(shotlist_facts)
+                validations["shotlist_facts"] = {
+                    "passed": fact_count >= 10,
+                    "message": f"{fact_count} facts (minimum 10 required)",
+                    "count": fact_count
+                }
+        else:
+            validations["shotlist_facts"] = {
+                "passed": False,
+                "message": "Shotlist not found",
+                "count": 0
+            }
+        
+        # Validate Claims Matrix
+        socketio.emit("phase_progress_update", {
+            "phase": "phaseB01_review",
+            "case_id": case_id,
+            "progress": 50,
+            "message": "Validating claims matrix..."
+        })
+        
+        claims_path = deliverables_dir / "claims_matrix.json"
+        if claims_path.exists():
+            with open(claims_path, 'r') as f:
+                claims_data = json.load(f)
+                element_analysis = claims_data.get("element_analysis", {})
+                elements_count = len(element_analysis)
+                
+                # Check if all elements have decision outcomes
+                all_elements_complete = all(
+                    elem.get("decision_outcome") is not None
+                    for elem in element_analysis.values()
+                )
+                
+                validations["claims_elements"] = {
+                    "passed": elements_count > 0 and all_elements_complete,
+                    "message": f"{elements_count} elements analyzed" if all_elements_complete else "Incomplete element analysis",
+                    "count": elements_count
+                }
+        else:
+            validations["claims_elements"] = {
+                "passed": False,
+                "message": "Claims matrix not found",
+                "count": 0
+            }
+        
+        # Validate Skeletal Outline
+        socketio.emit("phase_progress_update", {
+            "phase": "phaseB01_review",
+            "case_id": case_id,
+            "progress": 75,
+            "message": "Validating skeletal outline..."
+        })
+        
+        outline_path = deliverables_dir / "skeletal_outline.json"
+        required_sections = ["caption", "introduction", "jurisdiction", "parties", "statement_of_facts"]
+        
+        if outline_path.exists():
+            with open(outline_path, 'r') as f:
+                outline_data = json.load(f)
+                sections = outline_data.get("sections", [])
+                section_ids = [s.get("id") for s in sections]
+                
+                has_required_sections = all(
+                    req_section in section_ids
+                    for req_section in required_sections
+                )
+                
+                validations["outline_sections"] = {
+                    "passed": has_required_sections and len(sections) >= 5,
+                    "message": f"{len(sections)} sections" if has_required_sections else "Missing required sections",
+                    "count": len(sections)
+                }
+                
+                # Check Rule 12(b)(6) score
+                rule12b6_score = outline_data.get("rule12b6ComplianceScore", 0)
+                validations["rule_12b6_score"] = {
+                    "passed": rule12b6_score >= 75,
+                    "message": f"Score: {rule12b6_score}% (minimum 75%)",
+                    "score": rule12b6_score
+                }
+        else:
+            validations["outline_sections"] = {
+                "passed": False,
+                "message": "Skeletal outline not found",
+                "count": 0
+            }
+            validations["rule_12b6_score"] = {
+                "passed": False,
+                "message": "No compliance score available",
+                "score": 0
+            }
+        
+        # Overall validation
+        all_valid = all(v.get("passed", False) for v in validations.values())
+        
+        socketio.emit("phase_progress_update", {
+            "phase": "phaseB01_review",
+            "case_id": case_id,
+            "progress": 100,
+            "message": "✅ Validation complete" if all_valid else "⚠️ Validation issues found"
+        })
+        
+        return {
+            "status": "completed" if all_valid else "requires_attention",
+            "case_id": case_id,
+            "validations": validations,
+            "all_valid": all_valid,
+            "ready_for_drafting": all_valid,
+            "message": "All deliverables validated successfully" if all_valid else "Some validations failed - review deliverables before proceeding"
+        }
+        
+    except Exception as e:
+        logger.error(f"Phase B01 validation error for case {case_id}: {e}")
+        return {
+            "status": "error",
+            "case_id": case_id,
+            "error": str(e),
+            "ready_for_drafting": False
+        }
 
 
 async def handle_drafting_phase(case_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Phase B02: Document Drafting
-    Generates legal documents using templates and Writer agent with IRAC methodology
+    Integrates WriterBot, EditorBot, and Maestro to draft complaint using:
+    - Shotlist for Statement of Facts
+    - Claims Matrix for legal elements and IRAC analysis
+    - Skeletal Outline as structural blueprint
+    - VectorClusterManager for RAG enhancement
     """
+    # Extract LLM config from request data
+    llm_config_request = {
+        "provider": data.get("llm_provider", llm_config.get("provider", "openai")),
+        "model": data.get("llm_model", llm_config.get("model", "gpt-4")),
+        "temperature": float(data.get("llm_temperature", llm_config.get("temperature", 0.1))),
+        "max_tokens": int(data.get("llm_max_tokens", llm_config.get("max_tokens", 2000))),
+        "api_key": data.get("llm_api_key", llm_config.get("api_key"))
+    }
+    
     socketio.emit("phase_progress_update", {
-        "phase": "B02_Drafting",
-        "progress": 10,
-        "message": "Initializing drafting agents and templates..."
+        "phase": "phaseB02_drafting",
+        "case_id": case_id,
+        "progress": 5,
+        "message": f"🚀 Initializing multi-agent drafting system with {llm_config_request['provider']}/{llm_config_request['model']}..."
     })
 
     try:
-        # Import drafting components with fallbacks
-        WriterBot = None
-        AgentConfig = None
-        SkeletalOutlineGenerator = None
-        ComprehensiveClaimsMatrixIntegration = None
-        EnhancedKnowledgeGraph = None
-        EvidenceAPI = None
-        WorkflowTask = None
-
+        # Load approved deliverables from Phase A03
+        deliverables_dir = Path(f"./workflow_storage/cases/{case_id}/deliverables")
+        
+        if not deliverables_dir.exists():
+            return {
+                "status": "error",
+                "message": "No approved deliverables found. Complete Phase B01 review first.",
+                "case_id": case_id
+            }
+        
+        socketio.emit("phase_progress_update", {
+            "phase": "phaseB02_drafting",
+            "case_id": case_id,
+            "progress": 10,
+            "message": "📂 Loading approved deliverables..."
+        })
+        
+        # Load deliverables
+        shotlist_facts = []
+        claims_matrix_data = {}
+        skeletal_outline_data = {}
+        
+        # Load Shotlist
+        shotlist_path = deliverables_dir / "shotlist.csv"
+        if shotlist_path.exists():
+            import csv
+            with open(shotlist_path, 'r') as f:
+                reader = csv.DictReader(f)
+                shotlist_facts = list(reader)
+        
+        # Load Claims Matrix
+        claims_path = deliverables_dir / "claims_matrix.json"
+        if claims_path.exists():
+            with open(claims_path, 'r') as f:
+                claims_matrix_data = json.load(f)
+        
+        # Load Skeletal Outline
+        outline_path = deliverables_dir / "skeletal_outline.json"
+        if outline_path.exists():
+            with open(outline_path, 'r') as f:
+                skeletal_outline_data = json.load(f)
+        
+        logger.info(f"Loaded deliverables: {len(shotlist_facts)} facts, "
+                   f"{len(claims_matrix_data.get('element_analysis', {}))} elements, "
+                   f"{len(skeletal_outline_data.get('sections', []))} sections")
+        
+        socketio.emit("phase_progress_update", {
+            "phase": "phaseB02_drafting",
+            "case_id": case_id,
+            "progress": 20,
+            "message": f"✅ Loaded {len(shotlist_facts)} facts, {len(skeletal_outline_data.get('sections', []))} sections"
+        })
+        
+        # Import IRAC templates
+        try:
+            from lawyerfactory.compose.promptkits.irac_templates import (
+                IRACTemplateEngine,
+                claims_matrix_to_irac
+            )
+            irac_available = True
+        except ImportError as e:
+            logger.warning(f"IRAC templates not available: {e}")
+            irac_available = False
+        
+        # Try to import WriterBot and Maestro
         try:
             from lawyerfactory.compose.bots.writer import WriterBot
-            from lawyerfactory.compose.maestro.registry import AgentConfig
-            from lawyerfactory.outline.generator import SkeletalOutlineGenerator
-            from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
-            from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
-            from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
-            from lawyerfactory.compose.maestro.workflow_models import WorkflowTask
+            from lawyerfactory.agents.orchestration.maestro import Maestro
+            bot_available = True
         except ImportError as e:
-            logger.warning(f"Some drafting components not available: {e}")
-
-        if not WriterBot or not AgentConfig or not WorkflowTask:
-            # Fallback to mock implementation
-            socketio.emit("phase_progress_update", {
-                "phase": "B02_Drafting",
-                "progress": 100,
-                "message": "✍️ Drafting complete (mock - components not available)"
-            })
-            return {
-                "status": "mock",
-                "message": "Drafting phase completed with mock data - WriterBot not available",
-                "case_id": case_id,
-                "documents_generated": 0
-            }
-
-        socketio.emit("phase_progress_update", {
-            "phase": "B02_Drafting",
-            "progress": 20,
-            "message": "Loading skeletal outline and claims matrix..."
-        })
-
-        # Initialize components with fallbacks
-        kg = None
-        claims_matrix = None
-        evidence_api = None
-
+            logger.warning(f"Bots not available: {e}")
+            bot_available = False
+        
+        # Try to import VectorClusterManager for RAG
         try:
-            kg = EnhancedKnowledgeGraph() if EnhancedKnowledgeGraph else None
-        except Exception as e:
-            logger.warning(f"Knowledge graph not available: {e}")
-
-        try:
-            evidence_api = EvidenceAPI() if EvidenceAPI else None
-        except Exception as e:
-            logger.warning(f"Evidence API not available: {e}")
-
-        # Initialize claims matrix with unified storage if available
-        if ComprehensiveClaimsMatrixIntegration and unified_storage:
-            try:
-                claims_matrix = ComprehensiveClaimsMatrixIntegration(unified_storage)
-            except Exception as e:
-                logger.warning(f"Claims matrix not available: {e}")
-                claims_matrix = None
-
-        # Generate skeletal outline if not already available
-        skeletal_outline = None
-        if SkeletalOutlineGenerator and kg and claims_matrix and evidence_api:
-            try:
-                outline_generator = SkeletalOutlineGenerator(kg, claims_matrix, evidence_api)
-                skeletal_outline = outline_generator.generate_skeletal_outline(case_id, f"drafting_{case_id}")
-            except Exception as e:
-                logger.warning(f"Outline generation failed: {e}")
-
+            from lawyerfactory.phases.phaseA01_intake.vector_cluster_manager import VectorClusterManager
+            vector_mgr = VectorClusterManager()
+            rag_available = True
+        except ImportError as e:
+            logger.warning(f"VectorClusterManager not available: {e}")
+            rag_available = False
+            vector_mgr = None
+        
         socketio.emit("phase_progress_update", {
-            "phase": "B02_Drafting",
-            "progress": 30,
-            "message": "Skeletal outline generated with IRAC structure..."
-        })
-
-        # Initialize writer bot
-        writer_config = AgentConfig(
-            agent_type="LegalWriterBot",
-            max_concurrent=1,
-            capabilities=["legal_writing"],
-            config={
-                "llm_provider": "openai",
-                "temperature": 0.1
-            }
-        )
-        writer_bot = WriterBot(writer_config)
-
-        socketio.emit("phase_progress_update", {
-            "phase": "B02_Drafting",
-            "progress": 40,
-            "message": "Writer bot initialized with legal templates..."
-        })
-
-        # Gather case data for drafting
-        case_data = {
+            "phase": "phaseB02_drafting",
             "case_id": case_id,
-            "court": "UNITED STATES DISTRICT COURT",
-            "district": "NORTHERN DISTRICT OF CALIFORNIA",
-            "plaintiff_name": "Plaintiff Name",  # Should come from case data
-            "defendant_name": "Defendant Name",  # Should come from case data
-            "case_number": f"Case No. {case_id}",
-            "jurisdiction": "California"
-        }
-
-        # Get evidence and facts from unified storage
-        case_facts = []
-        if unified_storage:
-            try:
-                evidence_data = unified_storage.search_evidence_by_metadata({"case_id": case_id})
-                for evidence in evidence_data:
-                    if evidence.get("content"):
-                        case_facts.append({
-                            "fact_text": evidence["content"][:500],  # Truncate for processing
-                            "evidence_id": evidence.get("object_id", ""),
-                            "source": evidence.get("filename", "unknown")
-                        })
-            except Exception as e:
-                logger.warning(f"Failed to retrieve evidence: {e}")
-
-        socketio.emit("phase_progress_update", {
-            "phase": "B02_Drafting",
-            "progress": 50,
-            "message": f"Loaded {len(case_facts)} facts from evidence..."
+            "progress": 30,
+            "message": "🤖 Initializing AI agents..."
         })
+        
+        # Initialize drafting components
+        if not bot_available or not irac_available:
+            # Fallback: Generate simple text-based complaint
+            logger.warning("Advanced drafting not available, using fallback")
+            
+            complaint_text = f"""
+UNITED STATES DISTRICT COURT
+{data.get('district', 'NORTHERN DISTRICT OF CALIFORNIA')}
 
-        # Generate research findings (mock for now - should integrate with research phase)
-        research_findings = {
-            "citations": [
-                {"cite": "California Civil Code § 1714", "summary": "Basic negligence standard"},
-                {"cite": "Rowland v. Christian (1968) 69 Cal.2d 108", "summary": "Landowner duty of care"}
-            ],
-            "legal_issues": ["Negligence", "Duty of Care", "Breach", "Causation", "Damages"]
-        }
+{data.get('plaintiff_name', 'PLAINTIFF')}
+    Plaintiff,
+    
+    v.
+    
+{data.get('defendant_name', 'DEFENDANT')}
+    Defendant.
 
-        # Generate claims matrix data
-        claims_data = []
-        if skeletal_outline and hasattr(skeletal_outline, 'claims_summary'):
-            primary_claim = skeletal_outline.claims_summary.get("cause_of_action", "Negligence")
-            claims_data.append({
-                "name": primary_claim,
-                "elements": list(skeletal_outline.claims_summary.get("element_breakdowns", {}).keys())
+Case No. {case_id}
+
+COMPLAINT FOR DAMAGES
+
+STATEMENT OF FACTS
+
+"""
+            # Add facts from shotlist
+            for i, fact in enumerate(shotlist_facts[:20], 1):  # Limit to 20 facts
+                summary = fact.get('summary', '')
+                timestamp = fact.get('timestamp', '')
+                complaint_text += f"{i}. On {timestamp}, {summary}\n\n"
+            
+            complaint_text += "\nCAUSES OF ACTION\n\n"
+            
+            # Add causes of action from claims matrix
+            element_analysis = claims_matrix_data.get('element_analysis', {})
+            for elem_name, elem_data in list(element_analysis.items())[:3]:  # Limit to 3 elements
+                complaint_text += f"Element: {elem_name.replace('_', ' ').title()}\n"
+                breakdown = elem_data.get('breakdown', {})
+                complaint_text += f"{breakdown.get('definition', 'No definition available')}\n\n"
+            
+            # Save to file
+            output_dir = Path(f"./workflow_storage/cases/{case_id}/drafts")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            draft_path = output_dir / "complaint_draft.txt"
+            
+            with open(draft_path, 'w') as f:
+                f.write(complaint_text)
+            
+            socketio.emit("phase_progress_update", {
+                "phase": "phaseB02_drafting",
+                "case_id": case_id,
+                "progress": 100,
+                "message": "✅ Basic complaint draft generated (fallback mode)"
             })
-
+            
+            return {
+                "status": "completed",
+                "case_id": case_id,
+                "draft_path": str(draft_path),
+                "word_count": len(complaint_text.split()),
+                "sections_completed": len(shotlist_facts) + len(element_analysis),
+                "fallback_mode": True,
+                "message": "Complaint generated using basic template (advanced bots not available)"
+            }
+        
+        # Full implementation with WriterBot and Maestro
         socketio.emit("phase_progress_update", {
-            "phase": "B02_Drafting",
-            "progress": 60,
-            "message": "Generating complaint using IRAC methodology..."
+            "phase": "phaseB02_drafting",
+            "case_id": case_id,
+            "progress": 40,
+            "message": "📝 Drafting sections with nested IRAC method..."
         })
-
-        # Generate complaint using writer bot
-        drafting_context = {
-            "content_type": "complaint",
-            "case_facts": case_facts,
-            "research_findings": research_findings,
-            "case_data": case_data,
-            "causes_of_action": claims_data,
-            "skeletal_outline": skeletal_outline.to_dict() if skeletal_outline else {}
+        
+        # Initialize Maestro and bots
+        maestro = Maestro()
+        
+        # Create AgentConfig with LLM parameters for WriterBot
+        from lawyerfactory.compose.agent_registry import AgentConfig
+        agent_config = AgentConfig(
+            agent_type="WriterBot",
+            config={
+                "llm": llm_config_request
+            }
+        )
+        
+        writer_bot = WriterBot(agent_config=agent_config)
+        
+        # Draft each section from skeletal outline
+        drafted_sections = []
+        sections = skeletal_outline_data.get('sections', [])
+        total_sections = len(sections)
+        
+        for idx, section in enumerate(sections):
+            section_id = section.get('id', f'section_{idx}')
+            section_title = section.get('title', 'Untitled Section')
+            
+            # Update progress
+            progress = 40 + int((idx / total_sections) * 50)  # 40% to 90%
+            socketio.emit("phase_progress_update", {
+                "phase": "phaseB02_drafting",
+                "case_id": case_id,
+                "progress": progress,
+                "message": f"✍️ Drafting: {section_title}"
+            })
+            
+            # Get relevant facts for this section
+            relevant_facts = [
+                fact for fact in shotlist_facts
+                if section_id.lower() in fact.get('summary', '').lower()
+                or section_title.lower() in fact.get('summary', '').lower()
+            ][:10]  # Limit to 10 relevant facts
+            
+            if not relevant_facts:
+                # If no specific matches, use first 10 facts
+                relevant_facts = shotlist_facts[:10]
+            
+            # Get RAG context if available
+            rag_context = []
+            if rag_available and vector_mgr:
+                try:
+                    similar_docs = await vector_mgr.find_similar_documents(
+                        query_text=section_title,
+                        top_k=3,
+                        similarity_threshold=0.6
+                    )
+                    rag_context = [doc.get('content', '')[:500] for doc in similar_docs]
+                except Exception as e:
+                    logger.warning(f"RAG search failed: {e}")
+            
+            # Build section prompt using IRAC templates
+            if section_id.startswith('cause_'):
+                # This is a cause of action section - use IRAC
+                section_type = "cause_of_action"
+                
+                # Convert claims matrix to IRAC structure
+                irac_section = claims_matrix_to_irac(claims_matrix_data, shotlist_facts)
+                
+                # Generate IRAC prompt
+                prompt = IRACTemplateEngine.generate_nested_irac_prompt(
+                    irac_section=irac_section,
+                    shotlist_facts=relevant_facts,
+                    include_examples=True
+                )
+            elif section_id == 'statement_of_facts':
+                # Statement of facts section
+                section_type = "statement_of_facts"
+                prompt = IRACTemplateEngine.generate_statement_of_facts(
+                    shotlist_facts=shotlist_facts,
+                    chronological=True
+                )
+            else:
+                # Generic section
+                section_type = "generic"
+                prompt = IRACTemplateEngine.build_section_prompt(
+                    section_type="generic",
+                    section_data=section,
+                    shotlist_facts=relevant_facts,
+                    claims_matrix=claims_matrix_data,
+                    rag_context=rag_context
+                )
+            
+            # Draft section using WriterBot
+            try:
+                section_draft = await writer_bot.draft_section(
+                    prompt=prompt,
+                    section_id=section_id,
+                    max_words=section.get('estimatedWords', 300)
+                )
+                
+                drafted_sections.append({
+                    "section_id": section_id,
+                    "title": section_title,
+                    "content": section_draft,
+                    "word_count": len(section_draft.split())
+                })
+                
+                logger.info(f"Drafted section {section_id}: {len(section_draft.split())} words")
+                
+            except Exception as e:
+                logger.error(f"Failed to draft section {section_id}: {e}")
+                # Add placeholder
+                drafted_sections.append({
+                    "section_id": section_id,
+                    "title": section_title,
+                    "content": f"[Section {section_title} - Draft Error: {str(e)}]",
+                    "word_count": 0
+                })
+        
+        socketio.emit("phase_progress_update", {
+            "phase": "phaseB02_drafting",
+            "case_id": case_id,
+            "progress": 95,
+            "message": "📄 Assembling final complaint document..."
+        })
+        
+        # Assemble complete complaint
+        complaint_parts = []
+        for section in drafted_sections:
+            complaint_parts.append(f"\n\n{'='*80}\n{section['title'].upper()}\n{'='*80}\n\n")
+            complaint_parts.append(section['content'])
+        
+        full_complaint = "".join(complaint_parts)
+        total_word_count = sum(s['word_count'] for s in drafted_sections)
+        
+        # Save to file
+        output_dir = Path(f"./workflow_storage/cases/{case_id}/drafts")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        draft_path = output_dir / "complaint_draft.txt"
+        
+        with open(draft_path, 'w') as f:
+            f.write(full_complaint)
+        
+        # Also save as JSON with metadata
+        draft_json_path = output_dir / "complaint_draft.json"
+        draft_data = {
+            "case_id": case_id,
+            "sections": drafted_sections,
+            "total_word_count": total_word_count,
+            "generated_at": time.time(),
+            "method": "nested_irac"
         }
-
-        complaint_result = await writer_bot.execute_task(
-            WorkflowTask(
-                id=f"draft_complaint_{case_id}",
-                phase="drafting",  # Use string for now
-                agent_type="LegalWriterBot",
-                description="Generate professional legal complaint using IRAC methodology",
-                context=drafting_context
-            ),
-            drafting_context
-        )
-
+        
+        with open(draft_json_path, 'w') as f:
+            json.dump(draft_data, f, indent=2)
+        
         socketio.emit("phase_progress_update", {
-            "phase": "B02_Drafting",
-            "progress": 80,
-            "message": "Complaint drafted, generating statement of facts..."
-        })
-
-        # Generate statement of facts separately
-        facts_context = drafting_context.copy()
-        facts_context["content_type"] = "statement_of_facts"
-
-        facts_result = await writer_bot.execute_task(
-            WorkflowTask(
-                id=f"draft_facts_{case_id}",
-                phase="drafting",
-                agent_type="LegalWriterBot",
-                description="Generate comprehensive statement of facts",
-                context=facts_context
-            ),
-            facts_context
-        )
-
-        socketio.emit("phase_progress_update", {
-            "phase": "B02_Drafting",
-            "progress": 90,
-            "message": "Storing drafted documents..."
-        })
-
-        # Store the drafted documents
-        documents_generated = []
-
-        # Store complaint
-        if complaint_result.get("content") and unified_storage:
-            try:
-                complaint_storage = unified_storage.store_evidence(
-                    file_content=complaint_result["content"].encode("utf-8"),
-                    filename=f"complaint_{case_id}.txt",
-                    metadata={
-                        "case_id": case_id,
-                        "document_type": "complaint",
-                        "phase": "B02_Drafting",
-                        "word_count": complaint_result.get("word_count", 0),
-                        "template_used": complaint_result.get("template_used"),
-                        "validation_performed": complaint_result.get("claim_validation_performed", False),
-                        "irac_compliant": True
-                    },
-                    source_phase="phaseB02_drafting"
-                )
-                if complaint_storage.success:
-                    documents_generated.append({
-                        "type": "complaint",
-                        "object_id": complaint_storage.object_id,
-                        "filename": f"complaint_{case_id}.txt",
-                        "word_count": complaint_result.get("word_count", 0)
-                    })
-            except Exception as e:
-                logger.warning(f"Failed to store complaint: {e}")
-
-        # Store statement of facts
-        if facts_result.get("content") and unified_storage:
-            try:
-                facts_storage = unified_storage.store_evidence(
-                    file_content=facts_result["content"].encode("utf-8"),
-                    filename=f"statement_of_facts_{case_id}.txt",
-                    metadata={
-                        "case_id": case_id,
-                        "document_type": "statement_of_facts",
-                        "phase": "B02_Drafting",
-                        "word_count": facts_result.get("word_count", 0),
-                        "template_used": facts_result.get("template_used"),
-                        "evidence_integrated": len(case_facts)
-                    },
-                    source_phase="phaseB02_drafting"
-                )
-                if facts_storage.success:
-                    documents_generated.append({
-                        "type": "statement_of_facts",
-                        "object_id": facts_storage.object_id,
-                        "filename": f"statement_of_facts_{case_id}.txt",
-                        "word_count": facts_result.get("word_count", 0)
-                    })
-            except Exception as e:
-                logger.warning(f"Failed to store statement of facts: {e}")
-
-        socketio.emit("phase_progress_update", {
-            "phase": "B02_Drafting",
+            "phase": "phaseB02_drafting",
+            "case_id": case_id,
             "progress": 100,
-            "message": f"✍️ Drafting complete - {len(documents_generated)} documents generated"
+            "message": f"✅ Complaint drafted: {total_word_count} words, {len(drafted_sections)} sections"
         })
-
+        
         return {
             "status": "completed",
-            "message": f"Drafting phase completed successfully. Generated {len(documents_generated)} professional legal documents using IRAC methodology.",
             "case_id": case_id,
-            "documents_generated": documents_generated,
-            "skeletal_outline_id": skeletal_outline.outline_id if skeletal_outline else None,
-            "irac_compliant": True,
-            "validation_performed": complaint_result.get("claim_validation_performed", False),
-            "total_word_count": sum(doc.get("word_count", 0) for doc in documents_generated)
+            "draft_path": str(draft_path),
+            "draft_json_path": str(draft_json_path),
+            "word_count": total_word_count,
+            "sections_completed": len(drafted_sections),
+            "method": "nested_irac",
+            "message": "Complaint successfully drafted using IRAC methodology"
         }
-
+        
     except Exception as e:
-        logger.error(f"Drafting phase failed: {e}")
-        socketio.emit("phase_progress_update", {
-            "phase": "B02_Drafting",
-            "progress": 0,
-            "message": f"❌ Drafting failed: {str(e)}"
-        })
-
+        logger.error(f"Phase B02 drafting error for case {case_id}: {e}")
+        import traceback
+        traceback.print_exc()
+        
         return {
-            "status": "failed",
-            "message": f"Drafting phase failed: {str(e)}",
+            "status": "error",
             "case_id": case_id,
-            "documents_generated": 0,
-            "error": str(e)
+            "error": str(e),
+            "message": "Drafting failed - see logs for details"
         }
 
 
@@ -1783,6 +2105,738 @@ def process_research_feedback(case_id: str, research_results: Dict[str, Any]):
 
     except Exception as e:
         logger.error(f"Research feedback processing failed: {e}")
+
+
+# ============================================================================
+# PHASE A03 - OUTLINE GENERATION DELIVERABLES API
+# ============================================================================
+
+@app.route("/api/phaseA03/shotlist/<case_id>", methods=["POST"])
+def generate_shotlist(case_id):
+    """
+    Generate chronological shotlist (timeline) from all PRIMARY and SECONDARY evidence
+    Returns JSON representation and stores CSV file as deliverable
+    """
+    if not LAWYERFACTORY_AVAILABLE or not unified_storage:
+        return jsonify({"error": "Shotlist generation service not available"}), 503
+    
+    if not PHASE_A03_AVAILABLE or not build_shot_list:
+        return jsonify({"error": "Phase A03 shotlist component not available"}), 503
+    
+    try:
+        logger.info(f"Generating shotlist for case {case_id}")
+        
+        # Fetch all evidence for this case (PRIMARY + SECONDARY)
+        all_evidence = []
+        try:
+            if hasattr(unified_storage, 'get_case_documents'):
+                evidence_objects = unified_storage.get_case_documents(case_id)
+                all_evidence = evidence_objects if isinstance(evidence_objects, list) else []
+        except Exception as e:
+            logger.warning(f"Could not fetch evidence from unified storage: {e}")
+        
+        # If no evidence from storage, try evidence table
+        if not all_evidence and evidence_table:
+            try:
+                all_evidence = evidence_table.get_all_evidence()
+                # Filter by case_id if metadata exists
+                all_evidence = [e for e in all_evidence if e.get("case_id") == case_id or e.get("metadata", {}).get("case_id") == case_id]
+            except Exception as e:
+                logger.warning(f"Could not fetch evidence from evidence table: {e}")
+        
+        if not all_evidence:
+            return jsonify({
+                "error": "No evidence found for this case",
+                "case_id": case_id,
+                "evidence_count": 0
+            }), 404
+        
+        # Transform evidence into shotlist format (chronological facts)
+        evidence_rows = []
+        for idx, evidence in enumerate(all_evidence):
+            # Extract metadata
+            metadata = evidence.get("metadata", {}) if isinstance(evidence, dict) else {}
+            content = evidence.get("content", evidence.get("text", ""))
+            
+            # Create fact entry
+            fact_entry = {
+                "fact_id": f"fact_{case_id}_{idx+1}",
+                "source_id": evidence.get("object_id", evidence.get("id", f"evidence_{idx+1}")),
+                "timestamp": evidence.get("timestamp", evidence.get("created_at", metadata.get("timestamp", ""))),
+                "summary": content[:500] if isinstance(content, str) else str(content)[:500],  # First 500 chars as summary
+                "entities": metadata.get("entities", metadata.get("parties", [])),
+                "citations": metadata.get("citations", [])
+            }
+            evidence_rows.append(fact_entry)
+        
+        # Sort by timestamp (chronological order)
+        def safe_timestamp(fact):
+            ts = fact.get("timestamp", "")
+            if isinstance(ts, str) and ts:
+                return ts
+            return "9999-12-31"  # Put facts without timestamp at end
+        
+        evidence_rows.sort(key=safe_timestamp)
+        
+        # Validate evidence rows
+        if validate_evidence_rows:
+            validation_report = validate_evidence_rows(evidence_rows)
+            logger.info(f"Shotlist validation: {validation_report}")
+        
+        # Generate CSV shotlist
+        output_dir = Path(f"./workflow_storage/cases/{case_id}/deliverables")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        csv_path = output_dir / "shotlist.csv"
+        
+        csv_file_path = build_shot_list(evidence_rows, csv_path)
+        logger.info(f"Shotlist CSV generated at {csv_file_path}")
+        
+        # Emit Socket.IO event for real-time update
+        socketio.emit("shotlist_generated", {
+            "case_id": case_id,
+            "fact_count": len(evidence_rows),
+            "csv_path": str(csv_file_path),
+            "timestamp": time.time()
+        })
+        
+        return jsonify({
+            "success": True,
+            "case_id": case_id,
+            "shotlist": evidence_rows,  # JSON representation
+            "fact_count": len(evidence_rows),
+            "csv_path": str(csv_file_path),
+            "download_url": f"/api/deliverables/{case_id}/shotlist.csv",
+            "generated_at": time.time()
+        })
+        
+    except Exception as e:
+        logger.error(f"Failed to generate shotlist for case {case_id}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/phaseA03/claims-matrix/<case_id>", methods=["POST"])
+def generate_claims_matrix_endpoint(case_id):
+    """
+    Generate claims matrix from evidence using ComprehensiveClaimsMatrixIntegration
+    Analyzes all evidence to detect potential legal claims and elements
+    """
+    if not LAWYERFACTORY_AVAILABLE or not unified_storage:
+        return jsonify({"error": "Claims matrix generation service not available"}), 503
+    
+    if not PHASE_A03_AVAILABLE or not ClaimsMatrixPhaseA03:
+        # Fallback to mock generation if Phase A03 not available
+        logger.warning("Phase A03 claims matrix not available, using mock generation")
+        evidence_texts = []
+        try:
+            all_evidence = unified_storage.get_case_documents(case_id) if hasattr(unified_storage, 'get_case_documents') else []
+            evidence_texts = [e.get("content", e.get("text", "")) for e in all_evidence if isinstance(e, dict)]
+        except:
+            pass
+        
+        claims_matrix = generate_claims_matrix_from_evidence(case_id, evidence_texts)
+        
+        return jsonify({
+            "success": True,
+            "case_id": case_id,
+            "claims_matrix": claims_matrix,
+            "mock_data": True,
+            "generated_at": time.time()
+        })
+    
+    try:
+        logger.info(f"Generating claims matrix for case {case_id}")
+        data = request.get_json() or {}
+        jurisdiction = data.get("jurisdiction", "ca_state")  # Default to California
+        
+        # Fetch all evidence
+        all_evidence = []
+        try:
+            if hasattr(unified_storage, 'get_case_documents'):
+                all_evidence = unified_storage.get_case_documents(case_id)
+        except Exception as e:
+            logger.warning(f"Could not fetch evidence: {e}")
+        
+        # Transform evidence into case facts format
+        case_facts = []
+        for idx, evidence in enumerate(all_evidence):
+            if isinstance(evidence, dict):
+                fact = {
+                    "id": evidence.get("object_id", f"fact_{idx}"),
+                    "name": f"Evidence {idx+1}",
+                    "description": evidence.get("content", evidence.get("text", ""))[:500],
+                    "type": evidence.get("metadata", {}).get("document_type", "evidence")
+                }
+                case_facts.append(fact)
+        
+        # Initialize claims matrix integration
+        # Note: This requires EnhancedKnowledgeGraph which may not be available
+        # If not available, fall back to mock generation
+        try:
+            from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
+            kg = EnhancedKnowledgeGraph(f"./workflow_storage/cases/{case_id}/knowledge_graph.db")
+            claims_integration = ClaimsMatrixPhaseA03(kg)
+            
+            # Start interactive analysis
+            session_id = claims_integration.start_interactive_analysis(
+                jurisdiction=jurisdiction,
+                cause_of_action=data.get("cause_of_action", "negligence"),
+                case_facts=case_facts
+            )
+            
+            # Generate comprehensive definition
+            definition = claims_integration.get_comprehensive_definition(session_id)
+            
+            # Generate attorney-ready analysis
+            attorney_analysis = claims_integration.generate_attorney_ready_analysis(session_id)
+            
+            # Export as structured report
+            claims_report = claims_integration.export_analysis_report(attorney_analysis, "comprehensive")
+            
+            # Close KG
+            kg.close()
+            
+            # Save to file
+            output_dir = Path(f"./workflow_storage/cases/{case_id}/deliverables")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            json_path = output_dir / "claims_matrix.json"
+            
+            with open(json_path, 'w') as f:
+                json.dump(claims_report, f, indent=2)
+            
+            logger.info(f"Claims matrix JSON generated at {json_path}")
+            
+            # Emit Socket.IO event
+            socketio.emit("claims_matrix_generated", {
+                "case_id": case_id,
+                "session_id": session_id,
+                "claims_count": len(attorney_analysis.element_breakdowns) if attorney_analysis else 0,
+                "json_path": str(json_path),
+                "timestamp": time.time()
+            })
+            
+            return jsonify({
+                "success": True,
+                "case_id": case_id,
+                "session_id": session_id,
+                "claims_matrix": claims_report,
+                "json_path": str(json_path),
+                "download_url": f"/api/deliverables/{case_id}/claims_matrix.json",
+                "generated_at": time.time()
+            })
+            
+        except ImportError as e:
+            logger.warning(f"EnhancedKnowledgeGraph not available, using mock: {e}")
+            # Fallback to mock generation
+            evidence_texts = [f.get("description", "") for f in case_facts]
+            claims_matrix = generate_claims_matrix_from_evidence(case_id, evidence_texts)
+            
+            # Save mock data
+            output_dir = Path(f"./workflow_storage/cases/{case_id}/deliverables")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            json_path = output_dir / "claims_matrix.json"
+            
+            with open(json_path, 'w') as f:
+                json.dump(claims_matrix, f, indent=2)
+            
+            return jsonify({
+                "success": True,
+                "case_id": case_id,
+                "claims_matrix": claims_matrix,
+                "mock_data": True,
+                "json_path": str(json_path),
+                "download_url": f"/api/deliverables/{case_id}/claims_matrix.json",
+                "generated_at": time.time()
+            })
+        
+    except Exception as e:
+        logger.error(f"Failed to generate claims matrix for case {case_id}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/phaseA03/generate/<case_id>", methods=["POST"])
+def generate_phase_a03_deliverables(case_id):
+    """
+    Orchestrate Phase A03 deliverable generation:
+    1. Generate shotlist (chronological facts timeline)
+    2. Generate claims matrix (legal analysis)
+    3. Generate skeletal outline (from shotlist + claims matrix)
+    Returns all three deliverables with download links
+    """
+    if not LAWYERFACTORY_AVAILABLE or not unified_storage:
+        return jsonify({"error": "Phase A03 generation service not available"}), 503
+    
+    try:
+        logger.info(f"Starting Phase A03 deliverable generation for case {case_id}")
+        data = request.get_json() or {}
+        
+        # Emit progress update
+        socketio.emit("phase_progress_update", {
+            "phase": "phaseA03_outline",
+            "case_id": case_id,
+            "status": "running",
+            "progress": 10,
+            "message": "Starting Phase A03 deliverable generation..."
+        })
+        
+        # Step 1: Generate shotlist
+        logger.info(f"Step 1/3: Generating shotlist for case {case_id}")
+        socketio.emit("phase_progress_update", {
+            "phase": "phaseA03_outline",
+            "case_id": case_id,
+            "status": "running",
+            "progress": 25,
+            "message": "Generating chronological shotlist timeline..."
+        })
+        
+        shotlist_response = generate_shotlist(case_id)
+        shotlist_data = shotlist_response.get_json() if hasattr(shotlist_response, 'get_json') else {}
+        
+        if not shotlist_data.get("success"):
+            raise Exception(f"Shotlist generation failed: {shotlist_data.get('error', 'Unknown error')}")
+        
+        shotlist = shotlist_data.get("shotlist", [])
+        logger.info(f"Shotlist generated with {len(shotlist)} facts")
+        
+        # Step 2: Generate claims matrix
+        logger.info(f"Step 2/3: Generating claims matrix for case {case_id}")
+        socketio.emit("phase_progress_update", {
+            "phase": "phaseA03_outline",
+            "case_id": case_id,
+            "status": "running",
+            "progress": 50,
+            "message": "Analyzing evidence for legal claims..."
+        })
+        
+        # Pass jurisdiction and cause_of_action from request data
+        claims_request_data = {
+            "jurisdiction": data.get("jurisdiction", "ca_state"),
+            "cause_of_action": data.get("cause_of_action", "negligence")
+        }
+        
+        # Create a request context for generate_claims_matrix_endpoint
+        with app.test_request_context(
+            f"/api/phaseA03/claims-matrix/{case_id}",
+            method="POST",
+            json=claims_request_data
+        ):
+            claims_response = generate_claims_matrix_endpoint(case_id)
+            claims_data = claims_response.get_json() if hasattr(claims_response, 'get_json') else {}
+        
+        if not claims_data.get("success"):
+            raise Exception(f"Claims matrix generation failed: {claims_data.get('error', 'Unknown error')}")
+        
+        claims_matrix = claims_data.get("claims_matrix", [])
+        logger.info(f"Claims matrix generated")
+        
+        # Step 3: Generate skeletal outline using shotlist + claims matrix
+        logger.info(f"Step 3/3: Generating skeletal outline for case {case_id}")
+        socketio.emit("phase_progress_update", {
+            "phase": "phaseA03_outline",
+            "case_id": case_id,
+            "status": "running",
+            "progress": 75,
+            "message": "Generating skeletal outline from timeline and claims..."
+        })
+        
+        # Create outline request with shotlist and claims matrix
+        outline_request_data = {
+            "claims_matrix": claims_matrix if isinstance(claims_matrix, list) else [],
+            "shot_list": shotlist
+        }
+        
+        # Use existing generate_skeletal_outline endpoint
+        with app.test_request_context(
+            f"/api/outline/generate/{case_id}",
+            method="POST",
+            json=outline_request_data
+        ):
+            outline_response = generate_skeletal_outline(case_id)
+            outline_data = outline_response.get_json() if hasattr(outline_response, 'get_json') else {}
+        
+        if not outline_data.get("success"):
+            logger.warning(f"Skeletal outline generation had issues: {outline_data.get('error', 'Unknown')}")
+            # Continue anyway with available data
+        
+        outline = outline_data.get("outline", {})
+        
+        # Save skeletal outline as deliverable
+        output_dir = Path(f"./workflow_storage/cases/{case_id}/deliverables")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        outline_json_path = output_dir / "skeletal_outline.json"
+        
+        with open(outline_json_path, 'w') as f:
+            json.dump(outline, f, indent=2)
+        
+        logger.info(f"Skeletal outline JSON generated at {outline_json_path}")
+        
+        # Emit final completion event
+        socketio.emit("skeletal_outline_generated", {
+            "case_id": case_id,
+            "json_path": str(outline_json_path),
+            "section_count": len(outline.get("sections", [])),
+            "timestamp": time.time()
+        })
+        
+        socketio.emit("phase_progress_update", {
+            "phase": "phaseA03_outline",
+            "case_id": case_id,
+            "status": "completed",
+            "progress": 100,
+            "message": "Phase A03 deliverables generated successfully"
+        })
+        
+        # Return all deliverables
+        return jsonify({
+            "success": True,
+            "case_id": case_id,
+            "deliverables": {
+                "shotlist": {
+                    "data": shotlist,
+                    "fact_count": len(shotlist),
+                    "download_url": f"/api/deliverables/{case_id}/shotlist.csv"
+                },
+                "claims_matrix": {
+                    "data": claims_matrix,
+                    "download_url": f"/api/deliverables/{case_id}/claims_matrix.json"
+                },
+                "skeletal_outline": {
+                    "data": outline,
+                    "section_count": len(outline.get("sections", [])),
+                    "download_url": f"/api/deliverables/{case_id}/skeletal_outline.json"
+                }
+            },
+            "generated_at": time.time()
+        })
+        
+    except Exception as e:
+        logger.error(f"Failed to generate Phase A03 deliverables for case {case_id}: {e}")
+        
+        socketio.emit("phase_progress_update", {
+            "phase": "phaseA03_outline",
+            "case_id": case_id,
+            "status": "failed",
+            "progress": 0,
+            "message": f"Phase A03 generation failed: {str(e)}"
+        })
+        
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/phases/phaseB01_review/validate/<case_id>", methods=["POST"])
+def validate_deliverables_endpoint(case_id):
+    """
+    Validate Phase A03 deliverables before allowing approval
+    Checks:
+    - Shotlist has minimum 10 facts
+    - Claims matrix has complete element analysis
+    - Skeletal outline has required sections
+    - Rule 12(b)(6) compliance score >= 75
+    """
+    try:
+        logger.info(f"Validating deliverables for case {case_id}")
+        
+        # Call the validation logic from Phase B01 handler
+        validation_result = handle_review_phase(case_id, {})
+        
+        return jsonify({
+            "success": validation_result.get("all_valid", False),
+            "validations": validation_result.get("validations", {}),
+            "all_valid": validation_result.get("all_valid", False),
+            "ready_for_drafting": validation_result.get("ready_for_drafting", False),
+            "message": validation_result.get("message", "")
+        })
+        
+    except Exception as e:
+        logger.error(f"Validation failed for case {case_id}: {e}")
+        return jsonify({"error": str(e), "success": False}), 500
+
+
+@app.route("/api/phases/phaseB01_review/approve/<case_id>", methods=["POST"])
+def approve_deliverables_endpoint(case_id):
+    """
+    Approve Phase A03 deliverables and unlock Phase B02 drafting
+    Records approval state and validates before allowing transition
+    """
+    try:
+        data = request.get_json() or {}
+        approvals = data.get("approvals", {})
+        
+        logger.info(f"Approving deliverables for case {case_id}: {approvals}")
+        
+        # Validate first
+        validation_result = handle_review_phase(case_id, {})
+        
+        if not validation_result.get("all_valid", False):
+            return jsonify({
+                "success": False,
+                "message": "Cannot approve - validation failed",
+                "validations": validation_result.get("validations", {}),
+                "ready_for_drafting": False
+            }), 400
+        
+        # Check that all deliverables are approved
+        required_approvals = ["shotlist", "claimsMatrix", "skeletalOutline"]
+        all_approved = all(approvals.get(key, False) for key in required_approvals)
+        
+        if not all_approved:
+            return jsonify({
+                "success": False,
+                "message": "All deliverables must be approved",
+                "approvals": approvals,
+                "ready_for_drafting": False
+            }), 400
+        
+        # Store approval state
+        approval_dir = Path(f"./workflow_storage/cases/{case_id}")
+        approval_dir.mkdir(parents=True, exist_ok=True)
+        approval_path = approval_dir / "deliverable_approvals.json"
+        
+        approval_data = {
+            "case_id": case_id,
+            "approvals": approvals,
+            "approved_at": time.time(),
+            "approved_by": "user",  # TODO: Add actual user tracking
+            "validations_passed": validation_result.get("validations", {})
+        }
+        
+        with open(approval_path, 'w') as f:
+            json.dump(approval_data, f, indent=2)
+        
+        logger.info(f"Deliverables approved for case {case_id}")
+        
+        # Emit Socket.IO event
+        socketio.emit("deliverables_approved", {
+            "case_id": case_id,
+            "timestamp": time.time(),
+            "ready_for_drafting": True
+        })
+        
+        return jsonify({
+            "success": True,
+            "message": "All deliverables approved - Phase B02 unlocked",
+            "approvals": approvals,
+            "ready_for_drafting": True,
+            "approval_path": str(approval_path)
+        })
+        
+    except Exception as e:
+        logger.error(f"Approval failed for case {case_id}: {e}")
+        return jsonify({"error": str(e), "success": False}), 500
+
+
+@app.route("/api/deliverables/<case_id>/<deliverable_type>", methods=["GET"])
+def download_deliverable(case_id, deliverable_type):
+    """
+    Download Phase A03 deliverables as files
+    Supported types: shotlist.csv, claims_matrix.json, skeletal_outline.json
+    """
+    try:
+        from flask import send_file
+        
+        deliverable_dir = Path(f"./workflow_storage/cases/{case_id}/deliverables")
+        
+        # Map deliverable types to filenames
+        file_map = {
+            "shotlist.csv": "shotlist.csv",
+            "claims_matrix.json": "claims_matrix.json",
+            "skeletal_outline.json": "skeletal_outline.json"
+        }
+        
+        if deliverable_type not in file_map:
+            return jsonify({"error": f"Unknown deliverable type: {deliverable_type}"}), 400
+        
+        file_path = deliverable_dir / file_map[deliverable_type]
+        
+        if not file_path.exists():
+            return jsonify({
+                "error": f"Deliverable not found: {deliverable_type}",
+                "case_id": case_id,
+                "expected_path": str(file_path)
+            }), 404
+        
+        # Determine MIME type
+        mime_type = "text/csv" if deliverable_type.endswith(".csv") else "application/json"
+        
+        return send_file(
+            file_path,
+            mimetype=mime_type,
+            as_attachment=True,
+            download_name=f"{case_id}_{deliverable_type}"
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to download deliverable {deliverable_type} for case {case_id}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+# ============================================================================
+# LLM CONFIGURATION API ENDPOINTS
+# ============================================================================
+
+@app.route("/api/settings/llm", methods=["GET"])
+def get_llm_config():
+    """Get current LLM configuration (without exposing API key)"""
+    try:
+        safe_config = llm_config.copy()
+        # Mask API key
+        if safe_config.get("api_key"):
+            safe_config["api_key"] = "***" + safe_config["api_key"][-4:] if len(safe_config["api_key"]) > 4 else "***"
+        
+        return jsonify({
+            "success": True,
+            "config": safe_config,
+            "available_providers": ["openai", "anthropic", "groq", "gemini"],
+            "available_models": {
+                "openai": ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
+                "anthropic": ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku"],
+                "groq": ["mixtral-8x7b", "llama-2-70b"],
+                "gemini": ["gemini-pro", "gemini-pro-vision"]
+            }
+        })
+    except Exception as e:
+        logger.error(f"Failed to get LLM config: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/settings/llm", methods=["POST"])
+def update_llm_config():
+    """Update LLM configuration"""
+    try:
+        data = request.get_json()
+        
+        # Update configuration
+        if "provider" in data:
+            llm_config["provider"] = data["provider"]
+        if "model" in data:
+            llm_config["model"] = data["model"]
+        if "api_key" in data and data["api_key"] != "":
+            llm_config["api_key"] = data["api_key"]
+        if "temperature" in data:
+            llm_config["temperature"] = float(data["temperature"])
+        if "max_tokens" in data:
+            llm_config["max_tokens"] = int(data["max_tokens"])
+        
+        logger.info(f"LLM config updated: {llm_config['provider']}/{llm_config['model']}")
+        
+        return jsonify({
+            "success": True,
+            "message": "LLM configuration updated successfully",
+            "config": {
+                "provider": llm_config["provider"],
+                "model": llm_config["model"],
+                "temperature": llm_config["temperature"],
+                "max_tokens": llm_config["max_tokens"]
+            }
+        })
+    except Exception as e:
+        logger.error(f"Failed to update LLM config: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+# ============================================================================
+# DRAFTING VALIDATION API ENDPOINTS
+# ============================================================================
+
+@app.route("/api/drafting/validate", methods=["POST"])
+def validate_draft_complaint():
+    """Validate draft complaint against defendant cluster using LLM-enhanced analysis"""
+    if not drafting_validator:
+        return jsonify({"error": "Drafting validator not available"}), 503
+    
+    try:
+        data = request.get_json()
+        draft_text = data.get("draft_text", "")
+        case_id = data.get("case_id", "")
+        
+        if not draft_text or not case_id:
+            return jsonify({"error": "Missing draft_text or case_id"}), 400
+        
+        # Run async validation in event loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            validation_result = loop.run_until_complete(
+                drafting_validator.validate_draft_complaint(
+                    draft_text=draft_text,
+                    case_id=case_id
+                )
+            )
+        finally:
+            loop.close()
+        
+        # Convert validation result to dict
+        result_dict = {
+            "is_valid": validation_result.is_valid,
+            "overall_score": validation_result.overall_score,
+            "similarity_score": validation_result.similarity_score,
+            "similarity_threshold": validation_result.similarity_threshold,
+            "issues_found": validation_result.issues_found,
+            "recommendations": validation_result.recommendations,
+            "missing_elements": validation_result.missing_elements,
+            "processing_time": validation_result.processing_time,
+            "defendant_name": validation_result.defendant_name,
+            "case_id": validation_result.case_id
+        }
+        
+        return jsonify({
+            "success": True,
+            "validation_result": result_dict
+        })
+        
+    except Exception as e:
+        logger.error(f"Draft validation failed: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/intake/process-document", methods=["POST"])
+def process_enhanced_intake_document():
+    """Enhanced document processing with categorization and clustering"""
+    if not intake_processor:
+        return jsonify({"error": "Intake processor not available"}), 503
+    
+    try:
+        file = request.files.get("document")
+        case_id = request.form.get("case_id", "")
+        
+        if not file:
+            return jsonify({"error": "No document provided"}), 400
+        
+        # Read document content
+        content = file.read().decode("utf-8", errors="ignore")
+        
+        # Get defendant hint from case data if available
+        defendant_hint = None
+        if intake_processor and case_id in getattr(intake_processor, "active_cases", {}):
+            defendant_hint = intake_processor.active_cases[case_id].get("defendant_name")
+        
+        # Run async document processing
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            result = loop.run_until_complete(
+                intake_processor.process_document(
+                    file_path=file.filename,
+                    case_id=case_id,
+                    additional_context={"defendant_hint": defendant_hint}
+                )
+            )
+        finally:
+            loop.close()
+        
+        return jsonify({
+            "success": result.get("success", False),
+            "document_id": result.get("document_id"),
+            "document_type": result.get("document_type"),
+            "authority_level": result.get("authority_level"),
+            "cluster_id": result.get("cluster_id"),
+            "confidence_score": result.get("confidence_score"),
+            "similar_documents": result.get("similar_documents", 0),
+            "defendant_recognized": result.get("defendant_recognized", False)
+        })
+        
+    except Exception as e:
+        logger.error(f"Enhanced intake processing failed: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 def main():

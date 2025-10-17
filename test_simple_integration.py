@@ -22,7 +22,7 @@ async def test_core_storage():
     try:
         # Test 1: Import unified storage API
         logger.info("Test 1: Testing unified storage API import...")
-        from lawyerfactory.storage.enhanced_unified_storage_api import (
+        from lawyerfactory.storage.core.unified_storage_api import (
             EnhancedUnifiedStorageAPI,
             EvidenceMetadata,
             get_enhanced_unified_storage_api,

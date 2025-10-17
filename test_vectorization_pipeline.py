@@ -15,7 +15,7 @@ def test_imports():
     print("Testing imports...")
 
     try:
-        from lawyerfactory.storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
+        from lawyerfactory.storage.core.unified_storage_api import get_enhanced_unified_storage_api
         print("✅ Unified storage import successful")
 
         from lawyerfactory.storage.vectors.enhanced_vector_store import EnhancedVectorStoreManager, VectorStoreType
@@ -74,7 +74,7 @@ def test_unified_storage():
     print("\nTesting unified storage...")
 
     try:
-        from lawyerfactory.storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
+        from lawyerfactory.storage.core.unified_storage_api import get_enhanced_unified_storage_api
 
         unified_storage = get_enhanced_unified_storage_api()
         print("✅ Unified storage initialized")

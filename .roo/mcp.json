@@ -71,7 +71,7 @@
         "COLLECTION_NAME": "files",
         "EMBEDDING_MODEL": ""
       },
-      "disabled": true,
+      "disabled": false,
       "alwaysAllow": []
     }
   }

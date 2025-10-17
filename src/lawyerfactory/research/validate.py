@@ -16,7 +16,7 @@ import logging
 import re
 from typing import Any, Dict, List, Optional
 
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 from legal_research_integration import AuthorityLevel, LegalCitation
 
 from lawyerfactory.kg.jurisdiction import JurisdictionManager

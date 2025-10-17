@@ -61,6 +61,17 @@ export const getSocket = () => {
 };
 
 /**
+ * Close the Socket.IO connection
+ */
+export const closeSocket = () => {
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+    console.log("🔌 Socket connection closed");
+  }
+};
+
+/**
  * Health check endpoint
  */
 export const healthCheck = async () => {
@@ -70,6 +81,19 @@ export const healthCheck = async () => {
   } catch (error) {
     console.error("Health check failed:", error);
     throw error;
+  }
+};
+
+/**
+ * Check if backend is available
+ */
+export const isBackendAvailable = async () => {
+  try {
+    const result = await healthCheck();
+    return result.status === "healthy" || result.status === "ok";
+  } catch (error) {
+    console.warn("Backend health check failed:", error.message);
+    return false;
   }
 };
 
@@ -362,6 +386,210 @@ export const generateSkeletalOutline = async (caseId, claimsMatrix = [], shotLis
     throw error;
   }
 };
+
+/**
+ * Fetch LLM configuration from backend (includes environment variable defaults)
+ */
+export const fetchLLMConfig = async () => {
+  try {
+    const response = await apiClient.get("/api/settings/llm");
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch LLM config:", error);
+    throw error;
+  }
+};
+
+/**
+ * Update LLM configuration on backend
+ * @param {Object} config - LLM configuration object with provider, model, apiKey, temperature, maxTokens
+ */
+export const updateLLMConfig = async (config) => {
+  try {
+    const payload = {
+      provider: config.provider,
+      model: config.model,
+      api_key: config.apiKey,
+      temperature: config.temperature,
+      max_tokens: config.maxTokens,
+    };
+    
+    const response = await apiClient.post("/api/settings/llm", payload);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to update LLM config:", error);
+    throw error;
+  }
+};
+
+/**
+ * Validate draft complaint using DraftingValidator
+ * @param {string} draftText - The draft complaint text
+ * @param {string} caseId - The case ID
+ */
+export const validateDraftComplaint = async (draftText, caseId) => {
+  try {
+    const payload = {
+      draft_text: draftText,
+      case_id: caseId,
+    };
+    
+    const response = await apiClient.post("/api/drafting/validate", payload);
+    return response.data;
+  } catch (error) {
+    console.error("Draft validation failed:", error);
+    throw error;
+  }
+};
+
+// ============================================================================
+// PHASE A03 - OUTLINE DELIVERABLES API
+// ============================================================================
+
+/**
+ * Generate Phase A03 shotlist (chronological timeline of facts)
+ */
+export const generateShotlist = async (caseId) => {
+  try {
+    const response = await apiClient.post(`/api/phaseA03/shotlist/${caseId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Shotlist generation failed:", error);
+    throw error;
+  }
+};
+
+/**
+ * Generate Phase A03 claims matrix (legal analysis)
+ */
+export const generateClaimsMatrix = async (caseId, options = {}) => {
+  try {
+    const payload = {
+      jurisdiction: options.jurisdiction || "ca_state",
+      cause_of_action: options.causeOfAction || "negligence"
+    };
+    
+    const response = await apiClient.post(`/api/phaseA03/claims-matrix/${caseId}`, payload);
+    return response.data;
+  } catch (error) {
+    console.error("Claims matrix generation failed:", error);
+    throw error;
+  }
+};
+
+/**
+ * Generate all Phase A03 deliverables (shotlist, claims matrix, skeletal outline)
+ */
+export const generatePhaseA03Deliverables = async (caseId, options = {}) => {
+  try {
+    const payload = {
+      jurisdiction: options.jurisdiction || "ca_state",
+      cause_of_action: options.causeOfAction || "negligence"
+    };
+    
+    const response = await apiClient.post(`/api/phaseA03/generate/${caseId}`, payload);
+    return response.data;
+  } catch (error) {
+    console.error("Phase A03 deliverables generation failed:", error);
+    throw error;
+  }
+};
+
+/**
+ * Download Phase A03 deliverable (shotlist.csv, claims_matrix.json, skeletal_outline.json)
+ */
+export const downloadDeliverable = async (caseId, deliverableType) => {
+  try {
+    const response = await apiClient.get(
+      `/api/deliverables/${caseId}/${deliverableType}`,
+      { responseType: "blob" }
+    );
+    
+    // Create download link
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `${caseId}_${deliverableType}`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+    
+    return { success: true };
+  } catch (error) {
+    console.error(`Deliverable download failed (${deliverableType}):`, error);
+    throw error;
+  }
+};
+
+/**
+ * Get Phase A03 deliverables status for a case (check if generated)
+ */
+export const getPhaseA03Deliverables = async (caseId) => {
+  try {
+    // Try to fetch each deliverable to check if it exists
+    const deliverables = {
+      shotlist: { available: false, url: null },
+      claimsMatrix: { available: false, url: null },
+      skeletalOutline: { available: false, url: null }
+    };
+    
+    const deliverableTypes = [
+      { key: "shotlist", filename: "shotlist.csv" },
+      { key: "claimsMatrix", filename: "claims_matrix.json" },
+      { key: "skeletalOutline", filename: "skeletal_outline.json" }
+    ];
+    
+    for (const type of deliverableTypes) {
+      try {
+        // HEAD request to check if file exists
+        await apiClient.head(`/api/deliverables/${caseId}/${type.filename}`);
+        deliverables[type.key] = {
+          available: true,
+          url: `/api/deliverables/${caseId}/${type.filename}`,
+          filename: type.filename
+        };
+      } catch (error) {
+        // File doesn't exist, keep available: false
+      }
+    }
+    
+    return deliverables;
+  } catch (error) {
+    console.error("Failed to check Phase A03 deliverables:", error);
+    throw error;
+  }
+};
+
+/**
+ * Validate Phase A03 deliverables before approving
+ * Checks fact count, element completeness, section requirements
+ */
+export const validateDeliverables = async (caseId) => {
+  try {
+    const response = await apiClient.post(`/api/phases/phaseB01_review/validate/${caseId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to validate deliverables:", error);
+    throw error;
+  }
+};
+
+/**
+ * Approve Phase A03 deliverables and unlock Phase B02
+ */
+export const approveDeliverables = async (caseId, approvals) => {
+  try {
+    const response = await apiClient.post(`/api/phases/phaseB01_review/approve/${caseId}`, {
+      approvals
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to approve deliverables:", error);
+    throw error;
+  }
+};
+
 
 /**
   * API service class for managing backend connections
@@ -773,37 +1001,58 @@ export class LawyerFactoryAPI {
   }
 
   /**
-   * Upload research documents
+   * Save case state to backend
    */
-  async uploadResearchDocuments(files) {
-    if (!this.currentCaseId) {
-      throw new Error("No active case - create case first");
-    }
-
+  async saveCaseState(caseName, stateData) {
     try {
       if (this.isConnected) {
-        return await uploadCaseDocuments(this.currentCaseId, files);
+        const response = await apiClient.post(`/api/cases/${caseName}/state`, {
+          state: stateData,
+          timestamp: new Date().toISOString(),
+        });
+        return response.data;
       } else {
-        // Mock response
-        return {
-          success: true,
-          message: `${files.length} documents uploaded (mock mode)`,
-          case_id: this.currentCaseId,
-          processed_documents: files.map((file) => ({
-            filename: file.name,
-            size: file.size,
-            type: file.type,
-          })),
-        };
+        // Store locally when backend unavailable
+        const stateKey = `case_state_${caseName}`;
+        localStorage.setItem(stateKey, JSON.stringify({
+          state: stateData,
+          timestamp: new Date().toISOString(),
+        }));
+        return { success: true, source: 'localStorage' };
       }
     } catch (error) {
-      console.error("Document upload failed:", error);
+      console.error("Failed to save case state:", error);
       throw error;
+    }
+  }
+
+  /**
+   * Load case state from backend
+   */
+  async loadCaseState(caseName) {
+    try {
+      if (this.isConnected) {
+        const response = await apiClient.get(`/api/cases/${caseName}/state`);
+        return response.data;
+      } else {
+        // Load from localStorage when backend unavailable
+        const stateKey = `case_state_${caseName}`;
+        const savedState = localStorage.getItem(stateKey);
+        if (savedState) {
+          const parsedState = JSON.parse(savedState);
+          return { success: true, source: 'localStorage', ...parsedState };
+        }
+        return null;
+      }
+    } catch (error) {
+      console.error("Failed to load case state:", error);
+      return null;
     }
   }
 }
 
 // Export singleton instance
+export const apiService = new LawyerFactoryAPI();
 export const lawyerFactoryAPI = new LawyerFactoryAPI();
 
 // Default export for convenience

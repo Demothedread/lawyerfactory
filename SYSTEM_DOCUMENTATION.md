@@ -1967,9 +1967,9 @@ async def optimize_performance():
 
 ### External Documentation
 
-- **[Knowledge Graph JSON](data/knowledge_graph.json)**: Core entity definitions
-- **[API Documentation](docs/api/)**: Complete API reference
-- **[Integration Guides](docs/integrations/)**: External system integrations
+- **[Knowledge Graph JSON](./markdown/data/knowledge_graph.json)**: Core entity definitions
+- **[API Documentation](./markdown/docs/api)**: Complete API reference
+- **[Integration Guides](./markdown/docs/integrations)**: External system integrations
 
 ---
 

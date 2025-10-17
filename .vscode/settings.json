@@ -3,7 +3,8 @@
         "./src/skeletal_outline",
         "./src/knowledge_graph/api",
         "./src/ingestion/api",
-        "./src/research"
+        "./src/research",
+        "./src"
     ],
     "[python]": {
         "editor.formatOnSave": true,

@@ -1,5 +1,6 @@
 # Core Flask dependencies
 Flask==2.3.3
+Flask-CORS==4.0.0
 Flask-SocketIO==5.3.6
 eventlet==0.33.3
 werkzeug==2.3.7
@@ -33,6 +34,7 @@ sqlcipher3-wheels
 # Development and testing
 pytest==7.4.2
 pytest-asyncio==0.21.1
+requests
 
 #fastmcp server
 fastmcp

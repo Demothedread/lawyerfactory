@@ -17,10 +17,17 @@ import json
 import logging
 from typing import Any, Dict, List, Optional
 
-from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
-from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
-from lawyerfactory.storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
+try:
+    from ..claims.matrix import ComprehensiveClaimsMatrixIntegration
+    from ..kg.enhanced_graph import EnhancedKnowledgeGraph
+    from ..phases.phaseA01_intake.evidence_routes import EvidenceAPI
+    from ..storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
+except ImportError:
+    # Fallback to absolute imports if relative fails
+    from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
+    from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
+    from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
+    from lawyerfactory.storage.core.unified_storage_api import get_enhanced_unified_storage_api
 
 logger = logging.getLogger(__name__)
 
@@ -974,9 +981,9 @@ def test_skeletal_outline_generator():
     try:
         # Mock data for testing
         from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
-        from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+        from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
         from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
-        from lawyerfactory.storage.enhanced_unified_storage_api import (
+        from lawyerfactory.storage.core.unified_storage_api import (
             get_enhanced_unified_storage_api,
         )
 

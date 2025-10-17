@@ -10,74 +10,88 @@
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 # Import AI document generation modules
-from lawyerfactory.document_generator.modules.fact_synthesis import synthesize_facts
-from lawyerfactory.document_generator.modules.legal_theory_mapping import (
+from lawyerfactory.export.renderers.legacy.modules.fact_synthesis import synthesize_facts
+from lawyerfactory.export.renderers.legacy.modules.legal_theory_mapping import (
     integrate_citations,
     map_facts_to_elements,
-)
+ )
 
 from ..agent_registry import AgentConfig, AgentInterface
-from ..bot_interface import Bot
-from ..workflow_models import WorkflowTask
+from lawyerfactory.compose.maestro.base import Bot
+# from lawyerfactory.compose.maestro.workflow import WorkflowTask
 from ...outline.generator import SkeletalOutlineGenerator
 from ...research.tavily_integration import ResearchQuery, TavilyResearchIntegration
 
 logger = logging.getLogger(__name__)
 
 
-class WriterBot(Bot, AgentInterface):
+class WriterBot:
     """Enhanced writing bot for professional legal document creation using AI modules and templates"""
 
-    def __init__(self, config: AgentConfig):
-        # Initialize Bot interface
-        Bot.__init__(self)
-        # Initialize AgentInterface
-        AgentInterface.__init__(self, config)
+    def __init__(self, config):
+        """Initialize WriterBot with AgentConfig"""
+        self.config = config  # Store the AgentConfig
 
-        # Initialize Jinja2 template environment
-        template_dir = (
-            Path(__file__).parent.parent.parent
-            / "lawyerfactory"
-            / "document_generator"
-            / "templates"
-        )
-        if template_dir.exists():
-            self.jinja_env = Environment(
-                loader=FileSystemLoader(str(template_dir)),
-                autoescape=select_autoescape(["html", "xml"]),
-            )
-            logger.info(f"WriterBot initialized with templates from: {template_dir}")
-        else:
-            self.jinja_env = None
-            logger.warning(f"Template directory not found: {template_dir}")
+        # Extract LLM configuration from AgentConfig
+        self.llm_config = self.config.config if self.config.config else {}
+        self.llm_provider = self.llm_config.get("provider", "openai")
+        self.llm_model = self.llm_config.get("model", "gpt-4")
+        self.llm_temperature = self.llm_config.get("temperature", 0.7)
+        self.llm_max_tokens = self.llm_config.get("max_tokens", 4000)
+        self.llm_api_key = self.llm_config.get("api_key")
 
-        # Initialize Tavily integration for claim validation
-        self.tavily_integration = None
+        # Initialize template system (optional)
+        self.jinja_env = None
+        try:
+            template_dir = Path(__file__).parent.parent.parent / "templates"
+            if template_dir.exists():
+                self.jinja_env = Environment(
+                    loader=FileSystemLoader(template_dir),
+                    autoescape=select_autoescape(['html', 'xml'])
+                )
+        except Exception as e:
+            logger.warning(f"Template system initialization failed: {e}")
+
+        # Initialize validation components (optional)
         self.outline_generator = None
-
+        self.tavily_integration = None
         try:
-            self.tavily_integration = TavilyResearchIntegration()
-            logger.info("Tavily integration enabled for claim validation")
+            # These may not be available in all environments
+            pass  # Will be set up when needed
         except Exception as e:
-            logger.warning(f"Tavily integration not available: {e}")
+            logger.warning(f"Validation components initialization failed: {e}")
 
+        # Initialize LLM service with extracted config
+        self.llm_service = None
         try:
-            # Initialize outline generator for validation
-            from lawyerfactory.kg.graph import KnowledgeGraph
+            from lawyerfactory.lf_core.llm.service import LLMService
+            from lawyerfactory.lf_core.llm.config import LLMConfigManager
 
-            kg = KnowledgeGraph()
-            self.outline_generator = SkeletalOutlineGenerator(kg, None, None)
-            logger.info("Outline generator initialized for claim validation")
+            # Create config manager and temporarily update with our config
+            config_manager = LLMConfigManager()
+
+            # Update the provider config with our parameters
+            # provider_config = {
+            #     "api_key": self.llm_api_key,
+            #     "model": self.llm_model,
+            #     "temperature": self.llm_temperature,
+            #     "max_tokens": self.llm_max_tokens,
+            #     "enabled": True,
+            # }
+
+            # Update the config for the specified provider
+            # config_manager.update_provider_config(self.llm_provider, provider_config)
+            # config_manager.set_current_provider(self.llm_provider)
+
+            self.llm_service = LLMService(config_manager)
+            logger.info("WriterBot initialized with LLM service")
+
         except Exception as e:
-            logger.warning(f"Outline generator not available: {e}")
-
-        logger.info(
-            "WriterBot initialized with professional legal document generation and claim validation capabilities"
-        )</search>
+            logger.warning(f"LLM service initialization failed: {e}")
+            self.llm_service = None
 
     async def process(self, message: str) -> str:
         """Legacy Bot interface implementation"""
@@ -103,7 +117,7 @@ class WriterBot(Bot, AgentInterface):
             return f"Professional legal document based on: '{message}'"
 
     async def execute_task(
-        self, task: WorkflowTask, context: Dict[str, Any]
+        self, task, context: Dict[str, Any]
     ) -> Dict[str, Any]:
         """AgentInterface implementation for orchestration system"""
         logger.info(f"WriterBot executing task: {task.id}")
@@ -161,7 +175,7 @@ class WriterBot(Bot, AgentInterface):
 
         except Exception as e:
             logger.error(f"WriterBot task execution failed: {e}")
-            return {"status": "failed", "error": str(e), "content": None}</search>
+            return {"status": "failed", "error": str(e), "content": None}
 
     async def _write_professional_complaint(
         self,
@@ -616,6 +630,7 @@ Based on the facts and applicable law, the following relief is appropriate.
             recommendations
             if recommendations
             else [f"Continue monitoring legal developments for {claim_text}"]
+        )
 
     def _enhance_content_with_validation(
         self, content: str, validation_context: Dict[str, Any]
@@ -691,4 +706,3 @@ async def validate_claim_for_drafting(
     except Exception as e:
         logger.error(f"Claim validation failed: {e}")
         return {"validation_performed": False, "error": str(e)}
-        )

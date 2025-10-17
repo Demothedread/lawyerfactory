@@ -1,55 +1,61 @@
 // Evidence Table component with unified storage integration
 // Evidence Table component with unified storage integration
 import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  IconButton,
-  InputAdornment,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemText,
-  Menu,
-  MenuItem,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  TableSortLabel,
-  TextField,
-  Tooltip,
-  Typography
+    Alert,
+    Box,
+    Button,
+    Card,
+    CardContent,
+    CardHeader,
+    Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Divider,
+    FormControl,
+    IconButton,
+    InputAdornment,
+    InputLabel,
+    LinearProgress,
+    List,
+    ListItem,
+    ListItemText,
+    Menu,
+    MenuItem,
+    Select,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TablePagination,
+    TableRow,
+    TableSortLabel,
+    TextField,
+    Tooltip,
+    Typography
 } from '@mui/material';
 
 import {
-  FilePresent,
-  Assessment,
-  Gavel,
-  Refresh,
-  Search,
-  Visibility,
-  Download,
-  Delete,
-  Close,
-  MoreVert
+    Add,
+    Assessment,
+    Close,
+    Delete,
+    Download,
+    Edit,
+    FilePresent,
+    Gavel,
+    MoreVert,
+    Refresh,
+    Science,
+    Search,
+    Visibility
 } from '@mui/icons-material';
 
 import { useCallback, useEffect, useState } from 'react';
-import { useToast } from '../feedback/Toast';
 import { io } from 'socket.io-client';
+import { useToast } from '../feedback/Toast';
 
 const EvidenceTable = ({
   caseId,
@@ -76,6 +82,18 @@ const EvidenceTable = ({
   const [menuEvidence, setMenuEvidence] = useState(null);
   const [socket, setSocket] = useState(null);
   const [realTimeUpdates, setRealTimeUpdates] = useState(true);
+
+  // NEW: Research dialog state
+  const [showResearchDialog, setShowResearchDialog] = useState(false);
+  const [researchKeywords, setResearchKeywords] = useState('');
+  const [researchInProgress, setResearchInProgress] = useState(false);
+
+  // NEW: Evidence source filter
+  const [evidenceSourceFilter, setEvidenceSourceFilter] = useState('all'); // 'all', 'primary', 'secondary'
+
+  // NEW: Create/Edit evidence dialog
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingEvidence, setEditingEvidence] = useState(null);
 
   const { addToast } = useToast();
 
@@ -182,6 +200,41 @@ const EvidenceTable = ({
           console.log('🎯 Phase completed, checking for evidence updates:', data);
           // Refresh evidence list as phase completion might update evidence status
           setTimeout(() => loadEvidence(), 1000); // Small delay to ensure backend processing is complete
+        }
+      });
+
+      // NEW: Research events
+      newSocket.on('research_started', (data) => {
+        if (!caseId || data.case_id === caseId) {
+          console.log('🔬 Research started:', data);
+          addToast(`Research started with ${data.keywords.length} keywords`, {
+            severity: 'info',
+            title: 'Research In Progress',
+          });
+        }
+      });
+
+      newSocket.on('research_completed', (data) => {
+        if (!caseId || data.case_id === caseId) {
+          console.log('✅ Research completed:', data);
+          addToast(`Research completed! Found ${data.total_sources} sources, created ${data.secondary_evidence_ids.length} SECONDARY evidence entries`, {
+            severity: 'success',
+            title: 'Research Complete',
+          });
+          // Refresh evidence list to show new SECONDARY evidence
+          loadEvidence();
+          setResearchInProgress(false);
+        }
+      });
+
+      newSocket.on('research_failed', (data) => {
+        if (!caseId || data.case_id === caseId) {
+          console.log('❌ Research failed:', data);
+          addToast(`Research failed: ${data.error}`, {
+            severity: 'error',
+            title: 'Research Error',
+          });
+          setResearchInProgress(false);
         }
       });
 
@@ -295,6 +348,78 @@ const EvidenceTable = ({
     handleMenuClose();
   };
 
+  // NEW: Request research from PRIMARY evidence
+  const handleRequestResearch = (evidence) => {
+    if (evidence.evidence_source === 'secondary') {
+      addToast('Can only research from PRIMARY evidence', {
+        severity: 'warning',
+        title: 'Invalid Operation',
+      });
+      return;
+    }
+
+    setSelectedEvidence(evidence);
+    setShowResearchDialog(true);
+    handleMenuClose();
+  };
+
+  // NEW: Execute research
+  const handleExecuteResearch = async () => {
+    if (!selectedEvidence) return;
+
+    setResearchInProgress(true);
+    
+    try {
+      const response = await fetch('/api/research/execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          case_id: caseId || 'default_case',
+          evidence_id: selectedEvidence.evidence_id,
+          keywords: researchKeywords ? researchKeywords.split(',').map(k => k.trim()) : null,
+          max_results: 5,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Research request failed');
+      }
+
+      const result = await response.json();
+      
+      addToast(`Research started! ${result.message}`, {
+        severity: 'success',
+        title: 'Research Initiated',
+      });
+
+      setShowResearchDialog(false);
+      setResearchKeywords('');
+    } catch (err) {
+      addToast(`Research failed: ${err.message}`, {
+        severity: 'error',
+        title: 'Research Error',
+      });
+      setResearchInProgress(false);
+    }
+  };
+
+  // NEW: Create new evidence
+  const handleCreateEvidence = () => {
+    setEditingEvidence(null);
+    setShowCreateDialog(true);
+  };
+
+  // NEW: Edit evidence
+  const handleEdit = (evidence) => {
+    setEditingEvidence(evidence);
+    setShowCreateDialog(true);
+    handleMenuClose();
+  };
+
+  // NEW: Save evidence (create or update)
+
   // Format file size
   const formatFileSize = (bytes) => {
     if (!bytes) return 'Unknown';
@@ -343,11 +468,21 @@ const EvidenceTable = ({
     );
   };
 
-  // Filter evidence based on search and phase
+  // Filter evidence based on search, phase, and evidence source
   const filteredEvidence = evidenceData.filter(evidence => {
     // Phase filter
     if (phaseFilter && evidence.phase !== phaseFilter) {
       return false;
+    }
+
+    // NEW: Evidence source filter
+    if (evidenceSourceFilter !== 'all') {
+      if (evidenceSourceFilter === 'primary' && evidence.evidence_source !== 'primary') {
+        return false;
+      }
+      if (evidenceSourceFilter === 'secondary' && evidence.evidence_source !== 'secondary') {
+        return false;
+      }
     }
 
     // Search filter
@@ -357,7 +492,8 @@ const EvidenceTable = ({
       evidence.filename?.toLowerCase().includes(term) ||
       evidence.description?.toLowerCase().includes(term) ||
       evidence.tags?.toLowerCase().includes(term) ||
-      evidence.object_id?.toLowerCase().includes(term)
+      evidence.object_id?.toLowerCase().includes(term) ||
+      evidence.research_query?.toLowerCase().includes(term)
     );
   });
 
@@ -378,6 +514,11 @@ const EvidenceTable = ({
           }
           action={
             <Box sx={{ display: 'flex', gap: 1 }}>
+              <Tooltip title="Create Evidence">
+                <IconButton onClick={handleCreateEvidence} color="primary">
+                  <Add />
+                </IconButton>
+              </Tooltip>
               <Tooltip title="Refresh">
                 <IconButton onClick={loadEvidence} disabled={loading}>
                   <Refresh />
@@ -389,7 +530,7 @@ const EvidenceTable = ({
         
         <CardContent>
           {/* Search and Filter */}
-          <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Box sx={{ mb: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
             <TextField
               size="small"
               placeholder="Search evidence..."
@@ -404,6 +545,21 @@ const EvidenceTable = ({
               }}
               sx={{ minWidth: 200 }}
             />
+            
+            {/* NEW: Evidence Source Filter */}
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Evidence Source</InputLabel>
+              <Select
+                value={evidenceSourceFilter}
+                onChange={(e) => setEvidenceSourceFilter(e.target.value)}
+                label="Evidence Source"
+              >
+                <MenuItem value="all">All Evidence</MenuItem>
+                <MenuItem value="primary">PRIMARY Only</MenuItem>
+                <MenuItem value="secondary">SECONDARY Only</MenuItem>
+              </Select>
+            </FormControl>
+            
             <Typography variant="body2" color="text.secondary">
               {filteredEvidence.length} of {evidenceData.length} items
             </Typography>
@@ -431,6 +587,7 @@ const EvidenceTable = ({
                     </TableSortLabel>
                   </TableCell>
                   <TableCell>Status</TableCell>
+                  <TableCell>Source</TableCell>
                   <TableCell>Size</TableCell>
                   <TableCell>
                     <TableSortLabel
@@ -468,6 +625,13 @@ const EvidenceTable = ({
                         {getStatusChip(evidence.status)}
                       </TableCell>
                       <TableCell>
+                        <Chip
+                          label={evidence.evidence_source === 'primary' ? 'PRIMARY' : 'SECONDARY'}
+                          color={evidence.evidence_source === 'primary' ? 'primary' : 'secondary'}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell>
                         {formatFileSize(evidence.file_size)}
                       </TableCell>
                       <TableCell>
@@ -496,9 +660,11 @@ const EvidenceTable = ({
                 
                 {filteredEvidence.length === 0 && !loading && (
                   <TableRow>
-                    <TableCell colSpan={showActions ? 7 : 6} align="center">
+                    <TableCell colSpan={showActions ? 8 : 7} align="center">
                       <Typography color="text.secondary" sx={{ py: 4 }}>
-                        {searchTerm ? 'No evidence matches your search' : 'No evidence uploaded yet'}
+                        {searchTerm || evidenceSourceFilter !== 'all' 
+                          ? 'No evidence matches your filters' 
+                          : 'No evidence uploaded yet'}
                       </Typography>
                     </TableCell>
                   </TableRow>
@@ -535,6 +701,16 @@ const EvidenceTable = ({
           <Visibility sx={{ mr: 1 }} />
           View Details
         </MenuItem>
+        <MenuItem onClick={() => handleEdit(menuEvidence)}>
+          <Edit sx={{ mr: 1 }} />
+          Edit
+        </MenuItem>
+        {menuEvidence?.evidence_source === 'primary' && (
+          <MenuItem onClick={() => handleRequestResearch(menuEvidence)}>
+            <Science sx={{ mr: 1 }} />
+            Request Research
+          </MenuItem>
+        )}
         <MenuItem onClick={() => handleDownload(menuEvidence)}>
           <Download sx={{ mr: 1 }} />
           Download
@@ -653,6 +829,51 @@ const EvidenceTable = ({
               Download
             </Button>
           )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Research Dialog */}
+      <Dialog open={showResearchDialog} onClose={() => setShowResearchDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          Request Research
+          <IconButton
+            onClick={() => setShowResearchDialog(false)}
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {selectedEvidence && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Research will be executed from PRIMARY evidence: <strong>{selectedEvidence.filename}</strong>
+              </Typography>
+              <TextField
+                fullWidth
+                label="Custom Keywords (Optional)"
+                placeholder="Enter comma-separated keywords..."
+                value={researchKeywords}
+                onChange={(e) => setResearchKeywords(e.target.value)}
+                helperText="Leave empty to automatically extract keywords from evidence content"
+                multiline
+                rows={3}
+              />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowResearchDialog(false)} disabled={researchInProgress}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleExecuteResearch}
+            disabled={researchInProgress}
+            startIcon={researchInProgress ? <LinearProgress /> : <Science />}
+          >
+            {researchInProgress ? 'Researching...' : 'Execute Research'}
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

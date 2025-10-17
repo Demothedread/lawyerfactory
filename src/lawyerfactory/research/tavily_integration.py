@@ -71,9 +71,13 @@ class TavilyResearchIntegration:
         if not self.api_key:
             raise ValueError("TAVILY_API_KEY environment variable required")
 
-        # Initialize Weave for observability
+        # Initialize Weave for observability (optional - don't block on connection errors)
         if weave:
-            weave.init(project_name="lawyerfactory-research")
+            try:
+                weave.init(project_name="lawyerfactory-research")
+                logger.info("Weave observability initialized")
+            except Exception as e:
+                logger.warning(f"Weave initialization failed (non-critical): {e}")
 
         if TavilyClient is None:
             raise ImportError("TavilyClient not available")

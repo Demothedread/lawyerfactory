@@ -20,7 +20,7 @@ import time
 from typing import Any, Dict, List, Optional
 
 from lawyerfactory.phases.phaseA01_intake.cause_of_action_detector import CauseOfActionDetector
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 from maestro.bots.research_bot import (
     CourtListenerClient,
     GoogleScholarClient,

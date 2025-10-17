@@ -1,0 +1,320 @@
+/* MagicUI Soviet Industrial Style Overrides */
+/* Customizations for strategic MagicUI components used in Soviet switchboard */
+
+/* ===== RETRO GRID CUSTOMIZATION ===== */
+/* Brushed metal panel background effect */
+:root {
+  --retro-grid-line-color: var(--soviet-brass, #d4af37);
+  --retro-grid-bg-color: var(--soviet-charcoal, #1a1a1a);
+  --retro-grid-opacity: 0.15;
+  --retro-grid-size: 60px;
+}
+
+.magicui-retro-grid {
+  background-color: var(--retro-grid-bg-color);
+  background-image: 
+    linear-gradient(
+      var(--retro-grid-line-color) 1px,
+      transparent 1px,
+      transparent var(--retro-grid-size),
+      var(--retro-grid-line-color) var(--retro-grid-size)
+    ),
+    linear-gradient(
+      90deg,
+      var(--retro-grid-line-color) 1px,
+      transparent 1px,
+      transparent var(--retro-grid-size),
+      var(--retro-grid-line-color) var(--retro-grid-size)
+    );
+  background-size: var(--retro-grid-size) var(--retro-grid-size);
+  background-position: 0 0;
+  opacity: var(--retro-grid-opacity);
+}
+
+/* ===== FLICKERING GRID CUSTOMIZATION ===== */
+/* CRT screen scanline overlay effect */
+:root {
+  --flickering-grid-line-color: var(--neon-green, #39ff14);
+  --flickering-grid-opacity: 0.03;
+  --flickering-grid-line-height: 1px;
+}
+
+.magicui-flickering-grid {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    var(--flickering-grid-line-color) 2px,
+    var(--flickering-grid-line-color) 4px
+  );
+  opacity: var(--flickering-grid-opacity);
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* ===== TERMINAL CUSTOMIZATION ===== */
+/* CRT green text on black background */
+:root {
+  --terminal-fg-color: var(--neon-green, #39ff14);
+  --terminal-bg-color: var(--soviet-charcoal, #1a1a1a);
+  --terminal-text-shadow: 0 0 8px var(--neon-green);
+  --terminal-font: 'Share Tech Mono', 'Courier New', monospace;
+}
+
+.magicui-terminal {
+  background-color: var(--terminal-bg-color);
+  color: var(--terminal-fg-color);
+  font-family: var(--terminal-font);
+  font-size: 0.875rem;
+  text-shadow: var(--terminal-text-shadow);
+  border: 2px solid var(--soviet-brass, #d4af37);
+  border-radius: 4px;
+  padding: 12px;
+  line-height: 1.6;
+  letter-spacing: 0.05em;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.magicui-terminal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(57, 255, 20, 0.03) 2px,
+    rgba(57, 255, 20, 0.03) 4px
+  );
+  pointer-events: none;
+  border-radius: 4px;
+}
+
+/* ===== MARQUEE CUSTOMIZATION ===== */
+/* Soviet-styled status ticker */
+:root {
+  --marquee-border-color: var(--soviet-brass, #d4af37);
+  --marquee-text-color: var(--neon-green, #39ff14);
+  --marquee-bg-color: rgba(26, 26, 26, 0.9);
+  --marquee-font: 'Share Tech Mono', monospace;
+}
+
+.magicui-marquee {
+  background-color: var(--marquee-bg-color);
+  border: 2px solid var(--marquee-border-color);
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: var(--marquee-text-color);
+  font-family: var(--marquee-font);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-shadow: 0 0 8px var(--marquee-text-color);
+  overflow: hidden;
+}
+
+.magicui-marquee-content {
+  animation: marquee-scroll 30s linear infinite;
+  white-space: nowrap;
+  display: inline-block;
+  padding-left: 100%;
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* ===== FILE TREE CUSTOMIZATION ===== */
+/* Hierarchical evidence display */
+:root {
+  --file-tree-font: 'Russo One', system-ui, sans-serif;
+  --file-tree-text-color: rgba(255, 255, 255, 0.9);
+  --file-tree-accent-color: var(--soviet-brass, #d4af37);
+  --file-tree-border-color: var(--soviet-brass, #d4af37);
+}
+
+.magicui-file-tree {
+  font-family: var(--file-tree-font);
+  color: var(--file-tree-text-color);
+  border: 2px solid var(--file-tree-border-color);
+  border-radius: 4px;
+  padding: 12px;
+  background-color: rgba(26, 26, 26, 0.95);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.magicui-file-tree-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.magicui-file-tree-item:hover {
+  background-color: rgba(212, 175, 55, 0.1);
+  color: var(--file-tree-accent-color);
+}
+
+.magicui-file-tree-toggle {
+  color: var(--file-tree-accent-color);
+  font-weight: bold;
+  width: 16px;
+  transition: transform 0.2s ease;
+}
+
+.magicui-file-tree-toggle.expanded {
+  transform: rotate(90deg);
+}
+
+.magicui-file-tree-nested {
+  margin-left: 16px;
+  border-left: 1px solid rgba(212, 175, 55, 0.3);
+  padding-left: 8px;
+}
+
+/* ===== BORDER BEAM CUSTOMIZATION ===== */
+/* Animated border for phase connections (copper/brass recolored) */
+:root {
+  --border-beam-color: var(--soviet-brass, #d4af37);
+  --border-beam-glow: rgba(212, 175, 55, 0.6);
+  --border-beam-size: 3px;
+}
+
+.magicui-border-beam {
+  --beam-color: var(--border-beam-color);
+  --beam-glow: var(--border-beam-glow);
+  border: var(--border-beam-size) solid var(--border-beam-color);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.magicui-border-beam::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    var(--border-beam-color) 50%,
+    transparent 70%
+  );
+  animation: beam-sweep 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes beam-sweep {
+  0% {
+    transform: rotate(0deg) translateX(0);
+  }
+  100% {
+    transform: rotate(360deg) translateX(100px);
+  }
+}
+
+/* ===== WORKFLOW PANEL PULSATING ACTIVE PHASE ===== */
+/* Animated indicator for active phase in WorkflowPanel */
+@keyframes phase-name-pulse {
+  0% {
+    color: var(--soviet-brass, #d4af37);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5), 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+  50% {
+    color: var(--neon-green, #39ff14);
+    text-shadow: 0 0 15px rgba(57, 255, 20, 0.7), 0 0 30px rgba(57, 255, 20, 0.4);
+  }
+  100% {
+    color: var(--soviet-brass, #d4af37);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5), 0 0 20px rgba(212, 175, 55, 0.3);
+  }
+}
+
+.pulsating-active {
+  animation: phase-name-pulse 2s ease-in-out infinite;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* ===== WORKFLOW PANEL SOVIET STYLING ===== */
+/* RetroGridSoviet background wrapper styling */
+.workflow-panel-soviet {
+  position: relative;
+  z-index: 1;
+}
+
+.workflow-panel-soviet .retro-grid-content {
+  position: relative;
+  z-index: 2;
+}
+
+.magicui-retro-grid-soviet {
+  position: relative;
+  border-radius: 2px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.1);
+}
+
+/* ===== MARQUEE SOVIET STATUS TICKER ===== */
+/* Status ticker styling for workflow updates */
+.workflow-ticker {
+  margin-bottom: 12px;
+  padding: 8px 0;
+  border-top: 2px solid var(--soviet-brass, #d4af37);
+  border-bottom: 2px solid var(--soviet-brass, #d4af37);
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+  .magicui-terminal {
+    max-height: 200px;
+    font-size: 0.75rem;
+  }
+
+  .magicui-file-tree {
+    max-height: 250px;
+    padding: 8px;
+  }
+
+  .magicui-marquee {
+    font-size: 0.75rem;
+    padding: 6px 8px;
+  }
+}
+
+/* ===== DARK MODE OVERRIDE ===== */
+@media (prefers-color-scheme: light) {
+  :root {
+    --retro-grid-bg-color: #f5f5f5;
+    --retro-grid-line-color: #999999;
+    --terminal-bg-color: #ffffff;
+    --terminal-fg-color: #1a1a1a;
+    --marquee-bg-color: rgba(245, 245, 245, 0.9);
+    --marquee-text-color: #1a1a1a;
+  }
+
+  .magicui-terminal {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .magicui-marquee {
+    text-shadow: none;
+  }
+
+  .magicui-file-tree {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #1a1a1a;
+  }
+}

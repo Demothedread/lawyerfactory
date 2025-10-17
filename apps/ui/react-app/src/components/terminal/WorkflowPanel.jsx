@@ -1,11 +1,24 @@
-// WorkflowPanel - Professional workflow control panel component
-import React from 'react';
+// WorkflowPanel - Professional workflow control panel component with phase management
 import PropTypes from 'prop-types';
-import { MetalPanel, AnalogGauge, ToggleSwitch, NixieDisplay, MechanicalButton, StatusLights } from '../soviet';
+import { MarqueeSoviet, RetroGridSoviet } from '../../services/magicui-soviet-adapter';
+import { getPhaseEmoji, getPhaseName } from '../../services/phaseUtils';
+import '../../styles/magicui-soviet-overrides.css';
+import { AnalogGauge, MechanicalButton, MetalPanel, NixieDisplay, StatusLights } from '../soviet';
+
+// Generate dynamic status messages for MarqueeSoviet ticker
+const generateStatusMessages = (phases = [], overallProgress = 0) => {
+  const activePhase = phases.find(p => p.status === 'active');
+  const completedCount = phases.filter(p => p.status === 'completed').length;
+  
+  return [
+    `📊 Overall Progress: ${overallProgress}% | ${completedCount}/${phases.length} phases complete`,
+    activePhase ? `⚡ Active Phase: ${getPhaseName(activePhase.id)} | Progress: ${activePhase.progress || 0}%` : '⏳ Awaiting phase selection',
+    '🔄 Real-time workflow coordination | Phase-based document assembly',
+  ];
+};
 
 const WorkflowPanel = ({
   leftPanelCollapsed = false,
-  onToggleLeftPanel,
   onLegalIntakeSubmit,
   onSettingsOpen,
   systemStatus = ['green', 'green', 'amber', 'red', 'red'],
@@ -24,9 +37,16 @@ const WorkflowPanel = ({
   }
 
   return (
-    <div className="workflow-container">
-      {/* Quick Actions */}
-      <div className="workflow-actions">
+    <RetroGridSoviet className="workflow-panel-soviet">
+      <div className="workflow-container">
+        {/* Status Ticker - Live phase updates */}
+        <MarqueeSoviet 
+          messages={generateStatusMessages(phases, overallProgress)}
+          className="workflow-ticker"
+        />
+
+        {/* Quick Actions */}
+        <div className="workflow-actions">
         <MechanicalButton
           onClick={onLegalIntakeSubmit}
           variant="success"
@@ -75,14 +95,18 @@ const WorkflowPanel = ({
               className={`phase-item phase-${phase.status}`}
             >
               <div className="phase-header">
-                <span className="phase-icon">{phase.icon}</span>
+                <span className="phase-icon">{getPhaseEmoji(phase.id)}</span>
                 <span className="phase-id">{phase.id}</span>
-                <div className={`status-light ${
-                  phase.status === 'completed' ? 'green' :
-                  phase.status === 'active' ? 'amber' : 'red'
-                }`} />
+                <div 
+                  className={`status-light ${
+                    phase.status === 'completed' ? 'green' :
+                    phase.status === 'active' ? 'amber flashing' : 'red'
+                  }`} 
+                />
               </div>
-              <div className="phase-name">{phase.name}</div>
+              <div className={`phase-name ${phase.status === 'active' ? 'pulsating-active' : ''}`}>
+                {getPhaseName(phase.id) || phase.name}
+              </div>
               <div className="phase-progress">
                 <div
                   className="progress-bar"
@@ -153,6 +177,7 @@ const WorkflowPanel = ({
         )}
       </MetalPanel>
     </div>
+    </RetroGridSoviet>
   );
 };
 

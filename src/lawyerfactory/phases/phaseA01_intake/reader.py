@@ -44,8 +44,9 @@ except Exception:
 
 
 # Use Bot and WorkflowTask as before
-from ..bot_interface import Bot
-from ..workflow_models import WorkflowTask
+from lawyerfactory.compose.agent_registry import AgentConfig, AgentInterface
+from lawyerfactory.compose.maestro.base import Bot
+from lawyerfactory.compose.maestro.workflow import WorkflowTask
 
 # Import the existing assessor functionality
 try:

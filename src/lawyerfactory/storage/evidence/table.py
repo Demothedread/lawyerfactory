@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 # Import unified storage API
 try:
-    from lawyerfactory.storage.enhanced_unified_storage_api import (
+    from lawyerfactory.storage.core.unified_storage_api import (
         EnhancedUnifiedStorageAPI,
         get_enhanced_unified_storage_api,
     )
@@ -31,6 +31,19 @@ try:
 except ImportError:
     UNIFIED_STORAGE_AVAILABLE = False
     logger.warning("Unified storage API not available, using standalone mode")
+
+# Import Socket.IO event emitters
+try:
+    from lawyerfactory.phases.socket_events import (
+        emit_evidence_processed,
+        emit_evidence_uploaded,
+        emit_evidence_status_changed,
+    )
+    
+    SOCKET_EVENTS_AVAILABLE = True
+except ImportError:
+    SOCKET_EVENTS_AVAILABLE = False
+    logger.warning("Socket.IO events not available for evidence updates")
 
 
 class EvidenceType(Enum):
@@ -64,6 +77,13 @@ class RelevanceLevel(Enum):
     UNKNOWN = "unknown"
 
 
+class EvidenceSource(Enum):
+    """Evidence source classification for PRIMARY vs SECONDARY evidence"""
+
+    PRIMARY = "primary"  # User-uploaded evidence
+    SECONDARY = "secondary"  # Research-found evidence (Tavily, CourtListener, etc.)
+
+
 @dataclass
 class EvidenceEntry:
     """Enhanced evidence entry with comprehensive metadata"""
@@ -74,6 +94,7 @@ class EvidenceEntry:
     page_section: str = ""
     content: str = ""
     evidence_type: EvidenceType = EvidenceType.DOCUMENTARY
+    evidence_source: EvidenceSource = EvidenceSource.PRIMARY  # NEW: PRIMARY/SECONDARY classification
     relevance_score: float = 0.0
     relevance_level: RelevanceLevel = RelevanceLevel.UNKNOWN
     supporting_facts: List[str] = field(default_factory=list)
@@ -83,6 +104,8 @@ class EvidenceEntry:
     witness_name: Optional[str] = None
     key_terms: List[str] = field(default_factory=list)
     notes: str = ""
+    research_query: Optional[str] = None  # NEW: For SECONDARY evidence, the query that found it
+    research_confidence: float = 0.0  # NEW: Confidence score from research API
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     last_modified: str = field(default_factory=lambda: datetime.now().isoformat())
     created_by: str = "system"
@@ -325,6 +348,22 @@ class EnhancedEvidenceTable:
                 self.evidence_entries[evidence_id] = evidence
                 self._save_data()
 
+                # Emit Socket.IO event for evidence upload
+                if SOCKET_EVENTS_AVAILABLE:
+                    try:
+                        case_id = metadata.get("case_id", "unknown") if metadata else "unknown"
+                        emit_evidence_uploaded(
+                            case_id=case_id,
+                            evidence_id=evidence_id,
+                            object_id=result.object_id,
+                            filename=filename,
+                            file_size=len(file_content) if file_content else 0,
+                            phase=source_phase
+                        )
+                        logger.debug(f"Emitted evidence_uploaded event for {filename}")
+                    except Exception as e:
+                        logger.warning(f"Failed to emit evidence_uploaded event: {e}")
+
                 return evidence_id
             else:
                 logger.error(f"Unified storage failed: {result.error}")
@@ -444,11 +483,34 @@ class EnhancedEvidenceTable:
         """Update evidence entry"""
         if evidence_id in self.evidence_entries:
             entry = self.evidence_entries[evidence_id]
+            old_relevance = entry.relevance_score
+            
             for key, value in updates.items():
                 if hasattr(entry, key):
                     setattr(entry, key, value)
             entry.update_modified()
             self._save_data()
+            
+            # Emit processed event if relevance score changed (indicates analysis completion)
+            if SOCKET_EVENTS_AVAILABLE and updates.get("relevance_score") and updates.get("relevance_score") != old_relevance:
+                try:
+                    case_id = updates.get("case_id", "unknown")
+                    emit_evidence_processed(
+                        case_id=case_id,
+                        evidence_id=evidence_id,
+                        object_id=entry.object_id or "",
+                        filename=entry.source_document,
+                        status="analyzed",
+                        metadata={
+                            "relevance_score": entry.relevance_score,
+                            "relevance_level": entry.relevance_level.value,
+                            "evidence_type": entry.evidence_type.value
+                        }
+                    )
+                    logger.debug(f"Emitted evidence_processed event for {entry.source_document}")
+                except Exception as e:
+                    logger.warning(f"Failed to emit evidence_processed event: {e}")
+            
             return True
         return False
 

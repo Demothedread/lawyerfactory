@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 # Import unified storage API
 try:
-    from lawyerfactory.storage.enhanced_unified_storage_api import (
+    from lawyerfactory.storage.core.unified_storage_api import (
         EnhancedUnifiedStorageAPI,
         get_enhanced_unified_storage_api,
         EvidenceMetadata

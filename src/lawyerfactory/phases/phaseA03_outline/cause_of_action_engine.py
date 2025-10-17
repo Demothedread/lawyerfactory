@@ -14,7 +14,7 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 from lawyerfactory.kg.graph_api import KnowledgeGraph
 from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
@@ -1139,7 +1139,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+    from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
     from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
     try:

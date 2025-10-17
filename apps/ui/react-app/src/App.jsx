@@ -1,34 +1,29 @@
 // Main App component integrating lawsuit workflow UI components
 import {
   Box,
-  Card,
-  CardContent,
   Container,
   createTheme,
   CssBaseline,
-  Grid,
   Paper,
   ThemeProvider,
   Typography
 } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
-import ProgressBar from "./components/feedback/ProgressBar";
 import Toast, { useToast } from "./components/feedback/Toast";
 import LawsuitWizard from "./components/forms/LawsuitWizard";
-import TooltipGuide, { GuidedTour } from "./components/guidance/TooltipGuide";
-import Accordion from "./components/ui/Accordion";
+import TooltipGuide from "./components/guidance/TooltipGuide";
 import AgentOrchestrationPanel from "./components/ui/AgentOrchestrationPanel";
 import DataTable from "./components/ui/DataTable";
 import EvidenceTable from "./components/ui/EvidenceTable";
 import EvidenceUpload from "./components/ui/EvidenceUpload";
-import Modal, { ConfirmationModal } from "./components/ui/Modal";
+import { ConfirmationModal } from "./components/ui/Modal";
 import PhasePipeline from "./components/ui/PhasePipeline";
 import lawyerFactoryAPI, {
+  fetchLLMConfig,
   getCaseDocuments
 } from "./services/apiService";
 
 // Import modular terminal components
-import DeliverablesPanel from "./components/terminal/DeliverablesPanel";
 import LegalIntakeForm from "./components/terminal/LegalIntakeForm";
 import SettingsPanel from "./components/terminal/SettingsPanel";
 import WorkflowPanel from "./components/terminal/WorkflowPanel";
@@ -44,21 +39,21 @@ import ToggleSwitch from "./components/soviet/ToggleSwitch";
 import GridContainer, {
   GridItem,
   GridSection,
-} from "./components/layout/GridContainer";
+} from "./components/forms/layout/GridContainer";
 
 // Import legal analysis components
 import ClaimsMatrix from "./components/ui/ClaimsMatrix";
 import ShotList from "./components/ui/ShotList";
 import SkeletalOutlineSystem from "./components/ui/SkeletalOutlineSystem";
 
-// Import Magic UI components for enhanced visual design
+// Import MagicUI components - selective, strategic imports for enhanced visual design
 
+// Import MagicUI adapter for Soviet styling
 
-
-// Create Soviet Industrial theme
-const theme = createTheme({
+// Create Soviet Industrial theme with dynamic dark mode
+const getSovietTheme = (darkMode = true) => createTheme({
   palette: {
-    mode: "dark",
+    mode: darkMode ? "dark" : "light",
     primary: {
       main: "#b87333", // Soviet brass
     },
@@ -66,16 +61,19 @@ const theme = createTheme({
       main: "#dc143c", // Soviet crimson
     },
     background: {
-      default: "#1a1a1a", // Soviet charcoal
-      paper: "#2a2a2a", // Darker charcoal
+      default: darkMode ? "#1a1a1a" : "#e8e8e8", // Soviet charcoal or light gray
+      paper: darkMode ? "#2a2a2a" : "#f5f5f5", // Darker charcoal or paper white
     },
     text: {
-      primary: "#c0c0c0", // Soviet silver
-      secondary: "#8b8680", // Panel rivets
+      primary: darkMode ? "#c0c0c0" : "#2a2a2a", // Soviet silver or dark gray
+      secondary: darkMode ? "#8b8680" : "#5a5a5a", // Panel rivets or medium gray
     },
   },
   typography: {
     fontFamily: '"Share Tech Mono", "Russo One", monospace',
+    body2: {
+      fontFamily: "elevon"
+    },
     h4: {
       fontWeight: 600,
       fontFamily: '"Orbitron", monospace',
@@ -88,8 +86,10 @@ const theme = createTheme({
     MuiCssBaseline: {
       styleOverrides: {
         body: {
-          background: "linear-gradient(135deg, #1a1a1a 0%, #434b4d 100%)",
-          color: "#c0c0c0",
+          background: darkMode 
+            ? "linear-gradient(135deg, #1a1a1a 0%, #434b4d 100%)"
+            : "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
+          color: darkMode ? "#c0c0c0" : "#2a2a2a",
           fontFamily: '"Share Tech Mono", "Russo One", monospace',
           "&::before": {
             content: '""',
@@ -109,7 +109,7 @@ const theme = createTheme({
   },
 });
 
-// Mock data for demonstration
+//Mock data for demonstration
 const mockLawsuits = [
   {
     id: 1,
@@ -121,18 +121,18 @@ const mockLawsuits = [
   },
   {
     id: 2,
-    clientName: "Jane Smith",
-    caseType: "Contract Dispute",
-    status: "Discovery",
-    filedDate: "2024-02-20",
-    jurisdiction: "Federal Court",
+    clientName: "",
+    caseType: "",
+    status: "",
+    filedDate: "",
+    jurisdiction: "",
   },
   {
     id: 3,
-    clientName: "Bob Johnson",
-    caseType: "Employment",
-    status: "Mediation",
-    filedDate: "2024-03-10",
+    clientName: "",
+    caseType: '',
+    status: "",
+    filedDate: "",
     jurisdiction: "County Court",
   },
 ];
@@ -147,19 +147,20 @@ const mockDocuments = [
   },
   {
     id: 2,
-    name: "Evidence Report",
-    type: "Investigation",
-    status: "Final",
-    lastModified: "2024-09-08",
+    name: "",
+    type: "",
+    status: "",
+    lastModified: "",
   },
   {
     id: 3,
-    name: "Witness Statements",
-    type: "Evidence",
-    status: "Review",
-    lastModified: "2024-09-05",
+    name: "",
+    type: "",
+    status: "",
+    lastModified: "",
   },
 ];
+
 
 const App = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -212,11 +213,21 @@ const App = () => {
   const backendInitialized = useRef(false);
 
   // Settings state with localStorage persistence
+  //
+  // NOTE: These values are initial defaults only. They are NOT hardcoded in a way
+  // that prevents user updates. Behavior:
+  //  - On first load, we attempt to read persisted settings from localStorage.
+  //  - If none exist, we use these defaults (e.g., aiModel: 'gpt-5-mini', llmProvider: 'openai').
+  //  - The SettingsPanel (and handleSettingsChange) allow the user to update these settings,
+  //    which are then persisted to localStorage and synced to the backend via lawyerFactoryAPI.updateSettings.
+  //  - If the backend/environment exposes an LLM configuration (fetchLLMConfig), the app will update
+  //    these settings at runtime to reflect environment-provided values (see initializeBackend()).
+  // In short: defaults are provided for convenience but are adjustable and can be overridden.
   const [settings, setSettings] = useState(() => {
     const savedSettings = localStorage.getItem('lawyerfactory_settings');
     return savedSettings ? JSON.parse(savedSettings) : {
       // AI Model Configuration
-      aiModel: 'gpt-4',
+      aiModel: 'gpt-5-mini', // gpt-4, gpt-4-turbo, anthropic-claude-2, groq-1
       llmProvider: 'openai', // openai, anthropic, groq
       researchMode: true,
       citationValidation: true,
@@ -255,6 +266,126 @@ const App = () => {
     });
   };
 
+  // Case management state
+  const [cases, setCases] = useState(() => {
+    const savedCases = localStorage.getItem('lawyerfactory_cases');
+    return savedCases ? JSON.parse(savedCases) : [];
+  });
+  const [currentCaseName, setCurrentCaseName] = useState(null);
+
+  // Persist cases to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('lawyerfactory_cases', JSON.stringify(cases));
+  }, [cases]);
+
+  // Generate case name from plaintiff last name + date
+  const generateCaseName = (formData) => {
+    const plaintiffName = formData.plaintiffName || '';
+    const lastName = plaintiffName.split(' ').pop() || 'Unknown';
+    const today = new Date();
+    const dateStr = today.getFullYear().toString() +
+                   (today.getMonth() + 1).toString().padStart(2, '0') +
+                   today.getDate().toString().padStart(2, '0');
+    return `${lastName}_${dateStr}`;
+  };
+
+  // Save current application state for a case
+  const saveCaseState = async (caseName) => {
+    try {
+      const stateToSave = {
+        currentView,
+        phaseStatuses,
+        realTimeProgress,
+        settings,
+        claimsMatrix,
+        shotList,
+        skeletalOutline,
+        currentCaseId,
+        savedAt: new Date().toISOString(),
+      };
+
+      const result = await lawyerFactoryAPI.saveCaseState(caseName, stateToSave);
+
+      if (result.success) {
+        // Update case in local cases array
+        setCases(prev => {
+          const existingIndex = prev.findIndex(c => c.name === caseName);
+          const caseData = {
+            name: caseName,
+            lastModified: new Date().toISOString(),
+            status: 'Active',
+            plaintiffName: caseName.split('_')[0], // Extract from case name
+            caseType: 'Legal Action',
+            jurisdiction: settings.jurisdiction,
+          };
+
+          if (existingIndex >= 0) {
+            // Update existing case
+            const updated = [...prev];
+            updated[existingIndex] = caseData;
+            return updated;
+          } else {
+            // Add new case
+            return [...prev, caseData];
+          }
+        });
+
+        addToast(`💾 Case "${caseName}" saved successfully`, {
+          severity: 'success',
+          title: 'Case Saved',
+        });
+      } else {
+        throw new Error(result.error || 'Save failed');
+      }
+    } catch (error) {
+      console.error('Failed to save case state:', error);
+      addToast(`❌ Failed to save case: ${error.message}`, {
+        severity: 'error',
+        title: 'Save Failed',
+      });
+    }
+  };
+
+  // Load application state for a case
+  const loadCaseState = async (caseName) => {
+    try {
+      const result = await lawyerFactoryAPI.loadCaseState(caseName);
+
+      if (result.success && result.state) {
+        const state = result.state;
+
+        // Restore application state
+        setCurrentView(state.currentView || 'dashboard');
+        setPhaseStatuses(state.phaseStatuses || {});
+        setRealTimeProgress(state.realTimeProgress || {});
+        setSettings(prev => ({ ...prev, ...state.settings }));
+        setClaimsMatrix(state.claimsMatrix || []);
+        setShotList(state.shotList || []);
+        setSkeletalOutline(state.skeletalOutline || null);
+        setCurrentCaseId(state.currentCaseId || null);
+        setCurrentCaseName(caseName);
+
+        addToast(`📂 Case "${caseName}" loaded successfully`, {
+          severity: 'success',
+          title: 'Case Loaded',
+        });
+      } else {
+        throw new Error(result.error || 'Load failed');
+      }
+    } catch (error) {
+      console.error('Failed to load case state:', error);
+      addToast(`❌ Failed to load case: ${error.message}`, {
+        severity: 'error',
+        title: 'Load Failed',
+      });
+    }
+  };
+
+  // Handle case selection from case list
+  const handleCaseSelect = async (caseName) => {
+    await loadCaseState(caseName);
+  };
+
   // Backend connection initialization
   useEffect(() => {
     // Only initialize once
@@ -273,6 +404,23 @@ const App = () => {
             severity: "success",
             title: "Backend Connected",
           });
+
+          // Load LLM configuration from environment variables
+          try {
+            const llmConfigResponse = await fetchLLMConfig();
+            if (llmConfigResponse.success) {
+              // Update settings with environment variable values
+              setSettings(prev => ({
+                ...prev,
+                llmProvider: llmConfigResponse.config.provider || prev.llmProvider,
+                aiModel: llmConfigResponse.config.model || prev.aiModel,
+              }));
+
+              console.log('✅ LLM config loaded from environment:', llmConfigResponse.config);
+            }
+          } catch (error) {
+            console.warn('⚠️ Failed to load LLM config from environment:', error);
+          }
         } else {
           addToast("⚠️ Running in offline mode - using mock data", {
             severity: "warning",
@@ -441,6 +589,8 @@ const App = () => {
   const handleWizardCancel = () => {
     setShowWizard(false);
   };
+
+  const ControlTerminalContainer = "app-container";
 
   const handleLawsuitClick = (lawsuit) => {
     setSelectedLawsuit(lawsuit);
@@ -622,36 +772,6 @@ const App = () => {
   };
 
   // Guided tour setup
-  const tourSteps = [
-    {
-      title: "Welcome to Briefcaser",
-      content:
-        "This is your professional legal document automation control terminal. Let's take a quick tour of the key features.",
-      tips: [
-        "Use the workflow panel to track your case progress",
-        "The chat interface connects you with AI legal assistants",
-      ],
-    },
-    {
-      title: "Workflow Control Panel",
-      content:
-        "Monitor your 7-phase legal workflow here. Each phase represents a different stage of document preparation.",
-      tips: [
-        "Green lights indicate completed phases",
-        "Amber lights show active phases",
-        "Red lights indicate phases needing attention",
-      ],
-    },
-    {
-      title: "Document Deliverables",
-      content:
-        "View and download your generated legal documents from this panel.",
-      tips: [
-        "Documents can be exported as PDF or DOC",
-        "The evidence table shows supporting materials",
-      ],
-    },
-  ];
 
   const handleStartTour = () => {
     setShowGuidedTour(true);
@@ -662,9 +782,13 @@ const App = () => {
     try {
       console.log("Legal intake submitted:", formData);
 
+      // Generate case name from plaintiff last name + date
+      const caseName = generateCaseName(formData);
+
       // Create case using LawyerFactory API
       const result = await lawyerFactoryAPI.createCase(formData);
       setCurrentCaseId(result.case_id);
+      setCurrentCaseName(caseName);
 
       addToast(`✅ Case ${result.case_id} created successfully!`, {
         severity: "success",
@@ -673,6 +797,20 @@ const App = () => {
 
       // Load any existing documents for this case from unified storage
       await loadCaseDocuments(result.case_id);
+
+      // Add case to cases list
+      setCases(prev => {
+        const newCase = {
+          name: caseName,
+          created: new Date().toISOString(),
+          lastModified: new Date().toISOString(),
+          status: "Active",
+          jurisdiction: formData.jurisdiction || "Federal",
+        };
+        // Remove any existing case with the same name
+        const filtered = prev.filter(c => c.name !== caseName);
+        return [...filtered, newCase];
+      });
 
       // Auto-start research phase if we have case description
       if (formData.claimDescription && formData.claimDescription.trim()) {
@@ -747,146 +885,22 @@ const App = () => {
     }
   };
 
-  const renderDashboard = () => (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Case Management Dashboard
-        <TooltipGuide
-          title="Dashboard Overview"
-          content="Monitor your active cases, recent documents, and case progress from this central hub."
-          type="info"
-        />
-      </Typography>
+  // Auto-save case state when enabled and case data changes
+  useEffect(() => {
+    if (settings.autoSave && currentCaseName && (currentCaseId || currentView !== "cases")) {
+      const timeoutId = setTimeout(async () => {
+        try {
+          await saveCaseState(currentCaseName);
+          console.log("💾 Auto-saved case state:", currentCaseName);
+        } catch (error) {
+          console.error("Auto-save failed:", error);
+        }
+      }, 2000); // Debounce auto-save by 2 seconds
 
-      <Grid container spacing={3}>
-        {/* Quick Stats */}
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Active Cases
-              </Typography>
-              <Typography variant="h5">
-                {mockLawsuits.filter((l) => l.status === "Active").length}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Pending Documents
-              </Typography>
-              <Typography variant="h5">
-                {mockDocuments.filter((d) => d.status === "Draft").length}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                This Month
-              </Typography>
-              <Typography variant="h5">{mockLawsuits.length}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+      return () => clearTimeout(timeoutId);
+    }
+  }, [currentCaseName, currentCaseId, currentView, phaseStatuses, overallProgress, claimsMatrix, shotList, skeletalOutline, settings.autoSave]);
 
-        {/* Recent Cases */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Recent Cases
-            </Typography>
-            <DataTable
-              data={mockLawsuits}
-              columns={[
-                { field: "clientName", headerName: "Client Name" },
-                { field: "caseType", headerName: "Case Type" },
-                { field: "status", headerName: "Status" },
-                { field: "filedDate", headerName: "Filed Date" },
-              ]}
-              onRowClick={handleLawsuitClick}
-              searchable
-              sortable
-            />
-          </Paper>
-        </Grid>
-
-        {/* Recent Documents */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Recent Documents
-            </Typography>
-            <DataTable
-              data={mockDocuments}
-              columns={[
-                { field: "name", headerName: "Document Name" },
-                { field: "type", headerName: "Type" },
-                { field: "status", headerName: "Status" },
-                { field: "lastModified", headerName: "Last Modified" },
-              ]}
-              searchable
-              sortable
-            />
-          </Paper>
-        </Grid>
-
-        {/* Case Progress */}
-        <Grid item xs={12}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Case Progress Overview
-            </Typography>
-            <Accordion
-              items={[
-                {
-                  title: "Case Preparation (75% Complete)",
-                  content: (
-                    <Box>
-                      <ProgressBar value={75} label="Preparation Progress" />
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        Client intake, evidence collection, and initial document
-                        drafting completed.
-                      </Typography>
-                    </Box>
-                  ),
-                },
-                {
-                  title: "Discovery Phase (45% Complete)",
-                  content: (
-                    <Box>
-                      <ProgressBar value={45} label="Discovery Progress" />
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        Initial discovery requests sent, awaiting responses from
-                        opposing party.
-                      </Typography>
-                    </Box>
-                  ),
-                },
-                {
-                  title: "Mediation (20% Complete)",
-                  content: (
-                    <Box>
-                      <ProgressBar value={20} label="Mediation Progress" />
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        Mediation scheduled for next month, preparing settlement
-                        proposals.
-                      </Typography>
-                    </Box>
-                  ),
-                },
-              ]}
-            />
-          </Paper>
-        </Grid>
-      </Grid>
-    </Container>
-  );
 
   const renderCases = () => (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -894,15 +908,21 @@ const App = () => {
         Case Management
       </Typography>
       <DataTable
-        data={mockLawsuits}
+        data={cases.map(caseItem => ({
+          name: caseItem.name,
+          created: caseItem.created,
+          lastModified: caseItem.lastModified,
+          status: caseItem.status || "Active",
+          jurisdiction: caseItem.jurisdiction || "Federal",
+        }))}
         columns={[
-          { field: "clientName", headerName: "Client Name" },
-          { field: "caseType", headerName: "Case Type" },
+          { field: "name", headerName: "Case Name" },
+          { field: "created", headerName: "Created" },
+          { field: "lastModified", headerName: "Last Modified" },
           { field: "status", headerName: "Status" },
-          { field: "filedDate", headerName: "Filed Date" },
           { field: "jurisdiction", headerName: "Jurisdiction" },
         ]}
-        onRowClick={handleLawsuitClick}
+        onRowClick={(caseItem) => handleCaseSelect(caseItem.name)}
         searchable
         sortable
         paginated
@@ -1156,7 +1176,7 @@ const App = () => {
       case "pipeline":
         return renderPipelineWorkspace();
       default:
-        return renderDashboard();
+        return renderCases();
     }
   };
 
@@ -1327,6 +1347,12 @@ const App = () => {
             icon="🔄">
             <PhasePipeline
               caseId={currentCaseId}
+              llmConfig={{
+                provider: settings.llmProvider,
+                model: settings.aiModel,
+                temperature: settings.temperature || 0.1,
+                maxTokens: settings.maxTokens || 2000,
+              }}
               onPhaseComplete={(phaseId, outputs) => {
                 addToast(
                   `✅ Phase ${phaseId} completed with ${
@@ -1429,11 +1455,12 @@ const App = () => {
   );
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Toast />
-
+    <ControlTerminalContainer className="Container">
+    <ThemeProvider theme={getSovietTheme(settings.darkMode)} />
+    <CssBaseline />
+    <Toast />
       {/* Briefcaser Professional Control Terminal */}
+      
       <div
         className={`control-station ${
           leftPanelCollapsed ? "sidebar-collapsed" : ""
@@ -1442,6 +1469,7 @@ const App = () => {
         }`}>
         {/* Terminal Header */}
         <div className="terminal-header">
+          <div className="briefcaser-logo-under">Briefcaser</div>
           <div className="briefcaser-logo">Briefcaser</div>
           <div className="system-status-bar">
             <StatusLights
@@ -1464,7 +1492,14 @@ const App = () => {
             <MechanicalButton
               variant={isBackendConnected ? "success" : "danger"}
               onClick={handleStartTour}
-              style={{ fontSize: "12px", padding: "6px 12px" }}>
+              style={{ 
+                fontSize: "12px", 
+                padding: "6px 12px",
+                boxShadow: "0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                fontWeight: "bold",
+                color: settings.darkMode ? "#ffffff" : "#1a1a1a",
+              }}>
               {isBackendConnected ? "🟢 Online" : "🔴 Offline"}
             </MechanicalButton>
             <div className="terminal-time">
@@ -1488,12 +1523,56 @@ const App = () => {
             </h3>
             <MechanicalButton
               onClick={toggleLeftPanel}
-              style={{ padding: "4px 8px", fontSize: "12px" }}>
+              style={{ 
+                padding: "4px 8px", 
+                fontSize: "12px",
+                boxShadow: "0 3px 5px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                fontWeight: "bold",
+                color: settings.darkMode ? "#ffffff" : "#1a1a1a",
+              }}>
               {leftPanelCollapsed ? "→" : "←"}
             </MechanicalButton>
           </div>
           <div className="sidebar-content">
-            <WorkflowPanel />
+            <WorkflowPanel
+              leftPanelCollapsed={leftPanelCollapsed}
+              onToggleLeftPanel={toggleLeftPanel}
+              onLegalIntakeSubmit={() => setShowLegalIntake(true)}
+              onSettingsOpen={() => setShowSettings(true)}
+              systemStatus={systemStatus}
+              overallProgress={overallProgress}
+              phases={[
+                { id: 'A-01', name: 'Intake', icon: '📥', status: 'start', progress: 0 },
+                { id: 'A-02', name: 'Research', icon: '🔍', status: 'pending', progress: 0 },
+                { id: 'A-03', name: 'Outline', icon: '📋', status: 'pending', progress: 0 },
+                { id: 'B-01', name: 'Review', icon: '✅', status: 'pending', progress: 0 },
+                { id: 'B-02', name: 'Drafting', icon: '✍️', status: 'pending', progress: 0 },
+                { id: 'C-01', name: 'Editing', icon: '📝', status: 'pending', progress: 0 },
+                { id: 'C-02', name: 'Final', icon: '🎯', status: 'pending', progress: 0 },
+              ]}
+              onPhaseSelect={(phaseId) => {
+                console.log('Phase selected:', phaseId);
+                addToast(`Phase ${phaseId} ${phaseId ? 'started' : 'completed'}`, {
+                  severity: 'info',
+                  title: 'Phase Update',
+                });
+              }}
+              userResearchFiles={userResearchFiles}
+              onResearchUpload={(files) => {
+                const fileArray = Array.from(files);
+                setUserResearchFiles(prev => [...prev, ...fileArray.map((file, idx) => ({
+                  id: Date.now() + idx,
+                  name: file.name,
+                  size: file.size,
+                  type: file.type,
+                }))]);
+                addToast(`${fileArray.length} file(s) uploaded`, {
+                  severity: 'success',
+                  title: 'Upload Complete',
+                });
+              }}
+            />
           </div>
         </div>
 
@@ -1520,16 +1599,49 @@ const App = () => {
                 style={{
                   backgroundColor: "var(--soviet-amber)",
                   borderColor: "var(--soviet-amber)",
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)",
+                  textShadow: "0 1px 3px rgba(0,0,0,0.9)",
+                  fontWeight: "bold",
+                  color: settings.darkMode ? "#ffffff" : "#1a1a1a",
                 }}>
-                🔍 SEARCH
+                🔍 SEARCH 
               </MechanicalButton>
               <MechanicalButton
                 onClick={() => setShowLegalIntake(true)}
-                variant="success">
+                variant="success"
+                style={{
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)",
+                  textShadow: "0 1px 3px rgba(0,0,0,0.9)",
+                  fontWeight: "bold",
+                  color: settings.darkMode ? "#ffffff" : "#1a1a1a",
+                }}>
                 NEW CASE
               </MechanicalButton>
-              <MechanicalButton>
+              <MechanicalButton
                 onClick={() => handleQuickAction("upload")}
+                variant="primary"
+                style={{
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)",
+                  textShadow: "0 1px 3px rgba(0,0,0,0.9)",
+                  fontWeight: "bold",
+                  color: settings.darkMode ? "#ffffff" : "#1a1a1a",
+                }}
+              >
+                📤 UPLOAD
+              </MechanicalButton>
+              <MechanicalButton
+                onClick={() => setShowSettings(true)}
+                variant="default"
+                style={{
+                  backgroundColor: "var(--soviet-panel)",
+                  borderColor: "var(--soviet-brass)",
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)",
+                  textShadow: "0 1px 3px rgba(0,0,0,0.9)",
+                  fontWeight: "bold",
+                  color: settings.darkMode ? "#ffffff" : "#1a1a1a",
+                }}
+              >
+                ⚙️ SETTINGS
               </MechanicalButton>
             </div>
           </div>
@@ -1541,8 +1653,8 @@ const App = () => {
               display: "flex",
               gap: "2px",
               padding: "var(--space-sm)",
-              backgroundColor: "var(--soviet-panel)",
-              borderBottom: "1px solid var(--soviet-brass)",
+              backgroundColor: "var(--soviet-bronze)",
+              borderBottom: "1px solid var(--soviet-bronze)",
             }}>
             <MechanicalButton
               onClick={() => setCurrentView("dashboard")}
@@ -1556,8 +1668,14 @@ const App = () => {
                     : "var(--soviet-panel)",
                 borderColor:
                   currentView === "dashboard"
-                    ? "var(--soviet-green)"
+                    ? "var(--soviet-crimson)"
                     : "var(--soviet-brass)",
+                boxShadow: currentView === "dashboard" 
+                  ? "0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3)" 
+                  : "0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                fontWeight: "bold",
+                color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
               📊 Dashboard
             </MechanicalButton>
@@ -1575,6 +1693,12 @@ const App = () => {
                   currentView === "evidence"
                     ? "var(--soviet-green)"
                     : "var(--soviet-brass)",
+                boxShadow: currentView === "evidence" 
+                  ? "0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3)" 
+                  : "0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                fontWeight: "bold",
+                color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
               📁 Evidence
             </MechanicalButton>
@@ -1592,6 +1716,12 @@ const App = () => {
                   currentView === "pipeline"
                     ? "var(--soviet-green)"
                     : "var(--soviet-brass)",
+                boxShadow: currentView === "pipeline" 
+                  ? "0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3)" 
+                  : "0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                fontWeight: "bold",
+                color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
               ⚙️ Pipeline
             </MechanicalButton>
@@ -1609,6 +1739,12 @@ const App = () => {
                   currentView === "cases"
                     ? "var(--soviet-green)"
                     : "var(--soviet-brass)",
+                boxShadow: currentView === "cases" 
+                  ? "0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3)" 
+                  : "0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                fontWeight: "bold",
+                color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
               📋 Cases
             </MechanicalButton>
@@ -1626,6 +1762,12 @@ const App = () => {
                   currentView === "documents"
                     ? "var(--soviet-green)"
                     : "var(--soviet-brass)",
+                boxShadow: currentView === "documents" 
+                  ? "0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3)" 
+                  : "0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                fontWeight: "bold",
+                color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
               📄 Documents
             </MechanicalButton>
@@ -1643,6 +1785,12 @@ const App = () => {
                   currentView === "claims"
                     ? "var(--soviet-green)"
                     : "var(--soviet-brass)",
+                boxShadow: currentView === "claims" 
+                  ? "0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3)" 
+                  : "0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                fontWeight: "bold",
+                color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
               🏗️ Claims
             </MechanicalButton>
@@ -1660,6 +1808,12 @@ const App = () => {
                   currentView === "shotlist"
                     ? "var(--soviet-green)"
                     : "var(--soviet-brass)",
+                boxShadow: currentView === "shotlist" 
+                  ? "0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(0,0,0,0.3)" 
+                  : "0 4px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                fontWeight: "bold",
+                color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
               🎯 Shot List
             </MechanicalButton>
@@ -1677,6 +1831,12 @@ const App = () => {
                   currentView === "outline"
                     ? "var(--soviet-green)"
                     : "var(--soviet-brass)",
+                boxShadow: currentView === "outline" 
+                  ? "0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(36, 36, 36, 0.3)" 
+                  : "0 4px 6px rgba(78, 78, 78, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)",
+                textShadow: "0 1px 2px rgba(43, 34, 34, 0.8)",
+                fontWeight: "bold",
+                color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
               📋 Outline
             </MechanicalButton>
@@ -1694,86 +1854,45 @@ const App = () => {
                   currentView === "orchestration"
                     ? "var(--soviet-green)"
                     : "var(--soviet-brass)",
+                boxShadow: currentView === "orchestration" 
+                  ? "0 3px 6px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(57, 50, 50, 0.3)" 
+                  : "0 4px 6px rgba(87, 75, 75, 0.3), inset 0 1px 0 rgba(62, 44, 44, 0.1)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.8)",
+                fontWeight: "bold",
+                color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
-              🎯 Orchestration
+              🎛️ Orchestration
             </MechanicalButton>
           </div>
-          <div className="main-panel-content">{renderContent()}</div>
-        </div>
 
-        {/* Info Panel - Deliverables and Chat */}
-        <div className={`info-panel ${rightPanelCollapsed ? "collapsed" : ""}`}>
-          <div className="info-panel-header">
-            <h3
-              style={{
-                color: "var(--soviet-brass)",
-                fontSize: "var(--text-md)",
-              }}>
-              {rightPanelCollapsed ? "DL" : "Deliverables"}
-            </h3>
-            <MechanicalButton
-              onClick={toggleRightPanel}
-              style={{ padding: "4px 8px", fontSize: "12px" }}>
-              {rightPanelCollapsed ? "←" : "→"}
-            </MechanicalButton>
-          </div>
-          <div className="info-panel-content">
-            <DeliverablesPanel />
-          </div>
-        </div>
+          {/* Main Content Area */}
+          <div className="main-content">
+            {renderContent()}
 
-        {/* Terminal Footer */}
-        <div className="terminal-footer">
-          <span>Briefcaser v2.1.0 | Legal Document Automation Terminal</span>
-          <span>
-            Backend:{" "}
-            {isBackendConnected
-              ? "🟢 LawyerFactory Connected"
-              : "🔴 Offline Mode"}{" "}
-            | Case: {currentCaseId ? `📂 ${currentCaseId}` : "No Active Case"} |
-            System: {systemStatus.filter((s) => s === "green").length}/5 Online
-          </span>
+            {/* Debug: Show current view */}
+            {/* <pre style={{ color: "white", fontSize: "10px", position: "absolute", top: 10, right: 10 }}>
+              Current View: {currentView}
+            </pre> */}
+          </div>
         </div>
       </div>
 
-      {/* Modal */}
-      <Modal open={modalOpen} onClose={handleModalClose} title="Case Details">
-        {modalContent}
-      </Modal>
-
       {/* Guided Tour */}
-      <GuidedTour
-        steps={tourSteps}
-        open={showGuidedTour}
-        onClose={() => setShowGuidedTour(false)}
-        onComplete={() => {
-          setShowGuidedTour(false);
-          addToast("Briefcaser tour completed!", {
-            severity: "success",
-            title: "Tour Complete",
-          });
-        }}
-      />
-
-      {/* Legal Intake Form Modal */}
+      {/* Legal Intake Form (Briefcaser Professional) */}
       <LegalIntakeForm
         open={showLegalIntake}
         onClose={() => setShowLegalIntake(false)}
         onSubmit={handleLegalIntakeSubmit}
+        apiEndpoint="/api/intake"
       />
 
-      {/* Settings Panel Modal */}
-      <Modal
+      {/* Settings Panel (Briefcaser Professional) */}
+      <SettingsPanel
         open={showSettings}
         onClose={() => setShowSettings(false)}
-        title="Briefcaser Settings">
-        <SettingsPanel 
-          showSettings={showSettings}
-          onClose={() => setShowSettings(false)}
-          settings={settings}
-          onSettingsChange={handleSettingsChange}
-        />
-      </Modal>
+        settings={settings}
+        onSettingsChange={handleSettingsChange}
+      />
 
       {/* Confirmation Modal */}
       <ConfirmationModal
@@ -1785,9 +1904,7 @@ const App = () => {
         confirmLabel={confirmationData?.confirmLabel}
         cancelLabel={confirmationData?.cancelLabel}
       />
-
-      {/* Scroll to Top - Removed for terminal interface */}
-    </ThemeProvider>
+    </ControlTerminalContainer>
   );
 };
 

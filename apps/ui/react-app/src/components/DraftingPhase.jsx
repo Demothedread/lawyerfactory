@@ -1,19 +1,13 @@
-import from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-    AlertCircle,
+    Error as AlertCircle,
     CheckCircle,
-    Download,
-    FileText,
-    Loader2,
-    Play,
-    RefreshCw
-} from 'lucide-react';
+    CloudDownload as Download,
+    Description as FileText,
+    Loop as Loader2,
+    PlayArrow as Play,
+    Refresh as RefreshCw
+} from '@mui/icons-material';
+import { Alert, Badge, Box, Button, Card, CardContent, CardHeader, Divider, LinearProgress, Tab, Tabs } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 
 import { generateSkeletalOutline, getClaimsMatrix, getSocket, startPhase } from '../services/apiService';
@@ -194,7 +188,7 @@ const DraftingPhase = ({ caseId, onPhaseComplete }) => {
   }, []);
 
   // Handle citation validation
-  const handleValidateCitation = useCallback(async (citationId) => {
+  const handleValidateCitation = useCallback(async () => {
     // Mock validation - in real implementation, call API
     return { valid: Math.random() > 0.3 };
   }, []);
@@ -204,32 +198,35 @@ const DraftingPhase = ({ caseId, onPhaseComplete }) => {
     const { status, progress, currentStep, error } = phaseState;
 
     return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {status === 'idle' && <FileText className="w-4 h-4 text-gray-400" />}
-            {status === 'generating_outline' && <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />}
-            {status === 'drafting' && <Play className="w-4 h-4 text-green-500" />}
-            {status === 'completed' && <CheckCircle className="w-4 h-4 text-green-500" />}
-            {status === 'error' && <AlertCircle className="w-4 h-4 text-red-500" />}
-            <span className="text-sm font-medium capitalize">{status.replace('_', ' ')}</span>
-          </div>
-          <Badge variant="outline">{progress}%</Badge>
-        </div>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {status === 'idle' && <FileText sx={{ width: 16, height: 16, color: 'text.disabled' }} />}
+            {status === 'generating_outline' && <Loader2 sx={{ width: 16, height: 16, color: 'primary.main', animation: 'spin 1s linear infinite', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />}
+            {status === 'drafting' && <Play sx={{ width: 16, height: 16, color: 'success.main' }} />}
+            {status === 'completed' && <CheckCircle sx={{ width: 16, height: 16, color: 'success.main' }} />}
+            {status === 'error' && <AlertCircle sx={{ width: 16, height: 16, color: 'error.main' }} />}
+            <Box component="span" sx={{ fontSize: '0.875rem', fontWeight: 500, textTransform: 'capitalize' }}>
+              {status.replace('_', ' ')}
+            </Box>
+          </Box>
+          <Badge color="primary" variant="outlined">{progress}%</Badge>
+        </Box>
 
-        <Progress value={progress} className="w-full" />
+        <LinearProgress variant="determinate" value={progress} sx={{ width: '100%' }} />
 
         {currentStep && (
-          <p className="text-xs text-gray-600">{currentStep}</p>
+          <Box component="p" sx={{ fontSize: '0.75rem', color: 'text.secondary', m: 0 }}>
+            {currentStep}
+          </Box>
         )}
 
         {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-sm">{error}</AlertDescription>
+          <Alert severity="error" sx={{ mt: 1 }}>
+            {error}
           </Alert>
         )}
-      </div>
+      </Box>
     );
   };
 
@@ -238,155 +235,159 @@ const DraftingPhase = ({ caseId, onPhaseComplete }) => {
     const outline = documents.skeletalOutline;
     if (!outline) {
       return (
-        <div className="text-center py-8 text-gray-500">
-          <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
+        <Box sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
+          <FileText sx={{ width: 48, height: 48, mx: 'auto', mb: 2, opacity: 0.5 }} />
           <p>No skeletal outline generated yet.</p>
           <Button
+            variant="contained"
             onClick={handleGenerateOutline}
             disabled={phaseState.status === 'generating_outline'}
-            className="mt-4"
+            sx={{ mt: 2 }}
           >
             {phaseState.status === 'generating_outline' ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 sx={{ width: 16, height: 16, mr: 1, animation: 'spin 1s linear infinite', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
                 Generating...
               </>
             ) : (
               'Generate Outline'
             )}
           </Button>
-        </div>
+        </Box>
       );
     }
 
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium">Skeletal Outline</h3>
-          <div className="flex gap-2">
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Box component="h3" sx={{ fontSize: '1.125rem', fontWeight: 500 }}>Skeletal Outline</Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
-              variant="outline"
-              size="sm"
+              variant="outlined"
+              size="small"
               onClick={handleGenerateOutline}
               disabled={phaseState.status === 'generating_outline'}
+              startIcon={<RefreshCw sx={{ width: 16, height: 16 }} />}
             >
-              <RefreshCw className="w-4 h-4 mr-1" />
               Regenerate
             </Button>
             <Button
-              variant="outline"
-              size="sm"
+              variant="outlined"
+              size="small"
               onClick={() => handleDownloadDocument('skeletalOutline')}
+              startIcon={<Download sx={{ width: 16, height: 16 }} />}
             >
-              <Download className="w-4 h-4 mr-1" />
               Download
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
 
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <pre className="text-sm whitespace-pre-wrap font-mono">
+        <Box sx={{ bgcolor: '#f9fafb', p: 2, borderRadius: 2 }}>
+          <Box component="pre" sx={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap', fontFamily: 'monospace', m: 0 }}>
             {typeof outline === 'string' ? outline : JSON.stringify(outline, null, 2)}
-          </pre>
-        </div>
+          </Box>
+        </Box>
 
-        <div className="flex justify-end">
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Button
+            variant="contained"
             onClick={handleStartDrafting}
             disabled={phaseState.status === 'drafting'}
           >
             {phaseState.status === 'drafting' ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 sx={{ width: 16, height: 16, mr: 1, animation: 'spin 1s linear infinite', '@keyframes spin': { '0%': { transform: 'rotate(0deg)' }, '100%': { transform: 'rotate(360deg)' } } }} />
                 Drafting...
               </>
             ) : (
               <>
-                <Play className="w-4 h-4 mr-2" />
+                <Play sx={{ width: 16, height: 16, mr: 1 }} />
                 Start Drafting
               </>
             )}
           </Button>
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="w-5 h-5" />
-          Drafting Phase (B02)
-        </CardTitle>
-        <p className="text-sm text-gray-600">
-          Generate skeletal outlines from claims matrix and produce professional legal documents
-        </p>
-      </CardHeader>
+    <Card sx={{ width: '100%' }}>
+      <CardHeader
+        title={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <FileText sx={{ width: 20, height: 20 }} />
+            Drafting Phase (B02)
+          </Box>
+        }
+        subheader="Generate skeletal outlines from claims matrix and produce professional legal documents"
+      />
 
-      <CardContent className="space-y-6">
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Status and Progress */}
         {renderStatusIndicator()}
 
-        <Separator />
+        <Divider />
 
         {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="outline">Skeletal Outline</TabsTrigger>
-            <TabsTrigger value="facts" disabled={!documents.statementOfFacts}>
-              Statement of Facts
-            </TabsTrigger>
-            <TabsTrigger value="complaint" disabled={!documents.complaint}>
-              Complaint
-            </TabsTrigger>
-          </TabsList>
+        <Box sx={{ width: '100%' }}>
+          <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
+            <Tab value="outline" label="Skeletal Outline" />
+            <Tab value="facts" label="Statement of Facts" disabled={!documents.statementOfFacts} />
+            <Tab value="complaint" label="Complaint" disabled={!documents.complaint} />
+          </Tabs>
 
-          <TabsContent value="outline" className="mt-4">
-            {renderSkeletalOutline()}
-          </TabsContent>
+          {activeTab === 'outline' && (
+            <Box sx={{ mt: 2 }}>
+              {renderSkeletalOutline()}
+            </Box>
+          )}
 
-          <TabsContent value="facts" className="mt-4">
-            <StatementOfFactsViewer
-              caseId={caseId}
-              documentData={documents.statementOfFacts}
-              onFactClick={handleFactClick}
-              onDownload={() => handleDownloadDocument('statementOfFacts')}
-            />
-          </TabsContent>
+          {activeTab === 'facts' && (
+            <Box sx={{ mt: 2 }}>
+              <StatementOfFactsViewer
+                caseId={caseId}
+                documentData={documents.statementOfFacts}
+                onFactClick={handleFactClick}
+                onDownload={() => handleDownloadDocument('statementOfFacts')}
+              />
+            </Box>
+          )}
 
-          <TabsContent value="complaint" className="mt-4">
-            <ComplaintViewer
-              caseId={caseId}
-              documentData={documents.complaint}
-              onSectionEdit={handleSectionEdit}
-              onDownload={() => handleDownloadDocument('complaint')}
-              onValidate={handleValidateCitation}
-            />
-          </TabsContent>
-        </Tabs>
+          {activeTab === 'complaint' && (
+            <Box sx={{ mt: 2 }}>
+              <ComplaintViewer
+                caseId={caseId}
+                documentData={documents.complaint}
+                onSectionEdit={handleSectionEdit}
+                onDownload={() => handleDownloadDocument('complaint')}
+                onValidate={handleValidateCitation}
+              />
+            </Box>
+          )}
+        </Box>
 
         {/* Claims Matrix Summary */}
         {claimsMatrix.length > 0 && (
           <>
-            <Separator />
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="font-medium text-sm text-blue-800 mb-2">
+            <Divider />
+            <Box sx={{ bgcolor: '#e3f2fd', p: 2, borderRadius: 2 }}>
+              <Box component="h4" sx={{ fontWeight: 500, fontSize: '0.875rem', color: '#1565c0', mb: 1 }}>
                 Claims Matrix Summary
-              </h4>
-              <div className="flex flex-wrap gap-2">
+              </Box>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                 {claimsMatrix.slice(0, 5).map((claim, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
+                  <Badge key={index} color="secondary" sx={{ fontSize: '0.75rem' }}>
                     {claim.title || `Claim ${index + 1}`}
                   </Badge>
                 ))}
                 {claimsMatrix.length > 5 && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outlined" sx={{ fontSize: '0.75rem' }}>
                     +{claimsMatrix.length - 5} more
                   </Badge>
                 )}
-              </div>
-            </div>
+              </Box>
+            </Box>
           </>
         )}
       </CardContent>

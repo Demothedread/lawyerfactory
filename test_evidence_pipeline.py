@@ -21,7 +21,7 @@ def test_evidence_ingestion_pipeline():
     # Test 1: Check if unified storage can be initialized
     print("\n1. Testing Unified Storage Initialization...")
     try:
-        from lawyerfactory.storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
+        from lawyerfactory.storage.core.unified_storage_api import get_enhanced_unified_storage_api
         unified_storage = get_enhanced_unified_storage_api()
         print("✅ Unified storage initialized successfully")
     except Exception as e:

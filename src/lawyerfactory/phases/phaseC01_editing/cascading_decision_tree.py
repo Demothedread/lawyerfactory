@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import uuid
 
 from cause_of_action_definition_engine import CauseOfActionDefinitionEngine
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 
 from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
@@ -1123,7 +1123,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     from cause_of_action_definition_engine import CauseOfActionDefinitionEngine
-    from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+    from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 
     from lawyerfactory.kg.jurisdiction import JurisdictionManager
 

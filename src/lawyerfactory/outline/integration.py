@@ -18,7 +18,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 from lawyerfactory.outline.integration_legacy import SkeletalOutlineIntegration
 from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
 
@@ -412,7 +412,7 @@ async def test_maestro_skeletal_outline_bot():
     """Test the Maestro skeletal outline bot"""
     try:
         from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
-        from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+        from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
         from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
 
         # Initialize components

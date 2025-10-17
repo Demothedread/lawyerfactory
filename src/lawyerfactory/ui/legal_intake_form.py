@@ -24,7 +24,9 @@ logger = logging.getLogger(__name__)
 class IntakeFormData:
     """Data collected from the legal intake form"""
 
-    user_name: str = ""
+    first_name: str = ""
+    last_name: str = ""
+    user_name: str = ""  # Keep for backward compatibility, will be derived
     user_address: str = ""
     other_party_name: str = ""
     other_party_address: str = ""
@@ -45,7 +47,9 @@ class IntakeFormData:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for storage"""
         return {
-            "user_name": self.user_name,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "user_name": self.user_name or f"{self.first_name} {self.last_name}".strip(),
             "user_address": self.user_address,
             "other_party_name": self.other_party_name,
             "other_party_address": self.other_party_address,
@@ -72,7 +76,8 @@ class IntakeFormData:
     def is_complete(self) -> bool:
         """Check if all required fields are filled"""
         required_fields = [
-            self.user_name,
+            self.first_name,
+            self.last_name,
             self.other_party_name,
             self.party_role,
             self.event_location,
@@ -104,6 +109,13 @@ class LegalIntakeForm:
             "Other",
         ]
 
+    def extract_last_name(self, full_name: str) -> str:
+        """Extract the last name from a full name string for case naming."""
+        if not full_name:
+            return "Unknown"
+        parts = full_name.strip().split()
+        return parts[-1] if parts else "Unknown"
+
     def get_html_template(self) -> str:
         """Generate the HTML template for the intake form"""
         return f"""
@@ -121,9 +133,15 @@ class LegalIntakeForm:
                         <!-- Personal Information -->
                         <div class="form-section">
                             <h3>📋 Client Information</h3>
-                            <div class="form-row">
-                                <label for="user_name">Your Name:</label>
-                                <input type="text" id="user_name" name="user_name" class="pad-input" required>
+                            <div class="form-row name-row">
+                                <div class="name-field">
+                                    <label for="first_name">First Name:</label>
+                                    <input type="text" id="first_name" name="first_name" class="pad-input" required>
+                                </div>
+                                <div class="name-field">
+                                    <label for="last_name">Last Name:</label>
+                                    <input type="text" id="last_name" name="last_name" class="pad-input" required>
+                                </div>
                             </div>
                             <div class="form-row">
                                 <label for="user_address">Your Address:</label>
@@ -280,7 +298,7 @@ class LegalIntakeForm:
 
         /* Legal Pad Container */
         .intake-form-container {
-            background: #ffff9f;
+            background: #feffdb;
             width: 90%;
             max-width: 800px;
             max-height: 90vh;
@@ -304,9 +322,9 @@ class LegalIntakeForm:
 
         /* Legal Pad Header */
         .legal-pad-header {
-            background: linear-gradient(145deg, #e6e6a0, #ffff9f);
+            background: linear-gradient(145deg, #f5f5dc, #feffdb);
             padding: 20px;
-            border-bottom: 2px solid #ccc;
+            border-bottom: 2px solid #888;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -325,12 +343,12 @@ class LegalIntakeForm:
         }
 
         .pad-title {
-            color: #333;
+            color: #1a1a1a;
             margin: 0;
-            font-family: 'Courier New', monospace;
+            font-family: 'kievit', 'Times New Roman', serif;
             font-weight: bold;
             font-size: 1.5em;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         .close-button {
@@ -338,7 +356,7 @@ class LegalIntakeForm:
             border: none;
             font-size: 2em;
             cursor: pointer;
-            color: #666;
+            color: #333;
             padding: 0;
             width: 40px;
             height: 40px;
@@ -350,8 +368,8 @@ class LegalIntakeForm:
         }
 
         .close-button:hover {
-            background: rgba(0, 0, 0, 0.1);
-            color: #333;
+            background: rgba(0, 0, 0, 0.2);
+            color: #000;
         }
 
         /* Legal Pad Content */
@@ -364,9 +382,9 @@ class LegalIntakeForm:
             background: repeating-linear-gradient(
                 to bottom,
                 transparent,
-                transparent 25px,
-                rgba(0, 0, 0, 0.1) 25px,
-                rgba(0, 0, 0, 0.1) 26px
+                transparent 76px,
+                rgba(0, 0, 0, 0.25) 76px,
+                rgba(0, 0, 0, 0.25) 77px
             );
             line-height: 1.8;
         }
@@ -378,13 +396,14 @@ class LegalIntakeForm:
         }
 
         .form-section h3 {
-            color: #333;
+            color: #1a1a1a;
             margin-bottom: 15px;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            font-size: 1.1em;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-            padding-bottom: 5px;
+            font-family: 'strelka', 'Arial Black', sans-serif;
+            font-weight: 800;
+            font-size: 1.2em;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+            padding-bottom: 8px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
         }
 
         .form-row {
@@ -395,27 +414,32 @@ class LegalIntakeForm:
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
-            color: #333;
-            font-family: 'Courier New', monospace;
+            color: #1a1a1a;
+            font-family: 'proxima-nova', 'Arial', sans-serif;
+            font-size: 0.95em;
+            text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.15);
         }
 
         /* Form Inputs */
         .pad-input, .pad-select, .pad-textarea {
             width: 100%;
-            padding: 8px 12px;
-            border: 2px solid #ccc;
+            padding: 10px 14px;
+            border: 2px solid #666;
             border-radius: 4px;
-            background: rgba(255, 255, 255, 0.9);
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
+            background: rgba(255, 255, 255, 0.95);
+            font-family: 'kievit', 'Times New Roman', serif;
+            font-size: 15px;
             line-height: 1.4;
             box-sizing: border-box;
+            color: #1a1a1a;
+            font-weight: 500;
         }
 
         .pad-input:focus, .pad-select:focus, .pad-textarea:focus {
             outline: none;
-            border-color: #666;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            border-color: #333;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 1);
         }
 
         .pad-textarea {
@@ -440,8 +464,10 @@ class LegalIntakeForm:
             display: flex;
             align-items: center;
             cursor: pointer;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
+            font-family: 'proxima-nova', 'Arial', sans-serif;
+            font-weight: 600;
+            color: #1a1a1a;
+            text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.1);
         }
 
         .checkbox-label input[type="checkbox"] {
@@ -453,9 +479,9 @@ class LegalIntakeForm:
             margin-left: 8px;
             width: 16px;
             height: 16px;
-            border: 2px solid #666;
+            border: 2px solid #333;
             border-radius: 2px;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             display: inline-block;
         }
 
@@ -468,15 +494,16 @@ class LegalIntakeForm:
         }
 
         .cause-checkbox {
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid #ccc;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #666;
             border-radius: 4px;
-            padding: 10px;
+            padding: 12px;
         }
 
         .cause-checkbox:hover {
-            background: rgba(255, 255, 255, 0.9);
-            border-color: #666;
+            background: rgba(255, 255, 255, 0.95);
+            border-color: #333;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
         }
 
         /* Form Actions */
@@ -489,20 +516,22 @@ class LegalIntakeForm:
         }
 
         .pad-button {
-            padding: 12px 24px;
-            border: 2px solid #666;
+            padding: 14px 28px;
+            border: 2px solid #333;
             border-radius: 4px;
             background: linear-gradient(145deg, #fff, #f0f0f0);
-            color: #333;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
+            color: #1a1a1a;
+            font-family: 'strelka', 'Arial Black', sans-serif;
+            font-weight: 800;
             cursor: pointer;
             transition: all 0.2s ease;
+            text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.1);
         }
 
         .pad-button:hover {
             background: linear-gradient(145deg, #f0f0f0, #e0e0e0);
             transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .pad-button.primary {
@@ -527,9 +556,9 @@ class LegalIntakeForm:
             background-image: repeating-linear-gradient(
                 to bottom,
                 transparent,
-                transparent 25px,
-                rgba(0, 0, 0, 0.05) 25px,
-                rgba(0, 0, 0, 0.05) 26px
+                transparent 76px,
+                rgba(0, 0, 0, 0.15) 76px,
+                rgba(0, 0, 0, 0.15) 77px
             );
             pointer-events: none;
             z-index: 1;
@@ -540,12 +569,26 @@ class LegalIntakeForm:
             z-index: 2;
         }
 
+        /* Name Row Styling */
+        .name-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .name-field {
+            display: flex;
+            flex-direction: column;
+        }
+
         /* Form Instructions */
         .form-instruction {
             font-style: italic;
-            color: #666;
+            color: #333;
             margin-bottom: 15px;
-            font-family: 'Courier New', monospace;
+            font-family: 'kievit', 'Times New Roman', serif;
+            font-weight: 400;
+            text-shadow: 0.5px 0.5px 1px rgba(0, 0, 0, 0.1);
         }
 
         /* Responsive Design */
@@ -553,6 +596,11 @@ class LegalIntakeForm:
             .intake-form-container {
                 width: 95%;
                 max-height: 95vh;
+            }
+
+            .name-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
             }
 
             .causes-grid {
@@ -586,7 +634,9 @@ class LegalIntakeForm:
 
             const formData = new FormData(event.target);
             const intakeData = {
-                user_name: formData.get('user_name'),
+                first_name: formData.get('first_name'),
+                last_name: formData.get('last_name'),
+                user_name: `${formData.get('first_name')} ${formData.get('last_name')}`.trim(),
                 user_address: formData.get('user_address'),
                 other_party_name: formData.get('other_party_name'),
                 other_party_address: formData.get('other_party_address'),
@@ -602,7 +652,7 @@ class LegalIntakeForm:
             };
 
             // Validate required fields
-            if (!intakeData.user_name || !intakeData.other_party_name ||
+            if (!intakeData.first_name || !intakeData.last_name || !intakeData.other_party_name ||
                 !intakeData.party_role || !intakeData.event_location ||
                 !intakeData.claim_description || intakeData.selected_causes.length === 0) {
                 alert('Please fill in all required fields and select at least one cause of action.');
@@ -654,6 +704,10 @@ class LegalIntakeForm:
 
     def process_intake_data(self, intake_data: Dict[str, Any]) -> IntakeFormData:
         """Process submitted intake form data"""
+        # Ensure user_name is derived from first_name and last_name if not provided
+        if "first_name" in intake_data and "last_name" in intake_data:
+            intake_data["user_name"] = f"{intake_data['first_name']} {intake_data['last_name']}".strip()
+        
         form_data = IntakeFormData.from_dict(intake_data)
 
         # Determine jurisdiction and venue based on location
@@ -694,10 +748,11 @@ class LegalIntakeForm:
 
     def get_intake_summary(self, form_data: IntakeFormData) -> str:
         """Generate a summary of the intake data for the AI Maestro"""
+        client_name = f"{form_data.first_name} {form_data.last_name}".strip() or form_data.user_name
         summary = f"""
 **INTAKE FORM SUMMARY**
 
-**Client:** {form_data.user_name}
+**Client:** {client_name}
 **Address:** {form_data.user_address or 'Not provided'}
 
 **Other Party:** {form_data.other_party_name}

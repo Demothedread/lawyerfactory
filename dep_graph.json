@@ -31,14 +31,14 @@
     {
       "id": "Writer",
       "type": "agent",
-      "features": ["drafting", "Law_of_Threes"],
+      "features": ["drafting", "Law_of_Threes", "AI_summarization", "RAG_enhancement", "nested_IR(irac)C"],
       "relationships": ["receives_research", "produces_documents"],
       "location": "src/lawyerfactory/agents/drafting/writer.py"
     },
     {
       "id": "Editor",
       "type": "agent",
-      "features": ["style", "coherence", "quality_assurance"],
+      "features": ["style", "coherence", "quality_assurance", "AI_editing", "RAG_enhancement", "citation_checking", "court_rules_compliance"],
       "relationships": ["reviews_documents", "provides_feedback_maestro"],
       "location": "src/lawyerfactory/agents/review/editor.py"
     },

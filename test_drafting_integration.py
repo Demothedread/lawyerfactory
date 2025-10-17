@@ -17,7 +17,7 @@ def test_drafting_imports():
 
     try:
         # Test unified storage
-        from lawyerfactory.storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
+        from lawyerfactory.storage.core.unified_storage_api import get_enhanced_unified_storage_api
         print("✅ Unified storage API imported")
 
         # Test WriterBot import

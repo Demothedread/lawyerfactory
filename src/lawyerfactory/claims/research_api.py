@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional
 import uuid
 
 from lawyerfactory.phases.phaseA01_intake.cause_of_action_detector import CauseDetectionResult, CauseOfActionDetector
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 from legal_authority_validator import LegalAuthorityValidator
 from legal_research_cache_manager import LegalResearchCacheManager
 from legal_research_integration import (

@@ -197,10 +197,32 @@
       "created_at": "2025-09-15T15:03:04.254097",
       "last_modified": "2025-09-15T15:03:04.254224",
       "created_by": "unified_storage_api"
+    },
+    {
+      "evidence_id": "309a2357-4691-4a12-9a32-95dc8e90b0d2",
+      "object_id": null,
+      "source_document": "test_document.txt",
+      "page_section": "Full Document",
+      "content": "This is a test legal document for evidence integration testing.",
+      "evidence_type": "documentary",
+      "relevance_score": 0.0,
+      "relevance_level": "low",
+      "supporting_facts": [
+        "This is a test legal document for evidence integration testing"
+      ],
+      "bluebook_citation": "",
+      "privilege_marker": "none",
+      "extracted_date": null,
+      "witness_name": null,
+      "key_terms": [],
+      "notes": "Source: phaseA01_intake | ObjectID: 76e8e698-35f9-4fd1-ac21-2d5e58f9a53a",
+      "created_at": "2025-10-08T01:52:17.574809",
+      "last_modified": "2025-10-08T01:52:17.574812",
+      "created_by": "unified_storage_api"
     }
   ],
   "fact_assertions": [],
   "claim_entries": [],
-  "last_updated": "2025-09-15T15:03:04.255123",
+  "last_updated": "2025-10-08T01:52:17.574915",
   "version": "2.0"
 }

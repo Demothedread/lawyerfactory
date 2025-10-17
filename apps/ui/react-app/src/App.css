@@ -2,7 +2,7 @@
 
 /* Import Professional Fonts */
 @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Russo+One&family=Share+Tech+Mono:wght@400&family=JetBrains+Mono:wght@400;700&display=swap");
-
+@import url("https://use.typekit.net/qgi2eqz.css");
 :root {
   /* Briefcaser Soviet Industrial Color Palette - Enhanced Brutalism */
   --soviet-brass: #b58558ab;
@@ -144,6 +144,7 @@
 
   /* Professional Terminal Colors - Enhanced Metallic Surfaces */
   --terminal-bg: radial-gradient(ellipse at center, var(--gunmetal-base) 0%, var(--gunmetal-dark) 100%);
+  --main-panel-bg: linear-gradient(180deg at top, rgba(20, 20, 20, 0.8) 0%, rgba(10, 10, 200, .60) 25%, rgba(20, 20, 20, 0.8) 50%, rgba(10, 10, 200, .6) 75%, rgba(20, 20, 20, 0.8) 100%);
   --terminal-border: var(--oxidized-copper);
   --panel-bg: linear-gradient(135deg, 
     var(--gunmetal-base) 0%, 
@@ -203,6 +204,8 @@
   --text-xl: 18px;
   --text-xxl: 24px;
   --text-xxxl: 40px;
+  --text-header: 64px;
+  --text-header-outline: 66px;
 }
 
 /* Global Reset and Base Styles */
@@ -215,24 +218,20 @@
 /* Custom Font Declarations - Fixed for proper decoding */
 @font-face {
   font-family: "athene";
-  src: local('Athene'), 
+  src: local('fonts/Athene.otf'), 
        local('athene'),
-       url('./fonts/Athene.otf') format('opentype');
+       url('/src/fonts/Athene.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
-  font-display: swap;
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
   font-family: 'Bauhhl';
-  src: local('Bauhhl'),
+  src: local('fonts/BAUHHL.ttf'),
        local('BAUHHL'),
-       url('./fonts/BAUHHL.ttf') format('truetype');
+       url('/src/fonts/BAUHHL.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
-  font-display: swap;
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 /* Fallback to web fonts if local fonts fail */
@@ -312,7 +311,7 @@ body {
   grid-template-columns: var(--sidebar-width) 1fr var(--sidebar-collapsed);
 }
 
-.control-station.both-collapsed {
+.control.station.both-collapsed {
   grid-template-columns: var(--sidebar-collapsed) 1fr var(--sidebar-collapsed);
 }
 
@@ -347,19 +346,47 @@ body {
 }
 
 .briefcaser-logo {
-  font-family: "Bauhhl", "Orbitron", monospace;
-  font-weight: 900;
-  font-size: var(--text-xxxl);
-  color: var(--soviet-brass);
+  font-family: "strelka", "BAUHHL", "Orbitron", monospace;
+  font-weight: 800;
+  font-size: var(--text-header-outline);
+  color: #ffffff;
   text-transform: uppercase;
+  position: flex;
+  top: 6px;
   letter-spacing: 2px;
-  text-shadow: 0 0 10px rgba(146, 175, 208, 0.38);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 15px var(--soviet-amber), 0 0 25px rgba(255, 176, 0, 0.4);
+}
+
+.briefcaser-logo-under{
+  font-family: "strelka", "BAUHHL", "Orbitron", monospace;
+  font-weight: 800;
+  background: var(--main-terminal-bg);
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-size: var(--text-header);
+  color: rgba(184, 115, 51, 0.8);
+  opacity: .75;
+  padding-bottom: 8px;
+  padding-left: 8px;
+  mix-blend-mode: multiply;
+  -webkit-text-stroke: 2px var(--soviet-crimson);
+  left: 12px;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8), 0 0 8px rgba(151, 222, 255, 0.6);
+  position: absolute;
 }
 
 .system-status-bar {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  color: hsl relative(210, 50%, 70%);
+  justify-content: space-between;
+  flex-wrap: flex-wrap;
+  align-content: center;
+  padding-inline: var(--space-md);
+  gap: var(--space-lg);
+  z-index: -1000;
 }
 
 .terminal-time {
@@ -367,6 +394,7 @@ body {
   font-weight: 700;
   color: var(--soviet-amber);
   font-size: var(--text-sm);
+  z-index: 100000;            
 }
 
 /* Sidebar Panel - Workflow Control */
@@ -423,11 +451,14 @@ body {
 .main-panel-header {
   background: linear-gradient(
     90deg,
-    var(--soviet-steel) 0%,
-    var(--soviet-charcoal) 100%
+    var(--soviet-brass) hsla(16, 83%, 58%, 0.40) 12%
   );
   border-bottom: 1px solid var(--soviet-brass);
-  padding: var(--space-sm) var(--space-md);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: var(--text-md);
+  color: var(--soviet-silver);
+  padding-top: var(--space-md);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -436,6 +467,9 @@ body {
 
 .main-panel-content {
   flex: 1;
+  font-family: "BAUHHL", "athene", monospace;
+  font-size: var(--text-xxl);
+  color: rgba(92, 127, 105, 0.85);
   padding: var(--space-md);
   overflow-y: auto;
   overflow-x: hidden;
@@ -466,7 +500,7 @@ body {
   background: linear-gradient(
     135deg,
     var(--soviet-steel) 0%,
-    var(--soviet-charcoal) 100%
+    var(--oxidized-copper-dark) 100%
   );
   border-bottom: 1px solid var(--soviet-brass);
   padding: var(--space-md);
@@ -740,7 +774,7 @@ body {
 .panel-header.expanded .toggle-indicator {
   transform: rotate(90deg);
   background: var(--oxidized-copper);
-  color: var(--soviet-charcoal);
+  color: var(--soviet-success);
 }
 
 .toggle-indicator::before {
@@ -750,13 +784,15 @@ body {
 /* Panel Title */
 .panel-title {
   align-items: center;
-  padding: 0 20px;
+  padding: 20px;
   position: relative;
-  font-family: "Orbitron", monospace;
-  font-weight: 700;
-  color: var(--soviet-charcoal);
+  font-family: "strelka", "BAUHHL", "Orbitron", monospace;
+  font-weight: 800;
+  font-size: var(--text-xxxl);
+  color: #1a1a1a;
   text-transform: uppercase;
   letter-spacing: 2px;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
 }
 
 /* Warning Stripes */
@@ -820,7 +856,7 @@ body {
   height: 8px;
   background: var(--gauge-bezel);
   border-radius: 50%;
-  top: 10px;
+  top: 15px;
   left: 50%;
   transform: translateX(-50%);
   box-shadow: 
@@ -837,8 +873,9 @@ body {
     #cc4400 30%,
     #ff6600  70%,
     var(--gauge-needle) 100%);
+  border:#cc4400 solid 1px;
   left: 50%;
-  top: 15%;
+  top: 20%;
   transform-origin: center bottom;
   transform: translateX(-50%) rotate(0deg);
   transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
@@ -847,6 +884,8 @@ body {
     inset 1px 0 0 rgba(255, 255, 255, 0.3),
     2px 2px 4px rgba(0, 0, 0, 0.8);
   border-radius: 1px;
+  z-index: 1;
+
 }
 
 /* Add needle tip detail */
@@ -867,20 +906,24 @@ body {
 
 .gauge-center {
   position: absolute;
+  padding-top: -20px;
+  padding-bottom: 20px;
   width: 20px;
   height: 20px;
   background: 
     radial-gradient(circle at 30% 30%, var(--metal-shine) 0%, transparent 40%),
     var(--toggle-handle);
-  border-radius: 50%;
+  border-radius: 20%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   border: 2px solid var(--rivet-shadow);
   box-shadow: 
-    inset 0 0 8px rgba(0, 0, 0, 0.8),
-    inset 0 2px 0 var(--metal-shine),
+    inset 0 0 16px rgba(0, 0, 0, 0.8),
+    inset 2 8px 0 var(--metal-shine),
     0 2px 6px rgba(0, 0, 0, 0.6);
+  z-index: 10;
+  color:var(--patina-green-light);
 }
 
 /* Add center screw detail */
@@ -1035,7 +1078,7 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     0 1px 3px rgba(0, 0, 0, 0.8);
   opacity: 0.3;
-  transition: all 0.3s ease;
+  transition: all 1.8s ease;
   position: relative;
 }
 
@@ -1293,12 +1336,13 @@ body {
 .status-lights::before {
   content: 'SYSTEM STATUS';
   position: absolute;
-  top: -8px;
+  top: -10px;
   left: 50%;
+  word-wrap: nowrap;
   transform: translateX(-50%);
   background: var(--gunmetal-base);
   color: var(--tarnished-silver);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -1371,6 +1415,10 @@ body {
     0 0 25px rgba(220, 20, 60, 0.6),
     inset 0 2px 0 rgba(255, 255, 255, 0.4),
     0 2px 6px rgba(0, 0, 0, 0.8);
+}
+
+/* Flashing animation - only applied when phase is active */
+.status-light.flashing {
   animation: blink-alarm 0.8s ease-in-out infinite;
 }
 
@@ -1761,7 +1809,7 @@ body {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--soviet-amber), var(--soviet-brass));
+  background: linear-gradient(90deg, var(--soviet-emerald), var(--soviet-amber));
   border-radius: 4px;
   transition: width 0.3s ease;
   position: relative;

@@ -167,7 +167,7 @@ except Exception:
 
 # Unified Storage API import
 try:
-    from lawyerfactory.storage.enhanced_unified_storage_api import (
+    from lawyerfactory.storage.core.unified_storage_api import (
         EnhancedUnifiedStorageAPI,
         get_enhanced_unified_storage_api,
     )

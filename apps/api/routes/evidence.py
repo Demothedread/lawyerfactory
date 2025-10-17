@@ -1,24 +1,49 @@
 # Script Name: evidence.py
-# Description: Enhanced Evidence Table API for LawyerFactory RESTful API endpoints for evidence, facts, and claims management.
+# Description: Evidence Table API for LawyerFactory RESTful API endpoints for evidence, facts, and claims management.
 # Relationships:
 #   - Entity Type: API
 #   - Directory Group: Backend
 #   - Group Tags: evidence-processing, api
-Enhanced Evidence Table API for LawyerFactory
-RESTful API endpoints for evidence, facts, and claims management.
+#Evidence Table API for LawyerFactory
+#RESTful API endpoints for evidence, facts, and claims management.
 
 import logging
+import sys
+from pathlib import Path
+
+# Add src to path for lawyerfactory imports
+src_path = Path(__file__).parent.parent.parent.parent / "src"
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
 
 try:
     from aiohttp import web
     AIOHTTP_AVAILABLE = True
+    ResponseType = web.Response
 except ImportError:
     web = None
     AIOHTTP_AVAILABLE = False
+    ResponseType = None
 
-from .evidence_table import (ClaimEntry, EnhancedEvidenceTable, EvidenceEntry,
-                             EvidenceType, FactAssertion, PrivilegeMarker,
-                             RelevanceLevel)
+from lawyerfactory.storage.evidence.table import (
+    ClaimEntry,
+    EvidenceTable,  # Canonical import
+    EvidenceEntry,
+    EvidenceType,
+    FactAssertion,
+    PrivilegeMarker,
+    RelevanceLevel,
+)
+
+# Import unified storage for download functionality
+try:
+    from lawyerfactory.storage.core.unified_storage_api import (
+        get_enhanced_unified_storage_api,  # Canonical import
+    )
+    UNIFIED_STORAGE_AVAILABLE = True
+except ImportError:
+    UNIFIED_STORAGE_AVAILABLE = False
+    logger.warning("Unified storage API not available")
 
 logger = logging.getLogger(__name__)
 
@@ -27,9 +52,9 @@ class EvidenceAPI:
     """Evidence table API handler"""
     
     def __init__(self, storage_path: str = "evidence_table.json"):
-        self.evidence_table = EnhancedEvidenceTable(storage_path)
+        self.evidence_table = EvidenceTable(storage_path)
     
-    async def get_evidence_table(self, request) -> web.Response:
+    async def get_evidence_table(self, request):
         """Get complete evidence table data"""
         try:
             data = self.evidence_table.export_to_dict()
@@ -38,7 +63,7 @@ class EvidenceAPI:
             logger.error(f"Failed to get evidence table: {e}")
             return web.json_response({"error": str(e)}, status=500)
     
-    async def add_evidence_entry(self, request) -> web.Response:
+    async def add_evidence_entry(self, request):
         """Add new evidence entry"""
         try:
             data = await request.json()
@@ -72,7 +97,7 @@ class EvidenceAPI:
             logger.error(f"Failed to add evidence entry: {e}")
             return web.json_response({"error": str(e)}, status=400)
     
-    async def update_evidence_entry(self, request) -> web.Response:
+    async def update_evidence_entry(self, request):
         """Update existing evidence entry"""
         try:
             evidence_id = request.match_info.get("evidence_id")
@@ -100,7 +125,7 @@ class EvidenceAPI:
             logger.error(f"Failed to update evidence entry: {e}")
             return web.json_response({"error": str(e)}, status=400)
     
-    async def delete_evidence_entry(self, request) -> web.Response:
+    async def delete_evidence_entry(self, request):
         """Delete evidence entry"""
         try:
             evidence_id = request.match_info.get("evidence_id")
@@ -119,7 +144,7 @@ class EvidenceAPI:
             logger.error(f"Failed to delete evidence entry: {e}")
             return web.json_response({"error": str(e)}, status=400)
     
-    async def get_filtered_evidence(self, request) -> web.Response:
+    async def get_filtered_evidence(self, request):
         """Get filtered evidence entries"""
         try:
             query_params = request.query
@@ -156,7 +181,7 @@ class EvidenceAPI:
             logger.error(f"Failed to get filtered evidence: {e}")
             return web.json_response({"error": str(e)}, status=400)
     
-    async def add_fact_assertion(self, request) -> web.Response:
+    async def add_fact_assertion(self, request):
         """Add new fact assertion"""
         try:
             data = await request.json()
@@ -182,7 +207,7 @@ class EvidenceAPI:
             logger.error(f"Failed to add fact assertion: {e}")
             return web.json_response({"error": str(e)}, status=400)
     
-    async def link_evidence_to_fact(self, request) -> web.Response:
+    async def link_evidence_to_fact(self, request):
         """Link evidence entry to fact assertion"""
         try:
             data = await request.json()
@@ -212,7 +237,7 @@ class EvidenceAPI:
             logger.error(f"Failed to link evidence to fact: {e}")
             return web.json_response({"error": str(e)}, status=400)
     
-    async def add_claim_entry(self, request) -> web.Response:
+    async def add_claim_entry(self, request):
         """Add new claim entry"""
         try:
             data = await request.json()
@@ -237,7 +262,7 @@ class EvidenceAPI:
             logger.error(f"Failed to add claim entry: {e}")
             return web.json_response({"error": str(e)}, status=400)
     
-    async def get_evidence_stats(self, request) -> web.Response:
+    async def get_evidence_stats(self, request):
         """Get evidence table statistics"""
         try:
             stats = self.evidence_table.get_stats()
@@ -246,7 +271,7 @@ class EvidenceAPI:
             logger.error(f"Failed to get evidence stats: {e}")
             return web.json_response({"error": str(e)}, status=500)
     
-    async def export_evidence_data(self, request) -> web.Response:
+    async def export_evidence_data(self, request):
         """Export evidence data in various formats"""
         try:
             export_format = request.query.get("format", "json")
@@ -302,6 +327,69 @@ class EvidenceAPI:
             logger.error(f"Failed to export evidence data: {e}")
             return web.json_response({"error": str(e)}, status=500)
 
+    async def download_evidence(self, request):
+        """Download evidence file by evidence_id using unified storage"""
+        try:
+            evidence_id = request.match_info.get("evidence_id")
+            
+            # Get evidence entry from table
+            evidence = self.evidence_table.get_evidence(evidence_id)
+            
+            if not evidence:
+                return web.json_response(
+                    {"error": "Evidence entry not found"}, 
+                    status=404
+                )
+            
+            # Check if we have an object_id for unified storage
+            if not evidence.object_id:
+                return web.json_response(
+                    {"error": "No storage object_id available for this evidence"}, 
+                    status=404
+                )
+            
+            # Retrieve from unified storage if available
+            if UNIFIED_STORAGE_AVAILABLE:
+                try:
+                    unified_storage = get_enhanced_unified_storage_api()
+                    storage_result = await unified_storage.get_evidence(
+                        object_id=evidence.object_id,
+                        target_tier="s3"  # Get raw file from S3/local storage
+                    )
+                    
+                    if storage_result and "content" in storage_result:
+                        # Return file content with appropriate headers
+                        filename = evidence.source_document or f"evidence_{evidence_id}"
+                        
+                        return web.Response(
+                            body=storage_result["content"],
+                            content_type=storage_result.get("content_type", "application/octet-stream"),
+                            headers={
+                                "Content-Disposition": f'attachment; filename="{filename}"'
+                            }
+                        )
+                    else:
+                        return web.json_response(
+                            {"error": "File content not found in storage"}, 
+                            status=404
+                        )
+                        
+                except Exception as storage_error:
+                    logger.error(f"Unified storage retrieval failed: {storage_error}")
+                    return web.json_response(
+                        {"error": f"Storage retrieval failed: {str(storage_error)}"}, 
+                        status=500
+                    )
+            else:
+                return web.json_response(
+                    {"error": "Unified storage not available"}, 
+                    status=503
+                )
+        
+        except Exception as e:
+            logger.error(f"Failed to download evidence: {e}")
+            return web.json_response({"error": str(e)}, status=500)
+
 
 def setup_evidence_routes(app, api_instance: EvidenceAPI):
     """Setup evidence API routes"""
@@ -311,6 +399,9 @@ def setup_evidence_routes(app, api_instance: EvidenceAPI):
     app.router.add_post("/api/evidence", api_instance.add_evidence_entry)
     app.router.add_put("/api/evidence/{evidence_id}", api_instance.update_evidence_entry)
     app.router.add_delete("/api/evidence/{evidence_id}", api_instance.delete_evidence_entry)
+    
+    # Evidence download route
+    app.router.add_get("/api/evidence/{evidence_id}/download", api_instance.download_evidence)
     
     # Filtering and search routes
     app.router.add_get("/api/evidence/filter", api_instance.get_filtered_evidence)

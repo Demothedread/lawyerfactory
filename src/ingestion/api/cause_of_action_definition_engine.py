@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 from lawyerfactory.research.validate import LegalAuthorityValidator
 from lawyerfactory.research.retrievers.integration import LegalResearchAPIIntegration
 
@@ -1002,7 +1002,7 @@ if __name__ == "__main__":
     import sys
     logging.basicConfig(level=logging.INFO)
     
-    from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+    from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 
     from lawyerfactory.kg.jurisdiction import JurisdictionManager
     

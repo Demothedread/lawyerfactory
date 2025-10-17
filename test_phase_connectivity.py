@@ -36,7 +36,7 @@ class PhaseConnectivityValidator:
     async def initialize_storage(self):
         """Initialize unified storage API"""
         try:
-            from lawyerfactory.storage.enhanced_unified_storage_api import (
+            from lawyerfactory.storage.core.unified_storage_api import (
                 get_enhanced_unified_storage_api,
             )
 

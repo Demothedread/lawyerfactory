@@ -510,7 +510,7 @@ if __name__ == "__main__":
     
     logging.basicConfig(level=logging.INFO)
     
-    from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+    from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 
     from lawyerfactory.kg.jurisdiction import JurisdictionManager
     

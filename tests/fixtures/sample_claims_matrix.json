@@ -1,0 +1,91 @@
+{
+  "case_id": "TEST-001",
+  "jurisdiction": "federal",
+  "claims": {
+    "breach_of_contract": {
+      "elements": {
+        "valid_contract": {
+          "definition": "A valid contract requires offer, acceptance, consideration, and mutual assent",
+          "authority": "Restatement (Second) of Contracts § 17",
+          "citation": "Restatement (Second) of Contracts § 17 (1981)",
+          "facts": ["EV-002"],
+          "satisfied": true,
+          "confidence_score": 95,
+          "decision_outcome": "SATISFIED",
+          "analysis": "Contract agreement signed by both parties with clear offer, acceptance, and consideration"
+        },
+        "material_breach": {
+          "definition": "A material breach is a failure to perform that goes to the root of the contract",
+          "authority": "Jacob & Youngs v. Kent, 230 N.Y. 239 (1921)",
+          "citation": "230 N.Y. 239 (1921)",
+          "facts": ["EV-004", "EV-008"],
+          "satisfied": true,
+          "confidence_score": 92,
+          "decision_outcome": "SATISFIED",
+          "analysis": "Defendant failed to deliver goods and refused to cure breach after proper notice"
+        },
+        "causation": {
+          "definition": "Plaintiff must show breach caused the damages claimed",
+          "authority": "Hadley v. Baxendale, 9 Ex. 341 (1854)",
+          "citation": "9 Ex. 341, 156 Eng. Rep. 145 (1854)",
+          "facts": ["EV-007", "EV-013"],
+          "satisfied": true,
+          "confidence_score": 91,
+          "decision_outcome": "SATISFIED",
+          "analysis": "Financial damages directly resulted from defendant's breach of contract"
+        },
+        "damages": {
+          "definition": "Plaintiff must prove actual damages resulting from breach",
+          "authority": "UCC § 2-714",
+          "citation": "U.C.C. § 2-714 (2001)",
+          "facts": ["EV-007", "EV-013", "EV-014"],
+          "satisfied": true,
+          "confidence_score": 88,
+          "decision_outcome": "SATISFIED",
+          "analysis": "Documented damages of $65,000 with expert witness assessment"
+        }
+      },
+      "overall_strength": 91,
+      "primary_authority": "Restatement (Second) of Contracts",
+      "binding_precedent": true
+    }
+  },
+  "element_analysis": {
+    "valid_contract": {
+      "element_name": "Valid Contract Formation",
+      "definition": "A valid contract requires offer, acceptance, consideration, and mutual assent",
+      "authority": "Restatement (Second) of Contracts § 17",
+      "facts": ["EV-002"],
+      "satisfied": true,
+      "confidence_score": 95,
+      "decision_outcome": "SATISFIED"
+    },
+    "material_breach": {
+      "element_name": "Material Breach",
+      "definition": "A material breach is a failure to perform that goes to the root of the contract",
+      "authority": "Jacob & Youngs v. Kent",
+      "facts": ["EV-004", "EV-008"],
+      "satisfied": true,
+      "confidence_score": 92,
+      "decision_outcome": "SATISFIED"
+    },
+    "causation": {
+      "element_name": "Causation",
+      "definition": "Plaintiff must show breach caused the damages claimed",
+      "authority": "Hadley v. Baxendale",
+      "facts": ["EV-007", "EV-013"],
+      "satisfied": true,
+      "confidence_score": 91,
+      "decision_outcome": "SATISFIED"
+    },
+    "damages": {
+      "element_name": "Actual Damages",
+      "definition": "Plaintiff must prove actual damages resulting from breach",
+      "authority": "UCC § 2-714",
+      "facts": ["EV-007", "EV-013", "EV-014"],
+      "satisfied": true,
+      "confidence_score": 88,
+      "decision_outcome": "SATISFIED"
+    }
+  }
+}

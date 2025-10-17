@@ -50,8 +50,22 @@ import { useCallback, useEffect, useState } from "react";
 import { useToast } from "../feedback/Toast";
 import EvidenceUpload from "./EvidenceUpload";
 
+// Import neon Soviet phase card and automation service
+import phaseAutomationService from "../../services/phaseAutomationService";
+
 // Import the new drafting phase components
 import DraftingPhase from "../DraftingPhase";
+
+// Import phase detail components
+import PhaseA01Intake from "../phases/PhaseA01Intake";
+import PhaseA02Research from "../phases/PhaseA02Research";
+import PhaseA03Outline from "../phases/PhaseA03Outline";
+import PhaseB01Review from "../phases/PhaseB01Review";
+import PhaseC01Editing from "../phases/PhaseC01Editing";
+import PhaseC02Orchestration from "../phases/PhaseC02Orchestration";
+
+// Import neon Soviet styles
+import "../../styles/neon-soviet.css";
 
 const PhasePipeline = ({
   caseId,
@@ -60,6 +74,7 @@ const PhasePipeline = ({
   autoAdvance = true,
   apiEndpoint = "/api/phases",
   socketEndpoint = "/phases",
+  llmConfig = {}, // LLM configuration from settings
 }) => {
   const [phases, setPhases] = useState([]);
   const [currentPhase, setCurrentPhase] = useState(0);
@@ -73,6 +88,7 @@ const PhasePipeline = ({
   const [retryCount, setRetryCount] = useState({});
   const [maxRetries] = useState(3);
   const [activeTab, setActiveTab] = useState(0); // 0: Pipeline, 1: Drafting Phase
+  const [viewMode, setViewMode] = useState('neon'); // 'stepper' or 'neon'
 
   const { addToast } = useToast();
 
@@ -351,23 +367,73 @@ const PhasePipeline = ({
     setLoading(true);
     setRetryCount(prev => ({ ...prev, [phaseId]: currentRetries + 1 }));
 
-    try {
-      const response = await fetch(`${apiEndpoint}/${phaseId}/start`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ case_id: caseId }),
-      });
+    // Update phase state to running
+    setPhaseStates((prev) => ({
+      ...prev,
+      [phaseId]: {
+        ...prev[phaseId],
+        status: "running",
+        startTime: Date.now(),
+        progress: 0,
+      },
+    }));
 
-      if (!response.ok) {
-        throw new Error(`Failed to start phase: ${response.statusText}`);
+    try {
+      // Use phaseAutomationService for backend integration
+      const result = await phaseAutomationService.executePhase(
+        phaseId, 
+        caseId, 
+        { llmConfig }
+      );
+
+      if (!result.success) {
+        throw new Error(result.error || 'Phase execution failed');
       }
+
+      // Poll for phase completion
+      const finalStatus = await phaseAutomationService.waitForPhaseCompletion(
+        phaseId,
+        caseId
+      );
+
+      // Update to completed state
+      setPhaseStates((prev) => ({
+        ...prev,
+        [phaseId]: {
+          ...prev[phaseId],
+          status: "completed",
+          progress: 100,
+          endTime: Date.now(),
+          outputs: finalStatus.outputs || [],
+        },
+      }));
 
       setPipelineStatus("running");
       // Reset retry count on success
       setRetryCount(prev => ({ ...prev, [phaseId]: 0 }));
 
+      // Notify callback
+      if (onPhaseComplete) {
+        onPhaseComplete(phaseId, finalStatus.outputs || []);
+      }
+
     } catch (error) {
       console.error("Failed to start phase:", error);
+
+      // Update to error state
+      setPhaseStates((prev) => ({
+        ...prev,
+        [phaseId]: {
+          ...prev[phaseId],
+          status: "error",
+          errors: [...(prev[phaseId].errors || []), error.message],
+        },
+      }));
+
+      // Notify error callback
+      if (onPhaseError) {
+        onPhaseError(phaseId, error.message);
+      }
 
       // Determine error type and recovery strategy
       const errorType = determineErrorType(error);
@@ -860,67 +926,142 @@ const PhasePipeline = ({
         <DialogContent>
           {selectedPhase && (
             <Box>
-              <Typography variant="body1" sx={{ mb: 2 }}>
-                {selectedPhase.description}
-              </Typography>
+              {(() => {
+                switch (selectedPhase.id) {
+                  case 'phaseA01_intake':
+                    return (
+                      <PhaseA01Intake
+                        caseId={caseId}
+                        onComplete={(data) => {
+                          addToast('Phase A01 intake reviewed', { severity: 'success' });
+                          setShowPhaseDetails(false);
+                        }}
+                        onClose={() => setShowPhaseDetails(false)}
+                      />
+                    );
+                  case 'phaseA02_research':
+                    return (
+                      <PhaseA02Research
+                        caseId={caseId}
+                        onComplete={(data) => {
+                          addToast('Phase A02 research reviewed', { severity: 'success' });
+                          setShowPhaseDetails(false);
+                        }}
+                        onClose={() => setShowPhaseDetails(false)}
+                      />
+                    );
+                  case 'phaseA03_outline':
+                    return (
+                      <PhaseA03Outline
+                        caseId={caseId}
+                        onComplete={(data) => {
+                          addToast('Phase A03 outline reviewed', { severity: 'success' });
+                          setShowPhaseDetails(false);
+                        }}
+                        onClose={() => setShowPhaseDetails(false)}
+                      />
+                    );
+                  case 'phaseB01_review':
+                    return (
+                      <PhaseB01Review
+                        caseId={caseId}
+                        onApprove={(data) => {
+                          addToast('Phase B01 deliverables approved', { severity: 'success' });
+                          setShowPhaseDetails(false);
+                        }}
+                        onClose={() => setShowPhaseDetails(false)}
+                      />
+                    );
+                  case 'phaseC01_editing':
+                    return (
+                      <PhaseC01Editing
+                        caseId={caseId}
+                        onComplete={(data) => {
+                          addToast('Phase C01 editing reviewed', { severity: 'success' });
+                          setShowPhaseDetails(false);
+                        }}
+                        onClose={() => setShowPhaseDetails(false)}
+                      />
+                    );
+                  case 'phaseC02_orchestration':
+                    return (
+                      <PhaseC02Orchestration
+                        caseId={caseId}
+                        onComplete={(data) => {
+                          addToast('Phase C02 orchestration completed', { severity: 'success' });
+                          setShowPhaseDetails(false);
+                        }}
+                        onClose={() => setShowPhaseDetails(false)}
+                      />
+                    );
+                  default:
+                    return (
+                      <Box>
+                        <Typography variant="body1" sx={{ mb: 2 }}>
+                          {selectedPhase.description}
+                        </Typography>
 
-              <List>
-                <ListItem>
-                  <ListItemIcon>{selectedPhase.icon}</ListItemIcon>
-                  <ListItemText
-                    primary="Agent"
-                    secondary={selectedPhase.agent}
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Estimated Time"
-                    secondary={selectedPhase.estimatedTime}
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Expected Outputs"
-                    secondary={
-                      <Box sx={{ mt: 1 }}>
-                        {selectedPhase.outputs.map((output, index) => (
-                          <Chip
-                            key={index}
-                            label={output}
-                            size="small"
-                            sx={{ mr: 0.5, mb: 0.5 }}
-                          />
-                        ))}
+                        <List>
+                          <ListItem>
+                            <ListItemIcon>{selectedPhase.icon}</ListItemIcon>
+                            <ListItemText
+                              primary="Agent"
+                              secondary={selectedPhase.agent}
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText
+                              primary="Estimated Time"
+                              secondary={selectedPhase.estimatedTime}
+                            />
+                          </ListItem>
+                          <ListItem>
+                            <ListItemText
+                              primary="Expected Outputs"
+                              secondary={
+                                <Box sx={{ mt: 1 }}>
+                                  {selectedPhase.outputs.map((output, index) => (
+                                    <Chip
+                                      key={index}
+                                      label={output}
+                                      size="small"
+                                      sx={{ mr: 0.5, mb: 0.5 }}
+                                    />
+                                  ))}
+                                </Box>
+                              }
+                            />
+                          </ListItem>
+                        </List>
+
+                        {phaseStates[selectedPhase.id]?.logs &&
+                          phaseStates[selectedPhase.id].logs.length > 0 && (
+                            <Accordion>
+                              <AccordionSummary expandIcon={<ExpandMore />}>
+                                <Typography variant="subtitle1">Phase Logs</Typography>
+                              </AccordionSummary>
+                              <AccordionDetails>
+                                <List dense>
+                                  {phaseStates[selectedPhase.id].logs.map(
+                                    (log, index) => (
+                                      <ListItem key={index}>
+                                        <ListItemText
+                                          primary={log.message}
+                                          secondary={new Date(
+                                            log.timestamp
+                                          ).toLocaleTimeString()}
+                                        />
+                                      </ListItem>
+                                    )
+                                  )}
+                                </List>
+                              </AccordionDetails>
+                            </Accordion>
+                          )}
                       </Box>
-                    }
-                  />
-                </ListItem>
-              </List>
-
-              {phaseStates[selectedPhase.id]?.logs &&
-                phaseStates[selectedPhase.id].logs.length > 0 && (
-                  <Accordion>
-                    <AccordionSummary expandIcon={<ExpandMore />}>
-                      <Typography variant="subtitle1">Phase Logs</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <List dense>
-                        {phaseStates[selectedPhase.id].logs.map(
-                          (log, index) => (
-                            <ListItem key={index}>
-                              <ListItemText
-                                primary={log.message}
-                                secondary={new Date(
-                                  log.timestamp
-                                ).toLocaleTimeString()}
-                              />
-                            </ListItem>
-                          )
-                        )}
-                      </List>
-                    </AccordionDetails>
-                  </Accordion>
-                )}
+                    );
+                }
+              })()}
             </Box>
           )}
         </DialogContent>

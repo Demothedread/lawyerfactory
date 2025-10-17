@@ -14,7 +14,7 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 from lawyerfactory.knowledge_graph.core.jurisdiction_manager import JurisdictionManager
 
 # from ingestion.api.cause_of_action_definition_engine import (
@@ -28,7 +28,7 @@ from lawyerfactory.phases.phaseA03_outline.cause_of_action_engine import (
     LegalDefinition,
     ProvableQuestion,
 )
-from lawyerfactory.storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
+from lawyerfactory.storage.core.unified_storage_api import get_enhanced_unified_storage_api
 
 # cascading_decision_tree_engine may live in claims_matrix or src; try src first and fall back
 try:

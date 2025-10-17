@@ -187,21 +187,15 @@ start_backend() {
 
 # Start frontend server
 start_frontend() {
-    if [ ! -d "apps/ui" ] && [ ! -d "apps" ]; then
-        warn "Frontend directory not found - skipping frontend startup"
-        return 0
-    fi
-    
-    log "Starting frontend server..."
-    
-    # Find available port
-    FRONTEND_PORT=$(find_available_port $FRONTEND_PORT)
-    log "Frontend will run on port $FRONTEND_PORT"
-    
-    # Determine frontend location and type
-    if [ -f "apps/package.json" ]; then
-        # Vite app in apps folder
-        cd apps
+    # Check for React app in apps/ui/react-app
+    if [ -f "apps/ui/react-app/package.json" ]; then
+        log "Starting React frontend server..."
+        
+        # Find available port
+        FRONTEND_PORT=$(find_available_port $FRONTEND_PORT)
+        log "Frontend will run on port $FRONTEND_PORT"
+        
+        cd apps/ui/react-app
         
         # Check if npm dependencies are installed
         if [ ! -d "node_modules" ]; then
@@ -209,30 +203,21 @@ start_frontend() {
             npm install
         fi
         
-        # Start Vite dev server
+        # Start Vite dev server with backend URL
         VITE_BACKEND_URL="http://localhost:$BACKEND_PORT" npm run dev -- --port $FRONTEND_PORT --host > "$PROJECT_ROOT/logs/frontend.log" 2>&1 &
         FRONTEND_PID=$!
         echo $FRONTEND_PID > "$PROJECT_ROOT/.frontend.pid"
         cd "$PROJECT_ROOT"
-    elif [ -f "apps/ui/package.json" ]; then
-        # Frontend in apps/ui folder
-        cd apps/ui
         
-        if [ ! -d "node_modules" ]; then
-            log "Installing frontend dependencies..."
-            npm install
-        fi
+        log "Frontend started (PID: $FRONTEND_PID)"
         
-        BACKEND_URL="http://localhost:$BACKEND_PORT" npm start -- --port $FRONTEND_PORT > "$PROJECT_ROOT/logs/frontend.log" 2>&1 &
-        FRONTEND_PID=$!
-        echo $FRONTEND_PID > "$PROJECT_ROOT/.frontend.pid"
-        cd "$PROJECT_ROOT"
+    elif [ ! -d "apps/ui" ] && [ ! -d "apps" ]; then
+        warn "Frontend directory not found - skipping frontend startup"
+        return 0
     else
-        warn "Could not determine frontend structure"
+        warn "Could not find React app at apps/ui/react-app - skipping frontend startup"
         return 0
     fi
-    
-    log "Frontend started (PID: $FRONTEND_PID)"
 }
 
 # Health check

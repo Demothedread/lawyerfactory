@@ -10,9 +10,15 @@ import json
 import logging
 from typing import Any, Dict, List, Optional
 
-from lawyerfactory.outline.generator import SkeletalOutlineGenerator, SkeletalSection
-from lawyerfactory.research.tavily_integration import ResearchQuery, TavilyResearchIntegration
-from lawyerfactory.storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
+try:
+    from .generator import SkeletalOutlineGenerator, SkeletalSection
+    from ..research.tavily_integration import ResearchQuery, TavilyResearchIntegration
+    from ..storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
+except ImportError:
+    # Fallback to absolute imports if relative fails
+    from lawyerfactory.outline.generator import SkeletalOutlineGenerator, SkeletalSection
+    from lawyerfactory.research.tavily_integration import ResearchQuery, TavilyResearchIntegration
+    from lawyerfactory.storage.core.unified_storage_api import get_enhanced_unified_storage_api
 
 logger = logging.getLogger(__name__)
 
@@ -411,9 +417,19 @@ async def generate_enhanced_outline(case_id: str, session_id: str) -> Dict[str, 
     Convenience function to generate enhanced outline with Tavily integration
     """
     try:
-        from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
-        from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
-        from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
+        try:
+            from ..claims.matrix import ComprehensiveClaimsMatrixIntegration
+            from ..kg.enhanced_graph import EnhancedKnowledgeGraph
+            from ..phases.phaseA01_intake.evidence_routes import EvidenceAPI
+        except ImportError:
+            # Fallback to absolute imports if relative fails
+            from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
+            try:
+                from ..kg.enhanced_graph import EnhancedKnowledgeGraph
+            except ImportError:
+                # Fallback to absolute imports if relative fails
+                from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
+            from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
 
         # Initialize components
         kg = EnhancedKnowledgeGraph()
@@ -436,7 +452,7 @@ async def validate_claims_for_drafting(claims: List[str], jurisdiction: str) -> 
     """
     try:
         # Initialize minimal generator for validation
-        from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+        from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 
         kg = EnhancedKnowledgeGraph()
         generator = EnhancedSkeletalOutlineGenerator(kg, None, None)

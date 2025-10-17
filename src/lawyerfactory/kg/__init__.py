@@ -7,7 +7,7 @@
 """Package initialization file"""
 
 # Canonical KnowledgeGraph exports
-from .enhanced_graph import EnhancedKnowledgeGraph
+from .graph_api import EnhancedKnowledgeGraph
 from .graph_api import KnowledgeGraph
 
 # Make EnhancedKnowledgeGraph the primary export

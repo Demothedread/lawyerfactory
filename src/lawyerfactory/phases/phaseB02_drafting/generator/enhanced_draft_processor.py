@@ -16,11 +16,11 @@ from typing import Any, Dict, List, Optional
 
 from legal_relationship_detector import LegalRelationshipDetector
 
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 
 # Import unified storage API
 try:
-    from lawyerfactory.storage.enhanced_unified_storage_api import (
+    from lawyerfactory.storage.core.unified_storage_api import (
         EnhancedUnifiedStorageAPI,
         EvidenceMetadata,
         get_enhanced_unified_storage_api,

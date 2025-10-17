@@ -5,6 +5,8 @@
 #   - Entity Type: Module
 #   - Directory Group: Document Generation
 #   - Group Tags: null
+"""
+
 from dataclasses import dataclass
 from typing import Any, Dict, List
 

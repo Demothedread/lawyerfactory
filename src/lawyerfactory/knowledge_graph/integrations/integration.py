@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Optional
 
 from legal_relationship_detector import LegalRelationshipDetector
 
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 from lawyerfactory.phases.phaseB02_drafting.generator.enhanced_draft_processor import (
     EnhancedDraftProcessor,
 )

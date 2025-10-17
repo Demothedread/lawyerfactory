@@ -1,17 +1,20 @@
-import from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { AlertCircle, CheckCircle, ChevronDown, ChevronRight, Download, Edit, FileText } from 'lucide-react';
+import {
+    Error as AlertCircle,
+    CheckCircle,
+    ExpandMore as ChevronDown,
+    ChevronRight,
+    CloudDownload as Download,
+    Edit,
+    Description as FileText
+} from '@mui/icons-material';
+import { Badge, Box, Button, Card, CardContent, CardHeader, Collapse, Divider, IconButton, Paper, Typography } from '@mui/material';
 import { useState } from 'react';
 
 /**
  * ComplaintViewer - React component for viewing generated Complaint document
  * Displays the generated complaint with expandable causes of action, citations, and interactive features
  */
-const ComplaintViewer = ({ caseId, documentData, onSectionEdit, onDownload, onValidate }) => {
+const ComplaintViewer = ({ documentData, onSectionEdit, onDownload, onValidate }) => {
   const [expandedSections, setExpandedSections] = useState(new Set());
   const [validationStatus, setValidationStatus] = useState({});
 
@@ -68,207 +71,219 @@ const ComplaintViewer = ({ caseId, documentData, onSectionEdit, onDownload, onVa
     const isExpanded = expandedSections.has(sectionId);
 
     return (
-      <Collapsible key={sectionId} className="border rounded-lg">
-        <CollapsibleTrigger
-          className="w-full p-4 text-left hover:bg-gray-50 transition-colors"
+      <Paper key={sectionId} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, mb: 1 }}>
+        <Box
+          sx={{ 
+            width: '100%', 
+            p: 2, 
+            cursor: 'pointer', 
+            '&:hover': { bgcolor: 'grey.50' }, 
+            transition: 'background-color 0.2s' 
+          }}
           onClick={() => toggleSection(sectionId)}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               {isExpanded ? (
-                <ChevronDown className="w-4 h-4 text-gray-500" />
+                <ChevronDown sx={{ width: 16, height: 16, color: 'text.secondary' }} />
               ) : (
-                <ChevronRight className="w-4 h-4 text-gray-500" />
+                <ChevronRight sx={{ width: 16, height: 16, color: 'text.secondary' }} />
               )}
-              <div>
-                <h4 className="font-medium text-sm">{coa.title || `Cause of Action ${index + 1}`}</h4>
-                <p className="text-xs text-gray-500">{coa.description || 'Legal claim details'}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
+                  {coa.title || `Cause of Action ${index + 1}`}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {coa.description || 'Legal claim details'}
+                </Typography>
+              </Box>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {coa.citations && coa.citations.length > 0 && (
-                <Badge variant="outline" className="text-xs">
-                  {coa.citations.length} citations
+                <Badge badgeContent={coa.citations.length} color="primary" sx={{ '& .MuiBadge-badge': { fontSize: '0.75rem' } }}>
+                  <Typography variant="caption">citations</Typography>
                 </Badge>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
+              <IconButton
+                size="small"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleSectionEdit(sectionId, coa.content);
                 }}
               >
-                <Edit className="w-3 h-3" />
-              </Button>
-            </div>
-          </div>
-        </CollapsibleTrigger>
+                <Edit sx={{ width: 12, height: 12 }} />
+              </IconButton>
+            </Box>
+          </Box>
+        </Box>
 
-        <CollapsibleContent className="px-4 pb-4">
-          <div className="space-y-3">
+        <Collapse in={isExpanded}>
+          <Box sx={{ px: 2, pb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
             {/* IRAC Structure */}
             {coa.irac && (
-              <div className="grid grid-cols-1 gap-3">
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1.5 }}>
                 {coa.irac.issue && (
-                  <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
-                    <h5 className="font-medium text-xs text-blue-800 mb-1">ISSUE</h5>
-                    <p className="text-sm text-blue-700">{coa.irac.issue}</p>
-                  </div>
+                  <Box sx={{ bgcolor: '#e3f2fd', p: 1.5, borderRadius: 1, borderLeft: 4, borderColor: '#42a5f5' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 500, color: '#1565c0', display: 'block', mb: 0.5 }}>ISSUE</Typography>
+                    <Typography variant="body2" sx={{ color: '#1976d2' }}>{coa.irac.issue}</Typography>
+                  </Box>
                 )}
                 {coa.irac.rule && (
-                  <div className="bg-green-50 p-3 rounded border-l-4 border-green-400">
-                    <h5 className="font-medium text-xs text-green-800 mb-1">RULE</h5>
-                    <p className="text-sm text-green-700">{coa.irac.rule}</p>
-                  </div>
+                  <Box sx={{ bgcolor: '#e8f5e9', p: 1.5, borderRadius: 1, borderLeft: 4, borderColor: '#66bb6a' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 500, color: '#2e7d32', display: 'block', mb: 0.5 }}>RULE</Typography>
+                    <Typography variant="body2" sx={{ color: '#388e3c' }}>{coa.irac.rule}</Typography>
+                  </Box>
                 )}
                 {coa.irac.application && (
-                  <div className="bg-yellow-50 p-3 rounded border-l-4 border-yellow-400">
-                    <h5 className="font-medium text-xs text-yellow-800 mb-1">APPLICATION</h5>
-                    <p className="text-sm text-yellow-700">{coa.irac.application}</p>
-                  </div>
+                  <Box sx={{ bgcolor: '#fff9c4', p: 1.5, borderRadius: 1, borderLeft: 4, borderColor: '#ffeb3b' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 500, color: '#f57f17', display: 'block', mb: 0.5 }}>APPLICATION</Typography>
+                    <Typography variant="body2" sx={{ color: '#f9a825' }}>{coa.irac.application}</Typography>
+                  </Box>
                 )}
                 {coa.irac.conclusion && (
-                  <div className="bg-purple-50 p-3 rounded border-l-4 border-purple-400">
-                    <h5 className="font-medium text-xs text-purple-800 mb-1">CONCLUSION</h5>
-                    <p className="text-sm text-purple-700">{coa.irac.conclusion}</p>
-                  </div>
+                  <Box sx={{ bgcolor: '#f3e5f5', p: 1.5, borderRadius: 1, borderLeft: 4, borderColor: '#ab47bc' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 500, color: '#6a1b9a', display: 'block', mb: 0.5 }}>CONCLUSION</Typography>
+                    <Typography variant="body2" sx={{ color: '#7b1fa2' }}>{coa.irac.conclusion}</Typography>
+                  </Box>
                 )}
-              </div>
+              </Box>
             )}
 
             {/* Citations */}
             {coa.citations && coa.citations.length > 0 && (
-              <div>
-                <h5 className="font-medium text-xs text-gray-700 mb-2">CITATIONS</h5>
-                <div className="space-y-2">
+              <Box>
+                <Typography variant="caption" sx={{ fontWeight: 500, color: 'text.primary', display: 'block', mb: 1 }}>CITATIONS</Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {coa.citations.map((citation, citIndex) => (
-                    <div key={citIndex} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <span className="text-sm font-mono">{citation.text}</span>
-                      <div className="flex items-center gap-2">
+                    <Box key={citIndex} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1, bgcolor: 'grey.50', borderRadius: 1 }}>
+                      <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>{citation.text}</Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {validationStatus[citation.id] === 'valid' && (
-                          <CheckCircle className="w-4 h-4 text-green-500" />
+                          <CheckCircle sx={{ width: 16, height: 16, color: 'success.main' }} />
                         )}
                         {validationStatus[citation.id] === 'invalid' && (
-                          <AlertCircle className="w-4 h-4 text-red-500" />
+                          <AlertCircle sx={{ width: 16, height: 16, color: 'error.main' }} />
                         )}
                         <Button
-                          variant="outline"
-                          size="sm"
+                          variant="outlined"
+                          size="small"
                           onClick={() => handleValidateCitation(citation.id)}
                         >
                           Validate
                         </Button>
-                      </div>
-                    </div>
+                      </Box>
+                    </Box>
                   ))}
-                </div>
-              </div>
+                </Box>
+              </Box>
             )}
 
             {/* Full Content */}
             {coa.content && (
-              <div>
-                <h5 className="font-medium text-xs text-gray-700 mb-2">FULL CONTENT</h5>
-                <div className="prose prose-sm max-w-none bg-gray-50 p-3 rounded">
-                  <p className="text-sm leading-relaxed m-0">{coa.content}</p>
-                </div>
-              </div>
+              <Box>
+                <Typography variant="caption" sx={{ fontWeight: 500, color: 'text.primary', display: 'block', mb: 1 }}>FULL CONTENT</Typography>
+                <Box sx={{ bgcolor: 'grey.50', p: 1.5, borderRadius: 1 }}>
+                  <Typography variant="body2" sx={{ lineHeight: 1.6, m: 0 }}>{coa.content}</Typography>
+                </Box>
+              </Box>
             )}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+          </Box>
+        </Collapse>
+      </Paper>
     );
   };
 
   return (
-    <Card className="w-full h-full">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Complaint Document
-          </CardTitle>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onDownload}
-              disabled={!content}
-            >
-              <Download className="w-4 h-4 mr-1" />
-              Download
-            </Button>
-          </div>
-        </div>
-        {metadata.generated_at && (
-          <p className="text-xs text-gray-500">
-            Generated: {new Date(metadata.generated_at).toLocaleString()}
-          </p>
-        )}
-      </CardHeader>
+    <Card sx={{ width: '100%', height: '100%' }}>
+      <CardHeader 
+        sx={{ pb: 1.5 }}
+        title={
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <FileText sx={{ width: 20, height: 20 }} />
+              <Typography variant="h6">Complaint Document</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={onDownload}
+                disabled={!content}
+                startIcon={<Download sx={{ width: 16, height: 16 }} />}
+              >
+                Download
+              </Button>
+            </Box>
+          </Box>
+        }
+        subheader={
+          metadata.generated_at && (
+            <Typography variant="caption" color="text.secondary">
+              Generated: {new Date(metadata.generated_at).toLocaleString()}
+            </Typography>
+          )
+        }
+      />
 
-      <CardContent className="space-y-4">
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {/* Parties Information */}
         {parties && Object.keys(parties).length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2, p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
             {parties.plaintiff && (
-              <div>
-                <h4 className="font-medium text-sm text-gray-700 mb-1">Plaintiff</h4>
-                <p className="text-sm">{parties.plaintiff}</p>
-              </div>
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 500, color: 'text.primary', mb: 0.5 }}>Plaintiff</Typography>
+                <Typography variant="body2">{parties.plaintiff}</Typography>
+              </Box>
             )}
             {parties.defendant && (
-              <div>
-                <h4 className="font-medium text-sm text-gray-700 mb-1">Defendant</h4>
-                <p className="text-sm">{parties.defendant}</p>
-              </div>
+              <Box>
+                <Typography variant="subtitle2" sx={{ fontWeight: 500, color: 'text.primary', mb: 0.5 }}>Defendant</Typography>
+                <Typography variant="body2">{parties.defendant}</Typography>
+              </Box>
             )}
-          </div>
+          </Box>
         )}
 
         {/* Causes of Action */}
-        <div className="space-y-3">
-          <h3 className="font-medium text-sm text-gray-700">
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 500, color: 'text.primary' }}>
             Causes of Action ({causes_of_action.length})
-          </h3>
+          </Typography>
           {causes_of_action.length > 0 ? (
             causes_of_action.map(renderCauseOfAction)
           ) : (
-            <p className="text-sm text-gray-500 text-center py-4">
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
               No causes of action available.
-            </p>
+            </Typography>
           )}
-        </div>
+        </Box>
 
         {/* Full Document Content */}
         {content && (
           <>
-            <Separator />
-            <div className="space-y-2">
-              <h3 className="font-medium text-sm text-gray-700">Full Document</h3>
-              <ScrollArea className="h-64">
-                <div className="pr-2">
-                  <div className="prose prose-sm max-w-none">
-                    {content.split('\n\n').map((paragraph, index) => (
-                      <p key={index} className="mb-3 text-sm leading-relaxed">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              </ScrollArea>
-            </div>
+            <Divider />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 500, color: 'text.primary' }}>Full Document</Typography>
+              <Box sx={{ maxHeight: 256, overflowY: 'auto', pr: 1 }}>
+                <Box>
+                  {content.split('\n\n').map((paragraph, index) => (
+                    <Typography key={index} variant="body2" sx={{ mb: 1.5, lineHeight: 1.6 }}>
+                      {paragraph}
+                    </Typography>
+                  ))}
+                </Box>
+              </Box>
+            </Box>
           </>
         )}
 
         {/* Statistics */}
-        <Separator />
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>Causes of Action: {causes_of_action.length}</span>
-          <span>Total Citations: {citations.length}</span>
-          <span>Validated: {Object.values(validationStatus).filter(s => s === 'valid').length}</span>
-        </div>
+        <Divider />
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Typography variant="caption" color="text.secondary">Causes of Action: {causes_of_action.length}</Typography>
+          <Typography variant="caption" color="text.secondary">Total Citations: {citations.length}</Typography>
+          <Typography variant="caption" color="text.secondary">Validated: {Object.values(validationStatus).filter(s => s === 'valid').length}</Typography>
+        </Box>
       </CardContent>
     </Card>
   );

@@ -1,16 +1,12 @@
-import from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Download, FileText, Link, Search } from 'lucide-react';
+import { CloudDownload as Download, Description as FileText, Link as LinkIcon, Search } from '@mui/icons-material';
+import { Badge, Box, Button, Card, CardContent, CardHeader, Divider, InputAdornment, TextField, Typography } from '@mui/material';
 import { useState } from 'react';
 
 /**
  * StatementOfFactsViewer - React component for viewing generated Statement of Facts
  * Displays the generated statement of facts with fact-evidence mapping and interactive features
  */
-const StatementOfFactsViewer = ({ caseId, documentData, onFactClick, onDownload }) => {
+const StatementOfFactsViewer = ({ documentData, onFactClick, onDownload }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedFacts, setHighlightedFacts] = useState(new Set());
 
@@ -49,123 +45,133 @@ const StatementOfFactsViewer = ({ caseId, documentData, onFactClick, onDownload 
   const renderFact = (fact) => {
     const isHighlighted = highlightedFacts.has(fact.id);
     return (
-      <div
+      <Box
         key={fact.id}
-        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-          isHighlighted ? 'bg-blue-50 border-blue-300' : 'hover:bg-gray-50'
-        }`}
+        sx={{
+          p: 1.5,
+          border: 1,
+          borderColor: isHighlighted ? 'primary.main' : 'divider',
+          borderRadius: 2,
+          cursor: 'pointer',
+          transition: 'all 0.2s',
+          bgcolor: isHighlighted ? 'primary.light' : 'transparent',
+          '&:hover': { bgcolor: isHighlighted ? 'primary.light' : 'grey.50' }
+        }}
         onClick={() => handleFactClick(fact.id)}
       >
-        <div className="flex items-start justify-between mb-2">
-          <Badge variant="outline" className="text-xs">
-            {fact.category || 'Fact'}
-          </Badge>
+        <Box sx={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', mb: 1 }}>
+          <Badge badgeContent={fact.category || 'Fact'} color="default" sx={{ '& .MuiBadge-badge': { position: 'static', transform: 'none', fontSize: '0.75rem' } }} />
           {evidence_mapping[fact.id] && (
-            <Badge variant="secondary" className="text-xs">
-              <Link className="w-3 h-3 mr-1" />
-              Evidence Linked
-            </Badge>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <LinkIcon sx={{ width: 12, height: 12 }} />
+              <Typography variant="caption">Evidence Linked</Typography>
+            </Box>
           )}
-        </div>
-        <p className="text-sm text-gray-700">{fact.text}</p>
+        </Box>
+        <Typography variant="body2" color="text.primary">{fact.text}</Typography>
         {fact.source && (
-          <p className="text-xs text-gray-500 mt-1">Source: {fact.source}</p>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>Source: {fact.source}</Typography>
         )}
-      </div>
+      </Box>
     );
   };
 
   return (
-    <Card className="w-full h-full">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Statement of Facts
-          </CardTitle>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onDownload}
-              disabled={!content}
-            >
-              <Download className="w-4 h-4 mr-1" />
-              Download
-            </Button>
-          </div>
-        </div>
-        {metadata.generated_at && (
-          <p className="text-xs text-gray-500">
-            Generated: {new Date(metadata.generated_at).toLocaleString()}
-          </p>
-        )}
-      </CardHeader>
+    <Card sx={{ width: '100%', height: '100%' }}>
+      <CardHeader
+        sx={{ pb: 1.5 }}
+        title={
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <FileText sx={{ width: 20, height: 20 }} />
+              <Typography variant="h6">Statement of Facts</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={onDownload}
+                disabled={!content}
+                startIcon={<Download sx={{ width: 16, height: 16 }} />}
+              >
+                Download
+              </Button>
+            </Box>
+          </Box>
+        }
+        subheader={
+          metadata.generated_at && (
+            <Typography variant="caption" color="text.secondary">
+              Generated: {new Date(metadata.generated_at).toLocaleString()}
+            </Typography>
+          )
+        }
+      />
 
-      <CardContent className="space-y-4">
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search facts..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-        </div>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Search facts..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search sx={{ width: 16, height: 16, color: 'text.secondary' }} />
+              </InputAdornment>
+            ),
+          }}
+        />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-96">
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 2, height: 384 }}>
           {/* Facts List */}
-          <div className="space-y-2">
-            <h3 className="font-medium text-sm text-gray-700 mb-2">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 500, color: 'text.primary', mb: 1 }}>
               Key Facts ({filteredFacts.length})
-            </h3>
-            <ScrollArea className="h-full">
-              <div className="space-y-2 pr-2">
-                {filteredFacts.length > 0 ? (
-                  filteredFacts.map(renderFact)
-                ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    {searchTerm ? 'No facts match your search.' : 'No facts available.'}
-                  </p>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
+            </Typography>
+            <Box sx={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 1, pr: 1 }}>
+              {filteredFacts.length > 0 ? (
+                filteredFacts.map(renderFact)
+              ) : (
+                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
+                  {searchTerm ? 'No facts match your search.' : 'No facts available.'}
+                </Typography>
+              )}
+            </Box>
+          </Box>
 
           {/* Document Content */}
-          <div className="space-y-2">
-            <h3 className="font-medium text-sm text-gray-700 mb-2">
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 500, color: 'text.primary', mb: 1 }}>
               Document Content
-            </h3>
-            <ScrollArea className="h-full">
-              <div className="pr-2">
-                {content ? (
-                  <div className="prose prose-sm max-w-none">
-                    {content.split('\n').map((paragraph, index) => (
-                      <p key={index} className="mb-3 text-sm leading-relaxed">
-                        {paragraph}
-                      </p>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    No document content available.
-                  </p>
-                )}
-              </div>
-            </ScrollArea>
-          </div>
-        </div>
+            </Typography>
+            <Box sx={{ height: '100%', overflowY: 'auto', pr: 1 }}>
+              {content ? (
+                <Box>
+                  {content.split('\n').map((paragraph, index) => (
+                    <Typography key={index} variant="body2" sx={{ mb: 1.5, lineHeight: 1.6 }}>
+                      {paragraph}
+                    </Typography>
+                  ))}
+                </Box>
+              ) : (
+                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
+                  No document content available.
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        </Box>
 
         {/* Statistics */}
-        <Separator />
-        <div className="flex justify-between text-xs text-gray-500">
-          <span>Total Facts: {facts.length}</span>
-          <span>Evidence Links: {Object.keys(evidence_mapping).length}</span>
-          <span>Highlighted: {highlightedFacts.size}</span>
-        </div>
+        <Divider />
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Typography variant="caption" color="text.secondary">Total Facts: {facts.length}</Typography>
+          <Typography variant="caption" color="text.secondary">Evidence Links: {Object.keys(evidence_mapping).length}</Typography>
+          <Typography variant="caption" color="text.secondary">Highlighted: {highlightedFacts.size}</Typography>
+        </Box>
       </CardContent>
     </Card>
   );

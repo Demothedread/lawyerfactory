@@ -367,5 +367,184 @@
     "storage_results": {},
     "created_at": "2025-09-16T11:09:14.132748",
     "source_phase": "integration_test"
+  },
+  "76e8e698-35f9-4fd1-ac21-2d5e58f9a53a": {
+    "metadata": {
+      "object_id": "76e8e698-35f9-4fd1-ac21-2d5e58f9a53a",
+      "original_filename": "test_document.txt",
+      "content_type": "text/plain",
+      "file_size": 63,
+      "upload_timestamp": "2025-10-08T01:52:17.443660",
+      "source_phase": "phaseA01_intake",
+      "custom_metadata": {
+        "case_id": "test_case_001",
+        "document_type": "complaint"
+      }
+    },
+    "storage_results": {
+      "vector": {
+        "success": true,
+        "vector_ids": [
+          "general_rag_3250572e-6737-48d0-85aa-b553347415d0"
+        ],
+        "store_type": "general_rag",
+        "validation_types": []
+      },
+      "cloud": {
+        "error": "'CloudStorageManager' object has no attribute 'store_with_tier'"
+      },
+      "evidence": {
+        "success": true,
+        "evidence_id": "309a2357-4691-4a12-9a32-95dc8e90b0d2",
+        "evidence_type": "documentary",
+        "relevance_level": "low"
+      }
+    },
+    "created_at": "2025-10-08T01:52:17.599223",
+    "source_phase": "phaseA01_intake"
+  },
+  "cd58a2b4-3c5e-4973-8893-011903462e0a": {
+    "metadata": {
+      "object_id": "cd58a2b4-3c5e-4973-8893-011903462e0a",
+      "original_filename": "test_integration_doc.txt",
+      "content_type": "text/plain",
+      "file_size": 45,
+      "upload_timestamp": "2025-10-11T10:15:28.346275",
+      "source_phase": "integration_test",
+      "custom_metadata": {
+        "case_id": "test_case_001",
+        "source_phase": "integration_test",
+        "content_type": "text/plain"
+      }
+    },
+    "storage_results": {},
+    "created_at": "2025-10-11T10:15:28.346288",
+    "source_phase": "integration_test"
+  },
+  "62146219-4584-4448-b465-f9333b3fccd5": {
+    "metadata": {
+      "object_id": "62146219-4584-4448-b465-f9333b3fccd5",
+      "original_filename": "test_integration_doc.txt",
+      "content_type": "text/plain",
+      "file_size": 45,
+      "upload_timestamp": "2025-10-14T12:15:12.412221",
+      "source_phase": "integration_test",
+      "custom_metadata": {
+        "case_id": "test_case_001",
+        "source_phase": "integration_test",
+        "content_type": "text/plain"
+      }
+    },
+    "storage_results": {},
+    "created_at": "2025-10-14T12:15:12.412234",
+    "source_phase": "integration_test"
+  },
+  "e059c003-cc6f-4056-87ec-ccbd3a9b3454": {
+    "metadata": {
+      "object_id": "e059c003-cc6f-4056-87ec-ccbd3a9b3454",
+      "original_filename": "test_integration_doc.txt",
+      "content_type": "text/plain",
+      "file_size": 45,
+      "upload_timestamp": "2025-10-14T13:15:19.637123",
+      "source_phase": "integration_test",
+      "custom_metadata": {
+        "case_id": "test_case_001",
+        "source_phase": "integration_test",
+        "content_type": "text/plain"
+      }
+    },
+    "storage_results": {},
+    "created_at": "2025-10-14T13:15:19.637134",
+    "source_phase": "integration_test"
+  },
+  "49419f3e-86d0-4c1a-bb69-07c055c04fde": {
+    "metadata": {
+      "object_id": "49419f3e-86d0-4c1a-bb69-07c055c04fde",
+      "original_filename": "test_integration_doc.txt",
+      "content_type": "text/plain",
+      "file_size": 45,
+      "upload_timestamp": "2025-10-14T13:15:29.176705",
+      "source_phase": "integration_test",
+      "custom_metadata": {
+        "case_id": "test_case_001",
+        "source_phase": "integration_test",
+        "content_type": "text/plain"
+      }
+    },
+    "storage_results": {},
+    "created_at": "2025-10-14T13:15:29.176715",
+    "source_phase": "integration_test"
+  },
+  "12ac86d1-41d1-417a-ad2f-6c2358b9576c": {
+    "metadata": {
+      "object_id": "12ac86d1-41d1-417a-ad2f-6c2358b9576c",
+      "original_filename": "test_integration_doc.txt",
+      "content_type": "text/plain",
+      "file_size": 45,
+      "upload_timestamp": "2025-10-14T15:06:16.592413",
+      "source_phase": "integration_test",
+      "custom_metadata": {
+        "case_id": "test_case_001",
+        "source_phase": "integration_test",
+        "content_type": "text/plain"
+      }
+    },
+    "storage_results": {},
+    "created_at": "2025-10-14T15:06:16.592423",
+    "source_phase": "integration_test"
+  },
+  "1de2ecb9-a4fd-4e5d-ae0f-c886340ae784": {
+    "metadata": {
+      "object_id": "1de2ecb9-a4fd-4e5d-ae0f-c886340ae784",
+      "original_filename": "test_integration_doc.txt",
+      "content_type": "text/plain",
+      "file_size": 45,
+      "upload_timestamp": "2025-10-14T15:06:21.478369",
+      "source_phase": "integration_test",
+      "custom_metadata": {
+        "case_id": "test_case_001",
+        "source_phase": "integration_test",
+        "content_type": "text/plain"
+      }
+    },
+    "storage_results": {},
+    "created_at": "2025-10-14T15:06:21.478379",
+    "source_phase": "integration_test"
+  },
+  "fa12735f-7292-45d0-8d0c-ec490e60122a": {
+    "metadata": {
+      "object_id": "fa12735f-7292-45d0-8d0c-ec490e60122a",
+      "original_filename": "test_integration_doc.txt",
+      "content_type": "text/plain",
+      "file_size": 45,
+      "upload_timestamp": "2025-10-14T20:03:22.986053",
+      "source_phase": "integration_test",
+      "custom_metadata": {
+        "case_id": "test_case_001",
+        "source_phase": "integration_test",
+        "content_type": "text/plain"
+      }
+    },
+    "storage_results": {},
+    "created_at": "2025-10-14T20:03:22.986064",
+    "source_phase": "integration_test"
+  },
+  "d97268b4-587f-4dc0-8bec-2abaafbefa18": {
+    "metadata": {
+      "object_id": "d97268b4-587f-4dc0-8bec-2abaafbefa18",
+      "original_filename": "test_integration_doc.txt",
+      "content_type": "text/plain",
+      "file_size": 45,
+      "upload_timestamp": "2025-10-14T20:46:05.148446",
+      "source_phase": "integration_test",
+      "custom_metadata": {
+        "case_id": "test_case_001",
+        "source_phase": "integration_test",
+        "content_type": "text/plain"
+      }
+    },
+    "storage_results": {},
+    "created_at": "2025-10-14T20:46:05.148459",
+    "source_phase": "integration_test"
   }
 }

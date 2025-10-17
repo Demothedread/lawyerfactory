@@ -1,0 +1,669 @@
+// NeonPhaseCard - Soviet Industrial neon-themed phase visualization card
+import {
+    Assignment,
+    CheckCircle,
+    CloudUpload,
+    Description,
+    Download,
+    Error as ErrorIcon,
+    PlayArrow,
+    Schedule,
+    Timeline,
+    Visibility,
+} from '@mui/icons-material';
+import { useEffect, useState } from 'react';
+import { downloadDeliverable, getPhaseA03Deliverables } from '../../services/apiService';
+import '../../styles/neon-soviet.css';
+
+const NeonPhaseCard = ({
+  phase,
+  phaseState,
+  onStart,
+  onViewDetails,
+  onUploadEvidence,
+  isActive = false,
+  showUpload = false,
+  caseId,
+}) => {
+  const [, setIsHovered] = useState(false);
+  const [deliverables, setDeliverables] = useState({
+    shotlist: { available: false },
+    claimsMatrix: { available: false },
+    skeletalOutline: { available: false }
+  });
+  const [loadingDeliverables, setLoadingDeliverables] = useState(false);
+  const [inlineView] = useState(null);
+
+  // Check for Phase A03 deliverables when phase is completed
+  useEffect(() => {
+    if (phase?.id === 'phaseA03_outline' && phaseState?.status === 'completed' && caseId) {
+      checkDeliverables();
+    }
+  }, [phase, phaseState, caseId]);
+
+  const checkDeliverables = async () => {
+    if (!caseId) return;
+    
+    setLoadingDeliverables(true);
+    try {
+      const result = await getPhaseA03Deliverables(caseId);
+      setDeliverables(result);
+    } catch (error) {
+      console.error('Failed to check Phase A03 deliverables:', error);
+    } finally {
+      setLoadingDeliverables(false);
+    }
+  };
+
+  const handleDownloadDeliverable = async (deliverableType) => {
+    if (!caseId) return;
+    
+    try {
+      await downloadDeliverable(caseId, deliverableType);
+    } catch (error) {
+      console.error(`Failed to download ${deliverableType}:`, error);
+    }
+  };
+
+  // Determine neon color based on phase status
+  const getNeonColor = () => {
+    switch (phaseState?.status) {
+      case 'completed':
+        return 'var(--neon-green)';
+      case 'running':
+        return 'var(--neon-amber)';
+      case 'error':
+        return 'var(--neon-red)';
+      case 'ready':
+        return 'var(--neon-cyan)';
+      default:
+        return 'var(--neon-dim)';
+    }
+  };
+
+  // Get status icon
+  const getStatusIcon = () => {
+    switch (phaseState?.status) {
+      case 'completed':
+        return <CheckCircle className="neon-icon" sx={{ color: 'var(--neon-green)' }} />;
+      case 'running':
+        return <Schedule className="neon-icon neon-pulse" sx={{ color: 'var(--neon-amber)' }} />;
+      case 'error':
+        return <ErrorIcon className="neon-icon" sx={{ color: 'var(--neon-red)' }} />;
+      case 'ready':
+        return <PlayArrow className="neon-icon" sx={{ color: 'var(--neon-cyan)' }} />;
+      default:
+        return <Schedule className="neon-icon" sx={{ color: 'var(--neon-dim)' }} />;
+    }
+  };
+
+  // Get status label
+  const getStatusLabel = () => {
+    switch (phaseState?.status) {
+      case 'completed':
+        return 'COMPLETE';
+      case 'running':
+        return 'RUNNING';
+      case 'error':
+        return 'ERROR';
+      case 'ready':
+        return 'READY';
+      case 'pending':
+        return 'PENDING';
+      default:
+        return 'IDLE';
+    }
+  };
+
+  const neonColor = getNeonColor();
+
+  return (
+    <Box
+      className={`neon-phase-card ${isActive ? 'active' : ''} ${phaseState?.status || 'idle'}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{
+        position: 'relative',
+        border: `2px solid ${neonColor}`,
+        borderRadius: '8px',
+        padding: '20px',
+        backgroundColor: 'rgba(26, 26, 26, 0.9)',
+        boxShadow: `0 0 20px ${neonColor}40, inset 0 0 10px ${neonColor}20`,
+        transition: 'all 0.3s ease',
+        cursor: 'pointer',
+        '&:hover': {
+          boxShadow: `0 0 30px ${neonColor}60, inset 0 0 15px ${neonColor}30`,
+          transform: 'translateY(-2px)',
+        },
+        '&.active': {
+          boxShadow: `0 0 40px ${neonColor}80, inset 0 0 20px ${neonColor}40`,
+          borderWidth: '3px',
+        },
+      }}
+    >
+      {/* Header Section */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+        <Box sx={{ flex: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+            <Box className="phase-icon" sx={{ color: neonColor }}>
+              {phase.icon}
+            </Box>
+            <Typography
+              variant="h6"
+              className="neon-text"
+              sx={{
+                color: neonColor,
+                textShadow: `0 0 10px ${neonColor}, 0 0 20px ${neonColor}80`,
+                fontFamily: '"Orbitron", monospace',
+                fontWeight: 700,
+                fontSize: '1.1rem',
+              }}
+            >
+              {phase.name}
+            </Typography>
+          </Box>
+          
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'var(--soviet-silver)',
+              display: 'block',
+              fontFamily: '"Share Tech Mono", monospace',
+              fontSize: '0.75rem',
+              opacity: 0.8,
+            }}
+          >
+            {phase.id}
+          </Typography>
+        </Box>
+
+        {/* Status Icon */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {getStatusIcon()}
+        </Box>
+      </Box>
+
+      {/* Description */}
+      <Typography
+        variant="body2"
+        sx={{
+          color: 'var(--soviet-silver)',
+          mb: 2,
+          fontFamily: '"Share Tech Mono", monospace',
+          fontSize: '0.85rem',
+          lineHeight: 1.5,
+        }}
+      >
+        {phase.description}
+      </Typography>
+
+      {/* Agent Information */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1,
+          mb: 2,
+          padding: '8px 12px',
+          backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          borderRadius: '4px',
+          border: `1px solid ${neonColor}40`,
+        }}
+      >
+        <Typography
+          variant="caption"
+          sx={{
+            color: neonColor,
+            fontFamily: '"Share Tech Mono", monospace',
+            fontSize: '0.75rem',
+            textTransform: 'uppercase',
+          }}
+        >
+          🤖 {phase.agent}
+        </Typography>
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'var(--soviet-amber)',
+            marginLeft: 'auto',
+            fontFamily: '"Share Tech Mono", monospace',
+            fontSize: '0.7rem',
+          }}
+        >
+          ⏱️ {phase.estimatedTime}
+        </Typography>
+      </Box>
+
+      {/* Progress Bar (when running) */}
+      {phaseState?.status === 'running' && (
+        <Box sx={{ mb: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'var(--neon-amber)',
+                fontFamily: '"Share Tech Mono", monospace',
+                fontSize: '0.75rem',
+              }}
+            >
+              PROCESSING...
+            </Typography>
+            <Typography
+              variant="caption"
+              className="neon-flicker"
+              sx={{
+                color: 'var(--neon-amber)',
+                fontFamily: '"Orbitron", monospace',
+                fontWeight: 700,
+              }}
+            >
+              {phaseState.progress || 0}%
+            </Typography>
+          </Box>
+          <LinearProgress
+            variant="determinate"
+            value={phaseState.progress || 0}
+            sx={{
+              height: 6,
+              borderRadius: 3,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              '& .MuiLinearProgress-bar': {
+                backgroundColor: 'var(--neon-amber)',
+                boxShadow: '0 0 10px var(--neon-amber), 0 0 20px var(--neon-amber)80',
+              },
+            }}
+          />
+        </Box>
+      )}
+
+      {/* Status Badge */}
+      <Box
+        className="neon-status-badge"
+        sx={{
+          display: 'inline-block',
+          padding: '4px 12px',
+          backgroundColor: `${neonColor}20`,
+          border: `1px solid ${neonColor}`,
+          borderRadius: '12px',
+          boxShadow: `0 0 10px ${neonColor}40, inset 0 0 5px ${neonColor}20`,
+          mb: 2,
+        }}
+      >
+        <Typography
+          variant="caption"
+          sx={{
+            color: neonColor,
+            fontFamily: '"Orbitron", monospace',
+            fontWeight: 700,
+            fontSize: '0.7rem',
+            textShadow: `0 0 5px ${neonColor}`,
+          }}
+        >
+          {getStatusLabel()}
+        </Typography>
+      </Box>
+
+      {/* Outputs (when completed) */}
+      {phaseState?.outputs && phaseState.outputs.length > 0 && (
+        <Box sx={{ mb: 2 }}>
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'var(--neon-green)',
+              fontFamily: '"Orbitron", monospace',
+              fontSize: '0.75rem',
+              display: 'block',
+              mb: 1,
+            }}
+          >
+            ✅ OUTPUTS ({phaseState.outputs.length})
+          </Typography>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+            {phaseState.outputs.slice(0, 3).map((output, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  padding: '2px 8px',
+                  backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                  border: '1px solid var(--neon-green)40',
+                  borderRadius: '8px',
+                  fontSize: '0.65rem',
+                  color: 'var(--neon-green)',
+                  fontFamily: '"Share Tech Mono", monospace',
+                }}
+              >
+                {output}
+              </Box>
+            ))}
+            {phaseState.outputs.length > 3 && (
+              <Box
+                sx={{
+                  padding: '2px 8px',
+                  fontSize: '0.65rem',
+                  color: 'var(--soviet-silver)',
+                  fontFamily: '"Share Tech Mono", monospace',
+                }}
+              >
+                +{phaseState.outputs.length - 3} more
+              </Box>
+            )}
+          </Box>
+        </Box>
+      )}
+      
+      {/* Phase A03 Deliverables (Shotlist, Claims Matrix, Skeletal Outline) */}
+      {phase?.id === 'phaseA03_outline' && phaseState?.status === 'completed' && !loadingDeliverables && (
+        <Box sx={{ mb: 2 }}>
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'var(--neon-cyan)',
+              fontFamily: '"Orbitron", monospace',
+              fontSize: '0.75rem',
+              display: 'block',
+              mb: 1,
+            }}
+          >
+            📁 DELIVERABLES
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {/* Shotlist */}
+            <Box
+              sx={{
+                padding: '8px',
+                backgroundColor: deliverables.shotlist.available ? 'rgba(0, 255, 255, 0.1)' : 'rgba(128, 128, 128, 0.1)',
+                border: `1px solid ${deliverables.shotlist.available ? 'var(--neon-cyan)' : 'var(--neon-dim)'}40`,
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Timeline sx={{ color: deliverables.shotlist.available ? 'var(--neon-cyan)' : 'var(--neon-dim)', fontSize: '1rem' }} />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: deliverables.shotlist.available ? 'var(--neon-cyan)' : 'var(--neon-dim)',
+                    fontFamily: '"Share Tech Mono", monospace',
+                    fontSize: '0.7rem',
+                  }}
+                >
+                  Shotlist Timeline
+                </Typography>
+              </Box>
+              {deliverables.shotlist.available && (
+                <Tooltip title="Download CSV">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownloadDeliverable('shotlist.csv');
+                    }}
+                    sx={{
+                      color: 'var(--neon-cyan)',
+                      '&:hover': {
+                        backgroundColor: 'var(--neon-cyan)20',
+                      },
+                    }}
+                  >
+                    <Download fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
+
+            {/* Claims Matrix */}
+            <Box
+              sx={{
+                padding: '8px',
+                backgroundColor: deliverables.claimsMatrix.available ? 'rgba(0, 255, 255, 0.1)' : 'rgba(128, 128, 128, 0.1)',
+                border: `1px solid ${deliverables.claimsMatrix.available ? 'var(--neon-cyan)' : 'var(--neon-dim)'}40`,
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Assignment sx={{ color: deliverables.claimsMatrix.available ? 'var(--neon-cyan)' : 'var(--neon-dim)', fontSize: '1rem' }} />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: deliverables.claimsMatrix.available ? 'var(--neon-cyan)' : 'var(--neon-dim)',
+                    fontFamily: '"Share Tech Mono", monospace',
+                    fontSize: '0.7rem',
+                  }}
+                >
+                  Claims Matrix
+                </Typography>
+              </Box>
+              {deliverables.claimsMatrix.available && (
+                <Tooltip title="Download JSON">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownloadDeliverable('claims_matrix.json');
+                    }}
+                    sx={{
+                      color: 'var(--neon-cyan)',
+                      '&:hover': {
+                        backgroundColor: 'var(--neon-cyan)20',
+                      },
+                    }}
+                  >
+                    <Download fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
+
+            {/* Skeletal Outline */}
+            <Box
+              sx={{
+                padding: '8px',
+                backgroundColor: deliverables.skeletalOutline.available ? 'rgba(0, 255, 255, 0.1)' : 'rgba(128, 128, 128, 0.1)',
+                border: `1px solid ${deliverables.skeletalOutline.available ? 'var(--neon-cyan)' : 'var(--neon-dim)'}40`,
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Description sx={{ color: deliverables.skeletalOutline.available ? 'var(--neon-cyan)' : 'var(--neon-dim)', fontSize: '1rem' }} />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: deliverables.skeletalOutline.available ? 'var(--neon-cyan)' : 'var(--neon-dim)',
+                    fontFamily: '"Share Tech Mono", monospace',
+                    fontSize: '0.7rem',
+                  }}
+                >
+                  Skeletal Outline
+                </Typography>
+              </Box>
+              {deliverables.skeletalOutline.available && (
+                <Tooltip title="Download JSON">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownloadDeliverable('skeletal_outline.json');
+                    }}
+                    sx={{
+                      color: 'var(--neon-cyan)',
+                      '&:hover': {
+                        backgroundColor: 'var(--neon-cyan)20',
+                      },
+                    }}
+                  >
+                    <Download fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </Box>
+          </Box>
+        </Box>
+        
+        {/* Review Deliverables Button */}
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+          <Button
+            fullWidth
+            variant="contained"
+            startIcon={<Visibility />}
+            onClick={() => {
+              // Navigate to Phase B01 Review
+              if (onViewDetails) {
+                onViewDetails({
+                  phase: 'phaseB01_review',
+                  caseId: caseId,
+                  deliverables: deliverables
+                });
+              }
+            }}
+            sx={{
+              backgroundColor: 'var(--neon-cyan)',
+              color: '#000',
+              fontFamily: 'Orbitron, monospace',
+              fontWeight: 'bold',
+              textTransform: 'none',
+              px: 3,
+              py: 1.5,
+              '&:hover': {
+                backgroundColor: 'var(--neon-cyan-bright)',
+                boxShadow: '0 0 20px var(--neon-cyan)',
+              },
+            }}
+          >
+            Review All Deliverables
+          </Button>
+        </Box>
+      )}
+
+      {/* Error Message */}
+      {phaseState?.errors && phaseState.errors.length > 0 && (
+        <Box
+          sx={{
+            padding: '8px',
+            backgroundColor: 'rgba(255, 0, 0, 0.1)',
+            border: '1px solid var(--neon-red)',
+            borderRadius: '4px',
+            mb: 2,
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'var(--neon-red)',
+              fontFamily: '"Share Tech Mono", monospace',
+              fontSize: '0.7rem',
+            }}
+          >
+            ⚠️ {phaseState.errors[phaseState.errors.length - 1].error}
+          </Typography>
+        </Box>
+      )}
+
+      {/* Action Buttons */}
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          pt: 1,
+          borderTop: `1px solid ${neonColor}40`,
+        }}
+      >
+        {phaseState?.status === 'ready' && onStart && (
+          <Tooltip title="Start Phase">
+            <IconButton
+              className="neon-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onStart();
+              }}
+              sx={{
+                color: 'var(--neon-cyan)',
+                border: '1px solid var(--neon-cyan)',
+                '&:hover': {
+                  backgroundColor: 'var(--neon-cyan)20',
+                  boxShadow: '0 0 15px var(--neon-cyan)60',
+                },
+              }}
+            >
+              <PlayArrow />
+            </IconButton>
+          </Tooltip>
+        )}
+
+        {showUpload && onUploadEvidence && (
+          <Tooltip title="Upload Evidence">
+            <IconButton
+              className="neon-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onUploadEvidence();
+              }}
+              sx={{
+                color: 'var(--neon-amber)',
+                border: '1px solid var(--neon-amber)',
+                '&:hover': {
+                  backgroundColor: 'var(--neon-amber)20',
+                  boxShadow: '0 0 15px var(--neon-amber)60',
+                },
+              }}
+            >
+              <CloudUpload />
+            </IconButton>
+          </Tooltip>
+        )}
+
+        <Tooltip title="View Details">
+          <IconButton
+            className="neon-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onViewDetails) onViewDetails();
+            }}
+            sx={{
+              color: neonColor,
+              border: `1px solid ${neonColor}`,
+              marginLeft: 'auto',
+              '&:hover': {
+                backgroundColor: `${neonColor}20`,
+                boxShadow: `0 0 15px ${neonColor}60`,
+              },
+            }}
+          >
+            <Visibility />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
+      {/* Active Indicator */}
+      {isActive && (
+        <Box
+          className="neon-pulse"
+          sx={{
+            position: 'absolute',
+            top: -2,
+            right: -2,
+            width: 12,
+            height: 12,
+            borderRadius: '50%',
+            backgroundColor: 'var(--neon-cyan)',
+            boxShadow: '0 0 10px var(--neon-cyan), 0 0 20px var(--neon-cyan)80',
+          }}
+        />
+      )}
+
+      {/* Inline View Components */}
+      {inlineView === 'shotlist' && <ShotList data={deliverables.shotlist} editable />}
+      {inlineView === 'claimsMatrix' && <ClaimsMatrix data={deliverables.claimsMatrix} editable />}
+      {inlineView === 'skeletalOutline' && <SkeletalOutline data={deliverables.skeletalOutline} editable />}
+    </Box>
+  );
+};
+
+export default NeonPhaseCard;

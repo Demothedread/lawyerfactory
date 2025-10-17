@@ -18,7 +18,7 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 from maestro.evidence_api import EvidenceAPI
 from prompt_chain_orchestrator import PromptChainOrchestrator, PromptChainResult
 from skeletal_outline_generator import SkeletalOutline, SkeletalOutlineGenerator
@@ -508,7 +508,7 @@ def create_skeletal_outline_system(
 async def test_skeletal_outline_integration():
     """Test the complete skeletal outline integration"""
     try:
-        from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+        from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
         from maestro.evidence_api import EvidenceAPI
 
         from src.claims_matrix.comprehensive_claims_matrix_integration import (

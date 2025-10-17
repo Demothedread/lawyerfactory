@@ -1,0 +1,313 @@
+/* MagicUI Neon Phase Card Enhancements */
+/* Specialized styling for NeonPhaseCard component with modern neon effects */
+
+/* ===== NEON GRADIENT CARD CUSTOMIZATION ===== */
+/* Container for phase cards with neon gradient effects */
+:root {
+  --neon-card-gradient-start: var(--neon-cyan, #00ffff);
+  --neon-card-gradient-end: var(--neon-purple, #bf00ff);
+  --neon-card-border-width: 2px;
+  --neon-card-glow-blur: 20px;
+}
+
+.magicui-neon-gradient-card {
+  background: linear-gradient(
+    135deg,
+    rgba(26, 26, 26, 0.95) 0%,
+    rgba(42, 42, 42, 0.95) 100%
+  );
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  border: var(--neon-card-border-width) solid var(--neon-card-gradient-start);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.magicui-neon-gradient-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    var(--neon-card-gradient-start) 50%,
+    var(--neon-card-gradient-end) 70%,
+    transparent 100%
+  );
+  animation: neon-gradient-sweep 3s ease-in-out infinite;
+  opacity: 0;
+  z-index: 0;
+}
+
+.magicui-neon-gradient-card:hover::before {
+  opacity: 0.3;
+}
+
+.magicui-neon-gradient-card.active::before {
+  opacity: 0.5;
+  animation: neon-gradient-sweep 2s ease-in-out infinite;
+}
+
+@keyframes neon-gradient-sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    border-color: var(--neon-card-gradient-end);
+    box-shadow: 0 0 20px var(--neon-card-gradient-end);
+  }
+  100% {
+    transform: rotate(360deg);
+    border-color: var(--neon-card-gradient-start);
+    box-shadow: 0 0 20px var(--neon-card-gradient-start);
+  }
+}
+
+/* ===== SPARKLES TEXT CUSTOMIZATION ===== */
+/* Phase name with subtle sparkle animation */
+:root {
+  --sparkles-color: var(--neon-cyan, #00ffff);
+  --sparkles-glow: rgba(0, 255, 255, 0.6);
+  --sparkle-size: 2px;
+}
+
+.magicui-sparkles-text {
+  font-family: 'strelka', 'Russo One', system-ui, sans-serif;
+  font-weight: 800;
+  color: var(--neon-amber, #ffbf00);
+  text-shadow: 
+    0 0 10px var(--neon-amber),
+    0 0 20px var(--sparkles-color),
+    0 0 30px rgba(0, 255, 255, 0.4);
+  letter-spacing: 0.1em;
+  position: relative;
+  animation: sparkles-flicker 2.5s ease-in-out infinite;
+}
+
+.magicui-sparkles-text::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle,
+    var(--sparkles-color) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  animation: sparkle-burst 2s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes sparkles-flicker {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 
+      0 0 10px var(--neon-amber),
+      0 0 20px var(--sparkles-color),
+      0 0 30px rgba(0, 255, 255, 0.4);
+  }
+  50% {
+    opacity: 0.8;
+    text-shadow: 
+      0 0 5px var(--neon-amber),
+      0 0 10px var(--sparkles-color);
+  }
+}
+
+@keyframes sparkle-burst {
+  0% {
+    transform: scale(0);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* ===== ANIMATED SHINY TEXT CUSTOMIZATION ===== */
+/* Status text with shimmer effect */
+:root {
+  --shiny-text-color: var(--neon-green, #39ff14);
+  --shiny-highlight: rgba(57, 255, 20, 0.8);
+  --shiny-direction: 90deg;
+}
+
+.magicui-animated-shiny-text {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--shiny-text-color);
+  text-shadow: 0 0 8px var(--shiny-text-color);
+  font-weight: 600;
+  font-size: 0.875rem;
+  position: relative;
+  overflow: hidden;
+  animation: shimmer-sweep 2s infinite;
+}
+
+.magicui-animated-shiny-text::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--shiny-highlight) 50%,
+    transparent 100%
+  );
+  animation: shimmer-move 2s infinite;
+}
+
+@keyframes shimmer-move {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes shimmer-sweep {
+  0%, 100% {
+    text-shadow: 0 0 8px var(--shiny-text-color);
+  }
+  50% {
+    text-shadow: 0 0 16px var(--shiny-text-color), 0 0 24px var(--shiny-highlight);
+  }
+}
+
+/* ===== BORDER BEAM FOR CARD BORDERS ===== */
+/* Animated frame for active phase cards (brass/copper) */
+:root {
+  --card-beam-color: var(--soviet-brass, #d4af37);
+  --card-beam-glow: rgba(212, 175, 55, 0.8);
+  --card-beam-width: 2px;
+}
+
+.magicui-neon-card-beam {
+  position: relative;
+  border: var(--card-beam-width) solid var(--card-beam-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.magicui-neon-card-beam::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--card-beam-color) 50%,
+    transparent 100%
+  );
+  animation: card-beam-sweep 3s linear infinite;
+  pointer-events: none;
+  border-radius: 8px;
+  box-shadow: 0 0 15px var(--card-beam-glow);
+  opacity: 0.6;
+}
+
+@keyframes card-beam-sweep {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  50% {
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 100%);
+  }
+}
+
+/* Active state - stronger glow */
+.magicui-neon-card-beam.active::after {
+  box-shadow: 
+    0 0 15px var(--card-beam-glow),
+    inset 0 0 10px var(--card-beam-glow);
+  opacity: 0.8;
+}
+
+/* ===== PHASE-SPECIFIC COLOR OVERRIDES ===== */
+/* Different neon colors per phase status */
+
+.magicui-neon-gradient-card.phase-completed {
+  --neon-card-gradient-start: var(--neon-green, #39ff14);
+  --neon-card-gradient-end: var(--neon-cyan, #00ffff);
+}
+
+.magicui-neon-gradient-card.phase-active {
+  --neon-card-gradient-start: var(--neon-amber, #ffbf00);
+  --neon-card-gradient-end: var(--neon-red, #ff1744);
+}
+
+.magicui-neon-gradient-card.phase-pending {
+  --neon-card-gradient-start: var(--neon-dim, #888888);
+  --neon-card-gradient-end: var(--neon-blue, #00bfff);
+  opacity: 0.6;
+}
+
+.magicui-neon-gradient-card.phase-error {
+  --neon-card-gradient-start: var(--neon-red, #ff1744);
+  --neon-card-gradient-end: var(--neon-purple, #bf00ff);
+  animation: error-pulse 1s ease-in-out infinite;
+}
+
+@keyframes error-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--neon-red);
+  }
+  50% {
+    box-shadow: 0 0 40px var(--neon-red), inset 0 0 10px var(--neon-red);
+  }
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+  .magicui-neon-gradient-card {
+    border-radius: 6px;
+  }
+
+  .magicui-sparkles-text {
+    font-size: 1.1rem;
+  }
+
+  .magicui-animated-shiny-text {
+    font-size: 0.8rem;
+  }
+}
+
+/* ===== INTEGRATION WITH EXISTING NEON SOVIET STYLES ===== */
+/* Ensure compatibility with neon-soviet.css */
+
+.neon-phase-card.magicui-neon-gradient-card {
+  /* Enhanced base styling */
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.neon-phase-card.magicui-neon-gradient-card.active {
+  /* Override pulse animation - let MagicUI handle it */
+  animation: none;
+}
+
+.neon-phase-card.magicui-neon-gradient-card.running {
+  /* Running state - faster animation */
+  animation: none;
+}
+
+/* Ensure text inside sparkles cards is readable */
+.magicui-neon-gradient-card .phase-content {
+  position: relative;
+  z-index: 1;
+}

@@ -14,7 +14,7 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 from legal_authority_validator import LegalAuthorityValidator
 from legal_research_integration import LegalResearchAPIIntegration
 
@@ -1122,7 +1122,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO)
 
-    from lawyerfactory.kg.enhanced_graph import EnhancedKnowledgeGraph
+    from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 
     from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
         JurisdictionManager,

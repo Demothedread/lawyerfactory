@@ -19,15 +19,27 @@ except ImportError:
     web = None
     AIOHTTP_AVAILABLE = False
 
-from src.lawyerfactory.storage.evidence.table import (
-    ClaimEntry,
-    EnhancedEvidenceTable,
-    EvidenceEntry,
-    EvidenceType,
-    FactAssertion,
-    PrivilegeMarker,
-    RelevanceLevel,
-)
+try:
+    from ..storage.evidence.table import (
+        ClaimEntry,
+        EnhancedEvidenceTable,
+        EvidenceEntry,
+        EvidenceType,
+        FactAssertion,
+        PrivilegeMarker,
+        RelevanceLevel,
+    )
+except ImportError:
+    # Fallback to absolute import if relative fails
+    from lawyerfactory.storage.evidence.table import (
+        ClaimEntry,
+        EnhancedEvidenceTable,
+        EvidenceEntry,
+        EvidenceType,
+        FactAssertion,
+        PrivilegeMarker,
+        RelevanceLevel,
+    )
 
 logger = logging.getLogger(__name__)
 

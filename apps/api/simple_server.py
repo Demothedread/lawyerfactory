@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 try:
-    from lawyerfactory.storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
+    from lawyerfactory.storage.core.unified_storage_api import get_enhanced_unified_storage_api
 
     UNIFIED_STORAGE_AVAILABLE = True
     logger.info("✓ Unified storage API loaded successfully")

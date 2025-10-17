@@ -38,7 +38,9 @@ const TooltipGuide = ({
   };
 
   const handleClose = () => {
-    setAnchorEl(null);
+    if (onClose) {
+      onClose();
+    }
   };
 
   const getTypeIcon = () => {

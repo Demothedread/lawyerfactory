@@ -1,12 +1,12 @@
 """
 # Script Name: research.py
-# Description: Enhanced Research Bot for automated legal research capabilities. Integrates with CourtListener API, Google Scholar, and other legal databases.
+# Description: Enhanced Research Bot with Tavily integration for automated legal research capabilities. Integrates PRIMARY evidence keywords → Tavily academic/news search → SECONDARY evidence generation.
 # Relationships:
 #   - Entity Type: Module
 #   - Directory Group: Research
 #   - Group Tags: legal-research
 Enhanced Research Bot for automated legal research capabilities.
-Integrates with CourtListener API, Google Scholar, and other legal databases.
+Integrates with CourtListener API, Google Scholar, Tavily Search, and other legal databases.
 """
 
 import asyncio
@@ -23,10 +23,49 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+# Import Tavily integration for comprehensive research
+try:
+    from ...research.tavily_integration import (
+        TavilyResearchIntegration,
+        ResearchQuery as TavilyResearchQuery,
+    )
+    TAVILY_AVAILABLE = True
+except ImportError:
+    TAVILY_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning("Tavily integration not available - research will be limited")
+
+# Import evidence ingestion for keyword extraction
+try:
+    from ...phases.phaseA01_intake.evidence_ingestion import (
+        EvidenceIngestionPipeline,
+        ValidationType,
+    )
+    EVIDENCE_INGESTION_AVAILABLE = True
+except ImportError:
+    EVIDENCE_INGESTION_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning("Evidence ingestion not available - keyword extraction disabled")
+
+# Import unified storage for SECONDARY evidence storage
+try:
+    from ...storage.enhanced_unified_storage_api import (
+        get_enhanced_unified_storage_api,
+    )
+    from ...storage.evidence.table import EvidenceEntry, EvidenceSource
+    UNIFIED_STORAGE_AVAILABLE = True
+except ImportError:
+    UNIFIED_STORAGE_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning("Unified storage not available - SECONDARY evidence storage disabled")
+
 # Removed failing imports - these modules don't exist yet
 # from ..agent_registry import AgentCapability, AgentConfig, AgentInterface
 # from ..bot_interface import Bot
 # from ..workflow_models import WorkflowTask
+from lawyerfactory.compose.agent_registry import AgentConfig, AgentInterface
+from lawyerfactory.compose.maestro.base import Bot
+from lawyerfactory.compose.maestro.workflow import WorkflowTask
 
 logger = logging.getLogger(__name__)
 try:
@@ -485,6 +524,15 @@ class ResearchBot:
         self.google_scholar_client = GoogleScholarClient()
         self.openalex_client = OpenAlexClient()
 
+        # Initialize Tavily research integration if available
+        self.tavily_client = None
+        if TAVILY_AVAILABLE:
+            try:
+                self.tavily_client = TavilyResearchIntegration()
+                logger.info("Tavily research integration initialized")
+            except Exception as e:
+                logger.warning(f"Could not initialize Tavily: {e}")
+
         # Initialize precision citation service if available
         self.precision_citation = None
         if PRECISION_CITATION_AVAILABLE:
@@ -492,6 +540,15 @@ class ResearchBot:
                 self.precision_citation = PrecisionCitationService()
             except Exception as e:
                 logger.warning(f"Could not initialize precision citation service: {e}")
+
+        # Initialize unified storage for SECONDARY evidence
+        self.unified_storage = None
+        if UNIFIED_STORAGE_AVAILABLE:
+            try:
+                self.unified_storage = get_enhanced_unified_storage_api()
+                logger.info("Unified storage initialized for SECONDARY evidence")
+            except Exception as e:
+                logger.warning(f"Could not initialize unified storage: {e}")
 
         # Cache for research results
         self.result_cache = {}
@@ -613,6 +670,163 @@ class ResearchBot:
             )
         except Exception:
             return None
+
+    async def extract_keywords_from_evidence(self, evidence_content: str, case_type: Optional[str] = None) -> List[str]:
+        """
+        Extract research keywords from PRIMARY evidence using evidence_ingestion validation patterns.
+        Returns list of keywords for Tavily searches.
+        """
+        keywords = []
+        
+        if not EVIDENCE_INGESTION_AVAILABLE:
+            logger.warning("Evidence ingestion not available, using simple keyword extraction")
+            # Fallback: simple keyword extraction from content
+            words = re.findall(r'\b[A-Z][a-z]+\b', evidence_content)
+            return list(set(words))[:10]  # Return up to 10 unique capitalized words
+        
+        try:
+            # Use evidence ingestion pipeline to classify and extract keywords
+            pipeline = EvidenceIngestionPipeline()
+            validation_types = pipeline._classify_validation_types(evidence_content)
+            
+            # Get keywords from all matched validation types
+            for validation_type in validation_types:
+                if validation_type in pipeline.validation_keywords:
+                    keywords.extend(pipeline.validation_keywords[validation_type])
+            
+            # Also extract key legal terms (simplified pattern matching)
+            legal_patterns = [
+                r'\b(negligence|liability|breach|contract|damages|injury)\b',
+                r'\b(plaintiff|defendant|court|judge|jury)\b',
+                r'\b(evidence|testimony|witness|exhibit)\b',
+            ]
+            
+            for pattern in legal_patterns:
+                matches = re.findall(pattern, evidence_content, re.IGNORECASE)
+                keywords.extend([m.lower() for m in matches])
+            
+            # Remove duplicates and return
+            return list(set(keywords))
+            
+        except Exception as e:
+            logger.error(f"Keyword extraction failed: {e}")
+            return []
+
+    async def research_from_evidence_keywords(
+        self,
+        case_id: str,
+        evidence_id: str,
+        keywords: List[str],
+        max_results_per_source: int = 5,
+    ) -> Dict[str, Any]:
+        """
+        Execute comprehensive research using Tavily based on keywords from PRIMARY evidence.
+        Stores results as SECONDARY evidence in unified storage.
+        
+        Args:
+            case_id: Case identifier
+            evidence_id: PRIMARY evidence identifier that triggered research
+            keywords: Keywords extracted from PRIMARY evidence
+            max_results_per_source: Maximum results per search source
+            
+        Returns:
+            Dict with research_results, secondary_evidence_ids, confidence_score
+        """
+        if not self.tavily_client:
+            logger.error("Tavily client not available")
+            return {
+                "research_results": [],
+                "secondary_evidence_ids": [],
+                "confidence_score": 0.0,
+                "error": "Tavily research not available"
+            }
+        
+        try:
+            # Construct Tavily research query from keywords
+            query_text = " ".join(keywords[:10])  # Use top 10 keywords
+            
+            tavily_query = TavilyResearchQuery(
+                query=query_text,
+                search_type="comprehensive",  # academic + news + web
+                max_results=max_results_per_source,
+                include_domains=[],  # Let Tavily filter academic/news automatically
+                exclude_domains=[],
+            )
+            
+            logger.info(f"Executing Tavily research for case {case_id}, query: {query_text}")
+            
+            # Execute comprehensive research (academic + news + web)
+            research_result = await self.tavily_client.comprehensive_research(tavily_query)
+            
+            # Store SECONDARY evidence if unified storage available
+            secondary_evidence_ids = []
+            
+            if self.unified_storage and UNIFIED_STORAGE_AVAILABLE:
+                for source in research_result.sources:
+                    try:
+                        # Create SECONDARY evidence entry
+                        evidence_entry = EvidenceEntry(
+                            source_document=source.get("title", "Unknown"),
+                            content=source.get("content", ""),
+                            evidence_type="documentary",
+                            evidence_source=EvidenceSource.SECONDARY,  # Mark as SECONDARY
+                            relevance_score=source.get("relevance_score", 0.0),
+                            bluebook_citation=source.get("citation", ""),
+                            key_terms=keywords,
+                            notes=f"Found via Tavily research for case {case_id}",
+                            research_query=query_text,
+                            research_confidence=research_result.confidence_score,
+                            created_by="tavily_research_bot",
+                        )
+                        
+                        # Store via unified storage
+                        storage_result = await self.unified_storage.store_evidence(
+                            file_content=source.get("content", "").encode('utf-8'),
+                            filename=source.get("title", "research_result") + ".txt",
+                            metadata={
+                                "case_id": case_id,
+                                "primary_evidence_id": evidence_id,
+                                "research_query": query_text,
+                                "source_url": source.get("url", ""),
+                                "confidence_score": source.get("relevance_score", 0.0),
+                            },
+                            source_phase="phaseA02_research",
+                        )
+                        
+                        if storage_result and storage_result.object_id:
+                            # Update evidence entry with object_id
+                            evidence_entry.object_id = storage_result.object_id
+                            
+                            # Add to evidence table
+                            from ...storage.evidence.table import EnhancedEvidenceTable
+                            evidence_table = EnhancedEvidenceTable()
+                            evidence_id_new = evidence_table.add_evidence(evidence_entry)
+                            secondary_evidence_ids.append(evidence_id_new)
+                            
+                            logger.info(f"Stored SECONDARY evidence: {evidence_id_new}")
+                            
+                    except Exception as e:
+                        logger.error(f"Failed to store SECONDARY evidence: {e}")
+                        continue
+            
+            return {
+                "research_results": research_result.sources,
+                "secondary_evidence_ids": secondary_evidence_ids,
+                "confidence_score": research_result.confidence_score,
+                "total_sources": len(research_result.sources),
+                "academic_sources": len([s for s in research_result.sources if s.get("source_type") == "academic"]),
+                "news_sources": len([s for s in research_result.sources if s.get("source_type") == "news"]),
+                "recommendations": research_result.recommendations,
+            }
+            
+        except Exception as e:
+            logger.error(f"Tavily research failed: {e}")
+            return {
+                "research_results": [],
+                "secondary_evidence_ids": [],
+                "confidence_score": 0.0,
+                "error": str(e)
+            }
 
     def _format_research_results(self, result: ResearchResult) -> Dict[str, Any]:
         """Format research results for API response"""

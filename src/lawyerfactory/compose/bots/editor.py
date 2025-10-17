@@ -11,15 +11,15 @@ import logging
 from typing import Any, Dict, List
 
 # Import AI compliance and review modules
-from lawyerfactory.document_generator.modules.compliance_checker import (
+from lawyerfactory.export.renderers.legacy.modules.compliance_checker import (
     check_rule_12b6,
     flag_for_review,
     validate_citations,
 )
 
-from ..agent_registry import AgentConfig, AgentInterface
-from ..bot_interface import Bot
-from ..workflow_models import WorkflowTask
+from lawyerfactory.compose.agent_registry import AgentConfig, AgentInterface
+from lawyerfactory.compose.maestro.base import Bot
+from lawyerfactory.compose.maestro.workflow import WorkflowTask
 
 logger = logging.getLogger(__name__)
 
