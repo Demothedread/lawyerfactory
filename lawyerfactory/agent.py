@@ -1,4 +1,4 @@
-from .knowledge_graph import KnowledgeGraph
+from .knowledge_graph import EMPTY_GRAPH, KnowledgeGraph
 
 
 class Agent:
@@ -6,7 +6,7 @@ class Agent:
 
     def __init__(self, name):
         self.name = name
-        self.graph = KnowledgeGraph()
+        self.graph = KnowledgeGraph(seed=EMPTY_GRAPH)
 
     def learn(self, entity, data=None):
         self.graph.add_entity(entity, data)

@@ -1,30 +1,47 @@
 {
   "entities": [
     {
-     "id": "README"
+      "id": "LawyerFactory",
+      "type": "project",
+      "features": [
+        "swarm agents for legal drafting",
+        "workflow visualization",
+        "knowledge graph persistence"
+      ]
+    },
+    {
+      "id": "README",
       "description": "Project introduction and setup"
     },
     {
-     "id": "requirements.txt"
+      "id": "requirements.txt",
       "description": "Python dependencies"
     },
     {
-      "id": "flake8 config"
+      "id": "flake8 config",
       "description": "Linter configuration"
     },
     {
-      "id":  "Agent"
-      "description": "Agent with a knowledge graph"
-      "relations: "
+      "id": "knowledge_graph.json",
+      "description": "Repository knowledge graph"
     },
     {
-     "id": "Tests"
-     "description": "Pytest suite"
-      },
+      "id": "Agent",
+      "description": "Agent with a knowledge graph"
+    },
+    {
+      "id": "Tests",
+      "description": "Pytest suite"
+    },
     {
       "id": "Maestro",
       "type": "agent",
       "features": ["orchestration", "coordination"]
+    },
+    {
+      "id": "MaestroOrchestrator",
+      "type": "agent",
+      "features": ["orchestrates workflow", "controls simulation", "updates UI state"]
     },
     {
       "id": "Reader",
@@ -61,9 +78,9 @@
       "type": "agent",
       "features": ["procedure compliance", "form retrieval"]
     },
-    {  
-     "id": "Assessor",
-      "type": "Agent",
+    {
+      "id": "Assessor",
+      "type": "agent",
       "features": [
         "intake documents",
         "organize list",
@@ -75,7 +92,7 @@
     },
     {
       "id": "Repository",
-      "type": "Database",
+      "type": "database",
       "features": [
         "metadata fields (author, title, publication date, summary, category, hashtags)",
         "CSV storage"
@@ -84,79 +101,119 @@
     },
     {
       "id": "Legal Researcher",
-      "type": "Agent",
+      "type": "agent",
       "features": ["research using repository"],
       "relationships": {"Repository": "uses"}
     },
     {
-      "id": "Lawsuit",
-      "type": "Document".
-      "features": [
-            "statement_of_facts",
-            "description_of_parties",
-            "cover_sheet"
-          ]
+      "id": "ResearchBot",
+      "type": "agent"
     },
     {
-      "id": "workflow"
-      "type": "meta"
-      "features":[
-          "stages": [
-            "Preproduction Planning",
-            "Research and Development",
-            "Organization / Database Building",
-            "1st Pass All Parts",
-            "Combining",
-            "Editing",
-            "2nd Pass",
-            "Human Feedback",
-            "Final Draft"
-           ],
-        ]
-=======
-  "entities": [ 
-    {"name": "project", "description": "LawyerFactory codebase"},
-    {"name": "README.md", "description": "Project documentation"},
-    {"name": "agents", [
-     {"id": "Maestro", "type": "agent"},
-     {"id": "ResearchBot", "type": "agent"},
-     {"id": "WriterBot", "type": "agent"},
-     {"id": "LegalEditorBot", "type": "agent"},
-     {"id": "StepPlannerBot", "type": "agent"},
-     {"id": "Assessor", "type": "agent"},
-     {"id": "Summarizer", "type": "feature"},
-     {"id": "Categorizer", "type": "feature"}
+      "id": "WriterBot",
+      "type": "agent"
+    },
+    {
+      "id": "LegalEditorBot",
+      "type": "agent"
+    },
+    {
+      "id": "StepPlannerBot",
+      "type": "agent"
+    },
+    {
+      "id": "Summarizer",
+      "type": "feature"
+    },
+    {
+      "id": "Categorizer",
+      "type": "feature"
+    },
+    {
+      "id": "ShotlistAgent",
+      "type": "agent",
+      "features": ["OCR intake", "prompt + exhibit sequencing", "outline handoff"]
+    },
+    {
+      "id": "LegalResearchAgent",
+      "type": "agent",
+      "features": ["CourtListener/LegiScan queries", "statute element breakdown", "claim checklist updates"]
+    },
+    {
+      "id": "factory.html",
+      "type": "ui",
+      "features": [
+        "D3 workflow graph",
+        "role delineation for shotlist and legal research",
+        "stage timeline and research checklist"
       ]
+    },
+    {
+      "id": "StageTimeline",
+      "type": "ui_component",
+      "features": ["shows OCR through drafting stages", "reflects active and complete states"]
+    },
+    {
+      "id": "ResearchChecklist",
+      "type": "ui_component",
+      "features": ["tracks statute discovery", "caselaw search", "claim coverage"]
+    },
+    {
+      "id": "Workflow",
+      "type": "meta",
+      "stages": [
+        "Preproduction Planning",
+        "Research and Development",
+        "Organization / Database Building",
+        "1st Pass All Parts",
+        "Combining",
+        "Editing",
+        "2nd Pass",
+        "Human Feedback",
+        "Final Draft"
+      ]
+    },
+    {
+      "id": "Lawsuit",
+      "type": "document",
+      "features": [
+        "statement_of_facts",
+        "description_of_parties",
+        "cover_sheet"
+      ]
+    },
+    {
+      "id": "WorkflowDAG",
+      "type": "diagram",
+      "features": ["end-to-end legal drafting data flow", "multi-agent collaboration checkpoints"]
     }
-   {
-      "id": "knowledge_graph",
-      "features": ["stores context", "updated per task"]
-    }
-    {"name": "lexomnia", "description": "Basic agent module using Agent and Runner classes"},
-    {"name": "__init__.py", "description": "Marks the agents directory as a package"},
-    {"name": "knowledge_graph.json", "description": "Repository knowledge graph"}
   ],
   "relationships": [
-    {"from": "project", "to": "README.md", "type": "documents"},
-    {"from": "project", "to": "agents", "type": "contains"},
-    {"from": "project", "to": "knowledge_graph.json", "type": "contains"},
-    {"from": "agents", "to": "__init__.py", "type": "contains"},
-    {"from": "agents", "to": "lexomnia", "type": "contains"}
-    {"source": "LawyerFactory", "target": "knowledge_graph", "type": "contains"},
-    {"source": "knowledge_graph", "target": "LawyerFactory", "type": "context-for"}
-    {"from": "Maestro", "to": "ResearchBot", "relation": "directs"},
-    {"from": "Maestro", "to": "WriterBot", "relation": "provides_research"},
-    {"from": "WriterBot", "to": "LegalEditorBot", "relation": "submits_draft"},
-    {"from": "Maestro", "to": "StepPlannerBot", "relation": "requests_plan"},
-    {"from": "Assessor", "to": "Summarizer", "relation": "uses"},
-    {"from": "Assessor", "to": "Categorizer", "relation": "uses"}
+    {"source": "LawyerFactory", "target": "README", "relation": "documents"},
+    {"source": "LawyerFactory", "target": "requirements.txt", "relation": "depends_on"},
+    {"source": "LawyerFactory", "target": "knowledge_graph.json", "relation": "contains"},
+    {"source": "LawyerFactory", "target": "factory.html", "relation": "renders"},
+    {"source": "Maestro", "target": "ResearchBot", "relation": "directs"},
+    {"source": "Maestro", "target": "WriterBot", "relation": "provides_research"},
+    {"source": "WriterBot", "target": "LegalEditorBot", "relation": "submits_draft"},
+    {"source": "Maestro", "target": "StepPlannerBot", "relation": "requests_plan"},
+    {"source": "Assessor", "target": "Summarizer", "relation": "uses"},
+    {"source": "Assessor", "target": "Categorizer", "relation": "uses"},
+    {"source": "MaestroOrchestrator", "target": "StageTimeline", "relation": "updates"},
+    {"source": "MaestroOrchestrator", "target": "ResearchChecklist", "relation": "updates"},
+    {"source": "ShotlistAgent", "target": "MaestroOrchestrator", "relation": "reports"},
+    {"source": "LegalResearchAgent", "target": "MaestroOrchestrator", "relation": "reports"},
+    {"source": "factory.html", "target": "StageTimeline", "relation": "renders"},
+    {"source": "factory.html", "target": "ResearchChecklist", "relation": "renders"},
+    {"source": "WorkflowDAG", "target": "Workflow", "relation": "illustrates"},
+    {"source": "Workflow", "target": "MaestroOrchestrator", "relation": "guides"}
   ],
   "observations": [
     "Repository initially contained only README",
-    "Added agents package with lexomnia module and knowledge graph"
-    "Added summarizer and categorizer modules"
+    "Added agents package with lexomnia module and knowledge graph",
+    "Added summarizer and categorizer modules",
+    "UI now sequences OCR Intake -> Shotlist Build -> Legal Research -> Draft Sections -> Review & Export.",
+    "Checklist highlights statute element parsing, CourtListener/LegiScan searches, and claim coverage with citations for legal claims.",
+    "Restored legacy entities and linked them with the visual workflow and research DAG."
   ]
-
-}}
-=======
 }

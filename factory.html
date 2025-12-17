@@ -85,7 +85,7 @@
         <main class="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 overflow-hidden">
             
             <!-- Left Panel: Blueprint -->
-            <div class="lg:col-span-3 bg-gray-800/50 rounded-lg p-6 shadow-lg flex flex-col overflow-y-auto">
+            <div class="lg:col-span-3 bg-gray-800/50 rounded-lg p-6 shadow-lg flex flex-col overflow-y-auto space-y-4">
                 <h2 class="text-xl font-semibold mb-4 text-white border-b border-gray-700 pb-2">Blueprint</h2>
                 <div>
                     <label for="promptInput" class="block text-sm font-medium text-gray-300 mb-2">User Prompt</label>
@@ -96,11 +96,17 @@
                 <div id="instructionBox" class="mt-6 flex-grow flex flex-col bg-gray-900/50 p-4 rounded-lg border border-gray-700">
                     <!-- Dynamic content will be injected here -->
                 </div>
+                <div id="roleDelineation" class="bg-gray-900/50 p-4 rounded-lg border border-gray-700"></div>
+                <div id="researchChecklist" class="bg-gray-900/50 p-4 rounded-lg border border-gray-700"></div>
             </div>
 
             <!-- Center Panel: Factory Floor -->
             <div class="lg:col-span-6 bg-gray-800/50 rounded-lg shadow-lg flex flex-col overflow-hidden relative">
-                <h2 class="text-xl font-semibold p-6 text-white border-b border-gray-700">Factory Floor</h2>
+                <div class="flex items-center justify-between px-6 pt-6">
+                    <h2 class="text-xl font-semibold text-white">Factory Floor</h2>
+                    <div id="stageTimeline" class="grid grid-cols-2 lg:grid-cols-4 gap-2 w-2/3"></div>
+                </div>
+                <div class="px-6 pb-4 text-xs text-gray-400">Sequenced stages ensure OCR intake flows into shotlisting, legal research, and drafting.</div>
                 <div id="factoryFloor" class="flex-grow w-full h-full"></div>
                 <div id="factoryStatus" class="absolute bottom-4 left-4 bg-black/50 text-white text-xs font-mono p-2 rounded-md">STATUS: IDLE</div>
             </div>
@@ -185,6 +191,9 @@
             "Cause of Action: Breach of Contract": "Defendant MegaCorp's failure to deliver the specified goods constitutes a material breach of the contract dated January 1, 2024. The contract explicitly stated that 'time is of the essence,' and Defendant's non-performance has caused significant financial harm to the Plaintiff.",
             "Prayer for Relief": "WHEREFORE, Plaintiff demands judgment against Defendant for compensatory damages in an amount to be proven at trial, but not less than $150,000, plus interest, costs of suit, and such other and further relief as the Court deems just and proper.",
             "Abstract": "This white paper examines the profound impact of decentralized finance (DeFi) on the legacy financial system. We analyze how DeFi lending protocols and yield farming strategies are challenging the core business models of traditional banking institutions, offering greater transparency, efficiency, and accessibility.",
+            "OCR Intake": "Uploaded files were scanned, text-normalized, and chunked for downstream agents.",
+            "Shotlist Build": "Fact sequence created with linked exhibits and prompts to guide legal research.",
+            "Legal Research": "Statute identified, elements extracted, and CourtListener/LegiScan queries queued for each element and jurisdiction tier.",
             "Default": "Content is being generated for this section by the assigned agent..."
         };
 
@@ -192,13 +201,128 @@
             { id: 'Maestro', role: 'Maestro', type: 'Orchestrator', icon: ICONS.Maestro },
             { id: 'PlannerAgent', role: 'Planner', type: 'Generalist', icon: ICONS.Planner },
             { id: 'WebResearchAgent', role: 'Researcher', type: 'Generalist', icon: ICONS.Researcher },
+            { id: 'LegalResearchAgent', role: 'Legal Researcher', type: 'Specialist (CourtListener / LegiScan)', icon: ICONS.Researcher },
             { id: 'GeneralWriterAgent', role: 'Writer', type: 'Generalist', icon: ICONS.Writer },
             { id: 'EditorAgent', role: 'Editor', type: 'Generalist', icon: ICONS.Editor },
             { id: 'MarketAnalystAgent', role: 'Market Analyst', type: 'Specialist', icon: ICONS.MarketAnalyst },
             { id: 'FinancialModelerAgent', role: 'Financial Modeler', type: 'Specialist', icon: ICONS.FinancialModeler },
             { id: 'LegalDrafterAgent', role: 'Legal Drafter', type: 'Specialist', icon: ICONS.LegalDrafter },
             { id: 'DataVisualizationAgent', role: 'Data Visualizer', type: 'Specialist', icon: ICONS.DataVisualizer },
+            { id: 'ShotlistAgent', role: 'Shotlist Builder', type: 'Specialist (Lex Omnia GPT)', icon: ICONS.Planner },
         ];
+
+        const ROLE_DEFINITIONS = {
+            legal_claim: [
+                {
+                    title: 'Shotlist vs. Legal Research',
+                    bullet: 'Shotlist Agent reads OCR text to sequence facts, exhibits, and prompts into a production-ready outline before drafting.',
+                },
+                {
+                    title: 'Legal Research Agent',
+                    bullet: 'Searches CourtListener, LegiScan, and open legal sources to align statutes, elements, and caselaw factors with the facts.',
+                },
+                {
+                    title: 'Claim Builder',
+                    bullet: 'Tracks claim checklists element-by-element with citations so the drafter can assemble allegations confidently.',
+                }
+            ],
+            default: [
+                {
+                    title: 'Shotlist Planner',
+                    bullet: 'Turns the prompt and uploads into a structured outline before handing off to researchers and writers.',
+                },
+                {
+                    title: 'Research Agent',
+                    bullet: 'Pulls supporting facts and references from available sources before drafting.',
+                }
+            ]
+        };
+
+        const CHECKLIST_LIBRARY = {
+            legal_claim: [
+                {
+                    id: 'ocr-intake',
+                    label: 'OCR and normalize uploaded material',
+                    source: 'Text recognition pipeline',
+                    stage: 'OCR Intake',
+                    status: 'pending'
+                },
+                {
+                    id: 'shotlist-outline',
+                    label: 'Sequence facts and exhibits into a shotlist',
+                    source: 'Shotlist Agent (Lex Omnia GPT)',
+                    stage: 'Shotlist Build',
+                    status: 'pending'
+                },
+                {
+                    id: 'statute-elements',
+                    label: 'Identify governing statute/rule and break into elements',
+                    source: 'LegiScan / jurisdiction rules',
+                    stage: 'Legal Research',
+                    status: 'pending'
+                },
+                {
+                    id: 'caselaw-search',
+                    label: 'Search CourtListener by jurisdiction and element keywords',
+                    source: 'CourtListener filters and expansions',
+                    stage: 'Legal Research',
+                    status: 'pending'
+                },
+                {
+                    id: 'claims-check',
+                    label: 'Map facts to each claim element (standing, venue, ripeness, etc.)',
+                    source: 'Statute + caselaw factors',
+                    stage: 'Legal Research',
+                    status: 'pending'
+                },
+                {
+                    id: 'citation-log',
+                    label: 'Log statutes, caselaw, and articles for downstream SQL capture',
+                    source: 'Research agent event hooks',
+                    stage: 'Legal Research',
+                    status: 'pending'
+                },
+                {
+                    id: 'draft-ready',
+                    label: 'Confirm claims checklist complete before drafting sections',
+                    source: 'Legal Research + Shotlist outputs',
+                    stage: 'Draft Sections',
+                    status: 'pending'
+                }
+            ],
+            default: [
+                {
+                    id: 'outline',
+                    label: 'Outline sections from prompt and uploads',
+                    source: 'Shotlist Agent',
+                    stage: 'Shotlist Build',
+                    status: 'pending'
+                },
+                {
+                    id: 'research',
+                    label: 'Collect references before drafting',
+                    source: 'Research Agent',
+                    stage: 'Research',
+                    status: 'pending'
+                }
+            ]
+        };
+
+        const STAGE_PIPELINE = {
+            legal_claim: [
+                { id: 'OCR Intake', description: 'Recognize uploaded exhibits and normalize text.' },
+                { id: 'Shotlist Build', description: 'Sequence facts and claims before research.' },
+                { id: 'Legal Research', description: 'Break down statutes and find caselaw per element.' },
+                { id: 'Draft Sections', description: 'Draft the pleading from validated claims.' },
+                { id: 'Review & Export', description: 'Hand-off with citations and logged authorities.' }
+            ],
+            default: [
+                { id: 'Shotlist Build', description: 'Outline deliverable from prompt and uploads.' },
+                { id: 'Research', description: 'Gather references for drafting.' },
+                { id: 'Draft Sections', description: 'Write sections using research.' },
+                { id: 'Review & Export', description: 'Summarize output for delivery.' }
+            ]
+        };
         
         // --- DOM ELEMENTS ---
         const docTypeSelector = document.getElementById('docTypeSelector');
@@ -206,6 +330,8 @@
         const promptInput = document.getElementById('promptInput');
         const deconstructedPrompt = document.getElementById('deconstructedPrompt');
         const instructionBox = document.getElementById('instructionBox');
+        const roleDelineation = document.getElementById('roleDelineation');
+        const researchChecklist = document.getElementById('researchChecklist');
         const factoryFloor = document.getElementById('factoryFloor');
         const factoryStatus = document.getElementById('factoryStatus');
         const finalProduct = document.getElementById('finalProduct');
@@ -214,6 +340,7 @@
         const modalTitle = document.getElementById('modalTitle');
         const modalBody = document.getElementById('modalBody');
         const closeModal = document.getElementById('closeModal');
+        const stageTimeline = document.getElementById('stageTimeline');
 
         // --- D3.JS VISUALIZATION SETUP ---
         let simulation, svg, g;
@@ -295,8 +422,10 @@
                     if (d.type === 'control') {
                         return d.id === 'Start' ? 100 : width - 250;
                     }
-                    if (d.id === 'Research') return (width-120)/2 - 150;
-                    return (width-120)/2;
+                    if (d.id === 'OCR Intake') return (width-120)/2 - 260;
+                    if (d.id === 'Shotlist Build') return (width-120)/2 - 120;
+                    if (d.id === 'Legal Research' || d.id === 'Research') return (width-120)/2 + 40;
+                    return (width-120)/2 + 160;
                 }).strength(0.5))
                 .force("y", d3.forceY(height / 2).strength(0.1));
         }
@@ -317,6 +446,50 @@
                 default: return '#4b5563';
             }
         }
+
+        function renderRoleCards(docType) {
+            const roles = ROLE_DEFINITIONS[docType] || ROLE_DEFINITIONS.default;
+            roleDelineation.innerHTML = `
+                <h3 class="text-lg font-semibold mb-3 text-gray-200">Who Does What?</h3>
+                <div class="space-y-2">${roles.map(role => `
+                    <div class="flex items-start gap-3 bg-gray-800/60 p-3 rounded-md border border-gray-700">
+                        <div class="h-8 w-8 flex items-center justify-center rounded-full bg-blue-900/40 text-blue-300 font-semibold">${role.title[0]}</div>
+                        <div>
+                            <p class="text-sm text-white font-semibold">${role.title}</p>
+                            <p class="text-xs text-gray-300">${role.bullet}</p>
+                        </div>
+                    </div>`).join('')}</div>`;
+        }
+
+        function renderChecklist(items) {
+            const statusColors = { pending: 'bg-gray-700 text-gray-200', active: 'bg-yellow-900 text-yellow-200', complete: 'bg-green-900 text-green-200' };
+            researchChecklist.innerHTML = `
+                <h3 class="text-lg font-semibold mb-3 text-gray-200">Legal Research Checklist</h3>
+                <div class="space-y-2">${items.map(item => `
+                    <div class="p-3 rounded-md border border-gray-700 bg-gray-800/70">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm text-white font-semibold">${item.label}</p>
+                            <span class="text-[10px] px-2 py-1 rounded ${statusColors[item.status] || statusColors.pending}">${item.status.toUpperCase()}</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">Source: ${item.source}</p>
+                        ${item.note ? `<p class="text-[11px] text-blue-200 mt-1">${item.note}</p>` : ''}
+                    </div>`).join('')}</div>`;
+        }
+
+        function renderStageTimeline(stages) {
+            const statusClasses = {
+                pending: 'border-gray-700 text-gray-300 bg-gray-900/60',
+                active: 'border-yellow-500 text-yellow-200 bg-yellow-900/30',
+                complete: 'border-green-500 text-green-200 bg-green-900/30'
+            };
+            stageTimeline.innerHTML = stages.map(stage => {
+                const statusClass = statusClasses[stage.status] || statusClasses.pending;
+                return `<div class="border ${statusClass} rounded-md p-2 text-[11px] leading-snug">
+                    <p class="font-semibold">${stage.id}</p>
+                    <p class="text-[10px] text-gray-400">${stage.description}</p>
+                </div>`;
+            }).join('');
+        }
         
         // --- APPLICATION LOGIC ---
         class MaestroOrchestrator {
@@ -324,13 +497,33 @@
                 this.state = {};
                 this.graph = { nodes: [], links: [] };
                 this.isRunning = false;
+                this.stages = [];
+                this.checklist = [];
+                this.sectionIds = [];
+                this.completedSections = 0;
+                this.executionOrder = [];
             }
 
             preFlight(prompt, docType) {
                 this.state = { prompt, docType, keyFactors: this.deconstructPrompt(prompt, docType), session_id: `session_${new Date().getTime()}` };
+                this.initializeStages(docType);
+                this.initializeChecklist(docType);
+                renderRoleCards(docType);
                 this.displayBlueprint();
                 this.generateWorkflowDAG();
+                renderStageTimeline(this.stages);
+                renderChecklist(this.checklist);
                 updateGraph(this.graph);
+            }
+
+            initializeStages(docType) {
+                const pipeline = STAGE_PIPELINE[docType] || STAGE_PIPELINE.default;
+                this.stages = pipeline.map(stage => ({ ...stage, status: 'pending' }));
+            }
+
+            initializeChecklist(docType) {
+                const list = CHECKLIST_LIBRARY[docType] || CHECKLIST_LIBRARY.default;
+                this.checklist = list.map(item => ({ ...item, status: 'pending', note: '' }));
             }
 
             deconstructPrompt(prompt, docType) {
@@ -373,6 +566,25 @@
                 deconstructedPrompt.innerHTML = highlightedPrompt;
                 this.displayInstructionBox(docType);
             }
+
+            markStageStatus(stageId, status) {
+                this.stages = this.stages.map(stage => stage.id === stageId ? { ...stage, status } : stage);
+                renderStageTimeline(this.stages);
+            }
+
+            markChecklistStage(stageId, status, note = '') {
+                this.checklist = this.checklist.map(item => item.stage === stageId ? { ...item, status, note } : item);
+                renderChecklist(this.checklist);
+            }
+
+            getStageForNode(node) {
+                if (node.id === 'OCR Intake') return 'OCR Intake';
+                if (node.id === 'Shotlist Build') return 'Shotlist Build';
+                if (node.id === 'Legal Research') return 'Legal Research';
+                if (node.id === 'Research') return 'Research';
+                if (this.sectionIds.includes(node.id)) return 'Draft Sections';
+                return null;
+            }
             
             displayInstructionBox(docType){
                 const template = DOCUMENT_TEMPLATES[docType];
@@ -388,6 +600,7 @@
                 instructionBox.innerHTML = `
                     <h3 class="text-lg font-semibold mb-2 text-gray-200">Instructions</h3>
                     <p class="text-xs text-gray-400 mb-3">Standard sections for a ${template.name}: <br/> <span class="text-gray-300">${template.sections.join(', ')}</span></p>
+                    <p class="text-xs text-gray-400 mb-3">Shotlist Agent consumes OCR text and uploaded materials to create a fact-first outline before the Legal Research Agent dives into CourtListener/LegiScan for statutes, elements, and caselaw.</p>
                     <div class="flex gap-2">${knobsHTML}</div>
                 `;
             }
@@ -398,17 +611,29 @@
                 const links = [];
                 const startNode = { id: 'Start', status: 'pending', type: 'control' };
                 const endNode = { id: 'End', status: 'pending', type: 'control' };
-                nodes.push(startNode, endNode);
-                const researchNode = { id: 'Research', agentId: 'WebResearchAgent', status: 'pending', type: 'task' };
+                const researchId = docTypeSelector.value === 'legal_claim' ? 'Legal Research' : 'Research';
+                const researchAgent = docTypeSelector.value === 'legal_claim' ? 'LegalResearchAgent' : 'WebResearchAgent';
+                const ocrNode = { id: 'OCR Intake', agentId: 'ShotlistAgent', status: 'pending', type: 'task' };
+                const shotlistNode = { id: 'Shotlist Build', agentId: 'ShotlistAgent', status: 'pending', type: 'task' };
+
+                nodes.push(startNode, endNode, ocrNode, shotlistNode);
+
+                const researchNode = { id: researchId, agentId: researchAgent, status: 'pending', type: 'task' };
                 nodes.push(researchNode);
-                links.push({ source: 'Start', target: 'Research' });
+                links.push({ source: 'Start', target: 'OCR Intake' });
+                links.push({ source: 'OCR Intake', target: 'Shotlist Build' });
+                links.push({ source: 'Shotlist Build', target: researchId });
+
+                this.sectionIds = template.sections;
+                this.completedSections = 0;
                 template.sections.forEach(section => {
                     const agentId = this.getAgentForSection(section);
                     const sectionNode = { id: section, agentId: agentId, status: 'pending', type: 'task' };
                     nodes.push(sectionNode);
-                    links.push({ source: 'Research', target: section });
+                    links.push({ source: researchId, target: section });
                     links.push({ source: section, target: 'End' });
                 });
+                this.executionOrder = ['Start', 'OCR Intake', 'Shotlist Build', researchId, ...template.sections, 'End'];
                 this.graph = { nodes, links };
             }
 
@@ -423,27 +648,33 @@
             async startProduction() {
                 if (this.isRunning || !this.graph.nodes.length) return;
                 this.isRunning = true;
+                this.initializeStages(this.state.docType);
+                this.initializeChecklist(this.state.docType);
+                renderStageTimeline(this.stages);
+                renderChecklist(this.checklist);
                 this.resetUI();
                 factoryStatus.textContent = "STATUS: RUNNING";
                 startButton.disabled = true;
                 startButton.classList.add('opacity-50', 'cursor-not-allowed');
-                const executionOrder = ['Start', 'Research', ...DOCUMENT_TEMPLATES[this.state.docType].sections, 'End'];
-                for (const nodeId of executionOrder) {
+                for (const nodeId of this.executionOrder) {
                     const node = this.graph.nodes.find(n => n.id === nodeId);
                     if (!node || node.type === 'control') continue;
                     await this.executeTask(node);
                 }
                 this.graph.nodes.find(n => n.id === 'End').status = 'complete';
                 d3.select(`#node-End`).style("fill", getNodeColor('complete'));
+                this.markStageStatus('Review & Export', 'complete');
+                this.markChecklistStage('Review & Export', 'complete', 'Deliverable is ready with citations and claim coverage.');
                 factoryStatus.textContent = "STATUS: COMPLETE";
                 this.isRunning = false;
                 startButton.disabled = false;
                 startButton.classList.remove('opacity-50', 'cursor-not-allowed');
             }
-            
+
             resetUI() {
                 finalProduct.innerHTML = '';
                 this.graph.nodes.forEach(n => n.status = 'pending');
+                this.completedSections = 0;
                 updateGraph(this.graph);
                 this.displayBlueprint();
             }
@@ -454,6 +685,12 @@
                 node.agent = agent;
                 const agentElement = d3.select(`#agent-${agent.id}`);
                 agentElement.transition().duration(1000).attr("transform", `translate(${node.x}, ${node.y})`);
+                const stageId = this.getStageForNode(node);
+                if (stageId) {
+                    this.markStageStatus(stageId, 'active');
+                    const checklistNote = stageId === 'Legal Research' ? 'Breaking statute into elements and searching caselaw.' : '';
+                    this.markChecklistStage(stageId, 'active', checklistNote);
+                }
                 node.status = 'active';
                 d3.select(`#node-${nodeIdSanitized}`).style("fill", getNodeColor('active')).transition().duration(300).attr('r', 30).transition().duration(300).attr('r', 25);
                 factoryStatus.textContent = `STATUS: ${agent.role} is working on ${node.id}...`;
@@ -463,8 +700,19 @@
                 node.status = 'complete';
                 d3.select(`#node-${nodeIdSanitized}`).style("fill", getNodeColor('complete'));
                 agentElement.transition().duration(1000).attr("transform", `translate(${agent.homeX}, ${agent.homeY})`);
-                if(node.id !== 'Research' && node.id !== 'Caption' && node.id !== 'Jurisdiction') {
+                if(this.sectionIds.includes(node.id)) {
+                    this.completedSections += 1;
                     this.addSectionToProduct(node.id, output);
+                    if (this.completedSections === this.sectionIds.length) {
+                        this.markStageStatus('Draft Sections', 'complete');
+                        this.markChecklistStage('Draft Sections', 'complete', 'Sections drafted from validated claims.');
+                        this.markStageStatus('Review & Export', 'active');
+                        this.markChecklistStage('Review & Export', 'active', 'Packaging citations and logging authorities.');
+                    }
+                }
+                if (stageId && stageId !== 'Draft Sections') {
+                    this.markStageStatus(stageId, 'complete');
+                    this.markChecklistStage(stageId, 'complete', stageId === 'Shotlist Build' ? 'Shotlist ready for the research agent.' : 'Research inputs captured for drafting.');
                 }
             }
             
