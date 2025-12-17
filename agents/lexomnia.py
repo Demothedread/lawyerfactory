@@ -9,9 +9,6 @@ class Agent:
         return f"{self.name} processed: {text}"
 
 
-
-
 if __name__ == "__main__":
     agent = Agent("LexOmnia")
-    output = agent.process("Hello world")
-    print(output)
+    print(agent.process("Hello world"))
