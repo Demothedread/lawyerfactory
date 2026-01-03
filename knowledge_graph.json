@@ -183,6 +183,28 @@
       ]
     },
     {
+      "id": "LawsuitSchema",
+      "type": "schema",
+      "features": [
+        "caption",
+        "jurisdiction",
+        "parties",
+        "statement_of_facts",
+        "causes_of_action",
+        "legal_arguments",
+        "prayer_for_relief"
+      ]
+    },
+    {
+      "id": "LawsuitPipeline",
+      "type": "workflow",
+      "features": [
+        "intake to structured lawsuit output",
+        "metadata validation",
+        "citations attached to legal arguments"
+      ]
+    },
+    {
       "id": "WorkflowDAG",
       "type": "diagram",
       "features": ["end-to-end legal drafting data flow", "multi-agent collaboration checkpoints"]
@@ -206,7 +228,9 @@
     {"source": "factory.html", "target": "StageTimeline", "relation": "renders"},
     {"source": "factory.html", "target": "ResearchChecklist", "relation": "renders"},
     {"source": "WorkflowDAG", "target": "Workflow", "relation": "illustrates"},
-    {"source": "Workflow", "target": "MaestroOrchestrator", "relation": "guides"}
+    {"source": "Workflow", "target": "MaestroOrchestrator", "relation": "guides"},
+    {"source": "LawsuitPipeline", "target": "LawsuitSchema", "relation": "produces"},
+    {"source": "LawsuitPipeline", "target": "Lawsuit", "relation": "structures"}
   ],
   "observations": [
     "Repository initially contained only README",
@@ -214,6 +238,7 @@
     "Added summarizer and categorizer modules",
     "UI now sequences OCR Intake -> Shotlist Build -> Legal Research -> Draft Sections -> Review & Export.",
     "Checklist highlights statute element parsing, CourtListener/LegiScan searches, and claim coverage with citations for legal claims.",
-    "Restored legacy entities and linked them with the visual workflow and research DAG."
+    "Restored legacy entities and linked them with the visual workflow and research DAG.",
+    "Added lawsuit intake pipeline schema coverage for required sections and citations."
   ]
 }
