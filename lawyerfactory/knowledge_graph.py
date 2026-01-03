@@ -124,10 +124,7 @@ class KnowledgeGraph:
     def to_dict(self) -> Dict[str, Any]:
         """Materialize the graph to a serializable dictionary."""
         return {
-            "entities": [
-                {"id": entity_id, **payload}
-                for entity_id, payload in self.entities.items()
-            ],
+            "entities": self.entities,
             "relationships": self.relationships,
             "observations": self.observations,
         }
@@ -142,17 +139,58 @@ def load_graph(file_path: Optional[Path] = None) -> Dict[str, Any]:
     path = file_path or KNOWLEDGE_GRAPH_PATH
     if path.exists():
         with path.open("r", encoding="utf-8") as fh:
-            return json.load(fh)
-    return json.loads(json.dumps(DEFAULT_GRAPH))
+            return normalize_graph(json.load(fh))
+    return normalize_graph(json.loads(json.dumps(DEFAULT_GRAPH)))
 
 
 def save_graph(graph: Dict[str, Any], file_path: Optional[Path] = None) -> None:
     """Write the knowledge graph to disk."""
     path = file_path or KNOWLEDGE_GRAPH_PATH
     with path.open("w", encoding="utf-8") as fh:
-        json.dump(graph, fh, indent=2, ensure_ascii=False)
+        json.dump(normalize_graph(graph), fh, indent=2, ensure_ascii=False)
+
+
+def normalize_graph(graph: Dict[str, Any]) -> Dict[str, Any]:
+    """Normalize entities and relationships to the canonical schema."""
+    normalized = KnowledgeGraph(seed=graph)
+    return {
+        "entities": normalized.entities,
+        "relationships": normalized.relationships,
+        "observations": normalized.observations,
+    }
+
+
+def add_entity(
+    graph: Dict[str, Any],
+    entity_id: str,
+    payload: Optional[Dict[str, Any]] = None,
+) -> None:
+    """Add or update an entity in a graph dictionary."""
+    entities = graph.setdefault("entities", {})
+    if not isinstance(entities, dict):
+        entities = normalize_graph(graph)["entities"]
+        graph["entities"] = entities
+    entities[entity_id] = payload or {}
+
+
+def add_relationship(
+    graph: Dict[str, Any],
+    source: str,
+    target: str,
+    relation: str,
+) -> None:
+    """Append a normalized relationship to the graph dictionary."""
+    relationships = graph.setdefault("relationships", [])
+    if not isinstance(relationships, list):
+        relationships = []
+        graph["relationships"] = relationships
+    relationships.append({"source": source, "target": target, "relation": relation})
 
 
 def add_observation(graph: Dict[str, Any], observation: str) -> None:
     """Append an observation to a graph dictionary."""
-    graph.setdefault("observations", []).append(observation)
+    observations = graph.setdefault("observations", [])
+    if not isinstance(observations, list):
+        observations = []
+        graph["observations"] = observations
+    observations.append(observation)

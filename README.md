@@ -9,12 +9,12 @@ LawyerFactory is a lightweight demonstration of a swarm-based workflow for legal
 - **Knowledge Graph:** `knowledge_graph.json` tracks entities and relationships
 
 ## Knowledge Graph Module
-The `knowledge_graph.py` module loads and saves `knowledge_graph.json`, which tracks entities, their features, relationships, and observations. You can use the helper functions to load the graph, add entities or relationships, append observations, and save the updated graph.
+The `lawyerfactory.knowledge_graph` module loads and saves `knowledge_graph.json`, which tracks entities, their features, relationships, and observations. You can use the helper functions to load the graph, add entities or relationships, append observations, and save the updated graph.
 
 Example usage:
 
 ```python
-from knowledge_graph import load_graph, save_graph, add_observation
+from lawyerfactory.knowledge_graph import load_graph, save_graph, add_observation
 
 graph = load_graph()
 add_observation(graph, "Used the knowledge graph module.")
@@ -52,4 +52,4 @@ This prototype illustrates how a network of specialized agents can assemble stru
 
 **Q:** How do I update the knowledge graph?
 
-**A:** Modify `knowledge_graph.json` directly or use `knowledge_graph.py` to add observations.
+**A:** Modify `knowledge_graph.json` directly or use `lawyerfactory.knowledge_graph` to add observations.
