@@ -32,6 +32,115 @@ Example usage:
 python assessor.py sample.txt --author "Author" --title "Doc" --date 2024-01-01
 ```
 
+## Draft a Lawsuit
+Use the workflow to move from intake to research, drafting, and export. This section outlines the minimum inputs, the pipeline sequence, and how to produce a structured export bundle.
+
+### Input requirements
+Provide enough detail for the agents to identify claims and draft sections:
+- **Matter details:** claim type, jurisdiction, court, filing deadline, and opposing parties.
+- **Parties:** names, roles (plaintiff/defendant), and contact details.
+- **Facts & timeline:** key events, dates, and any causation details.
+- **Relief sought:** damages, injunctions, declaratory relief, and fees.
+- **Supporting documents:** intake files (PDF/text) and citations or exhibits.
+
+### Pipeline steps
+1. **Intake (assessor):** Store uploads in `repository.csv` and normalize summaries.
+2. **Research (Maestro + bots):** Generate a step plan, gather research, and store it in the vector store.
+3. **Draft (writer + editor):** Use research outputs to draft core sections and refine language.
+4. **Export (bundle):** Package sections, research notes, and metadata into a JSON export or file output.
+
+### API usage
+The workflow is exposed as Python modules and simple scripts. Intake can also be done via CLI.
+
+```bash
+python assessor.py intake.txt --author "R. Quinn" --title "Intake Notes" --date 2024-06-12
+```
+
+Minimal Python example (intake → research → draft → export):
+
+```python
+import asyncio
+import json
+from pathlib import Path
+
+from assessor import intake_document
+from maestro.maestro import Maestro
+
+intake_payload = {
+    "matter": {
+        "claim": "Breach of contract",
+        "jurisdiction": "California",
+        "court": "Superior Court",
+    },
+    "parties": {
+        "plaintiff": "Apex Logistics, Inc.",
+        "defendant": "Metro Freight LLC",
+    },
+    "facts": [
+        {"date": "2023-11-01", "event": "Executed shipping agreement."},
+        {"date": "2024-01-15", "event": "Defendant failed to deliver goods."},
+    ],
+    "relief": ["$250,000 in damages", "Costs and attorneys' fees"],
+}
+
+intake_document(
+    "R. Quinn",
+    "Contract breach intake",
+    "2024-06-12",
+    "Plaintiff signed agreement. Defendant missed delivery deadlines.",
+)
+
+async def run_pipeline() -> None:
+    maestro = Maestro()
+    research_notes = await maestro.research_and_write(
+        f"{intake_payload['matter']['claim']} in {intake_payload['matter']['jurisdiction']}"
+    )
+    draft_sections = {
+        "caption": "Apex Logistics, Inc. v. Metro Freight LLC",
+        "statement_of_facts": "Plaintiff and Defendant entered a shipping agreement...",
+        "causes_of_action": ["Breach of Contract"],
+        "prayer_for_relief": intake_payload["relief"],
+    }
+    export_bundle = {
+        "matter": intake_payload["matter"],
+        "parties": intake_payload["parties"],
+        "facts": intake_payload["facts"],
+        "research": research_notes,
+        "draft": draft_sections,
+    }
+    Path("draft_export.json").write_text(json.dumps(export_bundle, indent=2))
+
+asyncio.run(run_pipeline())
+```
+
+### Output format
+Export bundles are JSON-friendly and should be easy to hand off to a renderer or filing workflow.
+
+Expected output structure:
+```json
+{
+  "matter": {
+    "claim": "Breach of contract",
+    "jurisdiction": "California",
+    "court": "Superior Court"
+  },
+  "parties": {
+    "plaintiff": "Apex Logistics, Inc.",
+    "defendant": "Metro Freight LLC"
+  },
+  "facts": [
+    {"date": "2023-11-01", "event": "Executed shipping agreement."}
+  ],
+  "research": "Research results and notes gathered by the research bot.",
+  "draft": {
+    "caption": "Apex Logistics, Inc. v. Metro Freight LLC",
+    "statement_of_facts": "Narrative fact section text...",
+    "causes_of_action": ["Breach of Contract"],
+    "prayer_for_relief": ["$250,000 in damages", "Costs and attorneys' fees"]
+  }
+}
+```
+
 ## Testing and Linting
 - Lint the code with flake8:
   ```bash
