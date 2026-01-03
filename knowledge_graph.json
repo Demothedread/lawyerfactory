@@ -36,47 +36,75 @@
     {
       "id": "Maestro",
       "type": "agent",
-      "features": ["orchestration", "coordination"]
+      "features": [
+        "orchestration",
+        "coordination"
+      ]
     },
     {
       "id": "MaestroOrchestrator",
       "type": "agent",
-      "features": ["orchestrates workflow", "controls simulation", "updates UI state"]
+      "features": [
+        "orchestrates workflow",
+        "controls simulation",
+        "updates UI state"
+      ]
     },
     {
       "id": "Reader",
       "type": "agent",
-      "features": ["document intake", "fact extraction"]
+      "features": [
+        "document intake",
+        "fact extraction"
+      ]
     },
     {
       "id": "Outliner",
       "type": "agent",
-      "features": ["outline creation", "gap identification"]
+      "features": [
+        "outline creation",
+        "gap identification"
+      ]
     },
     {
       "id": "Writer",
       "type": "agent",
-      "features": ["drafting", "Law of Threes"]
+      "features": [
+        "drafting",
+        "Law of Threes"
+      ]
     },
     {
       "id": "Editor",
       "type": "agent",
-      "features": ["style", "coherence"]
+      "features": [
+        "style",
+        "coherence"
+      ]
     },
     {
       "id": "Paralegal",
       "type": "agent",
-      "features": ["jurisdiction", "evidence tagging"]
+      "features": [
+        "jurisdiction",
+        "evidence tagging"
+      ]
     },
     {
       "id": "Legal Formatter",
       "type": "agent",
-      "features": ["legal citation", "IRAC formatting"]
+      "features": [
+        "legal citation",
+        "IRAC formatting"
+      ]
     },
     {
       "id": "Legal Procedure Agent",
       "type": "agent",
-      "features": ["procedure compliance", "form retrieval"]
+      "features": [
+        "procedure compliance",
+        "form retrieval"
+      ]
     },
     {
       "id": "Assessor",
@@ -88,7 +116,9 @@
         "categorization",
         "hashtags"
       ],
-      "relationships": {"Repository": "adds documents"}
+      "relationships": {
+        "Repository": "adds documents"
+      }
     },
     {
       "id": "Repository",
@@ -97,13 +127,19 @@
         "metadata fields (author, title, publication date, summary, category, hashtags)",
         "CSV storage"
       ],
-      "relationships": {"Legal Researcher": "source of documents"}
+      "relationships": {
+        "Legal Researcher": "source of documents"
+      }
     },
     {
       "id": "Legal Researcher",
       "type": "agent",
-      "features": ["research using repository"],
-      "relationships": {"Repository": "uses"}
+      "features": [
+        "research using repository"
+      ],
+      "relationships": {
+        "Repository": "uses"
+      }
     },
     {
       "id": "ResearchBot",
@@ -132,12 +168,20 @@
     {
       "id": "ShotlistAgent",
       "type": "agent",
-      "features": ["OCR intake", "prompt + exhibit sequencing", "outline handoff"]
+      "features": [
+        "OCR intake",
+        "prompt + exhibit sequencing",
+        "outline handoff"
+      ]
     },
     {
       "id": "LegalResearchAgent",
       "type": "agent",
-      "features": ["CourtListener/LegiScan queries", "statute element breakdown", "claim checklist updates"]
+      "features": [
+        "CourtListener/LegiScan queries",
+        "statute element breakdown",
+        "claim checklist updates"
+      ]
     },
     {
       "id": "factory.html",
@@ -151,12 +195,19 @@
     {
       "id": "StageTimeline",
       "type": "ui_component",
-      "features": ["shows OCR through drafting stages", "reflects active and complete states"]
+      "features": [
+        "shows OCR through drafting stages",
+        "reflects active and complete states"
+      ]
     },
     {
       "id": "ResearchChecklist",
       "type": "ui_component",
-      "features": ["tracks statute discovery", "caselaw search", "claim coverage"]
+      "features": [
+        "tracks statute discovery",
+        "caselaw search",
+        "claim coverage"
+      ]
     },
     {
       "id": "Workflow",
@@ -185,28 +236,167 @@
     {
       "id": "WorkflowDAG",
       "type": "diagram",
-      "features": ["end-to-end legal drafting data flow", "multi-agent collaboration checkpoints"]
+      "features": [
+        "end-to-end legal drafting data flow",
+        "multi-agent collaboration checkpoints"
+      ]
+    },
+    {
+      "id": "MaestroAPI",
+      "type": "service",
+      "features": [
+        "document intake endpoint",
+        "research kickoff endpoint",
+        "draft assembly endpoint",
+        "export-ready output"
+      ]
+    },
+    {
+      "id": "JobStore",
+      "type": "database",
+      "features": [
+        "SQLite job persistence",
+        "stage outputs",
+        "section storage"
+      ]
+    },
+    {
+      "id": "PipelineStages",
+      "type": "workflow",
+      "features": [
+        "ocr",
+        "shotlist",
+        "research",
+        "drafting",
+        "review"
+      ]
+    },
+    {
+      "id": "server.py",
+      "type": "api",
+      "features": [
+        "FastAPI entrypoint",
+        "status polling",
+        "section outputs"
+      ]
     }
   ],
   "relationships": [
-    {"source": "LawyerFactory", "target": "README", "relation": "documents"},
-    {"source": "LawyerFactory", "target": "requirements.txt", "relation": "depends_on"},
-    {"source": "LawyerFactory", "target": "knowledge_graph.json", "relation": "contains"},
-    {"source": "LawyerFactory", "target": "factory.html", "relation": "renders"},
-    {"source": "Maestro", "target": "ResearchBot", "relation": "directs"},
-    {"source": "Maestro", "target": "WriterBot", "relation": "provides_research"},
-    {"source": "WriterBot", "target": "LegalEditorBot", "relation": "submits_draft"},
-    {"source": "Maestro", "target": "StepPlannerBot", "relation": "requests_plan"},
-    {"source": "Assessor", "target": "Summarizer", "relation": "uses"},
-    {"source": "Assessor", "target": "Categorizer", "relation": "uses"},
-    {"source": "MaestroOrchestrator", "target": "StageTimeline", "relation": "updates"},
-    {"source": "MaestroOrchestrator", "target": "ResearchChecklist", "relation": "updates"},
-    {"source": "ShotlistAgent", "target": "MaestroOrchestrator", "relation": "reports"},
-    {"source": "LegalResearchAgent", "target": "MaestroOrchestrator", "relation": "reports"},
-    {"source": "factory.html", "target": "StageTimeline", "relation": "renders"},
-    {"source": "factory.html", "target": "ResearchChecklist", "relation": "renders"},
-    {"source": "WorkflowDAG", "target": "Workflow", "relation": "illustrates"},
-    {"source": "Workflow", "target": "MaestroOrchestrator", "relation": "guides"}
+    {
+      "source": "LawyerFactory",
+      "target": "README",
+      "relation": "documents"
+    },
+    {
+      "source": "LawyerFactory",
+      "target": "requirements.txt",
+      "relation": "depends_on"
+    },
+    {
+      "source": "LawyerFactory",
+      "target": "knowledge_graph.json",
+      "relation": "contains"
+    },
+    {
+      "source": "LawyerFactory",
+      "target": "factory.html",
+      "relation": "renders"
+    },
+    {
+      "source": "Maestro",
+      "target": "ResearchBot",
+      "relation": "directs"
+    },
+    {
+      "source": "Maestro",
+      "target": "WriterBot",
+      "relation": "provides_research"
+    },
+    {
+      "source": "WriterBot",
+      "target": "LegalEditorBot",
+      "relation": "submits_draft"
+    },
+    {
+      "source": "Maestro",
+      "target": "StepPlannerBot",
+      "relation": "requests_plan"
+    },
+    {
+      "source": "Assessor",
+      "target": "Summarizer",
+      "relation": "uses"
+    },
+    {
+      "source": "Assessor",
+      "target": "Categorizer",
+      "relation": "uses"
+    },
+    {
+      "source": "MaestroOrchestrator",
+      "target": "StageTimeline",
+      "relation": "updates"
+    },
+    {
+      "source": "MaestroOrchestrator",
+      "target": "ResearchChecklist",
+      "relation": "updates"
+    },
+    {
+      "source": "ShotlistAgent",
+      "target": "MaestroOrchestrator",
+      "relation": "reports"
+    },
+    {
+      "source": "LegalResearchAgent",
+      "target": "MaestroOrchestrator",
+      "relation": "reports"
+    },
+    {
+      "source": "factory.html",
+      "target": "StageTimeline",
+      "relation": "renders"
+    },
+    {
+      "source": "factory.html",
+      "target": "ResearchChecklist",
+      "relation": "renders"
+    },
+    {
+      "source": "WorkflowDAG",
+      "target": "Workflow",
+      "relation": "illustrates"
+    },
+    {
+      "source": "Workflow",
+      "target": "MaestroOrchestrator",
+      "relation": "guides"
+    },
+    {
+      "source": "LawyerFactory",
+      "target": "MaestroAPI",
+      "relation": "exposes"
+    },
+    {
+      "source": "MaestroAPI",
+      "target": "JobStore",
+      "relation": "persists"
+    },
+    {
+      "source": "MaestroAPI",
+      "target": "PipelineStages",
+      "relation": "orchestrates"
+    },
+    {
+      "source": "MaestroAPI",
+      "target": "server.py",
+      "relation": "implemented_by"
+    },
+    {
+      "source": "Maestro",
+      "target": "PipelineStages",
+      "relation": "runs"
+    }
   ],
   "observations": [
     "Repository initially contained only README",
@@ -214,6 +404,7 @@
     "Added summarizer and categorizer modules",
     "UI now sequences OCR Intake -> Shotlist Build -> Legal Research -> Draft Sections -> Review & Export.",
     "Checklist highlights statute element parsing, CourtListener/LegiScan searches, and claim coverage with citations for legal claims.",
-    "Restored legacy entities and linked them with the visual workflow and research DAG."
+    "Restored legacy entities and linked them with the visual workflow and research DAG.",
+    "Added FastAPI-backed Maestro API with SQLite job persistence and staged pipeline orchestration."
   ]
 }

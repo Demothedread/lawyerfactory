@@ -1,5 +1,6 @@
+fastapi
 flake8
-pytest
 nltk
+pytest
 scikit-learn
-
+uvicorn
