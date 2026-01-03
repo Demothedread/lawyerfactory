@@ -110,6 +110,11 @@
       "type": "agent"
     },
     {
+      "id": "ResearchArtifact",
+      "type": "data",
+      "features": ["citations", "query filters", "sources"]
+    },
+    {
       "id": "WriterBot",
       "type": "agent"
     },
@@ -138,6 +143,16 @@
       "id": "LegalResearchAgent",
       "type": "agent",
       "features": ["CourtListener/LegiScan queries", "statute element breakdown", "claim checklist updates"]
+    },
+    {
+      "id": "VectorStore",
+      "type": "storage",
+      "features": ["TF-IDF index", "chunked entries", "disk persistence"]
+    },
+    {
+      "id": "VectorStoreIndex",
+      "type": "artifact",
+      "features": ["vector_store.pkl"]
     },
     {
       "id": "factory.html",
@@ -206,7 +221,10 @@
     {"source": "factory.html", "target": "StageTimeline", "relation": "renders"},
     {"source": "factory.html", "target": "ResearchChecklist", "relation": "renders"},
     {"source": "WorkflowDAG", "target": "Workflow", "relation": "illustrates"},
-    {"source": "Workflow", "target": "MaestroOrchestrator", "relation": "guides"}
+    {"source": "Workflow", "target": "MaestroOrchestrator", "relation": "guides"},
+    {"source": "Maestro", "target": "VectorStore", "relation": "indexes"},
+    {"source": "ResearchBot", "target": "ResearchArtifact", "relation": "produces"},
+    {"source": "VectorStore", "target": "VectorStoreIndex", "relation": "persists"}
   ],
   "observations": [
     "Repository initially contained only README",
@@ -214,6 +232,7 @@
     "Added summarizer and categorizer modules",
     "UI now sequences OCR Intake -> Shotlist Build -> Legal Research -> Draft Sections -> Review & Export.",
     "Checklist highlights statute element parsing, CourtListener/LegiScan searches, and claim coverage with citations for legal claims.",
-    "Restored legacy entities and linked them with the visual workflow and research DAG."
+    "Restored legacy entities and linked them with the visual workflow and research DAG.",
+    "VectorStore now persists chunked research artifacts with citations for retrieval."
   ]
 }
