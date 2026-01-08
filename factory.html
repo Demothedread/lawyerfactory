@@ -145,7 +145,10 @@
         };
 
         // --- CONFIGURATION ---
-        const API_BASE_URL = window.location.origin === 'null' ? 'http://localhost:8000' : window.location.origin;
+        const API_BASE_URL =
+            window.location.protocol === 'file:' || window.location.origin === 'null'
+                ? 'http://localhost:8000'
+                : window.location.origin;
         const DOC_TYPE_LABELS = {
             business_proposal: "Business Proposal",
             legal_claim: "Legal Claim",
@@ -214,7 +217,9 @@
                 body: JSON.stringify(payload)
             });
             if (!response.ok) {
-                throw new Error('Unable to create job.');
+                const errorBody = await response.json().catch(() => ({}));
+                const errorDetail = errorBody.detail || 'Unknown error';
+                throw new Error(`Unable to create job (status: ${response.status}): ${errorDetail}`);
             }
             return response.json();
         }
@@ -227,7 +232,9 @@
         async function apiFetchJob(jobId) {
             const response = await fetch(apiBuildUrl(`/jobs/${jobId}`));
             if (!response.ok) {
-                throw new Error('Unable to fetch job.');
+                const errorBody = await response.json().catch(() => ({}));
+                const errorDetail = errorBody.detail || 'Unknown error';
+                throw new Error(`Unable to fetch job (status: ${response.status}): ${errorDetail}`);
             }
             return response.json();
         }
@@ -240,7 +247,9 @@
         async function apiFetchSections(jobId) {
             const response = await fetch(apiBuildUrl(`/jobs/${jobId}/sections`));
             if (!response.ok) {
-                throw new Error('Unable to fetch sections.');
+                const errorBody = await response.json().catch(() => ({}));
+                const errorDetail = errorBody.detail || 'Unknown error';
+                throw new Error(`Unable to fetch sections (status: ${response.status}): ${errorDetail}`);
             }
             return response.json();
         }
@@ -356,10 +365,29 @@
         }
         
         function getStageXPosition(stageId) {
-            const stageCount = maestro?.stageOrder?.length || 1;
-            const index = Math.max(0, maestro?.stageOrder?.indexOf(stageId));
             const minX = 140;
             const maxX = width - 260;
+            const defaultX = (minX + maxX) / 2;
+
+            // If maestro.stageOrder is not available or is empty, fall back to a
+            // deterministic position based on stageId so nodes don't all overlap.
+            if (!maestro || !Array.isArray(maestro.stageOrder) || maestro.stageOrder.length === 0) {
+                if (!stageId) {
+                    return defaultX;
+                }
+                // Simple deterministic hash of the stageId string.
+                let hash = 0;
+                for (let i = 0; i < stageId.length; i++) {
+                    hash = ((hash << 5) - hash) + stageId.charCodeAt(i);
+                    hash |= 0; // Convert to 32-bit integer
+                }
+                const normalized = (Math.abs(hash) % 1000) / 999; // 0..1
+                return minX + normalized * (maxX - minX);
+            }
+
+            const stageCount = maestro.stageOrder.length;
+            const rawIndex = maestro.stageOrder.indexOf(stageId);
+            const index = rawIndex >= 0 ? rawIndex : 0;
             const step = stageCount > 1 ? (maxX - minX) / (stageCount - 1) : 0;
             return minX + index * step;
         }
@@ -454,6 +482,9 @@
                 this.sectionIds = [];
                 this.stageOrder = [];
                 this.template = null;
+                this.pollInterval = 5000; // 5 seconds default
+                this.consecutiveErrors = 0;
+                this.maxConsecutiveErrors = 5;
             }
 
             preFlight(prompt, docType) {
@@ -641,19 +672,38 @@
                 if (!this.jobId) {
                     return;
                 }
-                const jobData = await apiFetchJob(this.jobId);
-                this.applyJobUpdate(jobData);
-                const sectionData = await apiFetchSections(this.jobId);
-                this.applySectionsUpdate(sectionData.sections);
+                try {
+                    const jobData = await apiFetchJob(this.jobId);
+                    this.applyJobUpdate(jobData);
+                    const sectionData = await apiFetchSections(this.jobId);
+                    this.applySectionsUpdate(sectionData.sections);
+                    this.consecutiveErrors = 0; // Reset error count on success
+                } catch (error) {
+                    this.consecutiveErrors++;
+                    console.error(`Error refreshing job (attempt ${this.consecutiveErrors}):`, error);
+                    factoryStatus.textContent = `STATUS: ERROR FETCHING JOB (${error.message})`;
+                    
+                    // Stop polling after too many consecutive errors
+                    if (this.consecutiveErrors >= this.maxConsecutiveErrors) {
+                        console.error(`Stopping polling after ${this.maxConsecutiveErrors} consecutive errors`);
+                        this.stopPolling();
+                        this.isRunning = false;
+                        startButton.disabled = false;
+                        startButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                    throw error;
+                }
             }
 
             startPolling() {
                 this.stopPolling();
+                this.consecutiveErrors = 0;
                 this.pollTimer = setInterval(() => {
                     this.refreshJob().catch(() => {
-                        factoryStatus.textContent = "STATUS: ERROR FETCHING JOB";
+                        // Error already handled in refreshJob (displays status,
+                        // increments counter, stops polling after max retries)
                     });
-                }, 2000);
+                }, this.pollInterval);
             }
 
             stopPolling() {
@@ -669,11 +719,14 @@
                     factoryStatus.textContent = "STATUS: ENTER A PROMPT TO START";
                     return;
                 }
+                
+                // Immediately disable button and set running flag to prevent race conditions
                 this.isRunning = true;
-                factoryStatus.textContent = "STATUS: STARTING";
                 startButton.disabled = true;
                 startButton.classList.add('opacity-50', 'cursor-not-allowed');
+                factoryStatus.textContent = "STATUS: STARTING";
                 finalProduct.innerHTML = '';
+                
                 try {
                     const jobData = await apiCreateJob({
                         prompt: this.state.prompt,
@@ -682,7 +735,8 @@
                     this.loadJob(jobData);
                     this.startPolling();
                 } catch (error) {
-                    factoryStatus.textContent = "STATUS: ERROR STARTING JOB";
+                    console.error("Error starting production:", error);
+                    factoryStatus.textContent = `STATUS: ERROR STARTING JOB - ${error.message}`;
                     this.isRunning = false;
                     startButton.disabled = false;
                     startButton.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -694,8 +748,11 @@
 
         // --- UI EVENT LISTENERS ---
         docTypeSelector.addEventListener('change', (e) => {
+            // Clear prompt when changing document type to avoid reusing a prompt
+            // intended for a different document configuration
+            promptInput.value = '';
             maestro.resetJobData();
-            maestro.preFlight(promptInput.value, e.target.value);
+            maestro.preFlight('', e.target.value);
         });
         promptInput.addEventListener('input', (e) => {
             maestro.preFlight(e.target.value, docTypeSelector.value);
@@ -731,7 +788,10 @@
         window.addEventListener('load', () => {
             initializeVisualization();
             setupSimulation();
-            maestro.preFlight(promptInput.value, docTypeSelector.value);
+            const initialPrompt = promptInput.value ? promptInput.value.trim() : '';
+            if (initialPrompt !== '') {
+                maestro.preFlight(initialPrompt, docTypeSelector.value);
+            }
         });
         
         window.addEventListener('resize', () => {
