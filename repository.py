@@ -13,6 +13,7 @@ FIELDS = [
     'hashtags',
 ]
 
+
 def init_repo() -> None:
     """Create repository file with headers if it doesn't exist."""
     if not REPO_FILE.exists():
@@ -20,12 +21,14 @@ def init_repo() -> None:
             writer = csv.DictWriter(f, fieldnames=FIELDS)
             writer.writeheader()
 
+
 def add_entry(entry: Dict[str, str]) -> None:
     """Add a dictionary entry to the repository."""
     init_repo()
     with REPO_FILE.open('a', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=FIELDS)
         writer.writerow(entry)
+
 
 def list_entries() -> List[Dict[str, str]]:
     """Return all repository entries."""

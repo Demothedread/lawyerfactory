@@ -8,6 +8,168 @@
       ]
     },
     "Workflow": {
+  "entities": [
+    {
+      "id": "LawyerFactory",
+      "type": "project",
+      "features": [
+        "swarm agents for legal drafting",
+        "workflow visualization",
+        "knowledge graph persistence"
+      ]
+    },
+    {
+      "id": "README",
+      "description": "Project introduction and setup"
+    },
+    {
+      "id": "requirements.txt",
+      "description": "Python dependencies"
+    },
+    {
+      "id": "flake8 config",
+      "description": "Linter configuration"
+    },
+    {
+      "id": "knowledge_graph.json",
+      "description": "Repository knowledge graph"
+    },
+    {
+      "id": "Agent",
+      "description": "Agent with a knowledge graph"
+    },
+    {
+      "id": "Tests",
+      "description": "Pytest suite"
+    },
+    {
+      "id": "Maestro",
+      "type": "agent",
+      "features": ["orchestration", "coordination"]
+    },
+    {
+      "id": "MaestroOrchestrator",
+      "type": "agent",
+      "features": ["orchestrates workflow", "controls simulation", "updates UI state"]
+    },
+    {
+      "id": "Reader",
+      "type": "agent",
+      "features": ["document intake", "fact extraction"]
+    },
+    {
+      "id": "Outliner",
+      "type": "agent",
+      "features": ["outline creation", "gap identification"]
+    },
+    {
+      "id": "Writer",
+      "type": "agent",
+      "features": ["drafting", "Law of Threes"]
+    },
+    {
+      "id": "Editor",
+      "type": "agent",
+      "features": ["style", "coherence"]
+    },
+    {
+      "id": "Paralegal",
+      "type": "agent",
+      "features": ["jurisdiction", "evidence tagging"]
+    },
+    {
+      "id": "Legal Formatter",
+      "type": "agent",
+      "features": ["legal citation", "IRAC formatting"]
+    },
+    {
+      "id": "Legal Procedure Agent",
+      "type": "agent",
+      "features": ["procedure compliance", "form retrieval"]
+    },
+    {
+      "id": "Assessor",
+      "type": "agent",
+      "features": [
+        "intake documents",
+        "organize list",
+        "AI summarization",
+        "categorization",
+        "hashtags"
+      ],
+      "relationships": {"Repository": "adds documents"}
+    },
+    {
+      "id": "Repository",
+      "type": "database",
+      "features": [
+        "metadata fields (author, title, publication date, summary, category, hashtags)",
+        "CSV storage"
+      ],
+      "relationships": {"Legal Researcher": "source of documents"}
+    },
+    {
+      "id": "Legal Researcher",
+      "type": "agent",
+      "features": ["research using repository"],
+      "relationships": {"Repository": "uses"}
+    },
+    {
+      "id": "ResearchBot",
+      "type": "agent"
+    },
+    {
+      "id": "WriterBot",
+      "type": "agent"
+    },
+    {
+      "id": "LegalEditorBot",
+      "type": "agent"
+    },
+    {
+      "id": "StepPlannerBot",
+      "type": "agent"
+    },
+    {
+      "id": "Summarizer",
+      "type": "feature"
+    },
+    {
+      "id": "Categorizer",
+      "type": "feature"
+    },
+    {
+      "id": "ShotlistAgent",
+      "type": "agent",
+      "features": ["OCR intake", "prompt + exhibit sequencing", "outline handoff"]
+    },
+    {
+      "id": "LegalResearchAgent",
+      "type": "agent",
+      "features": ["CourtListener/LegiScan queries", "statute element breakdown", "claim checklist updates"]
+    },
+    {
+      "id": "factory.html",
+      "type": "ui",
+      "features": [
+        "D3 workflow graph",
+        "role delineation for shotlist and legal research",
+        "stage timeline and research checklist"
+      ]
+    },
+    {
+      "id": "StageTimeline",
+      "type": "ui_component",
+      "features": ["shows OCR through drafting stages", "reflects active and complete states"]
+    },
+    {
+      "id": "ResearchChecklist",
+      "type": "ui_component",
+      "features": ["tracks statute discovery", "caselaw search", "claim coverage"]
+    },
+    {
+      "id": "Workflow",
+      "type": "meta",
       "stages": [
         "Preproduction Planning",
         "Research and Development",
@@ -31,5 +193,47 @@
   "observations": [
     "Initial graph created.",
     "Factory floor integrated with lawyer factory"
+    {
+      "id": "Lawsuit",
+      "type": "document",
+      "features": [
+        "statement_of_facts",
+        "description_of_parties",
+        "cover_sheet"
+      ]
+    },
+    {
+      "id": "WorkflowDAG",
+      "type": "diagram",
+      "features": ["end-to-end legal drafting data flow", "multi-agent collaboration checkpoints"]
+    }
+  ],
+  "relationships": [
+    {"source": "LawyerFactory", "target": "README", "relation": "documents"},
+    {"source": "LawyerFactory", "target": "requirements.txt", "relation": "depends_on"},
+    {"source": "LawyerFactory", "target": "knowledge_graph.json", "relation": "contains"},
+    {"source": "LawyerFactory", "target": "factory.html", "relation": "renders"},
+    {"source": "Maestro", "target": "ResearchBot", "relation": "directs"},
+    {"source": "Maestro", "target": "WriterBot", "relation": "provides_research"},
+    {"source": "WriterBot", "target": "LegalEditorBot", "relation": "submits_draft"},
+    {"source": "Maestro", "target": "StepPlannerBot", "relation": "requests_plan"},
+    {"source": "Assessor", "target": "Summarizer", "relation": "uses"},
+    {"source": "Assessor", "target": "Categorizer", "relation": "uses"},
+    {"source": "MaestroOrchestrator", "target": "StageTimeline", "relation": "updates"},
+    {"source": "MaestroOrchestrator", "target": "ResearchChecklist", "relation": "updates"},
+    {"source": "ShotlistAgent", "target": "MaestroOrchestrator", "relation": "reports"},
+    {"source": "LegalResearchAgent", "target": "MaestroOrchestrator", "relation": "reports"},
+    {"source": "factory.html", "target": "StageTimeline", "relation": "renders"},
+    {"source": "factory.html", "target": "ResearchChecklist", "relation": "renders"},
+    {"source": "WorkflowDAG", "target": "Workflow", "relation": "illustrates"},
+    {"source": "Workflow", "target": "MaestroOrchestrator", "relation": "guides"}
+  ],
+  "observations": [
+    "Repository initially contained only README",
+    "Added agents package with lexomnia module and knowledge graph",
+    "Added summarizer and categorizer modules",
+    "UI now sequences OCR Intake -> Shotlist Build -> Legal Research -> Draft Sections -> Review & Export.",
+    "Checklist highlights statute element parsing, CourtListener/LegiScan searches, and claim coverage with citations for legal claims.",
+    "Restored legacy entities and linked them with the visual workflow and research DAG."
   ]
 }

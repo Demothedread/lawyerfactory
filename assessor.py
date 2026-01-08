@@ -8,6 +8,23 @@ from repository import add_entry
 from lawyerfactory.knowledge_graph import load_graph, save_graph, add_observation
 from legal_factory import run_factory as launch_factory
 
+LEGAL_KEYWORDS = {
+    "contract": "legal:contract",
+    "litigation": "legal:litigation",
+    "evidence": "legal:evidence-primary",
+    "news": "legal:news",
+    "scholarship": "legal:scholarship",
+    "caselaw": "legal:caselaw",
+}
+BUSINESS_KEYWORDS = {
+    "financial": "business:financial-statements",
+    "market": "business:market-analysis",
+}
+RESEARCH_KEYWORDS = {
+    "study": "research:study",
+    "analysis": "research:analysis",
+}
+
 # Ensure NLTK sentence tokenizer data is available
 try:
     nltk.data.find("tokenizers/punkt")
@@ -17,24 +34,41 @@ except LookupError:
     nltk.download("punkt_tab")
 
 
-def summarize(text: str, max_sentences: int = 2) -> str:
-    """Return a naive summary consisting of the first `max_sentences` sentences."""
-    sentences = nltk.sent_tokenize(text)
-    return ' '.join(sentences[:max_sentences])
+def _llm_summarize(text: str) -> str:
+    """Return a condensed summary via LLM (placeholder)."""
+    return text
+
+
+def summarize(text: str, max_words: int = 250) -> str:
+    """Summarize using the first and last ``max_words`` tokens."""
+    tokens = nltk.word_tokenize(text)
+    if len(tokens) <= max_words:
+        snippet = ' '.join(tokens)
+    else:
+        head = tokens[:max_words]
+        tail = tokens[-max_words:]
+        snippet = ' '.join(head + tail)
+    return _llm_summarize(snippet)
 
 
 def categorize(text: str) -> str:
-    """Categorize text using simple keyword rules."""
+    """Return a hierarchical category label."""
     lowered = text.lower()
-    if 'contract' in lowered:
-        return 'contract'
-    if 'litigation' in lowered:
-        return 'litigation'
+    for key, label in LEGAL_KEYWORDS.items():
+        if key in lowered:
+            return label
+    for key, label in BUSINESS_KEYWORDS.items():
+        if key in lowered:
+            return label
+    for key, label in RESEARCH_KEYWORDS.items():
+        if key in lowered:
+            return label
     return 'general'
 
 
 def hashtags_from_category(category: str) -> str:
-    return f"#{category}"
+    """Convert ``category`` into a hashtag-friendly form."""
+    return "#" + category.replace(":", "_")
 
 
 def intake_document(
@@ -45,7 +79,7 @@ def intake_document(
     *,
     trigger_factory: bool = True,
 ) -> None:
-    """Process and store a new document in the repository."""
+    """Process ``text`` and store metadata in the repository."""
     if publication_date is None:
         publication_date = date.today().isoformat()
     summary = summarize(text)
@@ -75,11 +109,20 @@ def intake_document(
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description='Intake a document into the repository')
+    parser = argparse.ArgumentParser(
+        description='Intake a document into the repository'
+    )
     parser.add_argument('file', type=Path, help='Path to a text file')
-    parser.add_argument('--author', required=True, help='Author of the document')
+    parser.add_argument(
+        '--author',
+        required=True,
+        help='Author of the document',
+    )
     parser.add_argument('--title', required=True, help='Document title')
-    parser.add_argument('--date', help='Publication date in YYYY-MM-DD format')
+    parser.add_argument(
+        '--date',
+        help='Publication date in YYYY-MM-DD format',
+    )
     args = parser.parse_args()
 
     text = args.file.read_text(encoding='utf-8')
