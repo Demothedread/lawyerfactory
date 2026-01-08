@@ -28,44 +28,46 @@ def test_vector_store_basic_add_and_search(temp_store):
 
 def test_vector_store_chunking(temp_store):
     """Test that long text is properly chunked."""
-    store = VectorStore(
-        storage_path=Path(tempfile.mkdtemp()) / "chunked.pkl",
-        chunk_size=5,
-        chunk_overlap=2
-    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        store = VectorStore(
+            storage_path=Path(tmpdir) / "chunked.pkl",
+            chunk_size=5,
+            chunk_overlap=2
+        )
 
-    # Text with 20 words should be split into multiple chunks
-    text = " ".join([f"word{i}" for i in range(20)])
-    store.add(text, {"source": "chunked"})
+        # Text with 20 words should be split into multiple chunks
+        text = " ".join([f"word{i}" for i in range(20)])
+        store.add(text, {"source": "chunked"})
 
-    # Should have multiple chunks
-    assert len(store.texts) > 1
+        # Should have multiple chunks
+        assert len(store.texts) > 1
 
-    # All chunks should have the same source metadata
-    for metadata in store.metadata:
-        assert metadata["source"] == "chunked"
-        assert "chunk_index" in metadata
-        assert "chunk_total" in metadata
+        # All chunks should have the same source metadata
+        for metadata in store.metadata:
+            assert metadata["source"] == "chunked"
+            assert "chunk_index" in metadata
+            assert "chunk_total" in metadata
 
 
 def test_vector_store_sentence_aware_chunking(temp_store):
     """Test that chunking respects sentence boundaries."""
-    store = VectorStore(
-        storage_path=Path(tempfile.mkdtemp()) / "sentences.pkl",
-        chunk_size=10,
-        chunk_overlap=2
-    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        store = VectorStore(
+            storage_path=Path(tmpdir) / "sentences.pkl",
+            chunk_size=10,
+            chunk_overlap=2
+        )
 
-    text = "This is sentence one. This is sentence two. This is sentence three."
-    store.add(text, {"source": "sentences"})
+        text = "This is sentence one. This is sentence two. This is sentence three."
+        store.add(text, {"source": "sentences"})
 
-    # Verify chunks were created
-    assert len(store.texts) > 0
+        # Verify chunks were created
+        assert len(store.texts) > 0
 
-    # Check that chunks don't break mid-sentence (when possible)
-    for chunk_text in store.texts:
-        # Chunks should generally end with sentence terminators or be at boundaries
-        assert chunk_text.strip() != ""
+        # Check that chunks don't break mid-sentence (when possible)
+        for chunk_text in store.texts:
+            # Chunks should generally end with sentence terminators or be at boundaries
+            assert chunk_text.strip() != ""
 
 
 def test_vector_store_metadata_filtering_jurisdiction(temp_store):
