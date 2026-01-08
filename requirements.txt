@@ -1,7 +1,7 @@
-fastapi
 flake8
-httpx
-nltk
+fastapi
 pytest
-scikit-learn
+nltk
 uvicorn
+scikit-learn
+httpx
