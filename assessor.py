@@ -1,10 +1,13 @@
 from datetime import date
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Protocol
+import warnings
 
 import nltk
 
 from repository import add_entry
+from lawyerfactory.knowledge_graph import load_graph, save_graph, add_observation
+from legal_factory import run_factory as launch_factory
 
 LEGAL_KEYWORDS = {
     "contract": "legal:contract",
@@ -23,30 +26,86 @@ RESEARCH_KEYWORDS = {
     "analysis": "research:analysis",
 }
 
-# Ensure NLTK sentence tokenizer data is available
-try:
-    nltk.data.find("tokenizers/punkt")
-    nltk.data.find("tokenizers/punkt_tab/english.pickle")
-except LookupError:
-    nltk.download("punkt")
-    nltk.download("punkt_tab")
+NLTK_RESOURCE_PATHS = (
+    "tokenizers/punkt",
+    "tokenizers/punkt_tab/english.pickle",
+)
+
+# Cache for NLTK resource availability to avoid repeated checks
+_nltk_available: Optional[bool] = None
 
 
-def _llm_summarize(text: str) -> str:
-    """Return a condensed summary via LLM (placeholder)."""
-    return text
+class Summarizer(Protocol):
+    """Interface for summary generation."""
+
+    def summarize(self, text: str) -> str:
+        """Return a condensed summary for ``text``."""
+        ...
 
 
-def summarize(text: str, max_words: int = 250) -> str:
-    """Summarize using the first and last ``max_words`` tokens."""
-    tokens = nltk.word_tokenize(text)
-    if len(tokens) <= max_words:
+class PassthroughSummarizer:
+    """Fallback summarizer that returns input text."""
+
+    def summarize(self, text: str) -> str:
+        """Return the input ``text`` unchanged."""
+        return text
+
+
+def _ensure_nltk_resources() -> bool:
+    """Confirm required NLTK resources exist, returning availability."""
+    global _nltk_available
+    if _nltk_available is not None:
+        return _nltk_available
+    missing = []
+    for resource in NLTK_RESOURCE_PATHS:
+        try:
+            nltk.data.find(resource)
+        except LookupError:
+            missing.append(resource)
+    if not missing:
+        _nltk_available = True
+        return True
+    resource_names = ", ".join(path.split("/")[-1] for path in missing)
+    warnings.warn(
+        "Missing NLTK resources: "
+        f"{resource_names}. "
+        "Install them with: python -m nltk.downloader punkt punkt_tab. "
+        "Falling back to whitespace tokenization.",
+        RuntimeWarning,
+    )
+    _nltk_available = False
+    return False
+
+
+def summarize(
+    text: str,
+    max_tokens: int = 250,
+    summarizer: Optional[Summarizer] = None,
+) -> str:
+    """Summarize by extracting tokens from the start and end of ``text``.
+
+    Uses NLTK word tokenization when available, otherwise falls back to
+    whitespace splitting. When the text has more than ``max_tokens`` tokens,
+    returns approximately the first half and last half of tokens, up to
+    ``max_tokens`` total tokens.
+    """
+    tokenizer_ready = _ensure_nltk_resources()
+    if tokenizer_ready:
+        tokens = nltk.word_tokenize(text)
+    else:
+        tokens = text.split()
+    if len(tokens) <= max_tokens:
         snippet = ' '.join(tokens)
     else:
-        head = tokens[:max_words]
-        tail = tokens[-max_words:]
+        # For odd max_tokens, give the extra token to the head portion
+        # to ensure we use the full token budget
+        head_count = (max_tokens + 1) // 2
+        tail_count = max_tokens // 2
+        head = tokens[:head_count]
+        tail = tokens[-tail_count:]
         snippet = ' '.join(head + tail)
-    return _llm_summarize(snippet)
+    active_summarizer = summarizer or PassthroughSummarizer()
+    return active_summarizer.summarize(snippet)
 
 
 def categorize(text: str) -> str:
@@ -74,11 +133,14 @@ def intake_document(
     title: str,
     publication_date: Optional[str],
     text: str,
+    summarizer: Optional[Summarizer] = None,
+    *,
+    trigger_factory: bool = True,
 ) -> None:
     """Process ``text`` and store metadata in the repository."""
     if publication_date is None:
         publication_date = date.today().isoformat()
-    summary = summarize(text)
+    summary = summarize(text, summarizer=summarizer)
     category = categorize(text)
     hashtags = hashtags_from_category(category)
     entry = {
@@ -90,6 +152,16 @@ def intake_document(
         'hashtags': hashtags,
     }
     add_entry(entry)
+
+    graph = load_graph()
+    add_observation(graph, f"Document '{title}' categorized as {category}")
+    save_graph(graph)
+
+    if trigger_factory and category in {"contract", "litigation"}:
+        result = launch_factory(summary)
+        graph = load_graph()
+        add_observation(graph, f"Legal factory produced output for '{title}'")
+        save_graph(graph)
 
 
 if __name__ == '__main__':
