@@ -182,6 +182,16 @@
       "features": ["vector_store.pkl"]
     },
     {
+      "id": "VectorStore",
+      "type": "storage",
+      "features": ["TF-IDF index", "chunked entries", "disk persistence"]
+    },
+    {
+      "id": "VectorStoreIndex",
+      "type": "artifact",
+      "features": ["vector_store.pkl"]
+    },
+    {
       "id": "factory.html",
       "type": "ui",
       "features": [
@@ -627,6 +637,7 @@
     "UI now sequences OCR Intake -> Shotlist Build -> Legal Research -> Draft Sections -> Review & Export.",
     "Checklist highlights statute element parsing, CourtListener/LegiScan searches, and claim coverage with citations for legal claims.",
     "Restored legacy entities and linked them with the visual workflow and research DAG.",
+    "VectorStore now persists chunked research artifacts with citations for retrieval."
 11  "Added a FastAPI pipeline service to supply job status, stage updates, and drafted sections to the UI; this is a breaking change, as the UI now requires the pipeline_service.py FastAPI backend to be running (for example via `uvicorn pipeline_service:app --host 0.0.0.0 --port 8000`) and expects it to be available at http://localhost:8000/. The service provides endpoints: POST /jobs (create job), GET /jobs/{id} (fetch status), and GET /jobs/{id}/sections (fetch drafted sections). For production deployment, configure CORS origins via the ALLOWED_ORIGINS environment variable (comma-separated list of allowed origins)."
     "Added a lawsuit document schema with required sections and cross-reference validation."
     "Assessor now supports injectable summarizers with lazy NLTK checks and fallback tokenization."

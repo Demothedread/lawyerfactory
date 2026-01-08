@@ -1,5 +1,4 @@
 import asyncio
-from typing import Any
 
 from lawyerfactory.ai_vector import VectorStore
 
@@ -210,6 +209,18 @@ class Maestro:
         review_input = draft_output.get("draft", "")
         review_notes = await self.editor_bot.process(review_input)
         return {"review": review_notes, "export_ready": True}
+    def _format_retrieved(self, retrieved: list[dict[str, Any]]) -> str:
+        lines = []
+        for item in retrieved:
+            metadata = item.get("metadata", {})
+            citation = metadata.get("citation", "Unknown citation")
+            lines.append(f"{item.get('text', '')} ({citation})")
+        return "\n".join(lines)
+
+    def _store_research_artifact(self, artifact: ResearchArtifact) -> None:
+        self.db.add(artifact.to_dict())
+        self.vector_store.add_entries(artifact.vector_entries())
+
     def _format_retrieved(self, retrieved: list[dict[str, Any]]) -> str:
         lines = []
         for item in retrieved:
