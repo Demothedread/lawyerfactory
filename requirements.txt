@@ -1,5 +1,6 @@
 fastapi
 flake8
+httpx
 nltk
 pytest
 scikit-learn
