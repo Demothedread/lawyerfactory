@@ -519,6 +519,7 @@
     "UI now sequences OCR Intake -> Shotlist Build -> Legal Research -> Draft Sections -> Review & Export.",
     "Checklist highlights statute element parsing, CourtListener/LegiScan searches, and claim coverage with citations for legal claims.",
     "Restored legacy entities and linked them with the visual workflow and research DAG.",
+    "Expanded README with a Draft a Lawsuit workflow section covering inputs, pipeline steps, API usage, and output format."
     "Assessor now supports injectable summarizers with lazy NLTK checks and fallback tokenization."
     "Added FastAPI-backed Maestro API with SQLite job persistence and staged pipeline orchestration."
     "VectorStore now persists chunked research artifacts with citations for retrieval."
