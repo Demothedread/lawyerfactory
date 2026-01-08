@@ -1,6 +1,17 @@
 {
   "entities": {
     "LawyerFactory": {
+    "Lawsuit": {
+      "features": [
+        "statement_of_facts",
+        "description_of_parties",
+        "cover_sheet"
+      ]
+    },
+    "Workflow": {
+  "entities": [
+    {
+      "id": "LawyerFactory",
       "type": "project",
       "features": [
         "swarm agents for legal drafting",
@@ -117,7 +128,10 @@
       "type": "agent"
     },
     "WriterBot": {
-      "type": "agent"
+    {
+      "id": "ResearchArtifact",
+      "type": "data",
+      "features": ["citations", "query filters", "sources"]
     },
     "LegalEditorBot": {
       "type": "agent"
@@ -148,6 +162,18 @@
       ]
     },
     "factory.html": {
+    {
+      "id": "VectorStore",
+      "type": "storage",
+      "features": ["TF-IDF index", "chunked entries", "disk persistence"]
+    },
+    {
+      "id": "VectorStoreIndex",
+      "type": "artifact",
+      "features": ["vector_store.pkl"]
+    },
+    {
+      "id": "factory.html",
       "type": "ui",
       "features": [
         "D3 workflow graph",
@@ -156,6 +182,26 @@
       ]
     },
     "StageTimeline": {
+    {
+      "id": "PipelineService",
+      "type": "service",
+      "features": [
+        "FastAPI pipeline job endpoints",
+        "job status timeline",
+        "section drafting API"
+      ]
+    },
+    {
+      "id": "pipeline_service.py",
+      "type": "service_module",
+      "features": [
+        "POST /jobs",
+        "GET /jobs/{id}",
+        "GET /jobs/{id}/sections"
+      ]
+    },
+    {
+      "id": "StageTimeline",
       "type": "ui_component",
       "features": [
         "shows OCR through drafting stages",
@@ -185,6 +231,19 @@
       ]
     },
     "Lawsuit": {
+    "FactoryFloorUI": {
+      "features": [
+        "html interface",
+        "visual progress"
+      ]
+    }
+  },
+  "relationships": {},
+  "observations": [
+    "Initial graph created.",
+    "Factory floor integrated with lawyer factory"
+    {
+      "id": "Lawsuit",
       "type": "document",
       "features": [
         "statement_of_facts",
@@ -197,6 +256,51 @@
       "features": [
         "end-to-end legal drafting data flow",
         "multi-agent collaboration checkpoints"
+    {
+      "id": "LawsuitSchema",
+      "type": "schema",
+      "features": [
+        "caption",
+        "jurisdiction",
+        "parties",
+        "statement_of_facts",
+        "causes_of_action",
+        "legal_arguments",
+        "prayer_for_relief"
+      ]
+    },
+    {
+      "id": "LawsuitPipeline",
+      "type": "workflow",
+      "features": [
+        "intake to structured lawsuit output",
+        "metadata validation",
+        "citations attached to legal arguments"
+      ]
+    },
+    {
+      "id": "WorkflowDAG",
+      "type": "diagram",
+      "features": ["end-to-end legal drafting data flow", "multi-agent collaboration checkpoints"]
+    },
+    {
+      "id": "lawyerfactory/document_models.py",
+      "type": "module",
+      "features": ["lawsuit section schema", "draft rendering", "cross-reference validation"]
+    },
+    {
+      "id": "LawsuitDocumentSchema",
+      "type": "document_model",
+      "features": [
+        "caption",
+        "parties",
+        "jurisdiction",
+        "facts",
+        "causes_of_action",
+        "damages",
+        "prayer",
+        "verification",
+        "attachments"
       ]
     }
   },
@@ -306,6 +410,31 @@
       "target": "MaestroOrchestrator",
       "relation": "guides"
     }
+    {"source": "LawyerFactory", "target": "README", "relation": "documents"},
+    {"source": "LawyerFactory", "target": "requirements.txt", "relation": "depends_on"},
+    {"source": "LawyerFactory", "target": "knowledge_graph.json", "relation": "contains"},
+    {"source": "LawyerFactory", "target": "factory.html", "relation": "renders"},
+    {"source": "Maestro", "target": "ResearchBot", "relation": "directs"},
+    {"source": "Maestro", "target": "WriterBot", "relation": "provides_research"},
+    {"source": "WriterBot", "target": "LegalEditorBot", "relation": "submits_draft"},
+    {"source": "Maestro", "target": "StepPlannerBot", "relation": "requests_plan"},
+    {"source": "Assessor", "target": "Summarizer", "relation": "uses"},
+    {"source": "Assessor", "target": "Categorizer", "relation": "uses"},
+    {"source": "MaestroOrchestrator", "target": "StageTimeline", "relation": "updates"},
+    {"source": "MaestroOrchestrator", "target": "ResearchChecklist", "relation": "updates"},
+    {"source": "ShotlistAgent", "target": "MaestroOrchestrator", "relation": "reports"},
+    {"source": "LegalResearchAgent", "target": "MaestroOrchestrator", "relation": "reports"},
+    {"source": "factory.html", "target": "StageTimeline", "relation": "renders"},
+    {"source": "factory.html", "target": "ResearchChecklist", "relation": "renders"},
+    {"source": "PipelineService", "target": "factory.html", "relation": "feeds"},
+    {"source": "pipeline_service.py", "target": "PipelineService", "relation": "implements"},
+    {"source": "WorkflowDAG", "target": "Workflow", "relation": "illustrates"},
+    {"source": "Workflow", "target": "MaestroOrchestrator", "relation": "guides"},
+    {"source": "Maestro", "target": "VectorStore", "relation": "indexes"},
+    {"source": "ResearchBot", "target": "ResearchArtifact", "relation": "produces"},
+    {"source": "VectorStore", "target": "VectorStoreIndex", "relation": "persists"}
+    {"source": "LawsuitPipeline", "target": "LawsuitSchema", "relation": "produces"},
+    {"source": "LawsuitPipeline", "target": "Lawsuit", "relation": "structures"}
   ],
   "observations": [
     "Repository initially contained only README",
@@ -313,6 +442,10 @@
     "Added summarizer and categorizer modules",
     "UI now sequences OCR Intake -> Shotlist Build -> Legal Research -> Draft Sections -> Review & Export.",
     "Checklist highlights statute element parsing, CourtListener/LegiScan searches, and claim coverage with citations for legal claims.",
-    "Restored legacy entities and linked them with the visual workflow and research DAG."
+    "Restored legacy entities and linked them with the visual workflow and research DAG.",
+    "VectorStore now persists chunked research artifacts with citations for retrieval."
+    "Added a FastAPI pipeline service to supply job status, stage updates, and drafted sections to the UI; this is a breaking change, as the UI now requires the pipeline_service.py FastAPI backend to be running (for example via `uvicorn pipeline_service:app --host 0.0.0.0 --port 8000`) and expects it to be available at http://localhost:8000/. The service provides endpoints: POST /jobs (create job), GET /jobs/{id} (fetch status), and GET /jobs/{id}/sections (fetch drafted sections). For production deployment, configure CORS origins via the ALLOWED_ORIGINS environment variable (comma-separated list of allowed origins)."
+    "Added a lawsuit document schema with required sections and cross-reference validation."
+    "Added lawsuit intake pipeline schema coverage for required sections and citations."
   ]
 }
