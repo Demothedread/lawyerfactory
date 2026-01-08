@@ -1,4 +1,13 @@
 {
+  "entities": {
+    "Lawsuit": {
+      "features": [
+        "statement_of_facts",
+        "description_of_parties",
+        "cover_sheet"
+      ]
+    },
+    "Workflow": {
   "entities": [
     {
       "id": "LawyerFactory",
@@ -191,6 +200,17 @@
         "Final Draft"
       ]
     },
+    "FactoryFloorUI": {
+      "features": [
+        "html interface",
+        "visual progress"
+      ]
+    }
+  },
+  "relationships": {},
+  "observations": [
+    "Initial graph created.",
+    "Factory floor integrated with lawyer factory"
     {
       "id": "Lawsuit",
       "type": "document",
@@ -201,9 +221,51 @@
       ]
     },
     {
+      "id": "LawsuitSchema",
+      "type": "schema",
+      "features": [
+        "caption",
+        "jurisdiction",
+        "parties",
+        "statement_of_facts",
+        "causes_of_action",
+        "legal_arguments",
+        "prayer_for_relief"
+      ]
+    },
+    {
+      "id": "LawsuitPipeline",
+      "type": "workflow",
+      "features": [
+        "intake to structured lawsuit output",
+        "metadata validation",
+        "citations attached to legal arguments"
+      ]
+    },
+    {
       "id": "WorkflowDAG",
       "type": "diagram",
       "features": ["end-to-end legal drafting data flow", "multi-agent collaboration checkpoints"]
+    },
+    {
+      "id": "lawyerfactory/document_models.py",
+      "type": "module",
+      "features": ["lawsuit section schema", "draft rendering", "cross-reference validation"]
+    },
+    {
+      "id": "LawsuitDocumentSchema",
+      "type": "document_model",
+      "features": [
+        "caption",
+        "parties",
+        "jurisdiction",
+        "facts",
+        "causes_of_action",
+        "damages",
+        "prayer",
+        "verification",
+        "attachments"
+      ]
     }
   ],
   "relationships": [
@@ -226,7 +288,9 @@
     {"source": "PipelineService", "target": "factory.html", "relation": "feeds"},
     {"source": "pipeline_service.py", "target": "PipelineService", "relation": "implements"},
     {"source": "WorkflowDAG", "target": "Workflow", "relation": "illustrates"},
-    {"source": "Workflow", "target": "MaestroOrchestrator", "relation": "guides"}
+    {"source": "Workflow", "target": "MaestroOrchestrator", "relation": "guides"},
+    {"source": "LawsuitPipeline", "target": "LawsuitSchema", "relation": "produces"},
+    {"source": "LawsuitPipeline", "target": "Lawsuit", "relation": "structures"}
   ],
   "observations": [
     "Repository initially contained only README",
@@ -236,5 +300,7 @@
     "Checklist highlights statute element parsing, CourtListener/LegiScan searches, and claim coverage with citations for legal claims.",
     "Restored legacy entities and linked them with the visual workflow and research DAG.",
     "Added a FastAPI pipeline service to supply job status, stage updates, and drafted sections to the UI; this is a breaking change, as the UI now requires the pipeline_service.py FastAPI backend to be running (for example via `uvicorn pipeline_service:app --host 0.0.0.0 --port 8000`) and expects it to be available at http://localhost:8000/. The service provides endpoints: POST /jobs (create job), GET /jobs/{id} (fetch status), and GET /jobs/{id}/sections (fetch drafted sections). For production deployment, configure CORS origins via the ALLOWED_ORIGINS environment variable (comma-separated list of allowed origins)."
+    "Added a lawsuit document schema with required sections and cross-reference validation."
+    "Added lawsuit intake pipeline schema coverage for required sections and citations."
   ]
 }
