@@ -12,7 +12,7 @@ class ResearchFilters:
     """Query filters for jurisdiction and claim elements."""
 
     jurisdiction: str | None = None
-    claim_elements: list[str] = field(default_factory=list)
+    claim_elements: tuple[str, ...] = field(default_factory=tuple)
 
     def to_dict(self) -> dict[str, Any]:
         return {
