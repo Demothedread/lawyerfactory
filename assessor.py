@@ -84,8 +84,8 @@ def summarize(
 
     Uses NLTK word tokenization when available, otherwise falls back to
     whitespace splitting. When the text has more than ``max_tokens`` tokens,
-    returns the first ``max_tokens // 2`` and the last ``max_tokens // 2``
-    tokens, for a total of up to ``max_tokens`` tokens.
+    returns approximately the first half and last half of tokens, up to
+    ``max_tokens`` total tokens.
     """
     tokenizer_ready = _ensure_nltk_resources()
     if tokenizer_ready:
@@ -95,9 +95,10 @@ def summarize(
     if len(tokens) <= max_tokens:
         snippet = ' '.join(tokens)
     else:
-        half = max_tokens // 2
-        head = tokens[:half]
-        tail = tokens[-half:]
+        head_count = (max_tokens + 1) // 2
+        tail_count = max_tokens // 2
+        head = tokens[:head_count]
+        tail = tokens[-tail_count:]
         snippet = ' '.join(head + tail)
     active_summarizer = summarizer or PassthroughSummarizer()
     return active_summarizer.summarize(snippet)
