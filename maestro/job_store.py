@@ -23,7 +23,6 @@ class JobStore:
 
     def _job_store_initialize(self) -> None:
         with self._job_store_connect() as connection:
-            connection.execute("PRAGMA foreign_keys = ON")
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS jobs (

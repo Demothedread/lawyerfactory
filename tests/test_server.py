@@ -30,7 +30,6 @@ def test_intake_endpoint_success():
     """Test successful job intake."""
     # Setup test job store
     test_job_store = setup_test_job_store()
-    app.dependency_overrides = {}
 
     # Temporarily replace global job_store
     import server
