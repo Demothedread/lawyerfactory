@@ -144,57 +144,15 @@
             DataVisualizer: `<path d="M3 12a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v6.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5V12Zm5 0a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v6.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5V12Zm5-2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5V10Zm5-4.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v13a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-13Z" />`
         };
 
-        // --- CONFIGURATION & MOCK DATA ---
-        const MOCK_PROMPTS = {
-            business_proposal: "Draft a funding proposal for a new AI-powered logistics platform called 'ShipFast' that is targeting a $5M seed round from venture capital firms.",
-            legal_claim: "Prepare a legal claim for plaintiff John Doe against 'MegaCorp' for breach of contract, alleging failure to deliver goods as per the agreement signed on Jan 1, 2024.",
-            white_paper: "Write a white paper on the impact of decentralized finance (DeFi) on traditional banking institutions, focusing on lending protocols and yield farming."
-        };
-
-        const DOCUMENT_TEMPLATES = {
-            business_proposal: { 
-                name: "Business Proposal", 
-                sections: ["Executive Summary", "Problem Statement", "Proposed Solution", "Market Analysis", "Team", "Financial Projections"], 
-                specialistAgents: ["MarketAnalystAgent", "FinancialModelerAgent", "GeneralWriterAgent"],
-                knobs: {
-                    Tone: ["Persuasive", "Formal", "Visionary"],
-                    Style: ["Standard", "Data-Driven", "Narrative"],
-                    Length: ["Concise", "Standard", "Comprehensive"]
-                }
-            },
-            legal_claim: { 
-                name: "Legal Claim", 
-                sections: ["Caption", "Jurisdiction", "Statement of Facts", "Cause of Action: Breach of Contract", "Prayer for Relief"], 
-                specialistAgents: ["LegalDrafterAgent"],
-                knobs: {
-                    Tone: ["Formal", "Assertive"],
-                    Style: ["Procedural", "Argumentative"],
-                    Length: ["Standard", "Detailed"]
-                }
-            },
-            white_paper: { 
-                name: "White Paper", 
-                sections: ["Abstract", "Introduction", "Background Analysis", "DeFi Lending Protocols", "Impact on Banking", "Conclusion"], 
-                specialistAgents: ["TechnicalResearcherAgent", "DataVisualizationAgent", "GeneralWriterAgent"],
-                knobs: {
-                    Tone: ["Authoritative", "Academic", "Objective"],
-                    Style: ["Technical", "Analytical", "Educational"],
-                    Length: ["Standard", "In-Depth", "Exhaustive"]
-                }
-            }
-        };
-        
-        const MOCK_AGENT_OUTPUTS = {
-            "Executive Summary": "ShipFast is a revolutionary AI-powered logistics platform poised to disrupt the multi-trillion dollar shipping industry. By leveraging proprietary route optimization algorithms, we project a 30% increase in efficiency over existing solutions. We are seeking a $5M seed round to scale our operations and capture a significant market share within 24 months.",
-            "Market Analysis": "The global logistics market is valued at over $8 trillion, with a CAGR of 6.5%. Our target segment, last-mile delivery, represents a $400 billion opportunity. Key competitors are established but rely on outdated technology, presenting a clear opening for ShipFast's superior AI-driven approach.",
-            "Statement of Facts": "On January 1, 2024, Plaintiff John Doe entered into a binding agreement with Defendant MegaCorp. Under this agreement, MegaCorp was obligated to deliver 10,000 units of custom-manufactured widgets by March 31, 2024. MegaCorp failed to deliver any units by the specified date, thereby breaching the contract.",
-            "Cause of Action: Breach of Contract": "Defendant MegaCorp's failure to deliver the specified goods constitutes a material breach of the contract dated January 1, 2024. The contract explicitly stated that 'time is of the essence,' and Defendant's non-performance has caused significant financial harm to the Plaintiff.",
-            "Prayer for Relief": "WHEREFORE, Plaintiff demands judgment against Defendant for compensatory damages in an amount to be proven at trial, but not less than $150,000, plus interest, costs of suit, and such other and further relief as the Court deems just and proper.",
-            "Abstract": "This white paper examines the profound impact of decentralized finance (DeFi) on the legacy financial system. We analyze how DeFi lending protocols and yield farming strategies are challenging the core business models of traditional banking institutions, offering greater transparency, efficiency, and accessibility.",
-            "OCR Intake": "Uploaded files were scanned, text-normalized, and chunked for downstream agents.",
-            "Shotlist Build": "Fact sequence created with linked exhibits and prompts to guide legal research.",
-            "Legal Research": "Statute identified, elements extracted, and CourtListener/LegiScan queries queued for each element and jurisdiction tier.",
-            "Default": "Content is being generated for this section by the assigned agent..."
+        // --- CONFIGURATION ---
+        const API_BASE_URL =
+            window.location.protocol === 'file:' || window.location.origin === 'null'
+                ? 'http://localhost:8000'
+                : window.location.origin;
+        const DOC_TYPE_LABELS = {
+            business_proposal: "Business Proposal",
+            legal_claim: "Legal Claim",
+            white_paper: "White Paper"
         };
 
         const AGENT_POOL = [
@@ -238,91 +196,63 @@
             ]
         };
 
-        const CHECKLIST_LIBRARY = {
-            legal_claim: [
-                {
-                    id: 'ocr-intake',
-                    label: 'OCR and normalize uploaded material',
-                    source: 'Text recognition pipeline',
-                    stage: 'OCR Intake',
-                    status: 'pending'
-                },
-                {
-                    id: 'shotlist-outline',
-                    label: 'Sequence facts and exhibits into a shotlist',
-                    source: 'Shotlist Agent (Lex Omnia GPT)',
-                    stage: 'Shotlist Build',
-                    status: 'pending'
-                },
-                {
-                    id: 'statute-elements',
-                    label: 'Identify governing statute/rule and break into elements',
-                    source: 'LegiScan / jurisdiction rules',
-                    stage: 'Legal Research',
-                    status: 'pending'
-                },
-                {
-                    id: 'caselaw-search',
-                    label: 'Search CourtListener by jurisdiction and element keywords',
-                    source: 'CourtListener filters and expansions',
-                    stage: 'Legal Research',
-                    status: 'pending'
-                },
-                {
-                    id: 'claims-check',
-                    label: 'Map facts to each claim element (standing, venue, ripeness, etc.)',
-                    source: 'Statute + caselaw factors',
-                    stage: 'Legal Research',
-                    status: 'pending'
-                },
-                {
-                    id: 'citation-log',
-                    label: 'Log statutes, caselaw, and articles for downstream SQL capture',
-                    source: 'Research agent event hooks',
-                    stage: 'Legal Research',
-                    status: 'pending'
-                },
-                {
-                    id: 'draft-ready',
-                    label: 'Confirm claims checklist complete before drafting sections',
-                    source: 'Legal Research + Shotlist outputs',
-                    stage: 'Draft Sections',
-                    status: 'pending'
-                }
-            ],
-            default: [
-                {
-                    id: 'outline',
-                    label: 'Outline sections from prompt and uploads',
-                    source: 'Shotlist Agent',
-                    stage: 'Shotlist Build',
-                    status: 'pending'
-                },
-                {
-                    id: 'research',
-                    label: 'Collect references before drafting',
-                    source: 'Research Agent',
-                    stage: 'Research',
-                    status: 'pending'
-                }
-            ]
-        };
+        /**
+         * Build a request URL for the pipeline service.
+         * @param {string} path
+         * @returns {string}
+         */
+        function apiBuildUrl(path) {
+            return `${API_BASE_URL}${path}`;
+        }
 
-        const STAGE_PIPELINE = {
-            legal_claim: [
-                { id: 'OCR Intake', description: 'Recognize uploaded exhibits and normalize text.' },
-                { id: 'Shotlist Build', description: 'Sequence facts and claims before research.' },
-                { id: 'Legal Research', description: 'Break down statutes and find caselaw per element.' },
-                { id: 'Draft Sections', description: 'Draft the pleading from validated claims.' },
-                { id: 'Review & Export', description: 'Hand-off with citations and logged authorities.' }
-            ],
-            default: [
-                { id: 'Shotlist Build', description: 'Outline deliverable from prompt and uploads.' },
-                { id: 'Research', description: 'Gather references for drafting.' },
-                { id: 'Draft Sections', description: 'Write sections using research.' },
-                { id: 'Review & Export', description: 'Summarize output for delivery.' }
-            ]
-        };
+        /**
+         * POST /jobs to start a new pipeline job.
+         * @param {Object} payload
+         * @returns {Promise<Object>}
+         */
+        async function apiCreateJob(payload) {
+            const response = await fetch(apiBuildUrl('/jobs'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                const errorBody = await response.json().catch(() => ({}));
+                const errorDetail = errorBody.detail || 'Unknown error';
+                throw new Error(`Unable to create job (status: ${response.status}): ${errorDetail}`);
+            }
+            return response.json();
+        }
+
+        /**
+         * GET /jobs/{id} to retrieve job status.
+         * @param {string} jobId
+         * @returns {Promise<Object>}
+         */
+        async function apiFetchJob(jobId) {
+            const response = await fetch(apiBuildUrl(`/jobs/${jobId}`));
+            if (!response.ok) {
+                const errorBody = await response.json().catch(() => ({}));
+                const errorDetail = errorBody.detail || 'Unknown error';
+                throw new Error(`Unable to fetch job (status: ${response.status}): ${errorDetail}`);
+            }
+            return response.json();
+        }
+
+        /**
+         * GET /jobs/{id}/sections to retrieve drafted sections.
+         * @param {string} jobId
+         * @returns {Promise<Object>}
+         */
+        async function apiFetchSections(jobId) {
+            const response = await fetch(apiBuildUrl(`/jobs/${jobId}/sections`));
+            if (!response.ok) {
+                const errorBody = await response.json().catch(() => ({}));
+                const errorDetail = errorBody.detail || 'Unknown error';
+                throw new Error(`Unable to fetch sections (status: ${response.status}): ${errorDetail}`);
+            }
+            return response.json();
+        }
         
         // --- DOM ELEMENTS ---
         const docTypeSelector = document.getElementById('docTypeSelector');
@@ -401,19 +331,67 @@
         }
 
         function updateGraph(graph) {
-            const link = g.selectAll(".link").data(graph.links, d => `${d.source.id}-${d.target.id}`).join("line").attr("class", "link").attr("stroke-width", 2);
-            const node = g.selectAll(".node").data(graph.nodes, d => d.id).join("g").attr("class", "node").on("click", (event, d) => showNodeDetails(d)).call(drag(simulation));
-            node.append("circle").attr("r", 25).attr("id", d => `node-${d.id.replace(/\s|:/g, '-')}`).style("fill", d => getNodeColor(d.status)).style("stroke", "#9ca3af").style("stroke-width", 2);
-            node.append("text").attr("dy", 4).attr("text-anchor", "middle").style("fill", "#fff").style("font-size", "10px").text(d => d.id.length > 8 ? d.id.substring(0, 7) + '...' : d.id);
+            const link = g.selectAll(".link").data(
+                graph.links,
+                d => `${d.source.id || d.source}-${d.target.id || d.target}`
+            );
+            const linkSelection = link.join("line").attr("class", "link").attr("stroke-width", 2);
+            const node = g.selectAll(".node").data(graph.nodes, d => d.id);
+            const nodeEnter = node.enter()
+                .append("g")
+                .attr("class", "node")
+                .on("click", (event, d) => showNodeDetails(d))
+                .call(drag(simulation));
+            nodeEnter.append("circle")
+                .attr("r", 25)
+                .attr("id", d => `node-${d.id.replace(/\s|:/g, '-')}`)
+                .style("stroke", "#9ca3af")
+                .style("stroke-width", 2);
+            nodeEnter.append("text")
+                .attr("dy", 4)
+                .attr("text-anchor", "middle")
+                .style("fill", "#fff")
+                .style("font-size", "10px");
+            node.merge(nodeEnter).select("circle").style("fill", d => getNodeColor(d.status));
+            node.merge(nodeEnter).select("text").text(d => d.id.length > 8 ? d.id.substring(0, 7) + '...' : d.id);
+            node.exit().remove();
             simulation.nodes(graph.nodes).on("tick", ticked);
             simulation.force("link").links(graph.links);
             simulation.alpha(1).restart();
             function ticked() {
-                link.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
-                node.attr("transform", d => `translate(${d.x},${d.y})`);
+                linkSelection.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+                g.selectAll(".node").attr("transform", d => `translate(${d.x},${d.y})`);
             }
         }
         
+        function getStageXPosition(stageId) {
+            const minX = 140;
+            const maxX = width - 260;
+            const defaultX = (minX + maxX) / 2;
+
+            // If maestro.stageOrder is not available or is empty, fall back to a
+            // deterministic position based on stageId so nodes don't all overlap.
+            if (!maestro || !Array.isArray(maestro.stageOrder) || maestro.stageOrder.length === 0) {
+                if (!stageId) {
+                    return defaultX;
+                }
+                // Simple deterministic hash of the stageId string.
+                let hash = 0;
+                for (let i = 0; i < stageId.length; i++) {
+                    hash = ((hash << 5) - hash) + stageId.charCodeAt(i);
+                    hash |= 0; // Convert to 32-bit integer
+                }
+                const normalized = (Math.abs(hash) % 1000) / 999; // 0..1
+                return minX + normalized * (maxX - minX);
+            }
+
+            const stageCount = maestro.stageOrder.length;
+            const rawIndex = maestro.stageOrder.indexOf(stageId);
+            const index = rawIndex >= 0 ? rawIndex : 0;
+            const step = stageCount > 1 ? (maxX - minX) / (stageCount - 1) : 0;
+            return minX + index * step;
+        }
+
         function setupSimulation() {
             simulation = d3.forceSimulation()
                 .force("link", d3.forceLink().id(d => d.id).distance(120))
@@ -422,10 +400,10 @@
                     if (d.type === 'control') {
                         return d.id === 'Start' ? 100 : width - 250;
                     }
-                    if (d.id === 'OCR Intake') return (width-120)/2 - 260;
-                    if (d.id === 'Shotlist Build') return (width-120)/2 - 120;
-                    if (d.id === 'Legal Research' || d.id === 'Research') return (width-120)/2 + 40;
-                    return (width-120)/2 + 160;
+                    if (d.stage) {
+                        return getStageXPosition(d.stage);
+                    }
+                    return width / 2;
                 }).strength(0.5))
                 .force("y", d3.forceY(height / 2).strength(0.1));
         }
@@ -464,7 +442,7 @@
         function renderChecklist(items) {
             const statusColors = { pending: 'bg-gray-700 text-gray-200', active: 'bg-yellow-900 text-yellow-200', complete: 'bg-green-900 text-green-200' };
             researchChecklist.innerHTML = `
-                <h3 class="text-lg font-semibold mb-3 text-gray-200">Legal Research Checklist</h3>
+                <h3 class="text-lg font-semibold mb-3 text-gray-200">Production Checklist</h3>
                 <div class="space-y-2">${items.map(item => `
                     <div class="p-3 rounded-md border border-gray-700 bg-gray-800/70">
                         <div class="flex items-center justify-between">
@@ -497,39 +475,50 @@
                 this.state = {};
                 this.graph = { nodes: [], links: [] };
                 this.isRunning = false;
+                this.jobId = null;
+                this.pollTimer = null;
                 this.stages = [];
                 this.checklist = [];
                 this.sectionIds = [];
-                this.completedSections = 0;
-                this.executionOrder = [];
+                this.stageOrder = [];
+                this.template = null;
+                this.pollInterval = 5000; // 5 seconds default
+                this.consecutiveErrors = 0;
+                this.maxConsecutiveErrors = 5;
             }
 
             preFlight(prompt, docType) {
-                this.state = { prompt, docType, keyFactors: this.deconstructPrompt(prompt, docType), session_id: `session_${new Date().getTime()}` };
-                this.initializeStages(docType);
-                this.initializeChecklist(docType);
+                this.state = {
+                    prompt,
+                    docType,
+                    keyFactors: this.deconstructPrompt(prompt, docType),
+                    session_id: `session_${new Date().getTime()}`
+                };
                 renderRoleCards(docType);
                 this.displayBlueprint();
-                this.generateWorkflowDAG();
-                renderStageTimeline(this.stages);
-                renderChecklist(this.checklist);
+                if (!this.template) {
+                    this.displayInstructionPlaceholder();
+                    renderStageTimeline([]);
+                    renderChecklist([]);
+                }
+            }
+
+            resetJobData() {
+                this.jobId = null;
+                this.template = null;
+                this.stages = [];
+                this.checklist = [];
+                this.sectionIds = [];
+                this.stageOrder = [];
+                this.graph = { nodes: [], links: [] };
+                finalProduct.innerHTML = '';
                 updateGraph(this.graph);
             }
 
-            initializeStages(docType) {
-                const pipeline = STAGE_PIPELINE[docType] || STAGE_PIPELINE.default;
-                this.stages = pipeline.map(stage => ({ ...stage, status: 'pending' }));
-            }
-
-            initializeChecklist(docType) {
-                const list = CHECKLIST_LIBRARY[docType] || CHECKLIST_LIBRARY.default;
-                this.checklist = list.map(item => ({ ...item, status: 'pending', note: '' }));
-            }
-
             deconstructPrompt(prompt, docType) {
-                const template = DOCUMENT_TEMPLATES[docType];
-                let factors = {
-                    docType: { text: template.name, class: 'factor-doc' },
+                const docLabel = DOC_TYPE_LABELS[docType] || docType;
+                const factors = {
+                    docType: { text: docLabel, class: 'factor-doc' },
                     keyFactor: null,
                     subKeyFactors: []
                 };
@@ -537,9 +526,9 @@
                 // This is a rule-based engine. A real system would use an LLM call.
                 const keyFactorRegex = /(?:for|on|about)\s(.*?)(?:that|which|alleging|focusing)/i;
                 const subKeyFactorRegex = /(?:targeting|against|involving|focusing on)\s(.*?)(?:,|$)/gi;
-                
+
                 let keyFactorMatch = prompt.match(keyFactorRegex);
-                if(keyFactorMatch && keyFactorMatch[1]) {
+                if (keyFactorMatch && keyFactorMatch[1]) {
                     factors.keyFactor = { text: keyFactorMatch[1].trim().replace(/,$/, ''), class: 'factor-key' };
                 }
 
@@ -547,48 +536,48 @@
                 while ((subKeyMatch = subKeyFactorRegex.exec(prompt)) !== null) {
                     factors.subKeyFactors.push({ text: subKeyMatch[1].trim().replace(/,$/, ''), class: 'factor-subkey' });
                 }
-                
+
                 return factors;
             }
 
             displayBlueprint() {
-                const { prompt, keyFactors, docType } = this.state;
-                let highlightedPrompt = prompt;
-                
+                const { prompt, keyFactors } = this.state;
+                let highlightedPrompt = prompt || 'Enter a prompt to define your document.';
+
                 if (keyFactors.keyFactor) {
-                    highlightedPrompt = highlightedPrompt.replace(keyFactors.keyFactor.text, `<span class="${keyFactors.keyFactor.class}">${keyFactors.keyFactor.text}</span>`);
+                    highlightedPrompt = highlightedPrompt.replace(
+                        keyFactors.keyFactor.text,
+                        `<span class="${keyFactors.keyFactor.class}">${keyFactors.keyFactor.text}</span>`
+                    );
                 }
                 keyFactors.subKeyFactors.forEach(f => {
                     highlightedPrompt = highlightedPrompt.replace(f.text, `<span class="${f.class}">${f.text}</span>`);
                 });
-                highlightedPrompt = highlightedPrompt.replace(new RegExp(keyFactors.docType.text, 'i'), `<span class="${keyFactors.docType.class}">${keyFactors.docType.text}</span>`);
-                
+                highlightedPrompt = highlightedPrompt.replace(
+                    new RegExp(keyFactors.docType.text, 'i'),
+                    `<span class="${keyFactors.docType.class}">${keyFactors.docType.text}</span>`
+                );
+
                 deconstructedPrompt.innerHTML = highlightedPrompt;
-                this.displayInstructionBox(docType);
-            }
-
-            markStageStatus(stageId, status) {
-                this.stages = this.stages.map(stage => stage.id === stageId ? { ...stage, status } : stage);
-                renderStageTimeline(this.stages);
-            }
-
-            markChecklistStage(stageId, status, note = '') {
-                this.checklist = this.checklist.map(item => item.stage === stageId ? { ...item, status, note } : item);
-                renderChecklist(this.checklist);
             }
 
             getStageForNode(node) {
-                if (node.id === 'OCR Intake') return 'OCR Intake';
-                if (node.id === 'Shotlist Build') return 'Shotlist Build';
-                if (node.id === 'Legal Research') return 'Legal Research';
-                if (node.id === 'Research') return 'Research';
-                if (this.sectionIds.includes(node.id)) return 'Draft Sections';
-                return null;
+                return node.stage || null;
             }
-            
-            displayInstructionBox(docType){
-                const template = DOCUMENT_TEMPLATES[docType];
-                let knobsHTML = Object.entries(template.knobs).map(([knobName, options]) => `
+
+            displayInstructionPlaceholder() {
+                instructionBox.innerHTML = `
+                    <h3 class="text-lg font-semibold mb-2 text-gray-200">Instructions</h3>
+                    <p class="text-xs text-gray-400">Start production to load pipeline instructions and section knobs.</p>
+                `;
+            }
+
+            displayInstructionBox(template) {
+                if (!template) {
+                    this.displayInstructionPlaceholder();
+                    return;
+                }
+                const knobsHTML = Object.entries(template.knobs).map(([knobName, options]) => `
                     <div class="flex-1">
                         <label class="block text-xs font-medium text-gray-400 mb-1">${knobName}</label>
                         <select class="knob-select w-full bg-gray-800 border border-gray-600 text-white rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
@@ -600,128 +589,158 @@
                 instructionBox.innerHTML = `
                     <h3 class="text-lg font-semibold mb-2 text-gray-200">Instructions</h3>
                     <p class="text-xs text-gray-400 mb-3">Standard sections for a ${template.name}: <br/> <span class="text-gray-300">${template.sections.join(', ')}</span></p>
-                    <p class="text-xs text-gray-400 mb-3">Shotlist Agent consumes OCR text and uploaded materials to create a fact-first outline before the Legal Research Agent dives into CourtListener/LegiScan for statutes, elements, and caselaw.</p>
+                    <p class="text-xs text-gray-400 mb-3">Shotlist Agent consumes OCR text and uploaded materials to create a fact-first outline before research deep-dives.</p>
                     <div class="flex gap-2">${knobsHTML}</div>
                 `;
             }
 
-            generateWorkflowDAG() {
-                const template = DOCUMENT_TEMPLATES[docTypeSelector.value];
-                const nodes = [];
-                const links = [];
-                const startNode = { id: 'Start', status: 'pending', type: 'control' };
-                const endNode = { id: 'End', status: 'pending', type: 'control' };
-                const researchId = docTypeSelector.value === 'legal_claim' ? 'Legal Research' : 'Research';
-                const researchAgent = docTypeSelector.value === 'legal_claim' ? 'LegalResearchAgent' : 'WebResearchAgent';
-                const ocrNode = { id: 'OCR Intake', agentId: 'ShotlistAgent', status: 'pending', type: 'task' };
-                const shotlistNode = { id: 'Shotlist Build', agentId: 'ShotlistAgent', status: 'pending', type: 'task' };
-
-                nodes.push(startNode, endNode, ocrNode, shotlistNode);
-
-                const researchNode = { id: researchId, agentId: researchAgent, status: 'pending', type: 'task' };
-                nodes.push(researchNode);
-                links.push({ source: 'Start', target: 'OCR Intake' });
-                links.push({ source: 'OCR Intake', target: 'Shotlist Build' });
-                links.push({ source: 'Shotlist Build', target: researchId });
-
-                this.sectionIds = template.sections;
-                this.completedSections = 0;
-                template.sections.forEach(section => {
-                    const agentId = this.getAgentForSection(section);
-                    const sectionNode = { id: section, agentId: agentId, status: 'pending', type: 'task' };
-                    nodes.push(sectionNode);
-                    links.push({ source: researchId, target: section });
-                    links.push({ source: section, target: 'End' });
+            buildGraphFromJob(jobData) {
+                const nodes = jobData.tasks.map(task => {
+                    const agent = AGENT_POOL.find(a => a.id === task.agent_id);
+                    return {
+                        id: task.id,
+                        status: task.status,
+                        type: task.type,
+                        agentId: task.agent_id,
+                        agent: agent,
+                        stage: task.stage,
+                        output: task.output
+                    };
                 });
-                this.executionOrder = ['Start', 'OCR Intake', 'Shotlist Build', researchId, ...template.sections, 'End'];
+                const links = jobData.links.map(link => ({ source: link.source, target: link.target }));
                 this.graph = { nodes, links };
             }
 
-            getAgentForSection(section) {
-                if (section.toLowerCase().includes('market')) return 'MarketAnalystAgent';
-                if (section.toLowerCase().includes('financial')) return 'FinancialModelerAgent';
-                if (section.toLowerCase().includes('legal') || section.toLowerCase().includes('claim') || section.toLowerCase().includes('fact') || section.toLowerCase().includes('action') || section.toLowerCase().includes('relief') || section.toLowerCase().includes('caption') || section.toLowerCase().includes('jurisdiction')) return 'LegalDrafterAgent';
-                if (section.toLowerCase().includes('data') || section.toLowerCase().includes('visualization')) return 'DataVisualizationAgent';
-                return 'GeneralWriterAgent';
+            applyJobUpdate(jobData) {
+                this.stages = jobData.stages;
+                this.checklist = jobData.checklist;
+                this.stageOrder = jobData.stages.map(stage => stage.id);
+                renderStageTimeline(this.stages);
+                renderChecklist(this.checklist);
+                this.graph.nodes.forEach(node => {
+                    const task = jobData.tasks.find(item => item.id === node.id);
+                    if (task) {
+                        node.status = task.status;
+                        node.output = task.output;
+                        node.agentId = task.agent_id;
+                        node.stage = task.stage;
+                        node.agent = AGENT_POOL.find(agent => agent.id === task.agent_id);
+                    }
+                });
+                updateGraph(this.graph);
+                const activeTask = jobData.tasks.find(task => task.status === 'active' && task.type !== 'control');
+                if (activeTask) {
+                    const agent = AGENT_POOL.find(item => item.id === activeTask.agent_id);
+                    factoryStatus.textContent = `STATUS: ${agent?.role || 'Agent'} is working on ${activeTask.id}...`;
+                } else if (jobData.status === 'complete') {
+                    factoryStatus.textContent = "STATUS: COMPLETE";
+                } else {
+                    factoryStatus.textContent = "STATUS: RUNNING";
+                }
+                if (jobData.status === 'complete') {
+                    this.isRunning = false;
+                    startButton.disabled = false;
+                    startButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                    this.stopPolling();
+                }
+            }
+
+            applySectionsUpdate(sections) {
+                finalProduct.innerHTML = sections.map(section => `
+                    <div class="bg-gray-900/70 p-4 rounded-lg border border-gray-700 ${section.status === 'complete' ? 'animate-fade-in' : ''}">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-bold text-md text-blue-300">${section.title}</h4>
+                            <span class="text-[10px] px-2 py-1 rounded ${section.status === 'complete' ? 'bg-green-900 text-green-200' : 'bg-gray-700 text-gray-200'}">
+                                ${section.status.toUpperCase()}
+                            </span>
+                        </div>
+                        <p class="text-gray-300 text-sm">${section.content || 'Drafting in progress...'}</p>
+                    </div>
+                `).join('');
+            }
+
+            loadJob(jobData) {
+                this.jobId = jobData.id;
+                this.template = jobData.template;
+                this.sectionIds = jobData.template.sections;
+                this.displayInstructionBox(jobData.template);
+                this.buildGraphFromJob(jobData);
+                this.applyJobUpdate(jobData);
+            }
+
+            async refreshJob() {
+                if (!this.jobId) {
+                    return;
+                }
+                try {
+                    const jobData = await apiFetchJob(this.jobId);
+                    this.applyJobUpdate(jobData);
+                    const sectionData = await apiFetchSections(this.jobId);
+                    this.applySectionsUpdate(sectionData.sections);
+                    this.consecutiveErrors = 0; // Reset error count on success
+                } catch (error) {
+                    this.consecutiveErrors++;
+                    console.error(`Error refreshing job (attempt ${this.consecutiveErrors}):`, error);
+                    factoryStatus.textContent = `STATUS: ERROR FETCHING JOB (${error.message})`;
+                    
+                    // Stop polling after too many consecutive errors
+                    if (this.consecutiveErrors >= this.maxConsecutiveErrors) {
+                        console.error(`Stopping polling after ${this.maxConsecutiveErrors} consecutive errors`);
+                        this.stopPolling();
+                        this.isRunning = false;
+                        startButton.disabled = false;
+                        startButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                    throw error;
+                }
+            }
+
+            startPolling() {
+                this.stopPolling();
+                this.consecutiveErrors = 0;
+                this.pollTimer = setInterval(() => {
+                    this.refreshJob().catch(() => {
+                        // Error already handled in refreshJob (displays status,
+                        // increments counter, stops polling after max retries)
+                    });
+                }, this.pollInterval);
+            }
+
+            stopPolling() {
+                if (this.pollTimer) {
+                    clearInterval(this.pollTimer);
+                    this.pollTimer = null;
+                }
             }
 
             async startProduction() {
-                if (this.isRunning || !this.graph.nodes.length) return;
+                if (this.isRunning) return;
+                if (!this.state.prompt) {
+                    factoryStatus.textContent = "STATUS: ENTER A PROMPT TO START";
+                    return;
+                }
+                
+                // Immediately disable button and set running flag to prevent race conditions
                 this.isRunning = true;
-                this.initializeStages(this.state.docType);
-                this.initializeChecklist(this.state.docType);
-                renderStageTimeline(this.stages);
-                renderChecklist(this.checklist);
-                this.resetUI();
-                factoryStatus.textContent = "STATUS: RUNNING";
                 startButton.disabled = true;
                 startButton.classList.add('opacity-50', 'cursor-not-allowed');
-                for (const nodeId of this.executionOrder) {
-                    const node = this.graph.nodes.find(n => n.id === nodeId);
-                    if (!node || node.type === 'control') continue;
-                    await this.executeTask(node);
-                }
-                this.graph.nodes.find(n => n.id === 'End').status = 'complete';
-                d3.select(`#node-End`).style("fill", getNodeColor('complete'));
-                this.markStageStatus('Review & Export', 'complete');
-                this.markChecklistStage('Review & Export', 'complete', 'Deliverable is ready with citations and claim coverage.');
-                factoryStatus.textContent = "STATUS: COMPLETE";
-                this.isRunning = false;
-                startButton.disabled = false;
-                startButton.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
-
-            resetUI() {
+                factoryStatus.textContent = "STATUS: STARTING";
                 finalProduct.innerHTML = '';
-                this.graph.nodes.forEach(n => n.status = 'pending');
-                this.completedSections = 0;
-                updateGraph(this.graph);
-                this.displayBlueprint();
-            }
-
-            async executeTask(node) {
-                const nodeIdSanitized = node.id.replace(/\s|:/g, '-');
-                const agent = AGENT_POOL.find(a => a.id === node.agentId);
-                node.agent = agent;
-                const agentElement = d3.select(`#agent-${agent.id}`);
-                agentElement.transition().duration(1000).attr("transform", `translate(${node.x}, ${node.y})`);
-                const stageId = this.getStageForNode(node);
-                if (stageId) {
-                    this.markStageStatus(stageId, 'active');
-                    const checklistNote = stageId === 'Legal Research' ? 'Breaking statute into elements and searching caselaw.' : '';
-                    this.markChecklistStage(stageId, 'active', checklistNote);
+                
+                try {
+                    const jobData = await apiCreateJob({
+                        prompt: this.state.prompt,
+                        doc_type: this.state.docType
+                    });
+                    this.loadJob(jobData);
+                    this.startPolling();
+                } catch (error) {
+                    console.error("Error starting production:", error);
+                    factoryStatus.textContent = `STATUS: ERROR STARTING JOB - ${error.message}`;
+                    this.isRunning = false;
+                    startButton.disabled = false;
+                    startButton.classList.remove('opacity-50', 'cursor-not-allowed');
                 }
-                node.status = 'active';
-                d3.select(`#node-${nodeIdSanitized}`).style("fill", getNodeColor('active')).transition().duration(300).attr('r', 30).transition().duration(300).attr('r', 25);
-                factoryStatus.textContent = `STATUS: ${agent.role} is working on ${node.id}...`;
-                await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
-                const output = MOCK_AGENT_OUTPUTS[node.id] || MOCK_AGENT_OUTPUTS['Default'];
-                node.output = output;
-                node.status = 'complete';
-                d3.select(`#node-${nodeIdSanitized}`).style("fill", getNodeColor('complete'));
-                agentElement.transition().duration(1000).attr("transform", `translate(${agent.homeX}, ${agent.homeY})`);
-                if(this.sectionIds.includes(node.id)) {
-                    this.completedSections += 1;
-                    this.addSectionToProduct(node.id, output);
-                    if (this.completedSections === this.sectionIds.length) {
-                        this.markStageStatus('Draft Sections', 'complete');
-                        this.markChecklistStage('Draft Sections', 'complete', 'Sections drafted from validated claims.');
-                        this.markStageStatus('Review & Export', 'active');
-                        this.markChecklistStage('Review & Export', 'active', 'Packaging citations and logging authorities.');
-                    }
-                }
-                if (stageId && stageId !== 'Draft Sections') {
-                    this.markStageStatus(stageId, 'complete');
-                    this.markChecklistStage(stageId, 'complete', stageId === 'Shotlist Build' ? 'Shotlist ready for the research agent.' : 'Research inputs captured for drafting.');
-                }
-            }
-            
-            addSectionToProduct(title, content) {
-                const sectionDiv = document.createElement('div');
-                sectionDiv.className = 'bg-gray-900/70 p-4 rounded-lg border border-gray-700 animate-fade-in';
-                sectionDiv.innerHTML = `<h4 class="font-bold text-md text-blue-300 mb-2">${title}</h4><p class="text-gray-300">${content}</p>`;
-                finalProduct.appendChild(sectionDiv);
-                finalProduct.scrollTop = finalProduct.scrollHeight;
             }
         }
         
@@ -729,8 +748,11 @@
 
         // --- UI EVENT LISTENERS ---
         docTypeSelector.addEventListener('change', (e) => {
-            promptInput.value = MOCK_PROMPTS[e.target.value];
-            maestro.preFlight(promptInput.value, e.target.value);
+            // Clear prompt when changing document type to avoid reusing a prompt
+            // intended for a different document configuration
+            promptInput.value = '';
+            maestro.resetJobData();
+            maestro.preFlight('', e.target.value);
         });
         promptInput.addEventListener('input', (e) => {
             maestro.preFlight(e.target.value, docTypeSelector.value);
@@ -766,8 +788,10 @@
         window.addEventListener('load', () => {
             initializeVisualization();
             setupSimulation();
-            promptInput.value = MOCK_PROMPTS[docTypeSelector.value];
-            maestro.preFlight(promptInput.value, docTypeSelector.value);
+            const initialPrompt = promptInput.value ? promptInput.value.trim() : '';
+            if (initialPrompt !== '') {
+                maestro.preFlight(initialPrompt, docTypeSelector.value);
+            }
         });
         
         window.addEventListener('resize', () => {
