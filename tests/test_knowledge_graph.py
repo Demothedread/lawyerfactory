@@ -46,8 +46,7 @@ class TestNormalizeGraph:
         assert result["entities"] == {"A": {"type": "test"}, "B": {"type": "test2"}}
 
     def test_normalize_relationships_with_alternative_fields(self):
-        """Test that relationships with from/to/type are normalized to
-        source/target/relation."""
+        """Test relationships with from/to/type normalized to source/target/relation."""
         graph = {
             "entities": {},
             "relationships": [
@@ -202,8 +201,7 @@ class TestAddRelationship:
         assert graph["relationships"] == expected
 
     def test_add_relationship_legacy_style_incomplete_raises(self):
-        """Test that legacy style without required fields raises
-        ValueError."""
+        """Test that legacy style without required fields raises ValueError."""
         graph = {"relationships": []}
         with pytest.raises(
             ValueError, match="requires 'source', 'target', and 'relation'"
@@ -347,8 +345,7 @@ class TestKnowledgeGraphNormalization:
     """Test KnowledgeGraph class normalization."""
 
     def test_kg_normalizes_list_entities_on_init(self):
-        """Test that KnowledgeGraph normalizes list-format entities on
-        initialization."""
+        """Test KnowledgeGraph normalizes list-format entities on initialization."""
         kg = KnowledgeGraph(
             seed={
                 "entities": [{"id": "A", "type": "test"}],
@@ -361,8 +358,7 @@ class TestKnowledgeGraphNormalization:
         assert kg.entities["A"] == {"type": "test"}
 
     def test_kg_normalizes_relationships_with_alternative_fields(self):
-        """Test that KnowledgeGraph normalizes relationships with
-        from/to/type."""
+        """Test KnowledgeGraph normalizes relationships with from/to/type."""
         kg = KnowledgeGraph(
             seed={
                 "entities": {},

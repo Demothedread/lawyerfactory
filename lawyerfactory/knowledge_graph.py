@@ -1,7 +1,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 logger = logging.getLogger(__name__)
 
@@ -198,11 +198,24 @@ def normalize_graph(graph: Dict[str, Any]) -> Dict[str, Any]:
             if not isinstance(rel, dict):
                 continue
             # Support multiple field names for source/target/relation
-            source = rel.get("source") or rel.get("from")
-            target = rel.get("target") or rel.get("to")
-            relation = rel.get("relation") or rel.get("type")
+            # Use explicit None checks to avoid issues with falsy values
+            source = (
+                rel.get("source")
+                if rel.get("source") is not None
+                else rel.get("from")
+            )
+            target = (
+                rel.get("target")
+                if rel.get("target") is not None
+                else rel.get("to")
+            )
+            relation = (
+                rel.get("relation")
+                if rel.get("relation") is not None
+                else rel.get("type")
+            )
 
-            if source and target and relation:
+            if source is not None and target is not None and relation is not None:
                 relationships.append(
                     {"source": source, "target": target, "relation": relation}
                 )
@@ -223,7 +236,7 @@ def normalize_graph(graph: Dict[str, Any]) -> Dict[str, Any]:
 
 def add_entity(
     graph: Dict[str, Any],
-    entity_id: Any,
+    entity_id: Union[str, Dict[str, Any]],
     payload: Optional[Dict[str, Any]] = None,
 ) -> None:
     """Add or update an entity in a graph dictionary.
@@ -257,7 +270,7 @@ def add_entity(
 
 def add_relationship(
     graph: Dict[str, Any],
-    source: Any,
+    source: Union[str, Dict[str, Any]],
     target: Optional[str] = None,
     relation: Optional[str] = None,
 ) -> None:
