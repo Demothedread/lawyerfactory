@@ -16,12 +16,13 @@ class JobStore:
         self._job_store_initialize()
 
     def _job_store_connect(self) -> sqlite3.Connection:
-        connection = sqlite3.connect(self._job_store_path)
+        connection = sqlite3.connect(self._job_store_path, check_same_thread=False)
         connection.row_factory = sqlite3.Row
         return connection
 
     def _job_store_initialize(self) -> None:
         with self._job_store_connect() as connection:
+            connection.execute("PRAGMA foreign_keys = ON")
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS jobs (
@@ -44,7 +45,8 @@ class JobStore:
                     started_at TEXT,
                     completed_at TEXT,
                     updated_at TEXT NOT NULL,
-                    PRIMARY KEY (job_id, stage)
+                    PRIMARY KEY (job_id, stage),
+                    FOREIGN KEY (job_id) REFERENCES jobs(job_id) ON DELETE CASCADE
                 )
                 """
             )
@@ -56,8 +58,16 @@ class JobStore:
                     section_key TEXT NOT NULL,
                     title TEXT NOT NULL,
                     content TEXT NOT NULL,
-                    created_at TEXT NOT NULL
+                    created_at TEXT NOT NULL,
+                    FOREIGN KEY (job_id) REFERENCES jobs(job_id) ON DELETE CASCADE,
+                    UNIQUE (job_id, section_key)
                 )
+                """
+            )
+            connection.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_job_sections_job_id
+                ON job_sections (job_id)
                 """
             )
 
@@ -176,6 +186,11 @@ class JobStore:
                     created_at
                 )
                 VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(job_id, section_key)
+                DO UPDATE SET
+                    title = excluded.title,
+                    content = excluded.content,
+                    created_at = excluded.created_at
                 """,
                 (job_id, section_key, title, content, created_at),
             )

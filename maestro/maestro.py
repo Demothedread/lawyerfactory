@@ -40,6 +40,14 @@ class Maestro:
         stage_end: str = "review",
         topic: str | None = None,
     ) -> dict[str, Any]:
+        # Check if job is already running to prevent concurrent execution
+        job_state = self.job_store.job_store_get_job(job_id)
+        if job_state and job_state["status"] == "in_progress":
+            # Check if any stage is currently in_progress
+            for stage_info in job_state["stages"]:
+                if stage_info["status"] == "in_progress":
+                    return job_state
+
         stage_handlers = {
             "ocr": self._maestro_stage_ocr,
             "shotlist": self._maestro_stage_shotlist,
@@ -85,13 +93,25 @@ class Maestro:
             "in_progress",
             None,
         )
-        output = await handler(job_state, topic)
-        self.job_store.job_store_update_stage(
-            job_state["job_id"],
-            stage,
-            "completed",
-            output,
-        )
+        try:
+            output = await handler(job_state, topic)
+            self.job_store.job_store_update_stage(
+                job_state["job_id"],
+                stage,
+                "completed",
+                output,
+            )
+        except Exception as e:
+            error_output = {
+                "error": str(e),
+                "error_type": type(e).__name__,
+            }
+            self.job_store.job_store_update_stage(
+                job_state["job_id"],
+                stage,
+                "failed",
+                error_output,
+            )
 
     async def _maestro_stage_ocr(
         self, job_state: dict[str, Any], _topic: str | None
