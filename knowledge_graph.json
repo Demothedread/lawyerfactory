@@ -109,20 +109,29 @@
         "AI summarization",
         "categorization",
         "hashtags"
-      ]
+      ],
+      "relationships": {
+        "Repository": "adds documents"
+      }
     },
     "Repository": {
       "type": "database",
       "features": [
         "metadata fields (author, title, publication date, summary, category, hashtags)",
         "CSV storage"
-      ]
+      ],
+      "relationships": {
+        "Legal Researcher": "source of documents"
+      }
     },
     "Legal Researcher": {
       "type": "agent",
       "features": [
         "research using repository"
-      ]
+      ],
+      "relationships": {
+        "Repository": "uses"
+      }
     },
     "ResearchBot": {
       "type": "agent"
@@ -281,6 +290,48 @@
     {
       "id": "WorkflowDAG",
       "type": "diagram",
+      "features": [
+        "end-to-end legal drafting data flow",
+        "multi-agent collaboration checkpoints"
+      ]
+    },
+    {
+      "id": "MaestroAPI",
+      "type": "service",
+      "features": [
+        "document intake endpoint",
+        "research kickoff endpoint",
+        "draft assembly endpoint",
+        "export-ready output"
+      ]
+    },
+    {
+      "id": "JobStore",
+      "type": "database",
+      "features": [
+        "SQLite job persistence",
+        "stage outputs",
+        "section storage"
+      ]
+    },
+    {
+      "id": "PipelineStages",
+      "type": "workflow",
+      "features": [
+        "ocr",
+        "shotlist",
+        "research",
+        "drafting",
+        "review"
+      ]
+    },
+    {
+      "id": "server.py",
+      "type": "api",
+      "features": [
+        "FastAPI entrypoint",
+        "status polling",
+        "section outputs"
       "features": ["end-to-end legal drafting data flow", "multi-agent collaboration checkpoints"]
     },
     {
@@ -409,6 +460,31 @@
       "source": "Workflow",
       "target": "MaestroOrchestrator",
       "relation": "guides"
+    },
+    {
+      "source": "LawyerFactory",
+      "target": "MaestroAPI",
+      "relation": "exposes"
+    },
+    {
+      "source": "MaestroAPI",
+      "target": "JobStore",
+      "relation": "persists"
+    },
+    {
+      "source": "MaestroAPI",
+      "target": "PipelineStages",
+      "relation": "orchestrates"
+    },
+    {
+      "source": "MaestroAPI",
+      "target": "server.py",
+      "relation": "implemented_by"
+    },
+    {
+      "source": "Maestro",
+      "target": "PipelineStages",
+      "relation": "runs"
     }
     {"source": "LawyerFactory", "target": "README", "relation": "documents"},
     {"source": "LawyerFactory", "target": "requirements.txt", "relation": "depends_on"},
@@ -443,6 +519,7 @@
     "UI now sequences OCR Intake -> Shotlist Build -> Legal Research -> Draft Sections -> Review & Export.",
     "Checklist highlights statute element parsing, CourtListener/LegiScan searches, and claim coverage with citations for legal claims.",
     "Restored legacy entities and linked them with the visual workflow and research DAG.",
+    "Added FastAPI-backed Maestro API with SQLite job persistence and staged pipeline orchestration."
     "VectorStore now persists chunked research artifacts with citations for retrieval."
     "Added a FastAPI pipeline service to supply job status, stage updates, and drafted sections to the UI; this is a breaking change, as the UI now requires the pipeline_service.py FastAPI backend to be running (for example via `uvicorn pipeline_service:app --host 0.0.0.0 --port 8000`) and expects it to be available at http://localhost:8000/. The service provides endpoints: POST /jobs (create job), GET /jobs/{id} (fetch status), and GET /jobs/{id}/sections (fetch drafted sections). For production deployment, configure CORS origins via the ALLOWED_ORIGINS environment variable (comma-separated list of allowed origins)."
     "Added a lawsuit document schema with required sections and cross-reference validation."
