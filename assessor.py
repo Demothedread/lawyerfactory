@@ -29,12 +29,16 @@ NLTK_RESOURCE_PATHS = (
     "tokenizers/punkt_tab/english.pickle",
 )
 
+# Cache for NLTK resource availability to avoid repeated checks
+_nltk_available: Optional[bool] = None
+
 
 class Summarizer(Protocol):
     """Interface for summary generation."""
 
     def summarize(self, text: str) -> str:
         """Return a condensed summary for ``text``."""
+        ...
 
 
 class PassthroughSummarizer:
@@ -47,6 +51,9 @@ class PassthroughSummarizer:
 
 def _ensure_nltk_resources() -> bool:
     """Confirm required NLTK resources exist, returning availability."""
+    global _nltk_available
+    if _nltk_available is not None:
+        return _nltk_available
     missing = []
     for resource in NLTK_RESOURCE_PATHS:
         try:
@@ -54,6 +61,7 @@ def _ensure_nltk_resources() -> bool:
         except LookupError:
             missing.append(resource)
     if not missing:
+        _nltk_available = True
         return True
     resource_names = ", ".join(path.split("/")[-1] for path in missing)
     warnings.warn(
@@ -63,25 +71,33 @@ def _ensure_nltk_resources() -> bool:
         "Falling back to whitespace tokenization.",
         RuntimeWarning,
     )
+    _nltk_available = False
     return False
 
 
 def summarize(
     text: str,
-    max_words: int = 250,
+    max_tokens: int = 250,
     summarizer: Optional[Summarizer] = None,
 ) -> str:
-    """Summarize using the first and last ``max_words`` tokens."""
+    """Summarize by extracting tokens from the start and end of ``text``.
+
+    Uses NLTK word tokenization when available, otherwise falls back to
+    whitespace splitting. When the text has more than ``max_tokens`` tokens,
+    returns the first ``max_tokens // 2`` and the last ``max_tokens // 2``
+    tokens, for a total of up to ``max_tokens`` tokens.
+    """
     tokenizer_ready = _ensure_nltk_resources()
     if tokenizer_ready:
         tokens = nltk.word_tokenize(text)
     else:
         tokens = text.split()
-    if len(tokens) <= max_words:
+    if len(tokens) <= max_tokens:
         snippet = ' '.join(tokens)
     else:
-        head = tokens[:max_words]
-        tail = tokens[-max_words:]
+        half = max_tokens // 2
+        head = tokens[:half]
+        tail = tokens[-half:]
         snippet = ' '.join(head + tail)
     active_summarizer = summarizer or PassthroughSummarizer()
     return active_summarizer.summarize(snippet)
