@@ -1,4 +1,13 @@
 {
+  "entities": {
+    "Lawsuit": {
+      "features": [
+        "statement_of_facts",
+        "description_of_parties",
+        "cover_sheet"
+      ]
+    },
+    "Workflow": {
   "entities": [
     {
       "id": "LawyerFactory",
@@ -173,6 +182,17 @@
         "Final Draft"
       ]
     },
+    "FactoryFloorUI": {
+      "features": [
+        "html interface",
+        "visual progress"
+      ]
+    }
+  },
+  "relationships": {},
+  "observations": [
+    "Initial graph created.",
+    "Factory floor integrated with lawyer factory"
     {
       "id": "Lawsuit",
       "type": "document",
@@ -180,6 +200,28 @@
         "statement_of_facts",
         "description_of_parties",
         "cover_sheet"
+      ]
+    },
+    {
+      "id": "LawsuitSchema",
+      "type": "schema",
+      "features": [
+        "caption",
+        "jurisdiction",
+        "parties",
+        "statement_of_facts",
+        "causes_of_action",
+        "legal_arguments",
+        "prayer_for_relief"
+      ]
+    },
+    {
+      "id": "LawsuitPipeline",
+      "type": "workflow",
+      "features": [
+        "intake to structured lawsuit output",
+        "metadata validation",
+        "citations attached to legal arguments"
       ]
     },
     {
@@ -227,16 +269,8 @@
     {"source": "factory.html", "target": "ResearchChecklist", "relation": "renders"},
     {"source": "WorkflowDAG", "target": "Workflow", "relation": "illustrates"},
     {"source": "Workflow", "target": "MaestroOrchestrator", "relation": "guides"},
-    {
-      "source": "LawyerFactory",
-      "target": "lawyerfactory/document_models.py",
-      "relation": "contains"
-    },
-    {
-      "source": "lawyerfactory/document_models.py",
-      "target": "LawsuitDocumentSchema",
-      "relation": "defines"
-    }
+    {"source": "LawsuitPipeline", "target": "LawsuitSchema", "relation": "produces"},
+    {"source": "LawsuitPipeline", "target": "Lawsuit", "relation": "structures"}
   ],
   "observations": [
     "Repository initially contained only README",
@@ -246,5 +280,6 @@
     "Checklist highlights statute element parsing, CourtListener/LegiScan searches, and claim coverage with citations for legal claims.",
     "Restored legacy entities and linked them with the visual workflow and research DAG.",
     "Added a lawsuit document schema with required sections and cross-reference validation."
+    "Added lawsuit intake pipeline schema coverage for required sections and citations."
   ]
 }
