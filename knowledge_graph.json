@@ -1,4 +1,13 @@
 {
+  "entities": {
+    "Lawsuit": {
+      "features": [
+        "statement_of_facts",
+        "description_of_parties",
+        "cover_sheet"
+      ]
+    },
+    "Workflow": {
   "entities": [
     {
       "id": "LawyerFactory",
@@ -173,6 +182,17 @@
         "Final Draft"
       ]
     },
+    "FactoryFloorUI": {
+      "features": [
+        "html interface",
+        "visual progress"
+      ]
+    }
+  },
+  "relationships": {},
+  "observations": [
+    "Initial graph created.",
+    "Factory floor integrated with lawyer factory"
     {
       "id": "Lawsuit",
       "type": "document",
