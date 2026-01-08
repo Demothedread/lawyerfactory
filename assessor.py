@@ -6,6 +6,8 @@ import warnings
 import nltk
 
 from repository import add_entry
+from lawyerfactory.knowledge_graph import load_graph, save_graph, add_observation
+from legal_factory import run_factory as launch_factory
 
 LEGAL_KEYWORDS = {
     "contract": "legal:contract",
@@ -132,6 +134,8 @@ def intake_document(
     publication_date: Optional[str],
     text: str,
     summarizer: Optional[Summarizer] = None,
+    *,
+    trigger_factory: bool = True,
 ) -> None:
     """Process ``text`` and store metadata in the repository."""
     if publication_date is None:
@@ -148,6 +152,16 @@ def intake_document(
         'hashtags': hashtags,
     }
     add_entry(entry)
+
+    graph = load_graph()
+    add_observation(graph, f"Document '{title}' categorized as {category}")
+    save_graph(graph)
+
+    if trigger_factory and category in {"contract", "litigation"}:
+        result = launch_factory(summary)
+        graph = load_graph()
+        add_observation(graph, f"Legal factory produced output for '{title}'")
+        save_graph(graph)
 
 
 if __name__ == '__main__':
