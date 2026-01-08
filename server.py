@@ -17,7 +17,7 @@ class DocumentPayload(BaseModel):
 
 
 class IntakeRequest(BaseModel):
-    documents: list[DocumentPayload] = Field(..., min_items=1)
+    documents: list[DocumentPayload] = Field(..., min_length=1)
     client_reference: str | None = None
     topic: str | None = None
 

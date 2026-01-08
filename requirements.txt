@@ -1,4 +1,3 @@
-fastapi
 flake8
 fastapi
 pytest
