@@ -1,18 +1,26 @@
 from __future__ import annotations
 
+import logging
+import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 class JobCreateRequest(BaseModel):
     prompt: str = Field(..., min_length=1)
-    doc_type: str = Field(..., min_length=1)
+    doc_type: Literal["business_proposal", "legal_claim", "white_paper"] = Field(
+        ..., description="Document type to generate"
+    )
     knobs: Optional[Dict[str, str]] = None
 
 
@@ -82,7 +90,7 @@ class JobRecord:
     prompt: str
     doc_type: str
     created_at: datetime
-    template: Dict[str, object]
+    template: Dict[str, Any]
     stages: List[Dict[str, str]]
     checklist: List[Dict[str, str]]
     tasks: List[Dict[str, Optional[str]]]
@@ -90,7 +98,7 @@ class JobRecord:
     timeline: Dict[str, Dict[str, float]]
 
 
-DOC_TEMPLATES: Dict[str, Dict[str, object]] = {
+DOC_TEMPLATES: Dict[str, Dict[str, Any]] = {
     "business_proposal": {
         "name": "Business Proposal",
         "sections": [
@@ -326,7 +334,7 @@ def build_agent_assignment(section: str) -> str:
     return "GeneralWriterAgent"
 
 
-def build_pipeline_tasks(doc_type: str, sections: List[str]) -> Dict[str, object]:
+def build_pipeline_tasks(doc_type: str, sections: List[str]) -> Dict[str, Any]:
     is_legal = doc_type == "legal_claim"
     tasks: List[Dict[str, Optional[str]]] = [
         {"id": "Start", "type": "control", "stage": None, "agent_id": None},
@@ -367,7 +375,6 @@ def build_pipeline_tasks(doc_type: str, sections: List[str]) -> Dict[str, object
         )
         links.append({"source": last_task, "target": section})
         links.append({"source": section, "target": "Review & Export"})
-        last_task = section
 
     tasks.append(
         {
@@ -377,7 +384,6 @@ def build_pipeline_tasks(doc_type: str, sections: List[str]) -> Dict[str, object
             "agent_id": "EditorAgent",
         }
     )
-    links.append({"source": last_task, "target": "Review & Export"})
     tasks.append(
         {"id": "End", "type": "control", "stage": None, "agent_id": None}
     )
@@ -389,8 +395,16 @@ def build_pipeline_tasks(doc_type: str, sections: List[str]) -> Dict[str, object
 def build_timeline(
     tasks: List[Dict[str, Optional[str]]],
 ) -> Dict[str, Dict[str, float]]:
+    """
+    Build a timeline that assigns start times and durations to tasks.
+
+    Section tasks execute in parallel (all start at the same time after
+    their prerequisites), while non-section tasks execute sequentially.
+    """
     timeline: Dict[str, Dict[str, float]] = {}
     cursor = 0.0
+
+    # Known task durations
     durations = {
         "OCR Intake": 3.0,
         "Shotlist Build": 3.0,
@@ -398,12 +412,79 @@ def build_timeline(
         "Research": 4.0,
         "Review & Export": 3.0,
     }
-    for task in tasks:
+
+    def estimate_duration(task: Dict[str, Optional[str]]) -> float:
+        """
+        Estimate the duration of a task based on its type and ID.
+        """
+        task_id = task.get("id")
+        task_type = task.get("type")
+
+        # Use explicit configuration when available
+        if task_id in durations:
+            return durations[task_id]  # type: ignore[index]
+
+        # Apply heuristic for section tasks
+        if task_type == "section":
+            name = (str(task_id) if task_id is not None else "").lower()
+            base = 3.0
+            if "introduction" in name or "summary" in name:
+                base = 2.0
+            elif "analysis" in name or "argument" in name:
+                base = 4.0
+            elif "damages" in name or "relief" in name:
+                base = 3.5
+            # Add slight variability based on name length
+            length_factor = min(len(str(task_id)) / 40.0, 1.0)
+            return base + length_factor
+
+        # Default for unclassified tasks
+        return 3.0
+
+    # Process tasks, treating consecutive sections as parallel
+    i = 0
+    n = len(tasks)
+    while i < n:
+        task = tasks[i]
         if task["type"] == "control":
+            i += 1
             continue
-        duration = durations.get(task["id"], 3.0)
-        timeline[task["id"]] = {"start": cursor, "duration": duration}
+
+        # Group consecutive section tasks for parallel execution
+        if task["type"] == "section":
+            section_group: List[Dict[str, Optional[str]]] = []
+            while i < n and tasks[i]["type"] == "section":
+                section_group.append(tasks[i])
+                i += 1
+
+            # All sections in the group start at the same time
+            max_duration = 0.0
+            for section_task in section_group:
+                duration = estimate_duration(section_task)
+                task_id = section_task["id"]
+                if task_id is not None:
+                    timeline[task_id] = {
+                        "start": cursor,
+                        "duration": duration,
+                    }
+                if duration > max_duration:
+                    max_duration = duration
+
+            # Move cursor forward by the longest section duration
+            cursor += max_duration
+            continue
+
+        # Non-section tasks execute sequentially
+        duration = estimate_duration(task)
+        task_id = task["id"]
+        if task_id is not None:
+            timeline[task_id] = {
+                "start": cursor,
+                "duration": duration,
+            }
         cursor += duration
+        i += 1
+
     return timeline
 
 
@@ -449,7 +530,10 @@ def build_job_response(job: JobRecord) -> JobResponse:
     stages: List[JobStage] = []
     for stage in job.stages:
         stage_tasks = [t for t in tasks if t.stage == stage["id"]]
-        if stage_tasks and all(task.status == "complete" for task in stage_tasks):
+        if not stage_tasks:
+            # Stage has no tasks - mark as skipped or n/a
+            status = "pending"
+        elif all(task.status == "complete" for task in stage_tasks):
             status = "complete"
         elif any(task.status == "active" for task in stage_tasks):
             status = "active"
@@ -530,9 +614,13 @@ def build_sections_response(job: JobRecord) -> JobSectionsResponse:
 
 
 app = FastAPI(title="Pipeline Service", version="1.0")
+
+# Configure CORS origins via environment variable for security
+# Default to "*" for development, but should be restricted in production
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -543,7 +631,13 @@ JOBS: Dict[str, JobRecord] = {}
 @app.post("/jobs", response_model=JobResponse)
 def create_job(payload: JobCreateRequest) -> JobResponse:
     if payload.doc_type not in DOC_TEMPLATES:
-        raise HTTPException(status_code=400, detail="Unsupported document type.")
+        supported_types = ", ".join(DOC_TEMPLATES.keys())
+        error_msg = (
+            f"Unsupported document type '{payload.doc_type}'. "
+            f"Supported types: {supported_types}"
+        )
+        logger.error(f"Job creation failed: {error_msg}")
+        raise HTTPException(status_code=400, detail=error_msg)
     template = DOC_TEMPLATES[payload.doc_type]
     pipeline = build_pipeline_tasks(payload.doc_type, template["sections"])
     job_id = uuid4().hex
@@ -560,6 +654,7 @@ def create_job(payload: JobCreateRequest) -> JobResponse:
         timeline=build_timeline(pipeline["tasks"]),
     )
     JOBS[job_id] = job
+    logger.info(f"Job created: {job_id} (type: {payload.doc_type})")
     return build_job_response(job)
 
 
@@ -567,7 +662,10 @@ def create_job(payload: JobCreateRequest) -> JobResponse:
 def get_job(job_id: str) -> JobResponse:
     job = JOBS.get(job_id)
     if not job:
-        raise HTTPException(status_code=404, detail="Job not found.")
+        logger.error(f"Job not found: {job_id}")
+        raise HTTPException(
+            status_code=404, detail=f"Job not found: {job_id}"
+        )
     return build_job_response(job)
 
 
@@ -575,5 +673,8 @@ def get_job(job_id: str) -> JobResponse:
 def get_sections(job_id: str) -> JobSectionsResponse:
     job = JOBS.get(job_id)
     if not job:
-        raise HTTPException(status_code=404, detail="Job not found.")
+        logger.error(f"Job not found for sections request: {job_id}")
+        raise HTTPException(
+            status_code=404, detail=f"Job not found: {job_id}"
+        )
     return build_sections_response(job)
