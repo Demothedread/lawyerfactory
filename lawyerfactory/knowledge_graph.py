@@ -1,6 +1,9 @@
 import json
+import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 KNOWLEDGE_GRAPH_PATH = Path("knowledge_graph.json")
 
@@ -140,7 +143,8 @@ def load_graph(file_path: Optional[Path] = None) -> Dict[str, Any]:
     if path.exists():
         with path.open("r", encoding="utf-8") as fh:
             return normalize_graph(json.load(fh))
-    return normalize_graph(json.loads(json.dumps(DEFAULT_GRAPH)))
+    # DEFAULT_GRAPH is already in canonical format, just deep copy it
+    return json.loads(json.dumps(DEFAULT_GRAPH))
 
 
 def save_graph(graph: Dict[str, Any], file_path: Optional[Path] = None) -> None:
@@ -151,46 +155,169 @@ def save_graph(graph: Dict[str, Any], file_path: Optional[Path] = None) -> None:
 
 
 def normalize_graph(graph: Dict[str, Any]) -> Dict[str, Any]:
-    """Normalize entities and relationships to the canonical schema."""
-    normalized = KnowledgeGraph(seed=graph)
+    """Normalize entities, relationships, and observations to the canonical schema.
+
+    This function operates directly on the provided dictionary to avoid the
+    overhead of constructing a full KnowledgeGraph instance when only the
+    serialized form is needed.
+    """
+    # Ensure we have a dictionary to work with
+    if not isinstance(graph, dict):
+        # Fall back to an empty graph structure if the input is invalid
+        return {
+            "entities": {},
+            "relationships": [],
+            "observations": [],
+        }
+
+    raw_entities = graph.get("entities", {})
+    raw_relationships = graph.get("relationships", [])
+    raw_observations = graph.get("observations", [])
+
+    # Normalize entities: convert list format to dict format
+    entities: Dict[str, Any]
+    if isinstance(raw_entities, dict):
+        # Already in dict format - use as-is (shallow copy to avoid mutation)
+        entities = dict(raw_entities)
+    elif isinstance(raw_entities, list):
+        # Convert from list format: extract id field and use as key
+        entities = {}
+        for item in raw_entities:
+            if isinstance(item, dict) and item.get("id"):
+                entity_id = item["id"]
+                entities[entity_id] = {
+                    key: value for key, value in item.items() if key != "id"
+                }
+    else:
+        entities = {}
+
+    # Normalize relationships: ensure consistent schema
+    relationships: List[Dict[str, Any]] = []
+    if isinstance(raw_relationships, list):
+        for rel in raw_relationships:
+            if not isinstance(rel, dict):
+                continue
+            # Support multiple field names for source/target/relation
+            source = rel.get("source") or rel.get("from")
+            target = rel.get("target") or rel.get("to")
+            relation = rel.get("relation") or rel.get("type")
+
+            if source and target and relation:
+                relationships.append(
+                    {"source": source, "target": target, "relation": relation}
+                )
+
+    # Normalize observations: ensure it's a list
+    observations: List[str]
+    if isinstance(raw_observations, list):
+        observations = list(raw_observations)
+    else:
+        observations = []
+
     return {
-        "entities": normalized.entities,
-        "relationships": normalized.relationships,
-        "observations": normalized.observations,
+        "entities": entities,
+        "relationships": relationships,
+        "observations": observations,
     }
 
 
 def add_entity(
     graph: Dict[str, Any],
-    entity_id: str,
+    entity_id: Any,
     payload: Optional[Dict[str, Any]] = None,
 ) -> None:
-    """Add or update an entity in a graph dictionary."""
+    """Add or update an entity in a graph dictionary.
+
+    Supports both the current call style:
+        add_entity(graph, "entity_id", {"key": "value"})
+
+    and the legacy call style:
+        add_entity(graph, {"id": "entity_id", "key": "value"})
+    """
+    # Backward-compatible handling for the legacy single-dict signature
+    if isinstance(entity_id, dict) and payload is None:
+        entity_dict = entity_id
+        actual_id = entity_dict.get("id")
+        if actual_id is None:
+            raise ValueError(
+                "add_entity requires an 'id' field when called with a dict, "
+                "or provide entity_id as the second parameter."
+            )
+        actual_payload = {k: v for k, v in entity_dict.items() if k != "id"}
+    else:
+        actual_id = entity_id
+        actual_payload = payload or {}
+
     entities = graph.setdefault("entities", {})
     if not isinstance(entities, dict):
         entities = normalize_graph(graph)["entities"]
         graph["entities"] = entities
-    entities[entity_id] = payload or {}
+    entities[actual_id] = actual_payload
 
 
 def add_relationship(
     graph: Dict[str, Any],
-    source: str,
-    target: str,
-    relation: str,
+    source: Any,
+    target: Optional[str] = None,
+    relation: Optional[str] = None,
 ) -> None:
-    """Append a normalized relationship to the graph dictionary."""
+    """Append a normalized relationship to the graph dictionary.
+
+    Supports both the current call style:
+        add_relationship(graph, "A", "B", "uses")
+
+    and the legacy call style:
+        add_relationship(graph, {"source": "A", "target": "B",
+                                 "relation": "uses"})
+    """
+    # Backward-compatible handling for the legacy single-dict signature
+    if isinstance(source, dict) and target is None and relation is None:
+        rel_dict = source
+        source_id = rel_dict.get("source")
+        target_id = rel_dict.get("target")
+        relation_type = rel_dict.get("relation")
+    else:
+        source_id = source
+        target_id = target
+        relation_type = relation
+
+    if source_id is None or target_id is None or relation_type is None:
+        raise ValueError(
+            "add_relationship requires 'source', 'target', and 'relation' "
+            "to be provided, either as separate arguments or within a "
+            "relationship dict."
+        )
+
     relationships = graph.setdefault("relationships", [])
     if not isinstance(relationships, list):
+        logger.warning(
+            "Discarding non-list relationships data (type: %s) and "
+            "replacing with empty list",
+            type(relationships).__name__
+        )
         relationships = []
         graph["relationships"] = relationships
-    relationships.append({"source": source, "target": target, "relation": relation})
+    relationships.append(
+        {"source": source_id, "target": target_id, "relation": relation_type}
+    )
 
 
 def add_observation(graph: Dict[str, Any], observation: str) -> None:
     """Append an observation to a graph dictionary."""
-    observations = graph.setdefault("observations", [])
-    if not isinstance(observations, list):
+    observations = graph.get("observations")
+    if isinstance(observations, list):
+        # Use the existing list as-is.
+        pass
+    elif observations is None:
+        # No observations key yet; start a new list.
         observations = []
+        graph["observations"] = observations
+    else:
+        # Preserve existing non-list value by wrapping it in a list.
+        logger.warning(
+            "Converting non-list observations (type: %s) to list by wrapping",
+            type(observations).__name__
+        )
+        observations = [observations]
         graph["observations"] = observations
     observations.append(observation)
