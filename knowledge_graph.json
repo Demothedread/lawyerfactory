@@ -228,6 +228,26 @@
       "id": "WorkflowDAG",
       "type": "diagram",
       "features": ["end-to-end legal drafting data flow", "multi-agent collaboration checkpoints"]
+    },
+    {
+      "id": "lawyerfactory/document_models.py",
+      "type": "module",
+      "features": ["lawsuit section schema", "draft rendering", "cross-reference validation"]
+    },
+    {
+      "id": "LawsuitDocumentSchema",
+      "type": "document_model",
+      "features": [
+        "caption",
+        "parties",
+        "jurisdiction",
+        "facts",
+        "causes_of_action",
+        "damages",
+        "prayer",
+        "verification",
+        "attachments"
+      ]
     }
   ],
   "relationships": [
@@ -259,6 +279,7 @@
     "UI now sequences OCR Intake -> Shotlist Build -> Legal Research -> Draft Sections -> Review & Export.",
     "Checklist highlights statute element parsing, CourtListener/LegiScan searches, and claim coverage with citations for legal claims.",
     "Restored legacy entities and linked them with the visual workflow and research DAG.",
+    "Added a lawsuit document schema with required sections and cross-reference validation."
     "Added lawsuit intake pipeline schema coverage for required sections and citations."
   ]
 }
