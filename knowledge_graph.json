@@ -137,6 +137,7 @@
       "type": "agent"
     },
     "WriterBot": {
+      "type": "agent"
     {
       "id": "ResearchArtifact",
       "type": "data",
@@ -191,8 +192,7 @@
       "type": "artifact",
       "features": ["vector_store.pkl"]
     },
-    {
-      "id": "factory.html",
+    "factory.html": {
       "type": "ui",
       "features": [
         "D3 workflow graph",
