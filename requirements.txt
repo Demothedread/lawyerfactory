@@ -1,6 +1,8 @@
 fastapi
 flake8
-nltk
+fastapi
 pytest
-scikit-learn
+nltk
 uvicorn
+scikit-learn
+httpx
