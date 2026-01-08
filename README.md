@@ -43,8 +43,8 @@ python assessor.py sample.txt --author "Author" --title "Doc" --date 2024-01-01
   ```
 - Create a job intake:
   ```bash
-  curl -X POST http://localhost:8000/api/jobs/intake \\
-    -H "Content-Type: application/json" \\
+  curl -X POST http://localhost:8000/api/jobs/intake \
+    -H "Content-Type: application/json" \
     -d '{"documents":[{"name":"intake.txt","content":"Client intake text"}],"topic":"contract dispute"}'
   ```
 

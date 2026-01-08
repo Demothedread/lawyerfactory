@@ -12,12 +12,12 @@ maestro = Maestro(job_store=job_store)
 
 
 class DocumentPayload(BaseModel):
-    name: str
-    content: str
+    name: str = Field(..., min_length=1)
+    content: str = Field(..., min_length=1)
 
 
 class IntakeRequest(BaseModel):
-    documents: list[DocumentPayload]
+    documents: list[DocumentPayload] = Field(..., min_items=1)
     client_reference: str | None = None
     topic: str | None = None
 
@@ -73,7 +73,7 @@ async def job_intake(
     background_tasks: BackgroundTasks,
 ) -> JobStatusResponse:
     metadata = {"client_reference": request.client_reference, "topic": request.topic}
-    documents = [document.dict() for document in request.documents]
+    documents = [document.model_dump() for document in request.documents]
     job_id = job_store.job_store_create_job(
         documents=documents,
         metadata=metadata,
@@ -95,6 +95,15 @@ async def job_research_kickoff(
     job_state = job_store.job_store_get_job(job_id)
     if not job_state:
         raise HTTPException(status_code=404, detail="Job not found.")
+    # Validate that shotlist stage has completed
+    shotlist_stage = next(
+        (s for s in job_state["stages"] if s["stage"] == "shotlist"), None
+    )
+    if not shotlist_stage or shotlist_stage["status"] != "completed":
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot start research: shotlist stage must be completed first.",
+        )
     background_tasks.add_task(
         _pipeline_run,
         job_id,
@@ -112,6 +121,15 @@ async def job_draft_assembly(
     job_state = job_store.job_store_get_job(job_id)
     if not job_state:
         raise HTTPException(status_code=404, detail="Job not found.")
+    # Validate that research stage has completed
+    research_stage = next(
+        (s for s in job_state["stages"] if s["stage"] == "research"), None
+    )
+    if not research_stage or research_stage["status"] != "completed":
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot start drafting: research stage must be completed first.",
+        )
     background_tasks.add_task(
         _pipeline_run,
         job_id,
@@ -144,7 +162,14 @@ async def job_export(job_id: str) -> dict[str, Any]:
     review_output = job_store.job_store_stage_output(job_id, "review")
     sections = job_store.job_store_list_sections(job_id)
     if not review_output:
-        raise HTTPException(status_code=409, detail="Review output not ready.")
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Review output is not yet available for export. "
+                "Check the job status at /api/jobs/{job_id} to confirm that the "
+                "review stage has completed successfully, then try again."
+            ),
+        )
     return {
         "job_id": job_id,
         "export_ready": review_output.get("export_ready", False),
