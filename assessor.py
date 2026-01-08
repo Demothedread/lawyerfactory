@@ -95,6 +95,8 @@ def summarize(
     if len(tokens) <= max_tokens:
         snippet = ' '.join(tokens)
     else:
+        # For odd max_tokens, give the extra token to the head portion
+        # to ensure we use the full token budget
         head_count = (max_tokens + 1) // 2
         tail_count = max_tokens // 2
         head = tokens[:head_count]
