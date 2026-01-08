@@ -288,6 +288,28 @@
       ]
     },
     {
+      "id": "LawsuitSchema",
+      "type": "schema",
+      "features": [
+        "caption",
+        "jurisdiction",
+        "parties",
+        "statement_of_facts",
+        "causes_of_action",
+        "legal_arguments",
+        "prayer_for_relief"
+      ]
+    },
+    {
+      "id": "LawsuitPipeline",
+      "type": "workflow",
+      "features": [
+        "intake to structured lawsuit output",
+        "metadata validation",
+        "citations attached to legal arguments"
+      ]
+    },
+    {
       "id": "WorkflowDAG",
       "type": "diagram",
       "features": [
