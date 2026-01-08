@@ -417,12 +417,15 @@ def build_timeline(
         """
         Estimate the duration of a task based on its type and ID.
         """
+        # Magic numbers for duration estimation
+        SECTION_NAME_LENGTH_DIVISOR = 40.0
+
         task_id = task.get("id")
         task_type = task.get("type")
 
         # Use explicit configuration when available
-        if task_id in durations:
-            return durations[task_id]  # type: ignore[index]
+        if task_id is not None and task_id in durations:
+            return durations[task_id]
 
         # Apply heuristic for section tasks
         if task_type == "section":
@@ -435,7 +438,9 @@ def build_timeline(
             elif "damages" in name or "relief" in name:
                 base = 3.5
             # Add slight variability based on name length
-            length_factor = min(len(str(task_id)) / 40.0, 1.0)
+            length_factor = min(
+                len(str(task_id)) / SECTION_NAME_LENGTH_DIVISOR, 1.0
+            )
             return base + length_factor
 
         # Default for unclassified tasks

@@ -700,7 +700,8 @@
                 this.consecutiveErrors = 0;
                 this.pollTimer = setInterval(() => {
                     this.refreshJob().catch(() => {
-                        // Error already handled in refreshJob
+                        // Error already handled in refreshJob (displays status,
+                        // increments counter, stops polling after max retries)
                     });
                 }, this.pollInterval);
             }
