@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Any, Dict, List
 
 REQUIRED_LAWSUIT_SECTIONS = (
     "caption",
@@ -37,9 +37,9 @@ def _build_causes_of_action(claims: List[str]) -> List[str]:
 
 def _build_legal_arguments(
     claims: List[str], citations: List[str]
-) -> List[Dict[str, List[str]]]:
+) -> List[Dict[str, Any]]:
     argument_citations = citations or ["Citation pending"]
-    arguments: List[Dict[str, List[str]]] = []
+    arguments: List[Dict[str, Any]] = []
     for claim in claims or ["General liability"]:
         arguments.append(
             {
@@ -51,7 +51,7 @@ def _build_legal_arguments(
     return arguments
 
 
-def _build_sections(intake: LawsuitIntake) -> Dict[str, object]:
+def _build_sections(intake: LawsuitIntake) -> Dict[str, Any]:
     return {
         "caption": _build_caption(intake.title, intake.parties),
         "jurisdiction": (
@@ -67,7 +67,7 @@ def _build_sections(intake: LawsuitIntake) -> Dict[str, object]:
     }
 
 
-def run_lawsuit_pipeline(intake: LawsuitIntake) -> Dict[str, object]:
+def run_lawsuit_pipeline(intake: LawsuitIntake) -> Dict[str, Any]:
     metadata = {
         "title": intake.title,
         "jurisdiction": intake.jurisdiction,
