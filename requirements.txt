@@ -1,5 +1,8 @@
+fastapi
 flake8
+fastapi
 pytest
 nltk
+uvicorn
 scikit-learn
-
+httpx
