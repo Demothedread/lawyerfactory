@@ -1,17 +1,67 @@
+"""Data model for representing structured lawsuit / complaint documents.
+
+This module defines a small set of immutable dataclasses that together form an
+in-memory schema for a civil lawsuit or similar pleading. Each class models a
+distinct section or concept in the document, and validates its required
+fields at construction time:
+
+* ``Caption`` – court name, case title, and optional case number.
+* ``Party`` – a party to the case, identified by ``party_id`` with a role
+  such as ``"plaintiff"`` or ``"defendant"``.
+* ``Jurisdiction`` – basis for jurisdiction and venue information.
+* ``Fact`` – a factual allegation, associated with one or more party IDs.
+* ``CauseOfAction`` – a legal claim, its elements, and supporting facts.
+* ``Damages`` – a summary of alleged harm and optional itemized details.
+* ``Prayer`` – the relief or remedies requested from the court.
+* ``Verification`` – sworn statement verifying the facts.
+* ``Attachment`` – supporting documents referenced in the pleading.
+* ``LawsuitDocument`` – the top-level container for all sections.
+
+Typical usage involves composing these objects into a higher-level lawsuit
+representation that can later be rendered into natural-language pleadings or
+analyzed by other components. For example:
+
+    caption = Caption(
+        court_name="Superior Court of California, County of San Francisco",
+        case_title="Jane Doe v. Acme Corp.",
+        case_number=None,
+    )
+
+    plaintiff = Party(party_id="P1", name="Jane Doe", role="plaintiff")
+    defendant = Party(party_id="D1", name="Acme Corp.", role="defendant")
+
+    fact = Fact(
+        heading="Employment Relationship",
+        summary="Jane Doe worked for Acme Corp. as a software engineer.",
+        party_ids=["P1", "D1"],
+    )
+
+    cause = CauseOfAction(
+        title="Wrongful Termination",
+        elements=[
+            "Existence of an employment relationship",
+            "Termination of employment",
+            "Termination in violation of public policy",
+        ],
+        supporting_facts=[fact.heading],
+    )
+
+The classes themselves do not enforce any particular container or storage
+structure; they are intended to be simple, validated building blocks that
+other parts of the system can assemble into complete document models.
+"""
 from dataclasses import dataclass, field
 from typing import Sequence
 
 
-def _require_text(value: str, label: str) -> str:
+def _validate_text(value: str, label: str) -> None:
     if not value or not value.strip():
         raise ValueError(f"{label} is required.")
-    return value
 
 
-def _require_sequence(values: Sequence, label: str) -> Sequence:
+def _validate_sequence(values: Sequence, label: str) -> None:
     if not values:
         raise ValueError(f"{label} is required.")
-    return values
 
 
 @dataclass(frozen=True)
@@ -21,8 +71,8 @@ class Caption:
     case_number: str | None = None
 
     def __post_init__(self) -> None:
-        _require_text(self.court_name, "caption.court_name")
-        _require_text(self.case_title, "caption.case_title")
+        _validate_text(self.court_name, "caption.court_name")
+        _validate_text(self.case_title, "caption.case_title")
 
 
 @dataclass(frozen=True)
@@ -33,9 +83,9 @@ class Party:
     description: str = ""
 
     def __post_init__(self) -> None:
-        _require_text(self.party_id, "party.party_id")
-        _require_text(self.name, "party.name")
-        _require_text(self.role, "party.role")
+        _validate_text(self.party_id, "party.party_id")
+        _validate_text(self.name, "party.name")
+        _validate_text(self.role, "party.role")
 
 
 @dataclass(frozen=True)
@@ -46,9 +96,9 @@ class Jurisdiction:
     statutes: Sequence[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        _require_text(self.basis, "jurisdiction.basis")
-        _require_text(self.venue, "jurisdiction.venue")
-        _require_text(self.court, "jurisdiction.court")
+        _validate_text(self.basis, "jurisdiction.basis")
+        _validate_text(self.venue, "jurisdiction.venue")
+        _validate_text(self.court, "jurisdiction.court")
 
 
 @dataclass(frozen=True)
@@ -58,9 +108,11 @@ class Fact:
     party_ids: Sequence[str]
 
     def __post_init__(self) -> None:
-        _require_text(self.heading, "fact.heading")
-        _require_text(self.summary, "fact.summary")
-        _require_sequence(self.party_ids, "fact.party_ids")
+        _validate_text(self.heading, "fact.heading")
+        _validate_text(self.summary, "fact.summary")
+        _validate_sequence(self.party_ids, "fact.party_ids")
+        for index, party_id in enumerate(self.party_ids):
+            _validate_text(party_id, f"fact.party_ids[{index}]")
 
 
 @dataclass(frozen=True)
@@ -70,8 +122,8 @@ class CauseOfAction:
     supporting_facts: Sequence[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        _require_text(self.title, "cause.title")
-        _require_sequence(self.elements, "cause.elements")
+        _validate_text(self.title, "cause.title")
+        _validate_sequence(self.elements, "cause.elements")
 
 
 @dataclass(frozen=True)
@@ -80,7 +132,7 @@ class Damages:
     items: Sequence[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        _require_text(self.summary, "damages.summary")
+        _validate_text(self.summary, "damages.summary")
 
 
 @dataclass(frozen=True)
@@ -88,7 +140,7 @@ class Prayer:
     requests: Sequence[str]
 
     def __post_init__(self) -> None:
-        _require_sequence(self.requests, "prayer.requests")
+        _validate_sequence(self.requests, "prayer.requests")
 
 
 @dataclass(frozen=True)
@@ -98,9 +150,9 @@ class Verification:
     statement: str
 
     def __post_init__(self) -> None:
-        _require_text(self.verifier_name, "verification.verifier_name")
-        _require_text(self.verifier_role, "verification.verifier_role")
-        _require_text(self.statement, "verification.statement")
+        _validate_text(self.verifier_name, "verification.verifier_name")
+        _validate_text(self.verifier_role, "verification.verifier_role")
+        _validate_text(self.statement, "verification.statement")
 
 
 @dataclass(frozen=True)
@@ -110,13 +162,29 @@ class Attachment:
     reference: str
 
     def __post_init__(self) -> None:
-        _require_text(self.title, "attachment.title")
-        _require_text(self.description, "attachment.description")
-        _require_text(self.reference, "attachment.reference")
+        _validate_text(self.title, "attachment.title")
+        _validate_text(self.description, "attachment.description")
+        _validate_text(self.reference, "attachment.reference")
 
 
 @dataclass(frozen=True)
 class LawsuitDocument:
+    """Top-level container for all sections of a lawsuit document.
+
+    This class enforces validation rules to ensure document integrity:
+
+    1. **Unique party_id values**: All parties must have unique identifiers.
+    2. **Valid party references**: All party_ids referenced in facts must
+       correspond to declared parties in the parties list.
+    3. **All parties referenced**: Every declared party must be referenced
+       in at least one fact to prevent orphaned party declarations.
+    4. **Valid fact references**: All fact headings referenced in
+       supporting_facts of causes of action must correspond to actual facts
+       in the facts list.
+
+    Raises:
+        ValueError: If any validation rule is violated during construction.
+    """
     caption: Caption
     parties: Sequence[Party]
     jurisdiction: Jurisdiction
@@ -128,11 +196,12 @@ class LawsuitDocument:
     attachments: Sequence[Attachment]
 
     def __post_init__(self) -> None:
-        _require_sequence(self.parties, "parties")
-        _require_sequence(self.facts, "facts")
-        _require_sequence(self.causes_of_action, "causes_of_action")
-        _require_sequence(self.attachments, "attachments")
+        _validate_sequence(self.parties, "parties")
+        _validate_sequence(self.facts, "facts")
+        _validate_sequence(self.causes_of_action, "causes_of_action")
+        _validate_sequence(self.attachments, "attachments")
         self._validate_party_references()
+        self._validate_fact_references()
 
     def _validate_party_references(self) -> None:
         party_ids = [party.party_id for party in self.parties]
@@ -155,6 +224,18 @@ class LawsuitDocument:
                 "parties must be referenced in facts: " + ", ".join(missing)
             )
 
+    def _validate_fact_references(self) -> None:
+        fact_headings = {fact.heading for fact in self.facts}
+        for cause in self.causes_of_action:
+            for fact_heading in cause.supporting_facts:
+                if fact_heading not in fact_headings:
+                    raise ValueError(
+                        (
+                            f"cause of action '{cause.title}' references "
+                            f"unknown fact heading '{fact_heading}'."
+                        )
+                    )
+
     def render_text(self) -> str:
         sections = [
             ("Caption", self._render_caption()),
@@ -176,7 +257,8 @@ class LawsuitDocument:
 
     def _render_parties(self) -> str:
         return "\n".join(
-            f"- {party.name} ({party.role}) {party.description}".rstrip()
+            f"- {party.name} ({party.role})"
+            + (f" {party.description}" if party.description else "")
             for party in self.parties
         )
 
@@ -191,8 +273,8 @@ class LawsuitDocument:
 
     def _render_facts(self) -> str:
         return "\n".join(
-            f"- {fact.heading}: {fact.summary} "
-            f"(Parties: {', '.join(fact.party_ids)})"
+            f"- {fact.heading}: {fact.summary}"
+            f" (Parties: {', '.join(fact.party_ids)})"
             for fact in self.facts
         )
 
@@ -227,11 +309,24 @@ class LawsuitDocument:
 
     def _render_attachments(self) -> str:
         return "\n".join(
-            f"- {attachment.title}: {attachment.description} "
-            f"(Ref: {attachment.reference})"
+            f"- {attachment.title}: {attachment.description}"
+            f" (Ref: {attachment.reference})"
             for attachment in self.attachments
         )
 
 
 def render_lawsuit_draft(document: LawsuitDocument) -> str:
+    """Render a lawsuit document to human-readable plain text.
+
+    Args:
+        document: The LawsuitDocument instance to render.
+
+    Returns:
+        A formatted string containing all sections of the lawsuit document.
+
+    Raises:
+        TypeError: If document is not a LawsuitDocument instance.
+    """
+    if not isinstance(document, LawsuitDocument):
+        raise TypeError("document must be a LawsuitDocument instance")
     return document.render_text()
