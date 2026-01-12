@@ -64,6 +64,13 @@ yarn-error.log*
 .env.local
 .env.*.local
 .roo
+law_venv/*
+law_venv/
+law_venv
+data/
+data
+.data
+data/*
 
 # Security-Sensitive Files
 .vault_pass
@@ -123,7 +130,7 @@ bearer_token.*
 ehthumbs.db
 Thumbs.db
 Desktop.ini
-data/
+
 
 # Node.js / Frontend
 node_modules/
