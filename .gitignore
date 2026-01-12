@@ -123,6 +123,7 @@ bearer_token.*
 ehthumbs.db
 Thumbs.db
 Desktop.ini
+data/
 
 # Node.js / Frontend
 node_modules/
