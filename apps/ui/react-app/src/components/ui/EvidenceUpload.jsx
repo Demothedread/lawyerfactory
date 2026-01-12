@@ -2,41 +2,41 @@
 //
 // Enhanced Evidence Upload component with unified storage 
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  IconButton,
-  InputLabel,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemSecondaryAction,
-  ListItemText,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-  Alert
+    Alert,
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    FormControl,
+    IconButton,
+    InputLabel,
+    LinearProgress,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemSecondaryAction,
+    ListItemText,
+    MenuItem,
+    Select,
+    TextField,
+    Typography
 } from '@mui/material';
 
 import {
-  PictureAsPdf,
-  Description,
-  InsertDriveFile,
-  Visibility,
-  CheckCircle,
-  Error,
-  CloudUpload,
-  Close,
-  Delete
+    CheckCircle,
+    Close,
+    CloudUpload,
+    Delete,
+    Description,
+    Error,
+    InsertDriveFile,
+    PictureAsPdf,
+    Visibility
 } from '@mui/icons-material';
 
 import { useCallback, useRef, useState } from 'react';
@@ -82,14 +82,113 @@ const EvidenceUpload = ({
   };
 
   const getFileStatus = (file) => {
+    const progress = uploadProgress[file.id] || 0;
+    
     if (file.status === 'uploading') {
-      return <LinearProgress variant="determinate" value={uploadProgress[file.id] || 0} />;
+      return (
+        <Box sx={{ width: '100%', mt: 0.5 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+            <Typography variant="caption" color="text.secondary">
+              ⟳ Uploading...
+            </Typography>
+            <Typography variant="caption" color="primary">
+              {progress}%
+            </Typography>
+          </Box>
+          <LinearProgress 
+            variant="determinate" 
+            value={progress}
+            sx={{
+              height: 6,
+              borderRadius: 1,
+              backgroundColor: 'rgba(184, 115, 51, 0.2)',
+              '& .MuiLinearProgress-bar': {
+                backgroundColor: '#b87333',
+              }
+            }}
+          />
+        </Box>
+      );
+    } else if (file.status === 'processing') {
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Chip 
+            label="Processing" 
+            color="info" 
+            size="small" 
+            icon={<span>⚙</span>}
+            sx={{ animation: 'pulse 2s ease-in-out infinite' }}
+          />
+          <Typography variant="caption" color="text.secondary">
+            Extracting content...
+          </Typography>
+        </Box>
+      );
+    } else if (file.status === 'vectorizing') {
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Chip 
+            label="Vectorizing" 
+            color="secondary" 
+            size="small" 
+            icon={<span>◈</span>}
+          />
+          <Typography variant="caption" color="text.secondary">
+            Creating embeddings...
+          </Typography>
+        </Box>
+      );
     } else if (file.status === 'completed') {
-      return <Chip label="Uploaded" color="success" size="small" icon={<CheckCircle />} />;
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Chip 
+            label="✓ Uploaded" 
+            color="success" 
+            size="small" 
+            icon={<CheckCircle />} 
+          />
+          {file.needsOCR && (
+            <Chip 
+              label="OCR Applied" 
+              size="small" 
+              variant="outlined"
+              color="info"
+            />
+          )}
+        </Box>
+      );
     } else if (file.status === 'error') {
-      return <Chip label="Error" color="error" size="small" icon={<Error />} />;
+      return (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Chip 
+            label="✕ Error" 
+            color="error" 
+            size="small" 
+            icon={<Error />} 
+          />
+          <Typography variant="caption" color="error">
+            {file.errorMessage || 'Upload failed'}
+          </Typography>
+        </Box>
+      );
+    } else if (file.status === 'validating') {
+      return (
+        <Chip 
+          label="Validating..." 
+          color="default" 
+          size="small" 
+          icon={<span>⊙</span>}
+        />
+      );
     }
-    return <Chip label="Ready" color="default" size="small" />;
+    return (
+      <Chip 
+        label="Ready" 
+        color="default" 
+        size="small" 
+        variant="outlined"
+      />
+    );
   };
 
   const validateFile = (file) => {
@@ -298,14 +397,19 @@ const EvidenceUpload = ({
 
   return (
     <Box>
-      {/* Upload Zone */}
+      {/* Upload Zone with Soviet Industrial Styling */}
       <Card 
         sx={{ 
           mb: 2,
-          border: dragActive ? '2px dashed #1976d2' : '2px dashed #ccc',
-          backgroundColor: dragActive ? 'rgba(25, 118, 210, 0.1)' : 'transparent',
+          border: dragActive ? '3px solid #b87333' : '2px dashed rgba(184, 115, 51, 0.5)',
+          backgroundColor: dragActive ? 'rgba(184, 115, 51, 0.15)' : 'rgba(42, 42, 42, 0.6)',
           transition: 'all 0.3s ease',
           cursor: 'pointer',
+          boxShadow: dragActive ? '0 0 20px rgba(184, 115, 51, 0.4)' : 'none',
+          '&:hover': {
+            border: '2px solid rgba(184, 115, 51, 0.7)',
+            backgroundColor: 'rgba(184, 115, 51, 0.08)',
+          }
         }}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -314,16 +418,34 @@ const EvidenceUpload = ({
         onClick={() => fileInputRef.current?.click()}
       >
         <CardContent sx={{ textAlign: 'center', py: 4 }}>
-          <CloudUpload sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h6" gutterBottom>
-            {dragActive ? 'Drop files here' : 'Upload Evidence Documents'}
+          <CloudUpload 
+            sx={{ 
+              fontSize: 48, 
+              color: dragActive ? '#b87333' : 'text.secondary', 
+              mb: 2,
+              transition: 'color 0.3s ease'
+            }} 
+          />
+          <Typography variant="h6" gutterBottom sx={{ fontFamily: '"Courier New", monospace', letterSpacing: '0.5px' }}>
+            {dragActive ? '▬ DROP FILES HERE ▬' : '⤴ UPLOAD EVIDENCE DOCUMENTS'}
           </Typography>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            Drag and drop files here, or click to select files
+          <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontFamily: '"Courier New", monospace' }}>
+            {dragActive ? 'Release to upload' : 'Drag and drop files here, or click to select files'}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Accepted formats: {acceptedTypes.join(', ')} | Max size: {Math.round(maxFileSize / 1024 / 1024)}MB
-          </Typography>
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <Chip 
+              label={`Formats: ${acceptedTypes.slice(0, 3).join(', ')}${acceptedTypes.length > 3 ? '...' : ''}`}
+              size="small"
+              variant="outlined"
+              sx={{ fontFamily: '"Courier New", monospace', fontSize: '0.75rem' }}
+            />
+            <Chip 
+              label={`Max: ${Math.round(maxFileSize / 1024 / 1024)}MB`}
+              size="small"
+              variant="outlined"
+              sx={{ fontFamily: '"Courier New", monospace', fontSize: '0.75rem' }}
+            />
+          </Box>
           <input
             ref={fileInputRef}
             type="file"

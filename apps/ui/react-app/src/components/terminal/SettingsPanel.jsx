@@ -1,12 +1,12 @@
 // SettingsPanel - Consolidated professional settings and configuration panel with analog industrial styling
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
-import { fetchLLMConfig, updateLLMConfig } from '../../services/apiService';
+import { fetchLLMConfig, updateLLMConfig } from '../../services/backendService';
 import { MechanicalButton, ToggleSwitch } from '../soviet';
 import './SettingsPanel.css';
 
 const SettingsPanel = ({
-  showSettings = false,
+  open = false,
   onClose,
   settings = {},
   onSettingsChange,
@@ -33,10 +33,10 @@ const SettingsPanel = ({
 
   // Load LLM config from backend
   useEffect(() => {
-    if (showSettings) {
+    if (open) {
       loadLLMConfig();
     }
-  }, [showSettings]);
+  }, [open]);
 
   const loadLLMConfig = async () => {
     try {
@@ -90,7 +90,7 @@ const SettingsPanel = ({
     }
   };
 
-  if (!showSettings) return null;
+  if (!open) return null;
 
   return (
     <div className="settings-overlay">

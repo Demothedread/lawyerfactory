@@ -577,7 +577,62 @@ evidence = await storage.retrieve_evidence(result.object_id)
 
 ---
 
-## 🔗 Integration Status & Improvements
+## 🔗 Integration Status & Knowledge Base
+
+### 📚 Consolidated Knowledge Graph
+
+The following services, integrations, and components are fully documented and operational:
+
+#### **Core Services**
+
+**PrecisionCitationService** (Advanced Legal Research)
+- Academic/peer-reviewed source prioritization
+- Structured filtering (excludes Wikipedia/low-quality sources)
+- Citation count & Q-score weighting for quality assessment
+- Multiple workflows: background research, claim substantiation, fact verification
+
+**Integrations by Phase:**
+
+- **Phase A01 (Intake)**: BackgroundResearchIntegration
+  - Background research using intake form + evidence
+  - Limited to 3-4 most relevant sources per search
+  - Auto-stores results in evidence table with claims/facts linking
+
+- **Phase B01 (Review)**: ClaimSubstantiationIntegration
+  - Claim substantiation research against legal claims
+  - Academic sources for legal analysis + news for recent developments
+  - Substantiation strength calculation with recommendations
+
+- **Phase C01 (Editing)**: FactVerificationIntegration
+  - Fact verification for document editing phase
+  - Recent news + academic sources for fact corroboration
+  - Verification confidence scoring with editing recommendations
+
+**Quality Metrics System**
+- Authority score, citation count weighting, Q-score weighting, recency score
+- Combined into overall quality score (1.0-5.0 scale)
+- Used for filtering and ranking research sources
+
+#### **Advanced Features**
+
+**Precision Citation Quality Assessment**
+- Proprietary citation analysis algorithm
+- Recency scoring for currency of authority
+- Authority ranking (mandatory vs. persuasive)
+- Composite quality score with confidence intervals
+- Learning from attorney feedback
+
+**Error Recovery & Resilience**
+- Multi-strategy error handling (network, timeout, LLM, storage, rate limit)
+- Automatic retries with exponential backoff
+- Fallback provider switching for LLM services
+- Graceful degradation during partial failures
+
+**Workflow State Management**
+- Persistent workflow state with recovery
+- Local + backend state synchronization
+- Automatic recovery from crashes
+- Complete audit trail of state transitions
 
 ### ✅ Complete Integration Architecture
 
@@ -988,6 +1043,51 @@ python -m bandit -r src/
 - **File Top Summary**: 2-3 line description at top of each file
 - **Modular Structure**: Short single-purpose modules in subdirectories
 - **Integration Testing**: Always validate against `test_integration_flow.py`
+
+#### **React Frontend Service Imports**
+
+**Canonical Service Layer** (`backendService.js`):
+```javascript
+// ✅ CORRECT: Import from canonical service
+import { backendService, fetchLLMConfig, startPhase } from '../../services/backendService';
+
+// Component usage
+const result = await backendService.startPhase(phaseId);
+const config = await fetchLLMConfig();
+```
+
+**Deprecated Pattern** (being phased out):
+```javascript
+// ❌ OLD: Import from deprecated apiService (still works via shim)
+import { apiService } from '../../services/apiService';
+// Deprecation warning logged once per session
+```
+
+**Migration Reference**:
+- Full migration guide: [`IMPORT_MIGRATION_GUIDE.md`](./IMPORT_MIGRATION_GUIDE.md)
+- Status report: [`SERVICE_CONSOLIDATION_STATUS_REPORT.md`](./SERVICE_CONSOLIDATION_STATUS_REPORT.md)
+- 10 component files are actively being migrated to use `backendService` directly
+
+**Key Functions Available**:
+```javascript
+// Socket Management
+import { initializeSocket, getSocket, closeSocket } from '../../services/backendService';
+
+// Phase Management
+import { startPhase, getPhaseStatus, cancelPhase } from '../../services/backendService';
+
+// Research & Analysis
+import { startResearch, getResearchStatus, getClaimsMatrix } from '../../services/backendService';
+
+// Document Operations
+import { uploadDocumentsUnified, downloadDeliverable } from '../../services/backendService';
+
+// Settings & Configuration
+import { fetchLLMConfig, updateLLMConfig } from '../../services/backendService';
+
+// Class-based access
+import { LawyerFactoryBackend, backendService } from '../../services/backendService';
+```
 
 ### Testing & Quality
 

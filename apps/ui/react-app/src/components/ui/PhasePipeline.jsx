@@ -50,8 +50,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useToast } from "../feedback/Toast";
 import EvidenceUpload from "./EvidenceUpload";
 
-// Import neon Soviet phase card and automation service
-import phaseAutomationService from "../../services/phaseAutomationService";
+// Import unified backend service
+import backendService from "../../services/backendService";
 
 // Import the new drafting phase components
 import DraftingPhase from "../DraftingPhase";
@@ -72,7 +72,6 @@ const PhasePipeline = ({
   onPhaseComplete,
   onPhaseError,
   autoAdvance = true,
-  apiEndpoint = "/api/phases",
   socketEndpoint = "/phases",
   llmConfig = {}, // LLM configuration from settings
 }) => {
@@ -89,6 +88,7 @@ const PhasePipeline = ({
   const [maxRetries] = useState(3);
   const [activeTab, setActiveTab] = useState(0); // 0: Pipeline, 1: Drafting Phase
   const [viewMode, setViewMode] = useState('neon'); // 'stepper' or 'neon'
+  const [phaseSubSteps, setPhaseSubSteps] = useState({}); // Track sub-step progress within phases
 
   const { addToast } = useToast();
 
@@ -107,6 +107,7 @@ const PhasePipeline = ({
         "Fact extraction",
         "Initial metadata",
       ],
+      subSteps: ["Uploading", "Processing", "Vectorizing", "Extracting Facts"],
     },
     {
       id: "phaseA02_research",
@@ -117,6 +118,7 @@ const PhasePipeline = ({
       estimatedTime: "5-10 minutes",
       agent: "Paralegal & Researcher Bots",
       outputs: ["Case law", "Statutes", "Legal authorities", "Research matrix"],
+      subSteps: ["Searching", "Analyzing", "Ranking", "Validating"],
     },
     {
       id: "phaseA03_outline",
@@ -132,6 +134,7 @@ const PhasePipeline = ({
         "Legal theory",
         "Argument outline",
       ],
+      subSteps: ["Structuring", "Mapping Claims", "Analyzing Gaps", "Finalizing"],
     },
     {
       id: "phaseB01_review",
@@ -142,6 +145,7 @@ const PhasePipeline = ({
       estimatedTime: "2-4 minutes",
       agent: "Editor Bot",
       outputs: ["Quality assessment", "Fact validation", "Completeness check"],
+      subSteps: ["Validating", "Cross-Checking", "Scoring", "Approving"],
     },
     {
       id: "phaseB02_drafting",
@@ -157,6 +161,7 @@ const PhasePipeline = ({
         "Citations",
         "Formatted output",
       ],
+      subSteps: ["Templating", "Composing", "Citing", "Assembling"],
     },
     {
       id: "phaseC01_editing",
@@ -171,6 +176,7 @@ const PhasePipeline = ({
         "Citation formatting",
         "Professional polish",
       ],
+      subSteps: ["Formatting", "Citation Review", "Polishing", "Finalizing"],
     },
     {
       id: "phaseC02_orchestration",
@@ -186,6 +192,7 @@ const PhasePipeline = ({
         "Case summary",
         "Final archive",
       ],
+      subSteps: ["Coordinating", "Packaging", "Archiving", "Delivering"],
     },
   ];
 
@@ -228,6 +235,20 @@ const PhasePipeline = ({
     setPhaseStates(initialStates);
   };
 
+  // Helper to send phase narration to Bartleby
+  const sendBartlebyNarration = useCallback((phaseId, event, message, progress = 0, details = {}) => {
+    if (socket && caseId) {
+      socket.emit('bartleby_narrate_phase', {
+        case_id: caseId,
+        phase: phaseId,
+        event: event, // 'started', 'progress', 'completed', 'error'
+        message: message,
+        progress: progress,
+        details: details,
+      });
+    }
+  }, [socket, caseId]);
+
   // Socket event handlers
   const handlePhaseStarted = useCallback(
     (data) => {
@@ -242,19 +263,31 @@ const PhasePipeline = ({
         },
       }));
 
+      const phaseDef = phaseDefinitions.find((p) => p.id === phase_id);
+      const phaseName = phaseDef?.name || phase_id;
+
       addToast(
-        `Started ${phaseDefinitions.find((p) => p.id === phase_id)?.name}`,
+        `Started ${phaseName}`,
         {
           severity: "info",
           title: "Phase Started",
         }
       );
+
+      // Narrate to Bartleby
+      sendBartlebyNarration(
+        phase_id,
+        'started',
+        `Starting ${phaseName}. This phase will ${phaseDef?.description?.toLowerCase() || 'process your case'}. Estimated time: ${phaseDef?.estimatedTime || '2-5 minutes'}.`,
+        0,
+        { agent: phaseDef?.agent, outputs: phaseDef?.outputs }
+      );
     },
-    [addToast]
+    [addToast, sendBartlebyNarration]
   );
 
   const handlePhaseProgress = useCallback((data) => {
-    const { phase_id, progress, message } = data;
+    const { phase_id, progress, message, sub_step } = data;
     setPhaseStates((prev) => ({
       ...prev,
       [phase_id]: {
@@ -266,7 +299,36 @@ const PhasePipeline = ({
         ],
       },
     }));
-  }, []);
+
+    // Update sub-step progress if provided
+    if (sub_step) {
+      const phase = phaseDefinitions.find(p => p.id === phase_id);
+      if (phase?.subSteps) {
+        const stepIndex = phase.subSteps.indexOf(sub_step);
+        if (stepIndex !== -1) {
+          setPhaseSubSteps(prev => ({
+            ...prev,
+            [phase_id]: {
+              currentStep: sub_step,
+              stepIndex: stepIndex,
+            },
+          }));
+        }
+      }
+    }
+
+    // Narrate significant progress updates to Bartleby
+    // Only send narration for milestone updates (every 20% or sub-step changes)
+    if (message && (progress % 20 === 0 || sub_step)) {
+      sendBartlebyNarration(
+        phase_id,
+        'progress',
+        message,
+        progress,
+        { sub_step }
+      );
+    }
+  }, [phaseDefinitions, sendBartlebyNarration]);
 
   const handlePhaseCompleted = useCallback(
     (data) => {
@@ -282,12 +344,27 @@ const PhasePipeline = ({
         },
       }));
 
-      const phaseName = phaseDefinitions.find((p) => p.id === phase_id)?.name;
+      const phaseDef = phaseDefinitions.find((p) => p.id === phase_id);
+      const phaseName = phaseDef?.name || phase_id;
+      
       addToast(`✅ Completed ${phaseName}`, {
         severity: "success",
         title: "Phase Complete",
         details: `Generated ${outputs?.length || 0} outputs`,
       });
+
+      // Narrate completion to Bartleby with details
+      const outputSummary = outputs?.length > 0 
+        ? `Delivered: ${outputs.map(o => o.name || o.type).join(', ')}`
+        : 'Phase completed successfully';
+      
+      sendBartlebyNarration(
+        phase_id,
+        'completed',
+        `✅ ${phaseName} completed! ${outputSummary}. You can now review the results or proceed to the next phase.`,
+        100,
+        { outputs, duration: timestamp - phaseStates[phase_id]?.startTime }
+      );
 
       // Auto-advance to next phase if enabled
       if (autoAdvance) {
@@ -309,6 +386,15 @@ const PhasePipeline = ({
             severity: "success",
             title: "All Phases Complete",
           });
+          
+          // Final narration
+          sendBartlebyNarration(
+            'pipeline',
+            'completed',
+            '🎉 Congratulations! Your complete lawsuit has been generated. All phases completed successfully. You can now download your documents.',
+            100,
+            { totalPhases: phaseDefinitions.length }
+          );
         }
       }
 
@@ -316,7 +402,7 @@ const PhasePipeline = ({
         onPhaseComplete(phase_id, outputs);
       }
     },
-    [autoAdvance, onPhaseComplete, addToast]
+    [autoAdvance, onPhaseComplete, addToast, sendBartlebyNarration, phaseStates]
   );
 
   const handlePhaseError = useCallback(
@@ -340,11 +426,20 @@ const PhasePipeline = ({
         title: "Phase Error",
       });
 
+      // Narrate error to Bartleby
+      sendBartlebyNarration(
+        phase_id,
+        'error',
+        `❌ An error occurred in ${phaseName}: ${error}. Please review the error details and try again, or ask me for help troubleshooting.`,
+        phaseStates[phase_id]?.progress || 0,
+        { error, timestamp }
+      );
+
       if (onPhaseError) {
         onPhaseError(phase_id, error);
       }
     },
-    [onPhaseError, addToast]
+    [onPhaseError, addToast, sendBartlebyNarration, phaseStates]
   );
 
   // Start a specific phase with error recovery
@@ -379,8 +474,8 @@ const PhasePipeline = ({
     }));
 
     try {
-      // Use phaseAutomationService for backend integration
-      const result = await phaseAutomationService.executePhase(
+      // Use backendService for backend integration
+      const result = await backendService.executePhase(
         phaseId, 
         caseId, 
         { llmConfig }
@@ -391,7 +486,7 @@ const PhasePipeline = ({
       }
 
       // Poll for phase completion
-      const finalStatus = await phaseAutomationService.waitForPhaseCompletion(
+      const finalStatus = await backendService.waitForPhaseCompletion(
         phaseId,
         caseId
       );
@@ -443,6 +538,69 @@ const PhasePipeline = ({
 
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Retry phase with fresh state
+  const retryPhase = async (phaseId) => {
+    const currentRetries = retryCount[phaseId] || 0;
+    
+    if (currentRetries >= maxRetries) {
+      addToast(`⚠ Maximum retries reached for ${phaseId}`, {
+        severity: "warning",
+        title: "Cannot Retry",
+      });
+      return;
+    }
+
+    // Reset phase state
+    setPhaseStates((prev) => ({
+      ...prev,
+      [phaseId]: {
+        ...prev[phaseId],
+        status: "ready",
+        errors: [],
+        progress: 0,
+      },
+    }));
+
+    // Wait a moment before retrying
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    addToast(`⟳ Retrying ${phaseId}...`, {
+      severity: "info",
+      title: "Retry Initiated",
+    });
+
+    // Start the phase again
+    await startPhase(phaseId);
+  };
+
+  // Skip phase (mark as completed but with warning)
+  const skipPhase = (phaseId) => {
+    const phase = phaseDefinitions.find(p => p.id === phaseId);
+    
+    setPhaseStates((prev) => ({
+      ...prev,
+      [phaseId]: {
+        ...prev[phaseId],
+        status: "completed",
+        progress: 100,
+        skipped: true,
+        endTime: Date.now(),
+      },
+    }));
+
+    addToast(`▶ Skipped ${phase?.name || phaseId}`, {
+      severity: "warning",
+      title: "Phase Skipped",
+      details: "This may affect downstream processing",
+    });
+
+    // Advance to next phase
+    const currentIndex = phaseDefinitions.findIndex((p) => p.id === phaseId);
+    if (currentIndex < phaseDefinitions.length - 1) {
+      setCurrentPhase(currentIndex + 1);
     }
   };
 
@@ -747,7 +905,7 @@ const PhasePipeline = ({
             <Box>
               {/* Phase Stepper */}
               <Stepper activeStep={currentPhase} orientation="vertical">
-                {phases.map((phase, index) => {
+                {phases.map((phase) => {
                   const state = phaseStates[phase.id];
                   const isCompleted = state?.status === "completed";
                   const hasError = state?.status === "error";
@@ -801,6 +959,37 @@ const PhasePipeline = ({
                               <Typography variant="caption">
                                 Progress: {state.progress}%
                               </Typography>
+
+                              {/* Sub-step Progress Indicators */}
+                              {phase.subSteps && phaseSubSteps[phase.id] && (
+                                <Box sx={{ mt: 1, pl: 2 }}>
+                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                    ⚙ Current Step: {phaseSubSteps[phase.id].currentStep || phase.subSteps[0]}
+                                  </Typography>
+                                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                                    {phase.subSteps.map((step, idx) => {
+                                      const stepIndex = phaseSubSteps[phase.id]?.stepIndex || 0;
+                                      const isActive = idx === stepIndex;
+                                      const isComplete = idx < stepIndex;
+                                      return (
+                                        <Chip
+                                          key={idx}
+                                          label={step}
+                                          size="small"
+                                          color={isComplete ? "success" : isActive ? "primary" : "default"}
+                                          variant={isActive ? "filled" : "outlined"}
+                                          icon={isComplete ? <span>✓</span> : isActive ? <span>⟳</span> : null}
+                                          sx={{ 
+                                            fontSize: '0.7rem',
+                                            height: '20px',
+                                            opacity: isComplete || isActive ? 1 : 0.5
+                                          }}
+                                        />
+                                      );
+                                    })}
+                                  </Box>
+                                </Box>
+                              )}
                             </Box>
                           )}
 
@@ -821,9 +1010,67 @@ const PhasePipeline = ({
                           )}
 
                           {state?.errors && state.errors.length > 0 && (
-                            <Alert severity="error" sx={{ mb: 1 }}>
-                              {state.errors[state.errors.length - 1].error}
-                            </Alert>
+                            <Box sx={{ mb: 1 }}>
+                              <Alert 
+                                severity="error" 
+                                sx={{ mb: 1 }}
+                                action={
+                                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                    {/* Retry button with countdown */}
+                                    {(retryCount[phase.id] || 0) < maxRetries && (
+                                      <Button
+                                        size="small"
+                                        color="inherit"
+                                        onClick={() => retryPhase(phase.id)}
+                                        startIcon={<span>⟳</span>}
+                                      >
+                                        Retry ({maxRetries - (retryCount[phase.id] || 0)} left)
+                                      </Button>
+                                    )}
+                                    {/* Skip phase option for non-critical phases */}
+                                    {!phase.id.includes('A01') && !phase.id.includes('C02') && (
+                                      <Button
+                                        size="small"
+                                        color="inherit"
+                                        onClick={() => {
+                                          if (window.confirm(`Skip ${phase.name}? This may affect downstream phases.`)) {
+                                            skipPhase(phase.id);
+                                          }
+                                        }}
+                                        startIcon={<span>▶</span>}
+                                      >
+                                        Skip
+                                      </Button>
+                                    )}
+                                  </Box>
+                                }
+                              >
+                                <Box>
+                                  <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                                    ◆ Error in {phase.name}
+                                  </Typography>
+                                  <Typography variant="body2">
+                                    {state.errors[state.errors.length - 1].error}
+                                  </Typography>
+                                  
+                                  {/* Collapsible error details */}
+                                  {state.errors.length > 1 && (
+                                    <details style={{ marginTop: '8px', cursor: 'pointer' }}>
+                                      <summary style={{ fontSize: '0.875rem', color: '#666' }}>
+                                        View {state.errors.length - 1} previous error(s)
+                                      </summary>
+                                      <Box sx={{ mt: 1, pl: 2, maxHeight: '150px', overflow: 'auto' }}>
+                                        {state.errors.slice(0, -1).reverse().map((err, idx) => (
+                                          <Typography key={idx} variant="caption" display="block" sx={{ mb: 0.5 }}>
+                                            • {new Date(err.timestamp).toLocaleTimeString()}: {err.error}
+                                          </Typography>
+                                        ))}
+                                      </Box>
+                                    </details>
+                                  )}
+                                </Box>
+                              </Alert>
+                            </Box>
                           )}
                         </Box>
 
@@ -932,7 +1179,7 @@ const PhasePipeline = ({
                     return (
                       <PhaseA01Intake
                         caseId={caseId}
-                        onComplete={(data) => {
+                        onComplete={() => {
                           addToast('Phase A01 intake reviewed', { severity: 'success' });
                           setShowPhaseDetails(false);
                         }}
@@ -943,7 +1190,7 @@ const PhasePipeline = ({
                     return (
                       <PhaseA02Research
                         caseId={caseId}
-                        onComplete={(data) => {
+                        onComplete={() => {
                           addToast('Phase A02 research reviewed', { severity: 'success' });
                           setShowPhaseDetails(false);
                         }}
@@ -954,7 +1201,7 @@ const PhasePipeline = ({
                     return (
                       <PhaseA03Outline
                         caseId={caseId}
-                        onComplete={(data) => {
+                        onComplete={() => {
                           addToast('Phase A03 outline reviewed', { severity: 'success' });
                           setShowPhaseDetails(false);
                         }}
@@ -965,7 +1212,7 @@ const PhasePipeline = ({
                     return (
                       <PhaseB01Review
                         caseId={caseId}
-                        onApprove={(data) => {
+                        onApprove={() => {
                           addToast('Phase B01 deliverables approved', { severity: 'success' });
                           setShowPhaseDetails(false);
                         }}
@@ -976,7 +1223,7 @@ const PhasePipeline = ({
                     return (
                       <PhaseC01Editing
                         caseId={caseId}
-                        onComplete={(data) => {
+                        onComplete={() => {
                           addToast('Phase C01 editing reviewed', { severity: 'success' });
                           setShowPhaseDetails(false);
                         }}
@@ -987,7 +1234,7 @@ const PhasePipeline = ({
                     return (
                       <PhaseC02Orchestration
                         caseId={caseId}
-                        onComplete={(data) => {
+                        onComplete={() => {
                           addToast('Phase C02 orchestration completed', { severity: 'success' });
                           setShowPhaseDetails(false);
                         }}

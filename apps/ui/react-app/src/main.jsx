@@ -47,6 +47,7 @@ const LoadingFallback = () => (
     alignItems: "center", 
     height: "100vh" 
   }}>
+    <img src="apps/ui/react-app/src/assets/briefcaselogo.png" alt="Loading Briefcaser..." />  
     <div>Loading Briefcaser...</div>
   </div>
 );

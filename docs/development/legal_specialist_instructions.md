@@ -130,7 +130,7 @@ COMPLETE RULE: One who undertakes to render services to another which he should 
 - **Federal District**: *Johnson v. State*, 456 F. Supp. 789 (N.D. Cal. 2023)
 - **State Court**: *Brown v. Board of Education*, 347 U.S. 483 (1954)
 
-## Legal Writing Standards
+## m Standards
 
 ### Pleading Requirements (Rule 12(b)(6))
 - Must state claim showing entitlement to relief

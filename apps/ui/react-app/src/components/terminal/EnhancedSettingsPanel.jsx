@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { fetchLLMConfig, updateLLMConfig } from '../../services/apiService';
+import { getIcon } from '../../constants/thematicIcons';
+import { fetchLLMConfig, updateLLMConfig } from '../../services/backendService';
 import { MechanicalButton, ToggleSwitch } from '../soviet';
 
 const EnhancedSettingsPanel = ({
-  showSettings = false,
+  open = false,
   onClose,
   settings = {},
   onSettingsChange,
@@ -11,7 +12,7 @@ const EnhancedSettingsPanel = ({
   const [activeSettingsTab, setActiveSettingsTab] = useState('llm');
   const [llmConfig, setLLMConfig] = useState({
     provider: 'openai',
-    model: 'gpt-4',
+    model: 'gpt-5-nano',
     apiKey: '',
     temperature: 0.1,
     maxTokens: 2000,
@@ -21,19 +22,19 @@ const EnhancedSettingsPanel = ({
   const [saveStatus, setSaveStatus] = useState('');
 
   const settingsTabs = [
-    { id: 'llm', label: 'LLM Configuration', icon: '🤖' },
-    { id: 'general', label: 'General', icon: '⚙️' },
-    { id: 'legal', label: 'Legal Config', icon: '⚖️' },
-    { id: 'phase', label: 'Phase Settings', icon: '🔄' },
-    { id: 'export', label: 'Export', icon: '📄' },
+    { id: 'llm', label: 'LLM Configuration', icon: getIcon('llm') },
+    { id: 'general', label: 'General', icon: getIcon('settings') },
+    { id: 'legal', label: 'Legal Config', icon: getIcon('legal') },
+    { id: 'phase', label: 'Phase Settings', icon: getIcon('workflow') },
+    { id: 'export', label: 'Export', icon: getIcon('export') },
   ];
 
   // Load LLM config from backend (includes env variables)
   useEffect(() => {
-    if (showSettings) {
+    if (open) {
       loadLLMConfig();
     }
-  }, [showSettings]);
+  }, [open]);
 
   const loadLLMConfig = async () => {
     try {
@@ -87,13 +88,13 @@ const EnhancedSettingsPanel = ({
     }
   };
 
-  if (!showSettings) return null;
+  if (!open) return null;
 
   return (
     <div className="legal-intake-overlay">
       <div className="legal-intake-container" style={{ maxWidth: '700px', maxHeight: '80vh', overflow: 'auto' }}>
         <div className="legal-pad-header">
-          <h2 className="pad-title">⚙️ BRIEFCASER SETTINGS</h2>
+          <h2 className="pad-title">{getIcon('settings')} BRIEFCASER SETTINGS</h2>
           <MechanicalButton onClick={onClose} style={{ padding: '4px 8px' }}>
             ✕
           </MechanicalButton>
@@ -121,7 +122,7 @@ const EnhancedSettingsPanel = ({
             {/* LLM Configuration Tab */}
             {activeSettingsTab === 'llm' && (
               <div>
-                <h4>🤖 LLM Provider Configuration</h4>
+                <h4>{getIcon('llm')} LLM Provider Configuration</h4>
                 <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
                   Configure the AI model used for document analysis, drafting, and research. 
                   Settings are loaded from environment variables and can be overridden here.
@@ -217,8 +218,8 @@ const EnhancedSettingsPanel = ({
                   <div style={{ 
                     padding: '8px', 
                     marginBottom: 'var(--space-md)', 
-                    backgroundColor: saveStatus.includes('✅') ? '#d4edda' : '#f8d7da',
-                    color: saveStatus.includes('✅') ? '#155724' : '#721c24',
+                    backgroundColor: saveStatus.includes('✓') ? '#d4edda' : '#f8d7da',
+                    color: saveStatus.includes('✓') ? '#155724' : '#721c24',
                     borderRadius: '4px',
                     fontSize: '12px'
                   }}>
@@ -232,7 +233,7 @@ const EnhancedSettingsPanel = ({
                   disabled={loading}
                   style={{ width: '100%' }}
                 >
-                  {loading ? '⏳ Saving...' : '💾 Save LLM Configuration'}
+                  {loading ? '⏳ Saving...' : `${getIcon('save')} Save LLM Configuration`}
                 </MechanicalButton>
               </div>
             )}
@@ -267,7 +268,7 @@ const EnhancedSettingsPanel = ({
             {/* Legal Configuration Tab */}
             {activeSettingsTab === 'legal' && (
               <div>
-                <h4>⚖️ Legal Configuration</h4>
+                <h4>{getIcon('legal')} Legal Configuration</h4>
                 <div style={{ marginBottom: 'var(--space-md)' }}>
                   <label style={{ display: 'block', marginBottom: 'var(--space-xs)' }}>
                     Jurisdiction:
@@ -318,7 +319,7 @@ const EnhancedSettingsPanel = ({
             {/* Phase Settings Tab */}
             {activeSettingsTab === 'phase' && (
               <div>
-                <h4>🔄 Phase Execution Settings</h4>
+                <h4>{getIcon('workflow')} Phase Execution Settings</h4>
                 <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-md)' }}>
                   Configure how phases execute and interact with the LLM
                 </p>
@@ -363,7 +364,7 @@ const EnhancedSettingsPanel = ({
             {/* Export Settings Tab */}
             {activeSettingsTab === 'export' && (
               <div>
-                <h4>📄 Export Configuration</h4>
+                <h4>{getIcon('export')} Export Configuration</h4>
                 <ToggleSwitch
                   active={settings.pdfExport}
                   onToggle={() => handleSettingChange('pdfExport', !settings.pdfExport)}
@@ -400,10 +401,10 @@ const EnhancedSettingsPanel = ({
 
           <div className="form-actions" style={{ marginTop: 'var(--space-lg)' }}>
             <MechanicalButton onClick={onClose} variant="danger">
-              Cancel
+              {getIcon('delete')} Cancel
             </MechanicalButton>
             <MechanicalButton onClick={onClose} variant="success">
-              Apply & Close
+              {getIcon('complete')} Apply {getIcon('forward')} Close
             </MechanicalButton>
           </div>
         </div>

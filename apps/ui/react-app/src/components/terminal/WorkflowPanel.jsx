@@ -1,7 +1,7 @@
 // WorkflowPanel - Professional workflow control panel component with phase management
 import PropTypes from 'prop-types';
 import { MarqueeSoviet, RetroGridSoviet } from '../../services/magicui-soviet-adapter';
-import { getPhaseEmoji, getPhaseName } from '../../services/phaseUtils';
+import { getPhaseEmoji, getPhaseName } from '../../services/phaseService';
 import '../../styles/magicui-soviet-overrides.css';
 import { AnalogGauge, MechanicalButton, MetalPanel, NixieDisplay, StatusLights } from '../soviet';
 

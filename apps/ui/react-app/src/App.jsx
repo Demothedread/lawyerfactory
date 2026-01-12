@@ -18,15 +18,18 @@ import EvidenceTable from "./components/ui/EvidenceTable";
 import EvidenceUpload from "./components/ui/EvidenceUpload";
 import { ConfirmationModal } from "./components/ui/Modal";
 import PhasePipeline from "./components/ui/PhasePipeline";
-import lawyerFactoryAPI, {
+import backendService, {
   fetchLLMConfig,
   getCaseDocuments
-} from "./services/apiService";
+} from "./services/backendService";
 
 // Import modular terminal components
 import LegalIntakeForm from "./components/terminal/LegalIntakeForm";
 import SettingsPanel from "./components/terminal/SettingsPanel";
 import WorkflowPanel from "./components/terminal/WorkflowPanel";
+
+// Import enhanced form styling
+import "./components/styles/formElements.css";
 
 // Import Soviet industrial UI components
 import AnalogGauge from "./components/soviet/AnalogGauge";
@@ -46,9 +49,18 @@ import ClaimsMatrix from "./components/ui/ClaimsMatrix";
 import ShotList from "./components/ui/ShotList";
 import SkeletalOutlineSystem from "./components/ui/SkeletalOutlineSystem";
 
+// Import Bartleby AI Legal Clerk chatbot
+import BartlebyChatbot from "./components/ui/BartlebyChatbot";
+
+// Import thematic icons for Soviet atomic age aesthetic
+import { getIcon } from "./constants/thematicIcons";
+
 // Import MagicUI components - selective, strategic imports for enhanced visual design
 
 // Import MagicUI adapter for Soviet styling
+
+// Import HelpPanel for user guide access
+import HelpPanel from "./components/feedback/HelpPanel";
 
 // Create Soviet Industrial theme with dynamic dark mode
 const getSovietTheme = (darkMode = true) => createTheme({
@@ -70,16 +82,94 @@ const getSovietTheme = (darkMode = true) => createTheme({
     },
   },
   typography: {
-    fontFamily: '"Share Tech Mono", "Russo One", monospace',
+    // Primary: "Courier New" for enhanced readability while maintaining monospace character
+    // Fallback: JetBrains Mono (more modern) → Share Tech Mono (industrial) → monospace
+    fontFamily: '"Courier New", "JetBrains Mono", "Share Tech Mono", monospace',
+    fontSize: 13,
+    lineHeight: 1.6,
+    letterSpacing: '0.3px',
+    
+    // Body text: optimized for readability
+    body1: {
+      fontFamily: '"Courier New", "JetBrains Mono", "Share Tech Mono", monospace',
+      fontSize: '13px',
+      lineHeight: 1.7,
+      letterSpacing: '0.3px',
+      fontWeight: 400,
+    },
+    
     body2: {
-      fontFamily: "elevon"
+      fontFamily: '"Courier New", "JetBrains Mono", "Share Tech Mono", monospace',
+      fontSize: '12px',
+      lineHeight: 1.6,
+      letterSpacing: '0.2px',
+      fontWeight: 400,
     },
+    
+    // Headings: keep industrial aesthetic but improve readability
+    h1: {
+      fontFamily: '"Orbitron", "Russo One", monospace',
+      fontWeight: 800,
+      letterSpacing: '2px',
+      lineHeight: 1.3,
+    },
+    
+    h2: {
+      fontFamily: '"Orbitron", "Russo One", monospace',
+      fontWeight: 700,
+      letterSpacing: '1.5px',
+      lineHeight: 1.4,
+    },
+    
+    h3: {
+      fontFamily: '"Russo One", "Orbitron", monospace',
+      fontWeight: 700,
+      letterSpacing: '1px',
+      lineHeight: 1.4,
+    },
+    
     h4: {
-      fontWeight: 600,
+      fontWeight: 700,
       fontFamily: '"Orbitron", monospace',
+      letterSpacing: '1px',
+      lineHeight: 1.5,
     },
+    
+    h5: {
+      fontFamily: '"Share Tech Mono", monospace',
+      fontWeight: 600,
+      letterSpacing: '0.5px',
+      lineHeight: 1.5,
+    },
+    
     h6: {
-      fontFamily: '"Russo One", sans-serif',
+      fontFamily: '"Russo One", "Share Tech Mono", monospace',
+      fontWeight: 600,
+      letterSpacing: '0.5px',
+      lineHeight: 1.5,
+    },
+    
+    // Monospace blocks and code
+    monospace: {
+      fontFamily: '"Courier New", "JetBrains Mono", "Share Tech Mono", monospace',
+      fontSize: '12px',
+      lineHeight: 1.5,
+      letterSpacing: '0.2px',
+    },
+    
+    caption: {
+      fontFamily: '"Courier New", "JetBrains Mono", monospace',
+      fontSize: '11px',
+      lineHeight: 1.5,
+      letterSpacing: '0px',
+    },
+    
+    overline: {
+      fontFamily: '"Orbitron", monospace',
+      fontWeight: 700,
+      fontSize: '10px',
+      letterSpacing: '1.5px',
+      textTransform: 'uppercase',
     },
   },
   components: {
@@ -90,7 +180,10 @@ const getSovietTheme = (darkMode = true) => createTheme({
             ? "linear-gradient(135deg, #1a1a1a 0%, #434b4d 100%)"
             : "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
           color: darkMode ? "#c0c0c0" : "#2a2a2a",
-          fontFamily: '"Share Tech Mono", "Russo One", monospace',
+          fontFamily: '"Courier New", "JetBrains Mono", "Share Tech Mono", monospace',
+          fontSize: '13px',
+          lineHeight: 1.6,
+          letterSpacing: '0.3px',
           "&::before": {
             content: '""',
             position: "fixed",
@@ -110,32 +203,6 @@ const getSovietTheme = (darkMode = true) => createTheme({
 });
 
 //Mock data for demonstration
-const mockLawsuits = [
-  {
-    id: 1,
-    clientName: "John Doe",
-    caseType: "Personal Injury",
-    status: "Active",
-    filedDate: "2024-01-15",
-    jurisdiction: "State Court",
-  },
-  {
-    id: 2,
-    clientName: "",
-    caseType: "",
-    status: "",
-    filedDate: "",
-    jurisdiction: "",
-  },
-  {
-    id: 3,
-    clientName: "",
-    caseType: '',
-    status: "",
-    filedDate: "",
-    jurisdiction: "County Court",
-  },
-];
 
 const mockDocuments = [
   {
@@ -199,6 +266,7 @@ const App = () => {
 
   // Briefcaser Professional Terminal State
   const [showSettings, setShowSettings] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [showLegalIntake, setShowLegalIntake] = useState(false);
   const [userResearchFiles, setUserResearchFiles] = useState([]);
   const [currentWorkspace, setCurrentWorkspace] = useState("dashboard");
@@ -219,18 +287,42 @@ const App = () => {
   //  - On first load, we attempt to read persisted settings from localStorage.
   //  - If none exist, we use these defaults (e.g., aiModel: 'gpt-5-mini', llmProvider: 'openai').
   //  - The SettingsPanel (and handleSettingsChange) allow the user to update these settings,
-  //    which are then persisted to localStorage and synced to the backend via lawyerFactoryAPI.updateSettings.
+  //    which are then persisted to localStorage and synced to the backend via backendService.updateSettings.
   //  - If the backend/environment exposes an LLM configuration (fetchLLMConfig), the app will update
   //    these settings at runtime to reflect environment-provided values (see initializeBackend()).
   // In short: defaults are provided for convenience but are adjustable and can be overridden.
   const [settings, setSettings] = useState(() => {
     const savedSettings = localStorage.getItem('lawyerfactory_settings');
     return savedSettings ? JSON.parse(savedSettings) : {
-      // AI Model Configuration
-      aiModel: 'gpt-5-mini', // gpt-4, gpt-4-turbo, anthropic-claude-2, groq-1
-      llmProvider: 'openai', // openai, anthropic, groq
+      // AI Model Configuration - Enhanced with GPT-5 models, Claude, GitHub Copilot, Ollama
+      llmProvider: 'openai', // openai, anthropic, github-copilot, ollama
+      aiModel: 'gpt-5', // Default: GPT-5 flagship model
+      
+      // Available OpenAI Models:
+      // - gpt-5: Flagship model ($0.03/1K in, $0.12/1K out)
+      // - gpt-5-mini: Cost-effective ($0.015/1K in, $0.06/1K out)
+      // - gpt-5-nano: Ultra-efficient ($0.005/1K in, $0.02/1K out)
+      // - gpt-4o: Multimodal vision ($0.005/1K in, $0.015/1K out)
+      // - gpt-o1: Reasoning-optimized ($0.015/1K in, $0.06/1K out)
+      // - gpt-o3: Advanced reasoning ($0.01/1K in, $0.04/1K out)
+      
+      // Available Anthropic Models:
+      // - claude-3-5-sonnet-20241022: Recommended ($0.003/1K in, $0.015/1K out)
+      // - claude-3-opus-20240229: Most capable ($0.015/1K in, $0.075/1K out)
+      // - claude-3-haiku-20240307: Fast & affordable ($0.00025/1K in, $0.00125/1K out)
+      
+      // GitHub Copilot: Fixed monthly subscription ($10-$19/month)
+      // Ollama: Free localhost models (llama3.1, mistral, phi-3)
+      
+      temperature: 0.7, // 0.0-1.0 (lower = more focused)
+      maxTokens: 4096, // Maximum response length
       researchMode: true,
       citationValidation: true,
+      
+      // Cost Tracking
+      monthlyBudget: 50, // $50/month default
+      trackUsage: true,
+      showCostEstimates: true,
       
       // General Settings
       autoSave: true,
@@ -249,6 +341,12 @@ const App = () => {
       // Export Settings
       exportFormat: 'pdf',
       includeMetadata: true,
+      
+      // Bartleby Chatbot Settings
+      bartlebyEnabled: true,
+      bartlebyPosition: 'right', // left, right, bottom
+      bartlebyAutoOpen: false,
+      bartlebyPersonality: 'professional', // professional, casual, formal
     };
   });
 
@@ -260,7 +358,7 @@ const App = () => {
   // Settings change handler
   const handleSettingsChange = (newSettings) => {
     setSettings(newSettings);
-    addToast('⚙️ Settings updated', {
+    addToast(`${getIcon('complete')} Settings updated`, {
       severity: 'success',
       title: 'Settings Saved',
     });
@@ -304,7 +402,7 @@ const App = () => {
         savedAt: new Date().toISOString(),
       };
 
-      const result = await lawyerFactoryAPI.saveCaseState(caseName, stateToSave);
+      const result = await backendService.saveCaseState(caseName, stateToSave);
 
       if (result.success) {
         // Update case in local cases array
@@ -330,7 +428,7 @@ const App = () => {
           }
         });
 
-        addToast(`💾 Case "${caseName}" saved successfully`, {
+        addToast(`${getIcon('complete')} Case "${caseName}" saved successfully`, {
           severity: 'success',
           title: 'Case Saved',
         });
@@ -339,7 +437,7 @@ const App = () => {
       }
     } catch (error) {
       console.error('Failed to save case state:', error);
-      addToast(`❌ Failed to save case: ${error.message}`, {
+      addToast(`${getIcon('error')} Failed to save case: ${error.message}`, {
         severity: 'error',
         title: 'Save Failed',
       });
@@ -349,7 +447,7 @@ const App = () => {
   // Load application state for a case
   const loadCaseState = async (caseName) => {
     try {
-      const result = await lawyerFactoryAPI.loadCaseState(caseName);
+      const result = await backendService.loadCaseState(caseName);
 
       if (result.success && result.state) {
         const state = result.state;
@@ -365,7 +463,7 @@ const App = () => {
         setCurrentCaseId(state.currentCaseId || null);
         setCurrentCaseName(caseName);
 
-        addToast(`📂 Case "${caseName}" loaded successfully`, {
+        addToast(`${getIcon('database')} Case "${caseName}" loaded successfully`, {
           severity: 'success',
           title: 'Case Loaded',
         });
@@ -374,7 +472,7 @@ const App = () => {
       }
     } catch (error) {
       console.error('Failed to load case state:', error);
-      addToast(`❌ Failed to load case: ${error.message}`, {
+      addToast(`${getIcon('error')} Failed to load case: ${error.message}`, {
         severity: 'error',
         title: 'Load Failed',
       });
@@ -395,12 +493,12 @@ const App = () => {
 
     const initializeBackend = async () => {
       try {
-        const connected = await lawyerFactoryAPI.connect();
+        const connected = await backendService.connect();
         setIsBackendConnected(connected);
         backendInitialized.current = true;
 
         if (connected) {
-          addToast("✅ Connected to LawyerFactory backend", {
+          addToast(`${getIcon('complete')} Connected to LawyerFactory backend`, {
             severity: "success",
             title: "Backend Connected",
           });
@@ -422,14 +520,14 @@ const App = () => {
             console.warn('⚠️ Failed to load LLM config from environment:', error);
           }
         } else {
-          addToast("⚠️ Running in offline mode - using mock data", {
+          addToast(`${getIcon('warning')} Running in offline mode - using mock data`, {
             severity: "warning",
             title: "Offline Mode",
           });
         }
       } catch (error) {
         console.error("Backend initialization failed:", error);
-        addToast("❌ Backend connection failed - using offline mode", {
+        addToast(`${getIcon('error')} Backend connection failed - using offline mode`, {
           severity: "error",
           title: "Connection Failed",
         });
@@ -492,12 +590,12 @@ const App = () => {
       });
     };
 
-    lawyerFactoryAPI.onPhaseUpdate(handlePhaseUpdate);
+    backendService.onPhaseUpdate(handlePhaseUpdate);
 
     // Cleanup on component unmount
     return () => {
-      lawyerFactoryAPI.offPhaseUpdate(handlePhaseUpdate);
-      lawyerFactoryAPI.disconnect();
+      backendService.offPhaseUpdate(handlePhaseUpdate);
+      backendService.disconnect();
       backendInitialized.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -505,7 +603,7 @@ const App = () => {
 
   // Sync settings with API service whenever they change
   useEffect(() => {
-    lawyerFactoryAPI.updateSettings(settings);
+    backendService.updateSettings(settings);
   }, [settings]);
 
   // Load case documents when currentCaseId changes
@@ -573,7 +671,7 @@ const App = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [modalOpen, showSettings, showLegalIntake, showGuidedTour]);
+  }, [modalOpen, showSettings, showHelp, showLegalIntake, showGuidedTour]);
 
   const handleWizardComplete = (data) => {
     console.log("Lawsuit created:", data);
@@ -592,20 +690,6 @@ const App = () => {
 
   const ControlTerminalContainer = "app-container";
 
-  const handleLawsuitClick = (lawsuit) => {
-    setSelectedLawsuit(lawsuit);
-    setModalContent(
-      <Box>
-        <Typography variant="h6" gutterBottom>
-          {lawsuit.clientName} - {lawsuit.caseType}
-        </Typography>
-        <Typography>Status: {lawsuit.status}</Typography>
-        <Typography>Filed: {lawsuit.filedDate}</Typography>
-        <Typography>Jurisdiction: {lawsuit.jurisdiction}</Typography>
-      </Box>
-    );
-    setModalOpen(true);
-  };
 
   const handleModalClose = () => {
     setModalOpen(false);
@@ -638,7 +722,7 @@ const App = () => {
       }
 
       // Call LawyerFactory API for semantic search
-      if (lawyerFactoryAPI.isConnected) {
+      if (backendService.isConnected) {
         // TODO: Implement semantic search API endpoint
         // For now, show mock results
         const mockResults = [
@@ -761,7 +845,7 @@ const App = () => {
         setShowSettings(true);
         break;
       case "help":
-        setShowGuidedTour(true);
+        setShowHelp(true);
         break;
       default:
         addToast(`Action "${action}" triggered`, {
@@ -786,7 +870,7 @@ const App = () => {
       const caseName = generateCaseName(formData);
 
       // Create case using LawyerFactory API
-      const result = await lawyerFactoryAPI.createCase(formData);
+      const result = await backendService.createCase(formData);
       setCurrentCaseId(result.case_id);
       setCurrentCaseName(caseName);
 
@@ -816,7 +900,7 @@ const App = () => {
       if (formData.claimDescription && formData.claimDescription.trim()) {
         setTimeout(async () => {
           try {
-            await lawyerFactoryAPI.startResearchPhase(
+            await backendService.startResearchPhase(
               formData.claimDescription
             );
             addToast("🔍 Legal research phase initiated", {
@@ -954,7 +1038,7 @@ const App = () => {
   const renderClaimsView = () => (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Claims Matrix Analysis
+        {getIcon('analysis')} Claims Matrix Analysis
         <TooltipGuide
           title="Claims Matrix"
           content="Interactive legal analysis of causes of action with evidentiary requirements and Rule 12(b)(6) compliance checking."
@@ -972,7 +1056,7 @@ const App = () => {
   const renderShotListView = () => (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Shot List - Evidence Organization
+        {getIcon('evidence')} Shot List - Evidence Organization
         <TooltipGuide
           title="Shot List"
           content="Fact-by-fact organization of evidence with claim linkages and citation management."
@@ -996,7 +1080,7 @@ const App = () => {
   const renderOutlineView = () => (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Skeletal Outline System
+        {getIcon('outline')} Skeletal Outline System
         <TooltipGuide
           title="Skeletal Outline"
           content="FRCP-compliant blueprint for complaint creation, generated from claims matrix and evidence analysis."
@@ -1500,7 +1584,7 @@ const App = () => {
                 fontWeight: "bold",
                 color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
-              {isBackendConnected ? "🟢 Online" : "🔴 Offline"}
+              {isBackendConnected ? `${getIcon('active')} Online` : `${getIcon('error')} Offline`}
             </MechanicalButton>
             <div className="terminal-time">
               <NixieDisplay value={new Date().getHours()} digits={2} />
@@ -1604,7 +1688,7 @@ const App = () => {
                   fontWeight: "bold",
                   color: settings.darkMode ? "#ffffff" : "#1a1a1a",
                 }}>
-                🔍 SEARCH 
+                {getIcon('search')} SEARCH 
               </MechanicalButton>
               <MechanicalButton
                 onClick={() => setShowLegalIntake(true)}
@@ -1615,7 +1699,7 @@ const App = () => {
                   fontWeight: "bold",
                   color: settings.darkMode ? "#ffffff" : "#1a1a1a",
                 }}>
-                NEW CASE
+                {getIcon('start')} NEW CASE
               </MechanicalButton>
               <MechanicalButton
                 onClick={() => handleQuickAction("upload")}
@@ -1627,7 +1711,7 @@ const App = () => {
                   color: settings.darkMode ? "#ffffff" : "#1a1a1a",
                 }}
               >
-                📤 UPLOAD
+                {getIcon('upload')} UPLOAD
               </MechanicalButton>
               <MechanicalButton
                 onClick={() => setShowSettings(true)}
@@ -1641,7 +1725,7 @@ const App = () => {
                   color: settings.darkMode ? "#ffffff" : "#1a1a1a",
                 }}
               >
-                ⚙️ SETTINGS
+                {getIcon('settings')} SETTINGS
               </MechanicalButton>
             </div>
           </div>
@@ -1677,7 +1761,7 @@ const App = () => {
                 fontWeight: "bold",
                 color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
-              📊 Dashboard
+              {getIcon('system')} Dashboard
             </MechanicalButton>
             <MechanicalButton
               onClick={() => setCurrentView("evidence")}
@@ -1700,7 +1784,7 @@ const App = () => {
                 fontWeight: "bold",
                 color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
-              📁 Evidence
+              {getIcon('evidence')} Evidence
             </MechanicalButton>
             <MechanicalButton
               onClick={() => setCurrentView("pipeline")}
@@ -1723,7 +1807,7 @@ const App = () => {
                 fontWeight: "bold",
                 color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
-              ⚙️ Pipeline
+              {getIcon('pipeline')} Pipeline
             </MechanicalButton>
             <MechanicalButton
               onClick={() => setCurrentView("cases")}
@@ -1746,7 +1830,7 @@ const App = () => {
                 fontWeight: "bold",
                 color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
-              📋 Cases
+              {getIcon('briefcase')} Cases
             </MechanicalButton>
             <MechanicalButton
               onClick={() => setCurrentView("documents")}
@@ -1769,7 +1853,7 @@ const App = () => {
                 fontWeight: "bold",
                 color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
-              📄 Documents
+              {getIcon('document')} Documents
             </MechanicalButton>
             <MechanicalButton
               onClick={() => setCurrentView("claims")}
@@ -1792,7 +1876,7 @@ const App = () => {
                 fontWeight: "bold",
                 color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
-              🏗️ Claims
+              {getIcon('analysis')} Claims
             </MechanicalButton>
             <MechanicalButton
               onClick={() => setCurrentView("shotlist")}
@@ -1815,7 +1899,7 @@ const App = () => {
                 fontWeight: "bold",
                 color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
-              🎯 Shot List
+              {getIcon('evidence')} Shot List
             </MechanicalButton>
             <MechanicalButton
               onClick={() => setCurrentView("outline")}
@@ -1838,7 +1922,7 @@ const App = () => {
                 fontWeight: "bold",
                 color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
-              📋 Outline
+              {getIcon('outline')} Outline
             </MechanicalButton>
             <MechanicalButton
               onClick={() => setCurrentView("orchestration")}
@@ -1861,7 +1945,7 @@ const App = () => {
                 fontWeight: "bold",
                 color: settings.darkMode ? "#ffffff" : "#1a1a1a",
               }}>
-              🎛️ Orchestration
+              {getIcon('workflow')} Orchestration
             </MechanicalButton>
           </div>
 
@@ -1894,6 +1978,12 @@ const App = () => {
         onSettingsChange={handleSettingsChange}
       />
 
+      {/* Help Panel - USER_GUIDE.md Access */}
+      <HelpPanel
+        isOpen={showHelp}
+        onClose={() => setShowHelp(false)}
+      />
+
       {/* Confirmation Modal */}
       <ConfirmationModal
         open={showConfirmation}
@@ -1904,6 +1994,38 @@ const App = () => {
         confirmLabel={confirmationData?.confirmLabel}
         cancelLabel={confirmationData?.cancelLabel}
       />
+
+      {/* Bartleby AI Legal Clerk Chatbot */}
+      {settings.bartlebyEnabled && (
+        <BartlebyChatbot
+          currentCaseId={currentCaseId}
+          settings={settings}
+          skeletalOutline={skeletalOutline}
+          evidenceData={null} // Will be fetched by chatbot as needed
+          phaseStatuses={phaseStatuses}
+          onOutlineUpdate={(updatedOutline) => {
+            setSkeletalOutline(updatedOutline);
+            addToast(`${getIcon('complete')} Skeletal outline updated by Bartleby`, {
+              severity: 'success',
+              title: 'Outline Modified',
+            });
+          }}
+          onEvidenceUpdate={() => {
+            // Handle evidence table updates
+            addToast(`${getIcon('complete')} Evidence updated by Bartleby`, {
+              severity: 'success',
+              title: 'Evidence Modified',
+            });
+          }}
+          onResearchUpdate={() => {
+            // Handle research parameter updates
+            addToast(`${getIcon('complete')} Research parameters updated by Bartleby`, {
+              severity: 'success',
+              title: 'Research Updated',
+            });
+          }}
+        />
+      )}
     </ControlTerminalContainer>
   );
 };

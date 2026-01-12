@@ -56,6 +56,20 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useToast } from '../feedback/Toast';
+import {
+  getEvidenceTable,
+  addEvidenceEntry,
+  updateEvidenceEntry,
+  deleteEvidenceEntry,
+  downloadEvidenceFile,
+  getEvidenceStats,
+  exportEvidenceData,
+  executeResearchFromEvidence,
+  addFactAssertion,
+  linkEvidenceToFact,
+  addClaimEntry,
+  batchEvidenceOperations,
+} from '../../services/backendService';
 
 const EvidenceTable = ({
   caseId,
@@ -97,28 +111,28 @@ const EvidenceTable = ({
 
   const { addToast } = useToast();
 
-  // Load evidence data
+  // Load evidence data using consolidated backend service
   const loadEvidence = useCallback(async () => {
     setLoading(true);
     setError(null);
-    
-    try {
-      const params = new URLSearchParams();
-      if (caseId) params.append('case_id', caseId);
-      if (searchTerm) params.append('search', searchTerm);
-      params.append('page', page);
-      params.append('limit', rowsPerPage);
-      params.append('sort', `${orderBy}:${order}`);
 
-      const response = await fetch(`${apiEndpoint}?${params}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to load evidence: ${response.statusText}`);
+    try {
+      // Prepare filter options for the consolidated API
+      const filters = {
+        evidence_source: evidenceSourceFilter !== 'all' ? evidenceSourceFilter : undefined,
+        search: searchTerm || undefined,
+        phase: phaseFilter || undefined,
+      };
+
+      // Use the consolidated backend service
+      const data = await getEvidenceTable(filters);
+
+      if (data.success) {
+        setEvidenceData(data.evidence || []);
+      } else {
+        throw new Error(data.error || 'Failed to load evidence');
       }
 
-      const data = await response.json();
-      setEvidenceData(data.evidence || []);
-      
     } catch (err) {
       console.error('Error loading evidence:', err);
       setError(err.message);
@@ -129,7 +143,7 @@ const EvidenceTable = ({
     } finally {
       setLoading(false);
     }
-  }, [caseId, searchTerm, page, rowsPerPage, orderBy, order, apiEndpoint, addToast]);
+  }, [caseId, searchTerm, evidenceSourceFilter, phaseFilter, addToast]);
 
   // Initialize Socket.IO connection for real-time updates
   useEffect(() => {
@@ -286,12 +300,8 @@ const EvidenceTable = ({
 
   const handleDownload = async (evidence) => {
     try {
-      const response = await fetch(`${apiEndpoint}/${evidence.evidence_id}/download`);
-      if (!response.ok) {
-        throw new Error('Download failed');
-      }
+      const blob = await downloadEvidenceFile(evidence.evidence_id);
 
-      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -363,39 +373,31 @@ const EvidenceTable = ({
     handleMenuClose();
   };
 
-  // NEW: Execute research
+  // NEW: Execute research using consolidated backend service
   const handleExecuteResearch = async () => {
     if (!selectedEvidence) return;
 
     setResearchInProgress(true);
-    
+
     try {
-      const response = await fetch('/api/research/execute', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          case_id: caseId || 'default_case',
-          evidence_id: selectedEvidence.evidence_id,
-          keywords: researchKeywords ? researchKeywords.split(',').map(k => k.trim()) : null,
-          max_results: 5,
-        }),
-      });
+      const keywords = researchKeywords ? researchKeywords.split(',').map(k => k.trim()) : null;
 
-      if (!response.ok) {
-        throw new Error('Research request failed');
+      const result = await executeResearchFromEvidence(
+        selectedEvidence.evidence_id,
+        keywords
+      );
+
+      if (result.success) {
+        addToast(`Research started! ${result.message}`, {
+          severity: 'success',
+          title: 'Research Initiated',
+        });
+
+        setShowResearchDialog(false);
+        setResearchKeywords('');
+      } else {
+        throw new Error(result.error || 'Research request failed');
       }
-
-      const result = await response.json();
-      
-      addToast(`Research started! ${result.message}`, {
-        severity: 'success',
-        title: 'Research Initiated',
-      });
-
-      setShowResearchDialog(false);
-      setResearchKeywords('');
     } catch (err) {
       addToast(`Research failed: ${err.message}`, {
         severity: 'error',

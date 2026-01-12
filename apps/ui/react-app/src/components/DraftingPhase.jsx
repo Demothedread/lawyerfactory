@@ -10,9 +10,9 @@ import {
 import { Alert, Badge, Box, Button, Card, CardContent, CardHeader, Divider, LinearProgress, Tab, Tabs } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 
-import { generateSkeletalOutline, getClaimsMatrix, getSocket, startPhase } from '../services/apiService';
+import backendService from '../services/backendService';
 import ComplaintViewer from './ComplaintViewer';
-import StatementOfFactsViewer from './StatementOfFactsViewer';
+import StatementOfFactsViewer from './ui/StatementOfFactsViewer';
 
 /**
  * DraftingPhase - Complete drafting workflow component
@@ -37,7 +37,7 @@ const DraftingPhase = ({ caseId, onPhaseComplete }) => {
 
   // Socket.IO event handlers
   useEffect(() => {
-    const socket = getSocket();
+    const socket = backendService.getSocket();
     if (!socket) return;
 
     const handlePhaseUpdate = (data) => {
@@ -75,7 +75,7 @@ const DraftingPhase = ({ caseId, onPhaseComplete }) => {
   useEffect(() => {
     const loadClaimsMatrix = async () => {
       try {
-        const matrix = await getClaimsMatrix(caseId);
+        const matrix = await backendService.getClaimsMatrix(caseId);
         setClaimsMatrix(matrix);
       } catch (error) {
         console.error('Failed to load claims matrix:', error);
@@ -105,7 +105,7 @@ const DraftingPhase = ({ caseId, onPhaseComplete }) => {
     });
 
     try {
-      const outlineData = await generateSkeletalOutline(caseId, claimsMatrix);
+      const outlineData = await backendService.generateSkeletalOutline(caseId, claimsMatrix);
       setDocuments(prev => ({
         ...prev,
         skeletalOutline: outlineData
@@ -144,7 +144,7 @@ const DraftingPhase = ({ caseId, onPhaseComplete }) => {
     });
 
     try {
-      await startPhase('phaseB02_drafting', caseId, {
+      await backendService.startPhase('phaseB02_drafting', caseId, {
         skeletal_outline: documents.skeletalOutline,
         claims_matrix: claimsMatrix
       });
@@ -331,7 +331,7 @@ const DraftingPhase = ({ caseId, onPhaseComplete }) => {
 
         {/* Main Content Tabs */}
         <Box sx={{ width: '100%' }}>
-          <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
+          <Tabs value={activeTab} onChange={(_e, newValue) => setActiveTab(newValue)}>
             <Tab value="outline" label="Skeletal Outline" />
             <Tab value="facts" label="Statement of Facts" disabled={!documents.statementOfFacts} />
             <Tab value="complaint" label="Complaint" disabled={!documents.complaint} />

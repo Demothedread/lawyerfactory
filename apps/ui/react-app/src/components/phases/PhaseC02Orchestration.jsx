@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-import { apiService } from '../../services/apiService';
+import { backendService } from '../../services/backendService';
 
 const PhaseC02Orchestration = ({ caseId, onComplete, onClose }) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -25,7 +25,7 @@ const PhaseC02Orchestration = ({ caseId, onComplete, onClose }) => {
     const loadOrchestrationData = async () => {
       try {
         setLoading(true);
-        const data = await apiService.getOrchestrationResults(caseId);
+        const data = await backendService.getOrchestrationResults(caseId);
         setOrchestrationData(data);
       } catch (err) {
         setError(err.message);

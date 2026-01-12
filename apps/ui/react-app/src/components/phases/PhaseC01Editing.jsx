@@ -1,19 +1,19 @@
 // PhaseC01Editing - Final editing and formatting display
 
 import {
-    Alert,
-    Box,
-    Button,
-    Chip,
-    CircularProgress,
-    Paper,
-    Tab,
-    Tabs,
-    Typography,
+  Alert,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Paper,
+  Tab,
+  Tabs,
+  Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-import { apiService } from '../../services/apiService';
+import { backendService } from '../../services/backendService';
 
 const PhaseC01Editing = ({ caseId, onComplete, onClose }) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -25,7 +25,7 @@ const PhaseC01Editing = ({ caseId, onComplete, onClose }) => {
     const loadEditingData = async () => {
       try {
         setLoading(true);
-        const data = await apiService.getEditingResults(caseId);
+        const data = await backendService.getEditingResults(caseId);
         setEditingData(data);
       } catch (err) {
         setError(err.message);

@@ -15,15 +15,17 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-import apiService from '../../services/apiService';
+import backendService from '../../services/backendService';
 import ClaimsMatrix from '../ui/ClaimsMatrix';
 import ShotList from '../ui/ShotList';
 import SkeletalOutlineSystem from '../ui/SkeletalOutlineSystem';
+import StatementOfFactsViewer from '../ui/StatementOfFactsViewer';
 
 const PhaseB01Review = ({ caseId, onApprove, onClose }) => {
   const [activeTab, setActiveTab] = useState(0);
   const [deliverables, setDeliverables] = useState(null);
   const [approvals, setApprovals] = useState({
+    statementOfFacts: false,
     shotlist: false,
     claimsMatrix: false,
     skeletalOutline: false
@@ -31,12 +33,14 @@ const PhaseB01Review = ({ caseId, onApprove, onClose }) => {
   const [validation, setValidation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sofContent, setSofContent] = useState(null);
+  const [sofDialogOpen, setSofDialogOpen] = useState(false);
 
   useEffect(() => {
     const loadDeliverables = async () => {
       try {
         setLoading(true);
-        const data = await apiService.validateDeliverables(caseId);
+        const data = await backendService.validateDeliverables(caseId);
         setDeliverables(data.deliverables);
         setValidation(data.validation);
       } catch (err) {
@@ -164,6 +168,14 @@ const PhaseB01Review = ({ caseId, onApprove, onClose }) => {
           <Tab
             label={
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                Statement of Facts
+                {approvals.statementOfFacts && <CheckCircle sx={{ color: 'var(--neon-green)', fontSize: '16px' }} />}
+              </Box>
+            }
+          />
+          <Tab
+            label={
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 Shotlist Timeline
                 {approvals.shotlist && <CheckCircle sx={{ color: 'var(--neon-green)', fontSize: '16px' }} />}
               </Box>
@@ -189,8 +201,53 @@ const PhaseB01Review = ({ caseId, onApprove, onClose }) => {
 
         {/* Tab Panels */}
         <Box sx={{ p: 3, minHeight: '400px' }}>
+          {/* Statement of Facts Tab */}
+          {activeTab === 0 && (
+            <Box>
+              <Typography variant="h6" sx={{ color: 'var(--neon-cyan)', mb: 2 }}>
+                📄 Statement of Facts (Rule 12(b)(6) Compliant)
+              </Typography>
+              
+              <Alert severity="info" sx={{ mb: 2 }}>
+                <Typography variant="body2">
+                  <strong>Rule 12(b)(6) Compliance:</strong> This Statement of Facts includes jurisdiction, venue, and ripeness determinations. 
+                  Review for factual accuracy and legal sufficiency before proceeding to drafting.
+                </Typography>
+              </Alert>
+              
+              {sofContent ? (
+                <StatementOfFactsViewer 
+                  documentData={sofContent}
+                  caseId={caseId}
+                />
+              ) : (
+                <Typography sx={{ color: 'var(--text-secondary)', p: 2 }}>
+                  Statement of Facts will be generated from extracted facts and evidence mapping.
+                </Typography>
+              )}
+              
+              <Box sx={{ mt: 2 }}>
+                <Button
+                  variant="contained"
+                  onClick={() => handleApprove('statementOfFacts')}
+                  sx={{
+                    backgroundColor: approvals.statementOfFacts ? 'var(--neon-green)' : 'var(--neon-cyan)',
+                    color: '#000',
+                    mr: 1
+                  }}
+                >
+                  {approvals.statementOfFacts ? '✅ Approved' : 'Approve SOF'}
+                </Button>
+                <Chip 
+                  label={approvals.statementOfFacts ? 'Approved' : 'Pending'} 
+                  color={approvals.statementOfFacts ? 'success' : 'warning'} 
+                />
+              </Box>
+            </Box>
+          )}
+
           {/* Shotlist Tab */}
-          {activeTab === 0 && deliverables && (
+          {activeTab === 1 && deliverables && (
             <Box>
               <Typography variant="h6" sx={{ color: 'var(--neon-cyan)', mb: 2 }}>
                 📊 Chronological Fact Timeline
@@ -207,12 +264,25 @@ const PhaseB01Review = ({ caseId, onApprove, onClose }) => {
                 onApprove={() => handleApprove('shotlist')}
               />
               
-              <Chip label={approvals.shotlist ? 'Approved' : 'Pending'} color={approvals.shotlist ? 'success' : 'warning'} />
+              <Box sx={{ mt: 2 }}>
+                <Button
+                  variant="contained"
+                  onClick={() => handleApprove('shotlist')}
+                  sx={{
+                    backgroundColor: approvals.shotlist ? 'var(--neon-green)' : 'var(--neon-cyan)',
+                    color: '#000',
+                    mr: 1
+                  }}
+                >
+                  {approvals.shotlist ? '✅ Approved' : 'Approve Shotlist'}
+                </Button>
+                <Chip label={approvals.shotlist ? 'Approved' : 'Pending'} color={approvals.shotlist ? 'success' : 'warning'} />
+              </Box>
             </Box>
           )}
 
           {/* Claims Matrix Tab */}
-          {activeTab === 1 && deliverables && (
+          {activeTab === 2 && deliverables && (
             <Box>
               <Typography variant="h6" sx={{ color: 'var(--neon-cyan)', mb: 2 }}>
                 📋 Legal Claims Analysis
@@ -228,12 +298,25 @@ const PhaseB01Review = ({ caseId, onApprove, onClose }) => {
                 onApprove={() => handleApprove('claimsMatrix')}
               />
               
-              <Chip label={approvals.claimsMatrix ? 'Approved' : 'Pending'} color={approvals.claimsMatrix ? 'success' : 'warning'} />
+              <Box sx={{ mt: 2 }}>
+                <Button
+                  variant="contained"
+                  onClick={() => handleApprove('claimsMatrix')}
+                  sx={{
+                    backgroundColor: approvals.claimsMatrix ? 'var(--neon-green)' : 'var(--neon-cyan)',
+                    color: '#000',
+                    mr: 1
+                  }}
+                >
+                  {approvals.claimsMatrix ? '✅ Approved' : 'Approve Matrix'}
+                </Button>
+                <Chip label={approvals.claimsMatrix ? 'Approved' : 'Pending'} color={approvals.claimsMatrix ? 'success' : 'warning'} />
+              </Box>
             </Box>
           )}
 
           {/* Skeletal Outline Tab */}
-          {activeTab === 2 && deliverables && (
+          {activeTab === 3 && deliverables && (
             <Box>
               <Typography variant="h6" sx={{ color: 'var(--neon-cyan)', mb: 2 }}>
                 📄 FRCP-Compliant Document Structure
@@ -274,7 +357,7 @@ const PhaseB01Review = ({ caseId, onApprove, onClose }) => {
             <Typography variant="body2" sx={{ color: '#999' }}>
               {allApproved
                 ? 'Ready to proceed to Phase B02 - Document Drafting'
-                : `${Object.values(approvals).filter(v => v).length} of 3 deliverables approved`}
+                : `${Object.values(approvals).filter(v => v).length} of 4 deliverables approved`}
             </Typography>
           </Box>
 

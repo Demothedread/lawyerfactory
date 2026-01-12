@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-import { apiService } from '../../services/apiService';
+import { backendService } from '../../services/backendService';
 import ClaimsMatrix from '../ui/ClaimsMatrix';
 import SkeletalOutlineSystem from '../ui/SkeletalOutlineSystem';
 
@@ -27,7 +27,7 @@ const PhaseA03Outline = ({ caseId, onComplete, onClose }) => {
     const loadOutlineData = async () => {
       try {
         setLoading(true);
-        const data = await apiService.getOutlineResults(caseId);
+        const data = await backendService.getOutlineResults(caseId);
         setOutlineData(data);
       } catch (err) {
         setError(err.message);

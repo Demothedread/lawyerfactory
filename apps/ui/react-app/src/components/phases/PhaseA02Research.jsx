@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-import { apiService } from '../../services/apiService';
+import { backendService } from '../../services/backendService';
 
 const PhaseA02Research = ({ caseId, onComplete, onClose }) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -25,7 +25,7 @@ const PhaseA02Research = ({ caseId, onComplete, onClose }) => {
     const loadResearchData = async () => {
       try {
         setLoading(true);
-        const data = await apiService.getResearchResults(caseId);
+        const data = await backendService.getResearchResults(caseId);
         setResearchData(data);
       } catch (err) {
         setError(err.message);
