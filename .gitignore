@@ -98,6 +98,22 @@ google_api_key.txt
 *_token.*
 bearer_token.*
 
+# Node modules
+node_modules/
+
+# Local Storage & Databases
+qdrant_storage/
+vector_clusters/
+enhanced_vector_stores/
+_trash_staging/
+uploads/
+output/
+maestro/bots/
+
+# System
+.DS_Store
+Thumbs.db
+
 # Database Files
 *.db
 *.sqlite
@@ -219,3 +235,20 @@ Pipfile.lock
 
 # uv
 uv.lock
+
+# Database & Storage
+qdrant_storage/
+_trash_staging/
+enhanced_vector_stores/
+vector_clusters/
+backups/
+
+
+# Root Data Files
+evidence_table.json
+knowledge_graph.json
+local_vectors.jsonl
+vector_backup.json
+dep_graph.json
+inventory.json
+
