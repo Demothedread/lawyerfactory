@@ -109,6 +109,17 @@ _trash_staging/
 uploads/
 output/
 maestro/bots/
+scripts/logs/
+scripts/redundancy_report.json
+
+# Large generated docs
+docs/components/current_tree.md
+
+# Court files (keep local only)
+docs/Court_files/
+
+# Test artifacts
+tests/screenshots/
 
 # System
 .DS_Store
