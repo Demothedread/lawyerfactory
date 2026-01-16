@@ -1,0 +1,665 @@
+"""
+# Script Name: document_validator.py
+# Description: Document Validator for LawyerFactory  Validates generated legal documents against similar cases in the vector store, ensuring consistency with successful litigation patterns and compliance with jurisdiction-specific requirements.
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Document Generation
+#   - Group Tags: null
+Document Validator for LawyerFactory
+
+Validates generated legal documents against similar cases in the vector store,
+ensuring consistency with successful litigation patterns and compliance with
+jurisdiction-specific requirements.
+"""
+
+from dataclasses import dataclass, field
+from datetime import datetime
+import json
+import logging
+import re
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ValidationResult:
+    """Result of document validation"""
+
+    overall_score: float = 0.0
+    structural_similarity: float = 0.0
+    language_similarity: float = 0.0
+    legal_compliance_score: float = 0.0
+    issues: List[str] = field(default_factory=list)
+    recommendations: List[str] = field(default_factory=list)
+    similar_cases: List[Dict[str, Any]] = field(default_factory=list)
+    validation_metadata: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class DocumentStructure:
+    """Analyzed structure of a legal document"""
+
+    sections: List[str] = field(default_factory=list)
+    word_count: int = 0
+    paragraph_count: int = 0
+    average_paragraph_length: float = 0.0
+    citation_count: int = 0
+    numbered_paragraphs: int = 0
+    has_prayer_for_relief: bool = False
+    has_verification: bool = False
+    has_certificate_of_service: bool = False
+
+
+class VectorStoreClient:
+    """Client for querying the vector store"""
+
+    def __init__(self, base_url: str = "http://localhost:6333"):
+        self.base_url = base_url
+
+    async def search_similar_cases(
+        self, query_embedding: List[float], filters: Dict[str, Any], limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        """Search for similar cases in vector store"""
+        try:
+            # This would make actual API calls to the vector store
+            # For now, return mock results
+            return [
+                {
+                    "case_name": f"Similar Case {i+1}",
+                    "score": 0.85 - (i * 0.05),
+                    "jurisdiction": filters.get("jurisdiction", "california"),
+                    "outcome": "successful" if i < 3 else "mixed",
+                    "word_count": 2500 + (i * 200),
+                    "sections": [
+                        "Caption",
+                        "Introduction",
+                        "Jurisdiction",
+                        "Factual Allegations",
+                        "Prayer for Relief",
+                    ],
+                }
+                for i in range(min(limit, 5))
+            ]
+        except Exception as e:
+            logger.error(f"Vector store search failed: {e}")
+            return []
+
+    async def get_embedding(self, text: str) -> List[float]:
+        """Get embedding for text (mock implementation)"""
+        # In practice, this would call an embedding service
+        # Return a mock embedding
+        return [0.1] * 384  # Mock 384-dimensional embedding
+
+
+class DocumentValidator:
+    """Validates legal documents against similar cases and best practices"""
+
+    def __init__(self, vector_store_client: Optional[VectorStoreClient] = None):
+        self.vector_store = vector_store_client or VectorStoreClient()
+        self.compliance_rules = self._load_compliance_rules()
+
+    def _load_compliance_rules(self) -> Dict[str, Any]:
+        """Load jurisdiction-specific compliance rules"""
+        return {
+            "california": {
+                "required_sections": [
+                    "caption",
+                    "introduction",
+                    "jurisdiction_venue",
+                    "factual_allegations",
+                    "prayer_for_relief",
+                ],
+                "preferred_word_count": {"min": 1500, "max": 5000},
+                "paragraph_numbering": "required",
+                "verification": "required_for_complaints",
+                "certificate_of_service": "required",
+            },
+            "federal": {
+                "required_sections": [
+                    "caption",
+                    "introduction",
+                    "jurisdiction_venue",
+                    "factual_allegations",
+                    "prayer_for_relief",
+                ],
+                "preferred_word_count": {"min": 2000, "max": 10000},
+                "paragraph_numbering": "required",
+                "verification": "not_required",
+                "certificate_of_service": "required",
+            },
+        }
+
+    async def validate_document(
+        self, document: str, context: Dict[str, Any]
+    ) -> ValidationResult:
+        """
+        Validate document against similar cases and compliance rules
+
+        Args:
+            document: The document text to validate
+            context: Context including jurisdiction, case type, etc.
+
+        Returns:
+            ValidationResult with scores and recommendations
+        """
+        logger.info("Starting document validation")
+
+        result = ValidationResult()
+
+        try:
+            # Analyze document structure
+            doc_structure = self._analyze_document_structure(document)
+
+            # Get similar cases from vector store
+            similar_cases = await self._get_similar_cases(document, context)
+
+            # Calculate similarity scores
+            structural_similarity = self._calculate_structural_similarity(
+                doc_structure, similar_cases
+            )
+            language_similarity = await self._calculate_language_similarity(
+                document, similar_cases
+            )
+
+            # Check compliance
+            compliance_score = self._check_compliance(
+                document, context.get("jurisdiction", "california")
+            )
+
+            # Calculate overall score
+            result.overall_score = (
+                structural_similarity * 0.4
+                + language_similarity * 0.3
+                + compliance_score * 0.3
+            )
+
+            result.structural_similarity = structural_similarity
+            result.language_similarity = language_similarity
+            result.legal_compliance_score = compliance_score
+            result.similar_cases = similar_cases
+
+            # Generate issues and recommendations
+            result.issues = self._identify_issues(document, doc_structure, context)
+            result.recommendations = self._generate_recommendations(
+                result.issues, doc_structure, similar_cases, context
+            )
+
+            result.validation_metadata = {
+                "document_word_count": doc_structure.word_count,
+                "document_sections": len(doc_structure.sections),
+                "similar_cases_found": len(similar_cases),
+                "validation_timestamp": datetime.now().isoformat(),
+            }
+
+            logger.info(
+                f"Document validation completed. Score: {result.overall_score:.2f}"
+            )
+            return result
+
+        except Exception as e:
+            logger.exception(f"Document validation failed: {e}")
+            result.issues.append(f"Validation error: {str(e)}")
+            result.recommendations.append(
+                "Manual review recommended due to validation error"
+            )
+            return result
+
+    def _analyze_document_structure(self, document: str) -> DocumentStructure:
+        """Analyze the structure of the document"""
+        structure = DocumentStructure()
+
+        # Split into sections (basic heuristic)
+        sections = re.split(r"\n\s*\n\s*(?=[A-Z][A-Z\s]+)", document)
+        structure.sections = [s.strip() for s in sections if s.strip()]
+        structure.word_count = len(document.split())
+        structure.paragraph_count = len([p for p in document.split("\n") if p.strip()])
+
+        if structure.paragraph_count > 0:
+            structure.average_paragraph_length = (
+                structure.word_count / structure.paragraph_count
+            )
+
+        # Count citations (basic regex)
+        citation_pattern = r"\d+\s+[A-Za-z\.]+\s+\d+"
+        structure.citation_count = len(re.findall(citation_pattern, document))
+
+        # Count numbered paragraphs
+        numbered_pattern = r"^\d+\.\s"
+        structure.numbered_paragraphs = len(
+            re.findall(numbered_pattern, document, re.MULTILINE)
+        )
+
+        # Check for key sections
+        doc_lower = document.lower()
+        structure.has_prayer_for_relief = (
+            "prayer for relief" in doc_lower or "wherefore" in doc_lower
+        )
+        structure.has_verification = "verification" in doc_lower
+        structure.has_certificate_of_service = "certificate of service" in doc_lower
+
+        return structure
+
+    async def _get_similar_cases(
+        self, document: str, context: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """Get similar cases from vector store"""
+        try:
+            # Create embedding for document
+            embedding = await self.vector_store.get_embedding(document)
+
+            # Create filters based on context
+            filters = {
+                "jurisdiction": context.get("jurisdiction", "california"),
+                "case_type": context.get("case_type", "complaint"),
+                "defendant_type": context.get("defendant_type", "corporation"),
+            }
+
+            # Search for similar cases
+            similar_cases = await self.vector_store.search_similar_cases(
+                embedding, filters, limit=10
+            )
+
+            return similar_cases
+
+        except Exception as e:
+            logger.error(f"Failed to get similar cases: {e}")
+            return []
+
+    def _calculate_structural_similarity(
+        self, doc_structure: DocumentStructure, similar_cases: List[Dict[str, Any]]
+    ) -> float:
+        """Calculate structural similarity to successful cases"""
+        if not similar_cases:
+            return 0.5  # Neutral score if no comparison available
+
+        total_similarity = 0.0
+
+        for case in similar_cases:
+            similarity = 0.0
+
+            # Word count similarity (within 20% is good)
+            case_word_count = case.get("word_count", 2000)
+            word_diff = (
+                abs(doc_structure.word_count - case_word_count) / case_word_count
+            )
+            if word_diff <= 0.2:
+                similarity += 0.3
+
+            # Section count similarity
+            case_sections = len(case.get("sections", []))
+            if abs(len(doc_structure.sections) - case_sections) <= 2:
+                similarity += 0.3
+
+            # Key elements presence
+            if doc_structure.has_prayer_for_relief:
+                similarity += 0.2
+            if (
+                doc_structure.has_verification
+                or doc_structure.has_certificate_of_service
+            ):
+                similarity += 0.2
+
+            total_similarity += similarity
+
+        return min(total_similarity / len(similar_cases), 1.0)
+
+    async def _calculate_language_similarity(
+        self, document: str, similar_cases: List[Dict[str, Any]]
+    ) -> float:
+        """Calculate language similarity to successful cases"""
+        if not similar_cases:
+            return 0.5
+
+        # This would use more sophisticated NLP analysis in practice
+        # For now, use basic keyword matching and structure analysis
+
+        successful_cases = [
+            case for case in similar_cases if case.get("outcome") == "successful"
+        ]
+
+        if not successful_cases:
+            return 0.5
+
+        # Extract key phrases from document
+        doc_phrases = self._extract_key_phrases(document)
+
+        total_similarity = 0.0
+        for case in successful_cases:
+            # In practice, this would compare embeddings or use NLP similarity
+            case_similarity = len(
+                set(doc_phrases) & set(case.get("key_phrases", []))
+            ) / len(doc_phrases)
+            total_similarity += case_similarity
+
+        return min(total_similarity / len(successful_cases), 1.0)
+
+    def _extract_key_phrases(self, text: str) -> List[str]:
+        """Extract key legal phrases from text"""
+        # Simple extraction - in practice would use NLP
+        phrases = []
+
+        legal_terms = [
+            "jurisdiction",
+            "venue",
+            "allegations",
+            "complaint",
+            "defendant",
+            "plaintiff",
+            "wherefore",
+            "prayer for relief",
+            "verification",
+            "certificate of service",
+            "proximate cause",
+            "damages",
+        ]
+
+        text_lower = text.lower()
+        for term in legal_terms:
+            if term in text_lower:
+                phrases.append(term)
+
+        return phrases
+
+    def _check_compliance(self, document: str, jurisdiction: str) -> float:
+        """Check document compliance with jurisdiction rules"""
+        rules = self.compliance_rules.get(
+            jurisdiction.lower(), self.compliance_rules["california"]
+        )
+
+        compliance_score = 0.0
+        total_checks = 0
+
+        # Check required sections
+        doc_lower = document.lower()
+        for section in rules["required_sections"]:
+            total_checks += 1
+            if section.replace("_", " ") in doc_lower:
+                compliance_score += 1
+
+        # Check word count
+        word_count = len(document.split())
+        preferred_range = rules["preferred_word_count"]
+        if preferred_range["min"] <= word_count <= preferred_range["max"]:
+            compliance_score += 1
+        total_checks += 1
+
+        # Check paragraph numbering
+        if rules["paragraph_numbering"] == "required":
+            if re.search(r"^\d+\.\s", document, re.MULTILINE):
+                compliance_score += 1
+            total_checks += 1
+
+        # Check verification requirements
+        if rules["verification"] == "required_for_complaints":
+            if "verification" in doc_lower:
+                compliance_score += 1
+            total_checks += 1
+
+        # Check certificate of service
+        if rules["certificate_of_service"] == "required":
+            if "certificate of service" in doc_lower:
+                compliance_score += 1
+            total_checks += 1
+
+        return compliance_score / total_checks if total_checks > 0 else 0.5
+
+    def _identify_issues(
+        self, document: str, structure: DocumentStructure, context: Dict[str, Any]
+    ) -> List[str]:
+        """Identify issues in the document"""
+        issues = []
+
+        # Word count issues
+        jurisdiction = context.get("jurisdiction", "california")
+        rules = self.compliance_rules.get(
+            jurisdiction.lower(), self.compliance_rules["california"]
+        )
+        preferred_range = rules["preferred_word_count"]
+
+        if structure.word_count < preferred_range["min"]:
+            issues.append(
+                f"Document is too short ({structure.word_count} words). Recommended minimum: {preferred_range['min']}"
+            )
+
+        if structure.word_count > preferred_range["max"]:
+            issues.append(
+                f"Document is too long ({structure.word_count} words). Recommended maximum: {preferred_range['max']}"
+            )
+
+        # Missing key sections
+        if not structure.has_prayer_for_relief:
+            issues.append("Missing Prayer for Relief section")
+
+        if not structure.has_verification and jurisdiction.lower() == "california":
+            issues.append(
+                "Missing Verification section (required for California complaints)"
+            )
+
+        if not structure.has_certificate_of_service:
+            issues.append("Missing Certificate of Service section")
+
+        # Citation issues
+        if structure.citation_count == 0:
+            issues.append(
+                "No legal citations found. Consider adding relevant case law."
+            )
+
+        # Paragraph numbering
+        if structure.numbered_paragraphs < 10:
+            issues.append(
+                "Limited numbered paragraphs. Consider expanding factual allegations."
+            )
+
+        return issues
+
+    def _generate_recommendations(
+        self,
+        issues: List[str],
+        structure: DocumentStructure,
+        similar_cases: List[Dict[str, Any]],
+        context: Dict[str, Any],
+    ) -> List[str]:
+        """Generate recommendations based on issues and similar cases"""
+        recommendations = []
+
+        # Address specific issues
+        for issue in issues:
+            if "too short" in issue:
+                recommendations.append(
+                    "Expand factual allegations with more specific details"
+                )
+                recommendations.append(
+                    "Add more background information about the parties"
+                )
+
+            elif "too long" in issue:
+                recommendations.append("Consider removing redundant allegations")
+                recommendations.append(
+                    "Focus on the most important facts supporting your claims"
+                )
+
+            elif "Missing" in issue and "Prayer" in issue:
+                recommendations.append("Add a comprehensive Prayer for Relief section")
+
+            elif "Missing" in issue and "Verification" in issue:
+                recommendations.append(
+                    "Add a Verification section with plaintiff's signature"
+                )
+
+            elif "Missing" in issue and "Certificate" in issue:
+                recommendations.append("Add a Certificate of Service section")
+
+            elif "citations" in issue:
+                recommendations.append(
+                    "Research and add relevant case law supporting your claims"
+                )
+                recommendations.append(
+                    "Include binding authority from your jurisdiction"
+                )
+
+        # General recommendations based on similar cases
+        if similar_cases:
+            successful_cases = [
+                case for case in similar_cases if case.get("outcome") == "successful"
+            ]
+            if successful_cases:
+                avg_word_count = sum(
+                    case.get("word_count", 2000) for case in successful_cases
+                ) / len(successful_cases)
+                recommendations.append(
+                    f"Consider targeting around {int(avg_word_count)} words based on similar successful cases"
+                )
+
+        # Jurisdiction-specific recommendations
+        jurisdiction = context.get("jurisdiction", "california")
+        if jurisdiction.lower() == "california":
+            recommendations.append(
+                "Ensure all allegations are specific and plead ultimate facts"
+            )
+            recommendations.append(
+                "Consider adding a demand for jury trial if appropriate"
+            )
+
+        elif "federal" in jurisdiction.lower():
+            recommendations.append(
+                "Ensure compliance with Federal Rule of Civil Procedure 8"
+            )
+            recommendations.append(
+                "Consider whether the case qualifies for federal jurisdiction"
+            )
+
+        return recommendations
+
+    async def compare_with_similar_cases(
+        self, document: str, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Compare document with similar cases to identify patterns and improvements"""
+        similar_cases = await self._get_similar_cases(document, context)
+
+        if not similar_cases:
+            return {"error": "No similar cases found for comparison"}
+
+        # Analyze patterns
+        patterns = {
+            "common_sections": self._analyze_common_sections(similar_cases),
+            "successful_language_patterns": self._analyze_language_patterns(
+                similar_cases
+            ),
+            "typical_word_counts": self._analyze_word_count_patterns(similar_cases),
+            "citation_patterns": self._analyze_citation_patterns(similar_cases),
+        }
+
+        return {
+            "patterns": patterns,
+            "comparison_summary": self._generate_comparison_summary(
+                document, similar_cases
+            ),
+            "improvement_suggestions": self._generate_improvement_suggestions(
+                document, patterns
+            ),
+        }
+
+    def _analyze_common_sections(self, cases: List[Dict[str, Any]]) -> List[str]:
+        """Analyze common sections across similar cases"""
+        all_sections = []
+        for case in cases:
+            all_sections.extend(case.get("sections", []))
+
+        # Count frequency of each section
+        section_counts = {}
+        for section in all_sections:
+            section_counts[section] = section_counts.get(section, 0) + 1
+
+        # Return sections that appear in at least 50% of cases
+        threshold = len(cases) * 0.5
+        common_sections = [
+            section for section, count in section_counts.items() if count >= threshold
+        ]
+
+        return common_sections
+
+    def _analyze_language_patterns(self, cases: List[Dict[str, Any]]) -> List[str]:
+        """Analyze successful language patterns"""
+        # This would use NLP to identify common phrases and structures
+        # For now, return mock patterns
+        return [
+            "clear and concise factual allegations",
+            "specific dates and locations",
+            "proper legal terminology",
+            "logical flow of allegations",
+        ]
+
+    def _analyze_word_count_patterns(
+        self, cases: List[Dict[str, Any]]
+    ) -> Dict[str, int]:
+        """Analyze word count patterns"""
+        word_counts = [case.get("word_count", 2000) for case in cases]
+        return {
+            "average": int(sum(word_counts) / len(word_counts)),
+            "minimum": min(word_counts),
+            "maximum": max(word_counts),
+        }
+
+    def _analyze_citation_patterns(self, cases: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Analyze citation patterns in similar cases"""
+        # Mock analysis
+        return {
+            "average_citations_per_case": 5,
+            "common_citation_types": ["case law", "statutes"],
+            "jurisdiction_focus": "binding authority preferred",
+        }
+
+    def _generate_comparison_summary(
+        self, document: str, similar_cases: List[Dict[str, Any]]
+    ) -> str:
+        """Generate summary of comparison with similar cases"""
+        doc_word_count = len(document.split())
+        avg_similar_word_count = sum(
+            case.get("word_count", 2000) for case in similar_cases
+        ) / len(similar_cases)
+
+        return f"""
+        Document comparison summary:
+        - Your document: {doc_word_count} words
+        - Similar cases average: {int(avg_similar_word_count)} words
+        - Found {len(similar_cases)} similar cases for comparison
+        - Analysis complete
+        """
+
+    def _generate_improvement_suggestions(
+        self, document: str, patterns: Dict[str, Any]
+    ) -> List[str]:
+        """Generate improvement suggestions based on patterns"""
+        suggestions = []
+
+        # Word count suggestions
+        doc_word_count = len(document.split())
+        word_count_patterns = patterns.get("typical_word_counts", {})
+        avg_count = word_count_patterns.get("average", 2000)
+
+        if doc_word_count < avg_count * 0.8:
+            suggestions.append(
+                f"Consider expanding to around {avg_count} words to match similar successful cases"
+            )
+        elif doc_word_count > avg_count * 1.2:
+            suggestions.append(
+                f"Consider condensing to around {avg_count} words to match similar successful cases"
+            )
+
+        # Section suggestions
+        common_sections = patterns.get("common_sections", [])
+        suggestions.append(
+            f"Ensure your document includes these common sections: {', '.join(common_sections)}"
+        )
+
+        # Language suggestions
+        language_patterns = patterns.get("successful_language_patterns", [])
+        if language_patterns:
+            suggestions.append(
+                f"Consider using these successful language patterns: {', '.join(language_patterns)}"
+            )
+
+        return suggestions

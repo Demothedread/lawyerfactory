@@ -1,0 +1,587 @@
+"""
+# Script Name: citations.py
+# Description: Post-Production Legal Citations Validation Module  This module provides Bluebook citation format validation and correction for legal documents.
+# Relationships:
+#   - Entity Type: Module
+#   - Directory Group: Core
+#   - Group Tags: null
+Post-Production Legal Citations Validation Module
+
+This module provides Bluebook citation format validation and correction
+for legal documents.
+"""
+
+from dataclasses import dataclass
+from enum import Enum
+import logging
+import re
+from typing import Any, Dict, List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
+
+
+class CitationType(Enum):
+    """Types of legal citations"""
+
+    CASE = "case"
+    STATUTE = "statute"
+    REGULATION = "regulation"
+    CONSTITUTION = "constitution"
+    SECONDARY = "secondary"
+    JOURNAL = "journal"
+    BOOK = "book"
+    UNKNOWN = "unknown"
+
+
+class CitationStatus(Enum):
+    """Status of citation validation"""
+
+    VALID = "valid"
+    INVALID = "invalid"
+    NEEDS_CORRECTION = "needs_correction"
+    INCOMPLETE = "incomplete"
+    UNKNOWN_FORMAT = "unknown_format"
+
+
+@dataclass
+class CitationError:
+    """Represents a citation error"""
+
+    error_type: str
+    description: str
+    suggested_fix: Optional[str] = None
+    severity: str = "medium"  # low, medium, high
+
+
+@dataclass
+class CitationValidationResult:
+    """Result of citation validation"""
+
+    citation_id: str
+    original_text: str
+    citation_type: CitationType
+    status: CitationStatus
+    errors: List[CitationError]
+    corrected_text: Optional[str]
+    confidence_score: float
+    validation_notes: str
+
+
+@dataclass
+class CitationReport:
+    """Comprehensive citation validation report"""
+
+    document_id: str
+    total_citations: int
+    valid_citations: int
+    invalid_citations: int
+    corrected_citations: int
+    unknown_citations: int
+    citation_results: List[CitationValidationResult]
+    overall_compliance_score: float
+    summary_notes: str
+    created_at: str
+
+
+class BluebookValidator:
+    """
+    Advanced Bluebook citation validator for legal documents.
+
+    Validates and corrects legal citations according to Bluebook format rules.
+    """
+
+    def __init__(self):
+        """Initialize the BluebookValidator"""
+        self._load_citation_patterns()
+        self.validation_cache = {}
+        logger.info("BluebookValidator initialized")
+
+    def _load_citation_patterns(self):
+        """Load regex patterns for different citation types"""
+        self.patterns = {
+            CitationType.CASE: [
+                # Basic case citation: Party v. Party, Volume Reporter Page (Court Year)
+                r"([A-Z][^,]+)\s+v\.\s+([A-Z][^,]+),\s+(\d+)\s+([A-Za-z\.]+)\s+(\d+)\s*\(([^)]+)\s+(\d{4})\)",
+                # Case with pinpoint: Party v. Party, Volume Reporter Page, Pinpoint (Court Year)
+                r"([A-Z][^,]+)\s+v\.\s+([A-Z][^,]+),\s+(\d+)\s+([A-Za-z\.]+)\s+(\d+),\s+(\d+)\s*\(([^)]+)\s+(\d{4})\)",
+            ],
+            CitationType.STATUTE: [
+                # Federal statute: Title U.S.C. § Section (Year)
+                r"(\d+)\s+U\.S\.C\.\s+§\s+(\d+[a-z]?(?:\([^)]+\))?)\s*\((\d{4})\)",
+                # State statute: State Code § Section
+                r"([A-Z][a-z]+\.?\s+[A-Za-z\.]+)\s+§\s+(\d+[a-z]?(?:\([^)]+\))?)",
+            ],
+            CitationType.REGULATION: [
+                # CFR citation: Title C.F.R. § Section (Year)
+                r"(\d+)\s+C\.F\.R\.\s+§\s+(\d+(?:\.\d+)*[a-z]?)\s*\((\d{4})\)",
+                # Federal Register: Volume Fed. Reg. Page (Date)
+                r"(\d+)\s+Fed\.\s+Reg\.\s+(\d+)\s*\([A-Z][a-z]+\.?\s+\d+,\s+\d{4}\)",
+            ],
+            CitationType.CONSTITUTION: [
+                # U.S. Constitution: U.S. Const. art./amend. Section
+                r"U\.S\.\s+Const\.\s+(art\.|amend\.)\s+([IVX]+|\d+)(?:,\s+§\s+(\d+))?",
+                # State Constitution: State Const. provision
+                r"([A-Z][a-z]+\.?)\s+Const\.\s+(art\.|§)\s+([IVX]+|\d+)",
+            ],
+        }
+
+        # Common citation elements patterns
+        self.element_patterns = {
+            "year": r"\((\d{4})\)",
+            "pinpoint": r",\s+(\d+)",
+            "court": r"\(([^)]+\s+\d{4})\)",
+            "reporter": r"(\d+)\s+([A-Za-z\.]+)\s+(\d+)",
+            "section": r"§\s+(\d+[a-z]?(?:\([^)]+\))?)",
+        }
+
+    async def validate_document_citations(
+        self, document_content: str
+    ) -> CitationReport:
+        """
+        Validate all citations in a document.
+
+        Args:
+            document_content: The document text to validate
+
+        Returns:
+            CitationReport: Comprehensive validation report
+        """
+        logger.info("Starting citation validation")
+
+        # Extract citations from document
+        citations = self._extract_citations(document_content)
+
+        # Validate each citation
+        citation_results = []
+        for citation in citations:
+            result = await self._validate_single_citation(citation)
+            citation_results.append(result)
+
+        # Generate report
+        report = self._generate_citation_report(document_content, citation_results)
+
+        logger.info(
+            f"Citation validation completed. {report.valid_citations}/{report.total_citations} citations valid"
+        )
+        return report
+
+    def _extract_citations(self, document_content: str) -> List[Dict[str, Any]]:
+        """Extract potential citations from document content"""
+        citations = []
+        citation_id = 0
+
+        # Look for patterns that might be citations
+        # This is a simplified extraction - in production, use more sophisticated NLP
+
+        # Split into sentences and look for citation-like patterns
+        sentences = re.split(r"[.!?]+", document_content)
+
+        for sentence_idx, sentence in enumerate(sentences):
+            sentence = sentence.strip()
+
+            # Look for common citation indicators
+            citation_indicators = [
+                r"\bv\.\s+\b",  # "v." indicates case citation
+                r"\bU\.S\.C\.\b",  # USC statute
+                r"\bC\.F\.R\.\b",  # CFR regulation
+                r"\bConst\.\b",  # Constitution
+                r"\d+\s+[A-Za-z\.]+\s+\d+",  # Volume Reporter Page pattern
+                r"§\s+\d+",  # Section symbol
+            ]
+
+            for pattern in citation_indicators:
+                if re.search(pattern, sentence):
+                    citations.append(
+                        {
+                            "id": f"cite_{citation_id}",
+                            "text": sentence,
+                            "position": sentence_idx,
+                            "context": self._get_citation_context(
+                                document_content, sentence
+                            ),
+                        }
+                    )
+                    citation_id += 1
+                    break  # Only count each sentence once
+
+        logger.debug(f"Extracted {len(citations)} potential citations")
+        return citations
+
+    def _get_citation_context(self, document_content: str, citation_text: str) -> str:
+        """Get surrounding context for a citation"""
+        start_pos = document_content.find(citation_text)
+        if start_pos == -1:
+            return ""
+
+        # Get 100 characters before and after
+        context_start = max(0, start_pos - 100)
+        context_end = min(len(document_content), start_pos + len(citation_text) + 100)
+
+        return document_content[context_start:context_end].strip()
+
+    async def _validate_single_citation(
+        self, citation: Dict[str, Any]
+    ) -> CitationValidationResult:
+        """Validate a single citation"""
+
+        # Check cache first
+        cache_key = citation["text"]
+        if cache_key in self.validation_cache:
+            return self.validation_cache[cache_key]
+
+        citation_text = citation["text"]
+
+        # Determine citation type
+        citation_type = self._classify_citation_type(citation_text)
+
+        # Validate format
+        errors = []
+        corrected_text = None
+        confidence_score = 0.0
+        validation_notes = ""
+
+        if citation_type != CitationType.UNKNOWN:
+            errors = self._check_citation_format(citation_text, citation_type)
+            corrected_text = self._suggest_correction(
+                citation_text, citation_type, errors
+            )
+            confidence_score = self._calculate_confidence(
+                citation_text, citation_type, errors
+            )
+            validation_notes = self._generate_validation_notes(citation_type, errors)
+        else:
+            errors.append(
+                CitationError(
+                    error_type="unknown_format",
+                    description="Citation format not recognized",
+                    suggested_fix="Verify citation follows Bluebook format",
+                    severity="high",
+                )
+            )
+            validation_notes = "Citation format not recognized by validator"
+
+        # Determine overall status
+        status = self._determine_citation_status(errors, confidence_score)
+
+        result = CitationValidationResult(
+            citation_id=citation["id"],
+            original_text=citation_text,
+            citation_type=citation_type,
+            status=status,
+            errors=errors,
+            corrected_text=corrected_text,
+            confidence_score=confidence_score,
+            validation_notes=validation_notes,
+        )
+
+        # Cache the result
+        self.validation_cache[cache_key] = result
+
+        return result
+
+    def _classify_citation_type(self, citation_text: str) -> CitationType:
+        """Classify the type of citation"""
+        text_lower = citation_text.lower()
+
+        if " v. " in text_lower and any(
+            reporter in text_lower
+            for reporter in ["f.", "f.2d", "f.3d", "u.s.", "sup. ct."]
+        ):
+            return CitationType.CASE
+        elif "u.s.c." in text_lower or "§" in citation_text:
+            return CitationType.STATUTE
+        elif "c.f.r." in text_lower or "fed. reg." in text_lower:
+            return CitationType.REGULATION
+        elif "const." in text_lower:
+            return CitationType.CONSTITUTION
+        elif any(
+            indicator in text_lower
+            for indicator in ["law review", "j.", "rev.", "harv.", "yale"]
+        ):
+            return CitationType.JOURNAL
+        else:
+            return CitationType.UNKNOWN
+
+    def _check_citation_format(
+        self, citation_text: str, citation_type: CitationType
+    ) -> List[CitationError]:
+        """Check citation format for errors"""
+        errors = []
+
+        if citation_type in self.patterns:
+            pattern_matched = False
+            for pattern in self.patterns[citation_type]:
+                if re.search(pattern, citation_text):
+                    pattern_matched = True
+                    break
+
+            if not pattern_matched:
+                errors.append(
+                    CitationError(
+                        error_type="format_mismatch",
+                        description=f"Citation does not match standard {citation_type.value} format",
+                        suggested_fix=f"Review Bluebook rules for {citation_type.value} citations",
+                        severity="high",
+                    )
+                )
+
+        # Check for common formatting errors
+        errors.extend(self._check_common_errors(citation_text, citation_type))
+
+        return errors
+
+    def _check_common_errors(
+        self, citation_text: str, citation_type: CitationType
+    ) -> List[CitationError]:
+        """Check for common citation errors"""
+        errors = []
+
+        # Check for missing periods
+        if citation_type == CitationType.CASE:
+            if " v " in citation_text and " v. " not in citation_text:
+                errors.append(
+                    CitationError(
+                        error_type="missing_period",
+                        description="Missing period after 'v' in case citation",
+                        suggested_fix="Change 'v' to 'v.'",
+                        severity="medium",
+                    )
+                )
+
+        # Check for incorrect spacing
+        if re.search(r"\s{2,}", citation_text):
+            errors.append(
+                CitationError(
+                    error_type="extra_spacing",
+                    description="Extra spaces found in citation",
+                    suggested_fix="Remove extra spaces",
+                    severity="low",
+                )
+            )
+
+        # Check for missing parentheses around year/court
+        if citation_type == CitationType.CASE:
+            year_match = re.search(r"\b(\d{4})\b", citation_text)
+            if year_match and f"({year_match.group(1)})" not in citation_text:
+                errors.append(
+                    CitationError(
+                        error_type="missing_parentheses",
+                        description="Year should be in parentheses",
+                        suggested_fix=f"Change {year_match.group(1)} to ({year_match.group(1)})",
+                        severity="medium",
+                    )
+                )
+
+        # Check for incorrect abbreviations
+        common_abbreviations = {
+            "United States": "U.S.",
+            "Federal": "Fed.",
+            "Supreme Court": "Sup. Ct.",
+            "Circuit": "Cir.",
+            "District": "D.",
+        }
+
+        for full_form, abbrev in common_abbreviations.items():
+            if full_form in citation_text and abbrev not in citation_text:
+                errors.append(
+                    CitationError(
+                        error_type="incorrect_abbreviation",
+                        description=f"'{full_form}' should be abbreviated as '{abbrev}'",
+                        suggested_fix=f"Change '{full_form}' to '{abbrev}'",
+                        severity="medium",
+                    )
+                )
+
+        return errors
+
+    def _suggest_correction(
+        self,
+        citation_text: str,
+        citation_type: CitationType,
+        errors: List[CitationError],
+    ) -> Optional[str]:
+        """Suggest a corrected version of the citation"""
+        if not errors:
+            return None
+
+        corrected = citation_text
+
+        # Apply corrections based on errors
+        for error in errors:
+            if error.error_type == "missing_period" and error.suggested_fix:
+                if "Change 'v' to 'v.'" in error.suggested_fix:
+                    corrected = re.sub(r"\bv\b", "v.", corrected)
+
+            elif error.error_type == "extra_spacing":
+                corrected = re.sub(r"\s{2,}", " ", corrected)
+
+            elif error.error_type == "missing_parentheses":
+                year_match = re.search(r"\b(\d{4})\b", corrected)
+                if year_match and f"({year_match.group(1)})" not in corrected:
+                    corrected = corrected.replace(
+                        year_match.group(1), f"({year_match.group(1)})"
+                    )
+
+            elif error.error_type == "incorrect_abbreviation":
+                # Apply common abbreviation fixes
+                abbreviation_fixes = {
+                    "United States": "U.S.",
+                    "Federal": "Fed.",
+                    "Supreme Court": "Sup. Ct.",
+                    "Circuit": "Cir.",
+                    "District": "D.",
+                }
+                for full_form, abbrev in abbreviation_fixes.items():
+                    corrected = corrected.replace(full_form, abbrev)
+
+        return corrected if corrected != citation_text else None
+
+    def _calculate_confidence(
+        self,
+        citation_text: str,
+        citation_type: CitationType,
+        errors: List[CitationError],
+    ) -> float:
+        """Calculate confidence score for citation validation"""
+        base_confidence = 0.8 if citation_type != CitationType.UNKNOWN else 0.2
+
+        # Reduce confidence based on errors
+        error_penalty = 0.0
+        for error in errors:
+            if error.severity == "high":
+                error_penalty += 0.3
+            elif error.severity == "medium":
+                error_penalty += 0.15
+            else:  # low
+                error_penalty += 0.05
+
+        confidence = max(0.1, base_confidence - error_penalty)
+        return min(0.95, confidence)
+
+    def _generate_validation_notes(
+        self, citation_type: CitationType, errors: List[CitationError]
+    ) -> str:
+        """Generate validation notes"""
+        if not errors:
+            return f"Valid {citation_type.value} citation format"
+
+        error_count = len(errors)
+        high_severity = sum(1 for e in errors if e.severity == "high")
+
+        if high_severity > 0:
+            return f"Citation has {error_count} format error(s), including {high_severity} high-severity issue(s)"
+        else:
+            return f"Citation has {error_count} minor format error(s)"
+
+    def _determine_citation_status(
+        self, errors: List[CitationError], confidence_score: float
+    ) -> CitationStatus:
+        """Determine overall citation status"""
+        if not errors:
+            return CitationStatus.VALID
+
+        high_severity_errors = [e for e in errors if e.severity == "high"]
+
+        if high_severity_errors:
+            if any(e.error_type == "unknown_format" for e in high_severity_errors):
+                return CitationStatus.UNKNOWN_FORMAT
+            else:
+                return CitationStatus.INVALID
+        elif confidence_score > 0.7:
+            return CitationStatus.NEEDS_CORRECTION
+        else:
+            return CitationStatus.INCOMPLETE
+
+    def _generate_citation_report(
+        self, document_content: str, citation_results: List[CitationValidationResult]
+    ) -> CitationReport:
+        """Generate comprehensive citation report"""
+
+        total_citations = len(citation_results)
+        valid_citations = sum(
+            1 for r in citation_results if r.status == CitationStatus.VALID
+        )
+        invalid_citations = sum(
+            1 for r in citation_results if r.status == CitationStatus.INVALID
+        )
+        corrected_citations = sum(
+            1 for r in citation_results if r.corrected_text is not None
+        )
+        unknown_citations = sum(
+            1 for r in citation_results if r.status == CitationStatus.UNKNOWN_FORMAT
+        )
+
+        if total_citations > 0:
+            compliance_score = (
+                valid_citations + (corrected_citations * 0.8)
+            ) / total_citations
+        else:
+            compliance_score = 1.0  # No citations means no citation errors
+
+        # Generate summary notes
+        summary_lines = [
+            f"Citation validation completed for {total_citations} citations.",
+            f"Bluebook compliance: {compliance_score*100:.1f}%",
+        ]
+
+        if invalid_citations > 0:
+            summary_lines.append(
+                f"⚠️ {invalid_citations} citations are invalid and require correction."
+            )
+        if unknown_citations > 0:
+            summary_lines.append(
+                f"❓ {unknown_citations} citations use unrecognized formats."
+            )
+        if corrected_citations > 0:
+            summary_lines.append(
+                f"✏️ {corrected_citations} citations have suggested corrections."
+            )
+
+        summary_notes = " ".join(summary_lines)
+
+        from datetime import datetime
+
+        return CitationReport(
+            document_id=f"doc_{hash(document_content[:100]) % 10000}",
+            total_citations=total_citations,
+            valid_citations=valid_citations,
+            invalid_citations=invalid_citations,
+            corrected_citations=corrected_citations,
+            unknown_citations=unknown_citations,
+            citation_results=citation_results,
+            overall_compliance_score=compliance_score,
+            summary_notes=summary_notes,
+            created_at=datetime.now().isoformat(),
+        )
+
+
+# Utility functions for external use
+async def validate_citations_quick(document_content: str) -> CitationReport:
+    """Quick citation validation"""
+    validator = BluebookValidator()
+    return await validator.validate_document_citations(document_content)
+
+
+def get_citation_examples() -> Dict[str, List[str]]:
+    """Get examples of properly formatted citations"""
+    return {
+        "case": [
+            "Brown v. Board of Education, 347 U.S. 483 (1954)",
+            "Miranda v. Arizona, 384 U.S. 436, 444 (1966)",
+            "Roe v. Wade, 410 U.S. 113 (1973)",
+        ],
+        "statute": [
+            "42 U.S.C. § 1983 (2018)",
+            "15 U.S.C. § 1692(a) (2020)",
+            "Cal. Civ. Code § 1798.100 (West 2020)",
+        ],
+        "regulation": [
+            "29 C.F.R. § 1630.2(o) (2021)",
+            "Federal Trade Commission Rule, 85 Fed. Reg. 12345 (Mar. 15, 2020)",
+        ],
+        "constitution": [
+            "U.S. Const. amend. XIV, § 1",
+            "U.S. Const. art. I, § 8",
+            "Cal. Const. art. I, § 7",
+        ],
+    }

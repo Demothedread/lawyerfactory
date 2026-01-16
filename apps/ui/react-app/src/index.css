@@ -1,0 +1,174 @@
+/* Enhanced Soviet Industrial Font System */
+/* Import Typekit fonts properly */
+@import url("https://use.typekit.net/qgi2eqz.css");
+
+/* Custom font declarations for Soviet industrial aesthetic */
+@font-face {
+  font-family: 'BAUHHL';
+  src: url('./fonts/BAUHHL.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Athene';
+  src: url('./fonts/Athene.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'BauhausBold';
+  src: url('./fonts/BauhausBoldItalic.ttf') format('truetype');
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
+
+                                                                                                           @font-face {
+  font-family: 'strelka';
+  src: url("https://use.typekit.net/af/309598/0000000000000000775c2ea6/31/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n8&v=3") format("woff2"),
+       url("https://use.typekit.net/af/309598/0000000000000000775c2ea6/31/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n8&v=3") format("woff"),
+       url("https://use.typekit.net/af/309598/0000000000000000775c2ea6/31/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n8&v=3") format("opentype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 800;
+  font-stretch: normal;
+}
+
+
+
+@font-face {
+  font-family: 'elevon';
+  src: url(http://typekit.com/eulas/00000000000000007735fd34) format("woff2"), 
+  url(http://typekit.com/eulas/00000000000000007735fd2b) format("woff"), 
+  url(http://typekit.com/eulas/00000000000000007735fd3a) format("opentype");
+  font-display: swap;
+  font-style: normal;
+}
+
+/* Additional Soviet-era inspired fonts */
+@font-face {
+  font-family: 'kievit';
+  src: url("https://use.typekit.net/af/8a5e80/00000000000000007735b21e/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff2"),
+       url("https://use.typekit.net/af/8a5e80/00000000000000007735b21e/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'proxima-nova';
+  src: url("https://use.typekit.net/af/67f761/00000000000000007735b7e8/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff2"),
+       url("https://use.typekit.net/af/67f761/00000000000000007735b7e8/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3") format("woff");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+} 
+
+:root {
+  font-family: 'proxima-nova', 'kievit', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.95);
+  background-color: #1a1a1a;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Enhanced contrast variables */
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.87);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #242424;
+  --accent-primary: #39ff14;
+  --accent-secondary: #00ffff;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-family: 'strelka', 'BAUHHL', 'Athene', system-ui, 'Segoe UI', sans-serif;
+  font-size: 4.2em;
+  line-height: 1.1;
+  font-weight: 800;
+  color: var(--text-primary);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+h2, h3, h4, h5, h6 {
+  font-family: 'strelka', 'BAUHHL', system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+p, span, div {
+  color: var(--text-secondary);
+}
+
+button {
+  border-radius: 8px;
+  border: 2px solid var(--accent-secondary);
+  padding: 0.8em 1.5em;
+  font-size: 1em;
+  font-weight: 600;
+  font-family: 'strelka', 'proxima-nova', inherit;
+  background-color: rgba(26, 26, 26, 0.9);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+button:hover {
+  border-color: var(--accent-primary);
+  background-color: rgba(57, 255, 20, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(57, 255, 20, 0.3);
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #1a1a1a;
+    background-color: #ffffff;
+    --text-primary: #1a1a1a;
+    --text-secondary: rgba(26, 26, 26, 0.87);
+    --text-muted: rgba(26, 26, 26, 0.6);
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f5;
+  }
+  a:hover {
+    color: #0066cc;
+  }
+  button {
+    background-color: rgba(245, 245, 245, 0.9);
+    color: var(--text-primary);
+  }
+  button:hover {
+    background-color: rgba(57, 255, 20, 0.15);
+  }
+}

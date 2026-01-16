@@ -1,0 +1,665 @@
+"""
+# Script Name: legal_validation_agent.py
+# Description: Legal Validation Agent for LawyerFactory Orchestration Phase.  This agent provides rigorous legal validation and quality assurance before documents proceed to final generation. It performs comprehensive checks of:  - Legal logic soundness and coherence - Case precedent accuracy and applicability - Rule of law completeness and proper breakdown - Legal test/standard correct invocation - Jurisdictional applicability - Analytical accuracy and completeness  The agent ensures that all legal claims meet the highest standards of professional legal writing and are ready for court filing.
+# Relationships:
+#   - Entity Type: Agent
+#   - Directory Group: Orchestration
+#   - Group Tags: null
+Legal Validation Agent for LawyerFactory Orchestration Phase.
+
+This agent provides rigorous legal validation and quality assurance before
+documents proceed to final generation. It performs comprehensive checks of:
+
+- Legal logic soundness and coherence
+- Case precedent accuracy and applicability
+- Rule of law completeness and proper breakdown
+- Legal test/standard correct invocation
+- Jurisdictional applicability
+- Analytical accuracy and completeness
+
+The agent ensures that all legal claims meet the highest standards of
+professional legal writing and are ready for court filing.
+"""
+
+from dataclasses import dataclass, field
+from enum import Enum
+import logging
+from typing import Any, Dict, List, Optional
+
+from ...compose.maestro.registry import AgentCapability, AgentInterface
+from ...compose.maestro.workflow_models import WorkflowTask
+
+logger = logging.getLogger(__name__)
+
+
+class ValidationSeverity(Enum):
+    """Severity levels for validation issues"""
+
+    CRITICAL = "critical"  # Blocks progression
+    MAJOR = "major"  # Requires revision
+    MINOR = "minor"  # Suggestion for improvement
+    INFO = "info"  # Informational only
+
+
+@dataclass
+class ValidationIssue:
+    """Represents a legal validation issue"""
+
+    issue_type: str
+    description: str
+    severity: ValidationSeverity
+    location: str  # Where in the document the issue occurs
+    suggestion: str
+    legal_authority: Optional[str] = None
+    confidence_score: float = 0.0
+
+
+@dataclass
+class ValidationReport:
+    """Comprehensive validation report"""
+
+    overall_score: float
+    issues: List[ValidationIssue] = field(default_factory=list)
+    strengths: List[str] = field(default_factory=list)
+    recommendations: List[str] = field(default_factory=list)
+    ready_for_progression: bool = False
+    summary: str = ""
+
+
+class LegalValidationAgent(AgentInterface):
+    """Agent that performs comprehensive legal validation"""
+
+    def __init__(self, knowledge_graph=None):
+        self.knowledge_graph = knowledge_graph
+        self.capabilities = [
+            AgentCapability.LEGAL_RESEARCH,
+            AgentCapability.CASE_ANALYSIS,
+        ]
+
+        # Load validation rules and standards
+        self._load_validation_framework()
+
+    def _load_validation_framework(self):
+        """Load comprehensive legal validation framework"""
+        self.validation_rules = {
+            "precedent_accuracy": {
+                "description": "Case precedent must accurately support the proposition for which it is cited",
+                "checks": [
+                    "holding_matches_citation",
+                    "facts_sufficiently_similar",
+                    "jurisdiction_appropriate",
+                    "subsequent_case_modification",
+                ],
+            },
+            "rule_completeness": {
+                "description": "Legal rules must be completely and accurately stated",
+                "checks": [
+                    "elements_fully_enumerated",
+                    "exceptions_not_omitted",
+                    "jurisdictional_limitations",
+                    "recent_modifications",
+                ],
+            },
+            "test_application": {
+                "description": "Legal tests and standards must be correctly invoked and applied",
+                "checks": [
+                    "correct_test_selected",
+                    "proper_burden_of_proof",
+                    "elements_satisfied",
+                    "balancing_test_applied",
+                ],
+            },
+            "jurisdictional_analysis": {
+                "description": "Jurisdictional requirements must be properly analyzed",
+                "checks": [
+                    "subject_matter_jurisdiction",
+                    "personal_jurisdiction",
+                    "venue_proper",
+                    "removal_considerations",
+                ],
+            },
+            "logical_coherence": {
+                "description": "Legal arguments must be logically sound and coherent",
+                "checks": [
+                    "no_contradictions",
+                    "proper_syllogistic_structure",
+                    "premises_supported",
+                    "conclusion_follows",
+                ],
+            },
+        }
+
+        self.irac_requirements = {
+            "issue": [
+                "clear_statement_of_legal_question",
+                "specific_parties_and_relief",
+                "jurisdictional_context",
+            ],
+            "rule": [
+                "complete_statement_of_applicable_law",
+                "proper_citation_to_authority",
+                "consideration_of_conflicting_authority",
+            ],
+            "application": [
+                "specific_facts_applied_to_rule",
+                "element_by_element_analysis",
+                "consideration_of_counterarguments",
+            ],
+            "conclusion": [
+                "clear_answer_to_issue",
+                "supported_by_analysis",
+                "consideration_of_remedies",
+            ],
+        }
+
+    async def process(self, message: str) -> str:
+        """Process a natural language request for legal validation"""
+        try:
+            # Extract legal content from message
+            legal_content = self._extract_legal_content(message)
+
+            # Perform comprehensive validation
+            report = await self.validate_legal_content(legal_content)
+
+            # Generate response
+            response = "Legal Validation Analysis:\n\n"
+            response += f"Overall Score: {report.overall_score:.1%}\n"
+            response += f"Status: {'Ready for Progression' if report.ready_for_progression else 'Requires Revision'}\n\n"
+
+            if report.issues:
+                response += "Issues Found:\n"
+                for issue in report.issues[:5]:  # Show top 5 issues
+                    response += (
+                        f"• {issue.severity.value.upper()}: {issue.description}\n"
+                    )
+                    if issue.suggestion:
+                        response += f"  Suggestion: {issue.suggestion}\n"
+                response += "\n"
+
+            if report.recommendations:
+                response += "Recommendations:\n"
+                for rec in report.recommendations[:3]:
+                    response += f"• {rec}\n"
+                response += "\n"
+
+            response += f"Summary: {report.summary}"
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Error processing validation request: {e}")
+            return f"Error performing legal validation: {str(e)}"
+
+    async def execute_task(
+        self, task: WorkflowTask, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Execute a workflow task related to legal validation"""
+        try:
+            # Extract legal content from context
+            legal_content = self._extract_legal_content_from_context(context)
+
+            # Perform validation
+            report = await self.validate_legal_content(legal_content)
+
+            # Generate detailed analysis
+            analysis = self._generate_validation_analysis(report)
+
+            return {
+                "status": "completed",
+                "validation_report": report.__dict__,
+                "analysis": analysis,
+                "ready_for_progression": report.ready_for_progression,
+                "critical_issues": len(
+                    [
+                        i
+                        for i in report.issues
+                        if i.severity == ValidationSeverity.CRITICAL
+                    ]
+                ),
+            }
+
+        except Exception as e:
+            logger.error(f"Error executing validation task: {e}")
+            return {
+                "status": "failed",
+                "error": str(e),
+                "validation_report": None,
+                "analysis": "",
+                "ready_for_progression": False,
+                "critical_issues": 0,
+            }
+
+    async def health_check(self) -> bool:
+        """Check if the agent is functioning properly"""
+        try:
+            # Test basic functionality
+            test_content = {"claims": [{"title": "Test Claim"}]}
+            report = await self.validate_legal_content(test_content)
+            return True
+        except Exception as e:
+            logger.error(f"Health check failed: {e}")
+            return False
+
+    async def initialize(self) -> None:
+        """Initialize the agent"""
+        try:
+            logger.info("Legal Validation Agent initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize Legal Validation Agent: {e}")
+
+    async def cleanup(self) -> None:
+        """Clean up resources"""
+        pass
+
+    async def can_handle_task(self, task: WorkflowTask) -> bool:
+        """Check if this agent can handle the given task"""
+        task_text = f"{task.description} {task.agent_type}".lower()
+        return any(
+            keyword in task_text
+            for keyword in [
+                "validate",
+                "review",
+                "check",
+                "legal",
+                "analysis",
+                "verify",
+            ]
+        )
+
+    async def validate_legal_content(self, content: Dict[str, Any]) -> ValidationReport:
+        """Perform comprehensive legal validation"""
+        report = ValidationReport(
+            overall_score=1.0, issues=[], strengths=[], recommendations=[]
+        )
+
+        # Validate claims
+        if "claims" in content:
+            claim_issues = await self._validate_claims(content["claims"])
+            report.issues.extend(claim_issues)
+
+        # Validate IRAC structure
+        if "irac_analysis" in content:
+            irac_issues = await self._validate_irac_structure(content["irac_analysis"])
+            report.issues.extend(irac_issues)
+
+        # Validate legal authorities
+        if "authorities" in content:
+            authority_issues = await self._validate_authorities(content["authorities"])
+            report.issues.extend(authority_issues)
+
+        # Validate jurisdictional analysis
+        if "jurisdiction" in content:
+            jurisdiction_issues = await self._validate_jurisdiction(
+                content["jurisdiction"]
+            )
+            report.issues.extend(jurisdiction_issues)
+
+        # Calculate overall score
+        report.overall_score = self._calculate_validation_score(report.issues)
+
+        # Determine if ready for progression
+        critical_issues = [
+            i for i in report.issues if i.severity == ValidationSeverity.CRITICAL
+        ]
+        report.ready_for_progression = (
+            len(critical_issues) == 0 and report.overall_score >= 0.8
+        )
+
+        # Generate summary
+        report.summary = self._generate_validation_summary(report)
+
+        return report
+
+    async def _validate_claims(
+        self, claims: List[Dict[str, Any]]
+    ) -> List[ValidationIssue]:
+        """Validate legal claims for sufficiency and accuracy"""
+        issues = []
+
+        for i, claim in enumerate(claims):
+            if isinstance(claim, dict):
+                claim_title = claim.get("title", f"Claim {i+1}")
+
+                # Check for conclusory allegations
+                if self._is_conclusory(claim):
+                    issues.append(
+                        ValidationIssue(
+                            issue_type="conclusory_allegation",
+                            description=f"Claim '{claim_title}' contains conclusory allegations without factual support",
+                            severity=ValidationSeverity.MAJOR,
+                            location=f"Claim {i+1}",
+                            suggestion="Replace conclusory statements with specific factual allegations that support each element",
+                        )
+                    )
+
+                # Check for missing elements
+                missing_elements = self._identify_missing_elements(claim)
+                if missing_elements:
+                    issues.append(
+                        ValidationIssue(
+                            issue_type="missing_elements",
+                            description=f"Claim '{claim_title}' missing required elements: {', '.join(missing_elements)}",
+                            severity=ValidationSeverity.CRITICAL,
+                            location=f"Claim {i+1}",
+                            suggestion="Add factual allegations supporting all required elements of the claim",
+                        )
+                    )
+
+                # Check for proper pleading standard
+                if not self._meets_pleading_standard(claim):
+                    issues.append(
+                        ValidationIssue(
+                            issue_type="insufficient_pleading",
+                            description=f"Claim '{claim_title}' does not meet Rule 12(b)(6) pleading standards",
+                            severity=ValidationSeverity.CRITICAL,
+                            location=f"Claim {i+1}",
+                            suggestion="Ensure claim alleges sufficient facts to state a plausible claim for relief",
+                        )
+                    )
+
+        return issues
+
+    async def _validate_irac_structure(
+        self, irac_analysis: Dict[str, Any]
+    ) -> List[ValidationIssue]:
+        """Validate IRAC structure completeness and accuracy"""
+        issues = []
+
+        for component, requirements in self.irac_requirements.items():
+            if component in irac_analysis:
+                content = irac_analysis[component]
+
+                # Check for completeness
+                if not content or len(str(content).strip()) < 50:
+                    issues.append(
+                        ValidationIssue(
+                            issue_type="incomplete_irac",
+                            description=f"IRAC {component.upper()} section is incomplete or too brief",
+                            severity=ValidationSeverity.MAJOR,
+                            location=f"IRAC {component.upper()}",
+                            suggestion=f"Expand {component.upper()} section with more detailed analysis",
+                        )
+                    )
+
+                # Check for proper legal analysis
+                if component == "rule" and not self._contains_proper_citation(content):
+                    issues.append(
+                        ValidationIssue(
+                            issue_type="missing_citation",
+                            description="Rule section missing proper legal citation",
+                            severity=ValidationSeverity.MAJOR,
+                            location="IRAC Rule",
+                            suggestion="Add proper Bluebook citation to legal authority",
+                        )
+                    )
+
+                if component == "application" and not self._contains_fact_application(
+                    content
+                ):
+                    issues.append(
+                        ValidationIssue(
+                            issue_type="insufficient_analysis",
+                            description="Application section does not sufficiently apply facts to rule",
+                            severity=ValidationSeverity.MAJOR,
+                            location="IRAC Application",
+                            suggestion="Provide specific analysis of how facts satisfy each element of the rule",
+                        )
+                    )
+
+        return issues
+
+    async def _validate_authorities(
+        self, authorities: List[Dict[str, Any]]
+    ) -> List[ValidationIssue]:
+        """Validate cited legal authorities"""
+        issues = []
+
+        for i, authority in enumerate(authorities):
+            if isinstance(authority, dict):
+                citation = authority.get("citation", "")
+                holding = authority.get("holding", "")
+
+                # Check citation format
+                if not self._is_proper_citation(citation):
+                    issues.append(
+                        ValidationIssue(
+                            issue_type="improper_citation",
+                            description=f"Improper citation format: {citation}",
+                            severity=ValidationSeverity.MINOR,
+                            location=f"Authority {i+1}",
+                            suggestion="Ensure citation follows Bluebook format",
+                        )
+                    )
+
+                # Check if holding supports proposition
+                if not self._holding_supports_proposition(
+                    holding, authority.get("proposition", "")
+                ):
+                    issues.append(
+                        ValidationIssue(
+                            issue_type="unsupported_proposition",
+                            description="Case holding does not support the cited proposition",
+                            severity=ValidationSeverity.MAJOR,
+                            location=f"Authority {i+1}",
+                            suggestion="Select case with holding more directly supporting your proposition",
+                        )
+                    )
+
+        return issues
+
+    async def _validate_jurisdiction(
+        self, jurisdiction_info: Dict[str, Any]
+    ) -> List[ValidationIssue]:
+        """Validate jurisdictional analysis"""
+        issues = []
+
+        jurisdiction = jurisdiction_info.get("type", "")
+        analysis = jurisdiction_info.get("analysis", "")
+
+        # Check for proper jurisdictional analysis
+        if not analysis or len(str(analysis).strip()) < 100:
+            issues.append(
+                ValidationIssue(
+                    issue_type="incomplete_jurisdiction",
+                    description="Jurisdictional analysis is incomplete or insufficient",
+                    severity=ValidationSeverity.CRITICAL,
+                    location="Jurisdiction Section",
+                    suggestion="Provide detailed analysis of subject matter jurisdiction, personal jurisdiction, and venue",
+                )
+            )
+
+        # Check for specific jurisdictional bases
+        if "federal" in jurisdiction.lower():
+            if (
+                "diversity" not in analysis.lower()
+                and "federal_question" not in analysis.lower()
+            ):
+                issues.append(
+                    ValidationIssue(
+                        issue_type="missing_jurisdiction_basis",
+                        description="Federal jurisdiction analysis missing diversity or federal question basis",
+                        severity=ValidationSeverity.MAJOR,
+                        location="Jurisdiction Section",
+                        suggestion="Specify whether jurisdiction is based on diversity, federal question, or both",
+                    )
+                )
+
+        return issues
+
+    def _is_conclusory(self, claim: Dict[str, Any]) -> bool:
+        """Check if claim contains conclusory allegations"""
+        conclusory_phrases = [
+            "was negligent",
+            "breached contract",
+            "committed fraud",
+            "was careless",
+            "acted intentionally",
+            "was reckless",
+        ]
+
+        claim_text = str(claim).lower()
+        return any(phrase in claim_text for phrase in conclusory_phrases)
+
+    def _identify_missing_elements(self, claim: Dict[str, Any]) -> List[str]:
+        """Identify missing required elements for a claim"""
+        claim_title = claim.get("title", "").lower()
+        elements = claim.get("elements", [])
+
+        missing = []
+
+        if "negligence" in claim_title:
+            required = ["duty", "breach", "causation", "damages"]
+            missing = [elem for elem in required if elem not in str(elements).lower()]
+
+        elif "breach" in claim_title and "contract" in claim_title:
+            required = ["offer", "acceptance", "consideration", "breach", "damages"]
+            missing = [elem for elem in required if elem not in str(elements).lower()]
+
+        return missing
+
+    def _meets_pleading_standard(self, claim: Dict[str, Any]) -> bool:
+        """Check if claim meets Rule 12(b)(6) pleading standard"""
+        # Basic check for plausibility
+        elements = claim.get("elements", [])
+        facts = claim.get("supporting_facts", [])
+
+        return len(elements) > 0 and len(facts) >= len(elements)
+
+    def _contains_proper_citation(self, content: str) -> bool:
+        """Check if content contains proper legal citation"""
+        # Look for citation patterns
+        citation_patterns = [
+            r"\d+\s+U\.\s*S\.\s+\d+",  # U.S. Supreme Court
+            r"\d+\s+F\.\s*(?:Supp\.\s*)?\d+",  # Federal courts
+            r"\d+\s+[A-Za-z\.]+\s+\d+",  # State courts
+        ]
+
+        return any(re.search(pattern, content) for pattern in citation_patterns)
+
+    def _contains_fact_application(self, content: str) -> bool:
+        """Check if content contains fact application to rule"""
+        application_indicators = [
+            "applying",
+            "because",
+            "therefore",
+            "thus",
+            "the facts show",
+            "here",
+            "in this case",
+        ]
+
+        content_lower = content.lower()
+        return any(indicator in content_lower for indicator in application_indicators)
+
+    def _is_proper_citation(self, citation: str) -> bool:
+        """Check if citation follows proper format"""
+        # Basic validation - could be enhanced with full Bluebook rules
+        return len(citation) > 10 and any(char.isdigit() for char in citation)
+
+    def _holding_supports_proposition(self, holding: str, proposition: str) -> bool:
+        """Check if case holding supports the cited proposition"""
+        # Basic semantic similarity check
+        if not holding or not proposition:
+            return False
+
+        holding_lower = holding.lower()
+        proposition_lower = proposition.lower()
+
+        # Look for key terms overlap
+        holding_words = set(holding_lower.split())
+        proposition_words = set(proposition_lower.split())
+
+        overlap = holding_words.intersection(proposition_words)
+        return len(overlap) > 0 or proposition_lower in holding_lower
+
+    def _calculate_validation_score(self, issues: List[ValidationIssue]) -> float:
+        """Calculate overall validation score"""
+        if not issues:
+            return 1.0
+
+        # Weight issues by severity
+        score = 1.0
+        for issue in issues:
+            if issue.severity == ValidationSeverity.CRITICAL:
+                score -= 0.3
+            elif issue.severity == ValidationSeverity.MAJOR:
+                score -= 0.15
+            elif issue.severity == ValidationSeverity.MINOR:
+                score -= 0.05
+
+        return max(0.0, score)
+
+    def _generate_validation_summary(self, report: ValidationReport) -> str:
+        """Generate a comprehensive validation summary"""
+        summary = f"Validation complete with {report.overall_score:.1%} score. "
+
+        if report.ready_for_progression:
+            summary += "Document is ready for progression to next phase."
+        else:
+            critical_count = len(
+                [i for i in report.issues if i.severity == ValidationSeverity.CRITICAL]
+            )
+            major_count = len(
+                [i for i in report.issues if i.severity == ValidationSeverity.MAJOR]
+            )
+
+            if critical_count > 0:
+                summary += f"Found {critical_count} critical issues that must be addressed before progression."
+            elif major_count > 0:
+                summary += f"Found {major_count} major issues requiring revision."
+            else:
+                summary += (
+                    "Minor issues found - recommend review but progression possible."
+                )
+
+        return summary
+
+    def _generate_validation_analysis(self, report: ValidationReport) -> str:
+        """Generate detailed validation analysis"""
+        analysis = "Detailed Legal Validation Analysis:\n\n"
+
+        analysis += f"Overall Validation Score: {report.overall_score:.1%}\n"
+        analysis += f"Status: {'PASS' if report.ready_for_progression else 'REQUIRES REVISION'}\n\n"
+
+        if report.issues:
+            analysis += "Issues by Severity:\n"
+            critical = [
+                i for i in report.issues if i.severity == ValidationSeverity.CRITICAL
+            ]
+            major = [i for i in report.issues if i.severity == ValidationSeverity.MAJOR]
+            minor = [i for i in report.issues if i.severity == ValidationSeverity.MINOR]
+
+            if critical:
+                analysis += f"Critical Issues ({len(critical)}):\n"
+                for issue in critical:
+                    analysis += f"  • {issue.description}\n"
+                    analysis += f"    Suggestion: {issue.suggestion}\n\n"
+
+            if major:
+                analysis += f"Major Issues ({len(major)}):\n"
+                for issue in major:
+                    analysis += f"  • {issue.description}\n"
+                    analysis += f"    Suggestion: {issue.suggestion}\n\n"
+
+        if report.strengths:
+            analysis += "Strengths:\n"
+            for strength in report.strengths:
+                analysis += f"  • {strength}\n"
+
+        return analysis
+
+    def _extract_legal_content(self, message: str) -> Dict[str, Any]:
+        """Extract legal content from natural language message"""
+        # Basic extraction - in practice, would use more sophisticated NLP
+        return {"text": message, "claims": [], "authorities": []}
+
+    def _extract_legal_content_from_context(
+        self, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Extract legal content from workflow context"""
+        return {
+            "claims": context.get("claims_matrix", {}).get("claims", []),
+            "irac_analysis": context.get("irac_analysis", {}),
+            "authorities": context.get("legal_authorities", []),
+            "jurisdiction": context.get("jurisdiction", {}),
+        }

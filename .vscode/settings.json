@@ -1,0 +1,43 @@
+{
+    "python.analysis.extraPaths": [
+        "./src/skeletal_outline",
+        "./src/knowledge_graph/api",
+        "./src/ingestion/api",
+        "./src/research",
+        "./src"
+    ],
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.formatOnPaste": true,
+        "diffEditor.hideUnchangedRegions.enabled": true,
+        "diffEditor.ignoreTrimWhitespace": true,
+        "diffEditor.maxComputationTime": 10000,
+        "editor.cursorSmoothCaretAnimation": "on",
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.wordWrap": "bounded",
+        "editor.mouseWheelZoom": true
+    },
+    "workbench.commandPalette.experimental.askChatLocation": "quickChat",
+    "workbench.commandPalette.experimental.suggestCommands": true,
+    "workbench.list.scrollByPage": true,
+    "workbench.list.smoothScrolling": true,
+    "workbench.iconTheme": "vscode-icons",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit"
+    },
+    "notebook.codeActionsOnSave": {
+        "source.fixAll": "explicit"
+    },
+    "roo-cline.apiRequestTimeout": 45,
+    "explorer.expandSingleFolderWorkspaces": true,
+    "editor.aiStats.enabled": true,
+    "editor.allowVariableFontsInAccessibilityMode": true,
+    "editor.autoIndentOnPaste": true,
+    "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
+    "editor.codeLensFontFamily": "monospace, arial",
+    "editor.columnSelection": false,
+    "editor.defaultColorDecorators": "always",
+    "editor.gotoLocation.alternativeDeclarationCommand": "",
+    "editor.gotoLocation.alternativeDefinitionCommand": "",
+    "editor.inlayHints.maximumLength": 44,
+}

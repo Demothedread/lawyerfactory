@@ -1,0 +1,93 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/jreback/Desktop",
+        "/Users/jreback/projects/lawyerfactory"
+      ],
+      "alwaysAllow": [
+        "create_directory",
+        "read_multiple_files",
+        "edit_file",
+        "write_file",
+        "move_folder",
+        "move_file",
+        "list_directory_with_Sizes",
+        "list_directory",
+        "search_files",
+        "search_folders",
+        "directory_tree",
+        "get_file_info",
+        "read_file",
+        "read_text_file",
+        "read_media_file",
+        "list_allowed_directories"
+      ],
+      "timeout": 60
+    },
+    "puppeteer": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-puppeteer",
+        "/Users/jreback/chrome/mac_arm-136.0.7103.94/chrome-mac-arm64/Google Chrome for Testing.app"
+      ],
+      "alwaysAllow": [
+        "puppeteer_screenshot",
+        "puppeteer_navigate",
+        "puppeteer_evaluate",
+        "puppeteer_click"
+      ],
+      "timeout": 300
+    },
+    "@magicuidesign/mcp": {
+      "command": "npx",
+      "args": ["-y", "@magicuidesign/mcp@latest"],
+      "alwaysAllow": [
+        "getAnimations",
+        "getTextAnimations",
+        "getSpecialEffects",
+        "getComponents",
+        "getUIComponents",
+        "getButtons",
+        "getDeviceMocks",
+        "getBackgrounds"
+      ]
+    },
+    "qdrant": {
+      "command": "uvx",
+      "args": ["mcp-server-qdrant"],
+      "env": {
+        "QDRANT_URL": "https://4ce95fca-f9f6-4152-ad39-b059a7f4dfdd.us-west-1-0.aws.cloud.qdrant.io",
+        "QDRANT_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.UztDGYZw9x6i627D08kXMq4bsMhxmSf3C4XeEP4B-z8",
+        "COLLECTION_NAME": "files",
+        "EMBEDDING_MODEL": ""
+      },
+      "disabled": false,
+      "alwaysAllow": []
+    },
+    "github": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "-e",
+        "GITHUB_TOOLSETS",
+        "-e",
+        "GITHUB_READ_ONLY",
+        "ghcr.io/github/github-mcp-server"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "",
+        "GITHUB_TOOLSETS": "",
+        "GITHUB_READ_ONLY": ""
+      }
+    }
+  }
+}

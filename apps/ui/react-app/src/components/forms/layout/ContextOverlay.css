@@ -1,0 +1,619 @@
+/* ContextOverlay - Modal and Floating Panel System Styles */
+/* Soviet Industrial Brutalism with Precision Sliding Mechanisms */
+
+/* ========================================
+   OVERLAY BACKDROP
+   ======================================== */
+
+.context-overlay {
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-overlays, 1000);
+  animation: overlay-fade-in 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes overlay-fade-in {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+}
+
+.context-overlay--closing {
+  animation: overlay-fade-out 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes overlay-fade-out {
+  from {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+  to {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+}
+
+/* ========================================
+   OVERLAY CONTENT CONTAINER
+   ======================================== */
+
+.context-overlay__content {
+  position: relative;
+  background: 
+    linear-gradient(135deg, 
+      var(--gunmetal-base) 0%,
+      var(--gunmetal-dark) 100%);
+  border: 4px solid var(--oxidized-copper);
+  border-radius: 10px;
+  box-shadow: 
+    inset 0 2px 0 var(--metal-shine),
+    inset 0 -2px 0 var(--rivet-shadow),
+    0 20px 60px rgba(0, 0, 0, 0.9),
+    0 0 0 2px var(--gunmetal-dark);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Modal Variant */
+.context-overlay__content--modal {
+  animation: modal-scale-in 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  max-width: 95vw;
+}
+
+@keyframes modal-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Drawer Variants */
+.context-overlay--drawer-left {
+  justify-content: flex-start;
+}
+
+.context-overlay--drawer-right {
+  justify-content: flex-end;
+}
+
+.context-overlay__content--drawer-left,
+.context-overlay__content--drawer-right {
+  height: 100vh;
+  border-radius: 0;
+  max-width: none;
+}
+
+.context-overlay__content--drawer-left {
+  border-left: none;
+  border-top: none;
+  border-bottom: none;
+  animation: drawer-slide-in-left 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.context-overlay__content--drawer-right {
+  border-right: none;
+  border-top: none;
+  border-bottom: none;
+  animation: drawer-slide-in-right 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes drawer-slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes drawer-slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Floating Variant */
+.context-overlay--floating {
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.context-overlay__content--floating {
+  position: absolute;
+  animation: floating-pop-in 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 
+    inset 0 2px 0 var(--metal-shine),
+    inset 0 -2px 0 var(--rivet-shadow),
+    0 15px 40px rgba(0, 0, 0, 0.8),
+    0 0 0 2px var(--gunmetal-dark);
+}
+
+@keyframes floating-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Dragging State */
+.context-overlay--dragging .context-overlay__content {
+  cursor: move;
+  box-shadow: 
+    inset 0 3px 0 var(--metal-shine),
+    inset 0 -3px 0 var(--rivet-shadow),
+    0 25px 70px rgba(0, 0, 0, 1),
+    0 0 30px rgba(184, 134, 11, 0.3);
+}
+
+/* ========================================
+   OVERLAY HEADER
+   ======================================== */
+
+.context-overlay__header {
+  background: 
+    linear-gradient(135deg, 
+      var(--worn-brass) 0%,
+      var(--oxidized-copper) 40%,
+      var(--soviet-bronze) 70%,
+      var(--worn-brass) 100%);
+  border-bottom: 4px solid var(--rivet-shadow);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  user-select: none;
+  box-shadow: 
+    inset 0 2px 0 rgba(255, 255, 255, 0.3),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Header Rivets */
+.context-overlay__header-rivets {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 30% 30%, var(--metal-shine) 0%, var(--rivet-shadow) 100%);
+  box-shadow: 
+    0 0 0 1px var(--gunmetal-dark),
+    20px 0 0 0 var(--rivet-shadow),
+    40px 0 0 0 var(--rivet-shadow);
+}
+
+/* Header Icon */
+.context-overlay__icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: var(--gunmetal-base);
+  border: 2px solid var(--rivet-shadow);
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Title Group */
+.context-overlay__title-group {
+  flex: 1;
+  min-width: 0; /* Allow text truncation */
+}
+
+.context-overlay__title {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: 18px;
+  color: var(--soviet-charcoal);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 0;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.context-overlay__subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.7);
+  margin: 4px 0 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Header Actions */
+.context-overlay__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Close Button */
+.context-overlay__close {
+  width: 32px;
+  height: 32px;
+  background: var(--gunmetal-base);
+  border: 2px solid var(--rivet-shadow);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--soviet-crimson);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.context-overlay__close:hover {
+  background: var(--soviet-crimson);
+  color: white;
+  border-color: var(--soviet-crimson);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 12px rgba(220, 20, 60, 0.4);
+}
+
+.context-overlay__close:active {
+  transform: scale(0.95);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* ========================================
+   OVERLAY BODY
+   ======================================== */
+
+.context-overlay__body {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: 
+    radial-gradient(ellipse at center top, 
+      rgba(184, 134, 11, 0.05) 0%,
+      transparent 50%);
+  position: relative;
+}
+
+.context-overlay__body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.context-overlay__body::-webkit-scrollbar-track {
+  background: var(--gunmetal-dark);
+  border: 1px solid var(--rivet-shadow);
+}
+
+.context-overlay__body::-webkit-scrollbar-thumb {
+  background: var(--worn-brass);
+  border-radius: 5px;
+  border: 1px solid var(--oxidized-copper);
+}
+
+.context-overlay__body::-webkit-scrollbar-thumb:hover {
+  background: var(--weathered-brass);
+}
+
+/* ========================================
+   OVERLAY FOOTER
+   ======================================== */
+
+.context-overlay__footer {
+  border-top: 2px solid var(--rivet-shadow);
+  padding: 12px 20px;
+  background: var(--gunmetal-dark);
+  position: relative;
+}
+
+.context-overlay__footer-rivets {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 30% 30%, var(--metal-shine) 0%, var(--rivet-shadow) 100%);
+  box-shadow: 
+    0 0 0 1px var(--gunmetal-dark),
+    -16px 0 0 0 var(--rivet-shadow),
+    -32px 0 0 0 var(--rivet-shadow);
+}
+
+/* ========================================
+   EVIDENCE VIEWER SPECIFIC STYLES
+   ======================================== */
+
+.evidence-viewer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+.evidence-metadata {
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--oxidized-copper);
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.metadata-row {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--soviet-silver);
+}
+
+.metadata-row strong {
+  color: var(--worn-brass);
+  margin-right: 8px;
+}
+
+.evidence-preview {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid var(--oxidized-copper);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  min-height: 400px;
+}
+
+.evidence-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.evidence-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--soviet-silver);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.evidence-placeholder-subtitle {
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.evidence-navigation {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.evidence-nav-button {
+  padding: 10px 20px;
+  background: var(--worn-brass);
+  border: 2px solid var(--oxidized-copper);
+  border-radius: 6px;
+  font-family: 'Russo One', sans-serif;
+  font-size: 13px;
+  color: var(--soviet-charcoal);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 
+    0 3px 0 var(--gunmetal-dark),
+    0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+.evidence-nav-button:hover {
+  background: var(--weathered-brass);
+  box-shadow: 
+    0 3px 0 var(--gunmetal-dark),
+    0 5px 8px rgba(0, 0, 0, 0.6);
+}
+
+.evidence-nav-button:active {
+  transform: translateY(3px);
+  box-shadow: 
+    0 0 0 var(--gunmetal-dark),
+    0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* ========================================
+   RESEARCH PANEL SPECIFIC STYLES
+   ======================================== */
+
+.research-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.research-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--soviet-silver);
+  font-family: 'JetBrains Mono', monospace;
+  text-align: center;
+}
+
+.research-empty-subtitle {
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.research-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.research-item {
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--oxidized-copper);
+  border-radius: 6px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.research-item:hover {
+  border-color: var(--worn-brass);
+  background: rgba(184, 134, 11, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.research-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.research-item-header strong {
+  color: var(--worn-brass);
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+}
+
+.research-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.research-badge--binding {
+  background: var(--soviet-success);
+  color: white;
+}
+
+.research-badge--persuasive {
+  background: var(--soviet-amber);
+  color: var(--soviet-charcoal);
+}
+
+.research-badge--secondary {
+  background: var(--soviet-steel);
+  color: var(--soviet-silver);
+}
+
+.research-item-content {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--soviet-silver);
+  line-height: 1.6;
+  margin: 8px 0;
+}
+
+.research-item-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--soviet-silver);
+  opacity: 0.7;
+  margin-top: 8px;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+@media (max-width: 767px) {
+  .context-overlay__content--modal {
+    width: 95vw !important;
+    max-height: 90vh;
+  }
+
+  .context-overlay__content--drawer-left,
+  .context-overlay__content--drawer-right {
+    width: 85vw !important;
+  }
+
+  .context-overlay__content--floating {
+    width: 90vw !important;
+    left: 5vw !important;
+  }
+
+  .context-overlay__header {
+    padding: 12px 14px;
+  }
+
+  .context-overlay__title {
+    font-size: 16px;
+  }
+
+  .context-overlay__body {
+    padding: 16px;
+  }
+
+  .evidence-metadata {
+    flex-direction: column;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .context-overlay,
+  .context-overlay__content,
+  .context-overlay--closing {
+    animation: none;
+    transition: none;
+  }
+}
+
+.context-overlay__close:focus {
+  outline: 3px solid var(--soviet-amber);
+  outline-offset: 2px;
+}

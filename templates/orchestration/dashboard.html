@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LawyerFactory - AI Maestro Orchestration</title>
+    <link rel="stylesheet" href="/static/css/steampunk_theme.css">
+</head>
+<body class="steampunk-body">
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="steampunk-header">
+            <div class="header-content">
+                <h1 class="steampunk-title">⚙️ LAWYERFACTORY AI MAESTRO ⚙️</h1>
+                <div class="phase-indicator">
+                    <span class="phase-label">CURRENT PHASE:</span>
+                    <span class="phase-value" id="current-phase">ORCHESTRATION</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard-main">
+            <!-- Left Panel: Controls -->
+            <div class="left-panel steampunk-panel">
+                <div class="panel-header">
+                    <h2>🎛️ CONTROL PANEL</h2>
+                </div>
+
+                <div class="control-section">
+                    <h3>🤖 AI MAESTRO CHAT</h3>
+                    <div class="chat-container" id="chat-container">
+                        <div class="chat-messages" id="chat-messages"></div>
+                        <div class="chat-input-container">
+                            <input type="text" id="chat-input" placeholder="Communicate with AI Maestro..." class="steampunk-input">
+                            <button id="send-message" class="steampunk-button">SEND</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>🧠 LLM CONFIGURATION</h3>
+                    <div class="llm-config-container">
+                        <div class="config-group">
+                            <label for="llm-provider" class="config-label">Provider:</label>
+                            <select id="llm-provider" class="steampunk-select">
+                                <option value="openai">OpenAI</option>
+                                <option value="anthropic">Anthropic</option>
+                                <option value="google">Google</option>
+                                <option value="azure">Azure OpenAI</option>
+                                <option value="local">Local Model</option>
+                            </select>
+                        </div>
+                        <div class="config-group">
+                            <label for="llm-model" class="config-label">Model:</label>
+                            <select id="llm-model" class="steampunk-select">
+                                <option value="gpt-4o">GPT-4o</option>
+                                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                            </select>
+                        </div>
+                        <div class="config-group">
+                            <label for="llm-temperature" class="config-label">Temperature:</label>
+                            <input type="range" id="llm-temperature" min="0" max="2" step="0.1" value="0.7" class="steampunk-slider">
+                            <span id="temperature-value" class="config-value">0.7</span>
+                        </div>
+                        <div class="config-group">
+                            <label for="llm-max-tokens" class="config-label">Max Tokens:</label>
+                            <input type="number" id="llm-max-tokens" value="4000" min="100" max="32000" class="steampunk-input">
+                        </div>
+                        <div class="config-actions">
+                            <button id="apply-llm-config" class="steampunk-button primary">APPLY CONFIG</button>
+                            <button id="reset-llm-config" class="steampunk-button warning">RESET</button>
+                        </div>
+                        <div class="llm-status" id="llm-status">
+                            <span class="status-indicator" id="llm-connection-status">⚪</span>
+                            <span id="llm-status-text">Ready</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>📊 PROGRESS METERS</h3>
+                    <div class="progress-container">
+                        <div class="progress-item">
+                            <label>Research Progress</label>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="research-progress" style="width: 0%"></div>
+                            </div>
+                            <span class="progress-text" id="research-progress-text">0%</span>
+                        </div>
+                        <div class="progress-item">
+                            <label>Writing Progress</label>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="writing-progress" style="width: 0%"></div>
+                            </div>
+                            <span class="progress-text" id="writing-progress-text">0%</span>
+                        </div>
+                        <div class="progress-item">
+                            <label>Validation Progress</label>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="validation-progress" style="width: 0%"></div>
+                            </div>
+                            <span class="progress-text" id="validation-progress-text">0%</span>
+                        </div>
+                        <div class="progress-item">
+                            <label>Overall Progress</label>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="overall-progress" style="width: 0%"></div>
+                            </div>
+                            <span class="progress-text" id="overall-progress-text">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>⚡ QUICK ACTIONS</h3>
+                    <div class="action-buttons">
+                        <button class="steampunk-button action-btn" data-action="review-outline">Review Skeletal Outline</button>
+                        <button class="steampunk-button action-btn" data-action="review-claims">Review Claims Matrix</button>
+                        <button class="steampunk-button action-btn" data-action="review-facts">Review Fact Matrix</button>
+                        <button class="steampunk-button action-btn primary" data-action="approve">Approve & Continue</button>
+                        <button class="steampunk-button action-btn warning" data-action="objection">Raise Objection</button>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>🔔 NOTIFICATIONS</h3>
+                    <div class="notifications-container" id="notifications-container"></div>
+                </div>
+            </div>
+
+            <!-- Center Panel: Agent Visualization -->
+            <div class="center-panel steampunk-panel">
+                <div class="panel-header">
+                    <h2>🔬 AGENT NETWORK VISUALIZATION</h2>
+                </div>
+
+                <div class="agent-network-container">
+                    <div class="network-background">
+                        <!-- Mechanical background elements -->
+                        <div class="gear large-gear" id="gear1"></div>
+                        <div class="gear medium-gear" id="gear2"></div>
+                        <div class="gear small-gear" id="gear3"></div>
+                        <div class="steam-pipe horizontal-pipe"></div>
+                        <div class="steam-pipe vertical-pipe"></div>
+                        <div class="pressure-gauge" id="pressure-gauge"></div>
+                    </div>
+
+                    <div class="agent-nodes">
+                        <!-- Agent nodes will be populated by JavaScript -->
+                        <div class="agent-node" data-agent="rules_of_law">
+                            <div class="agent-icon">⚖️</div>
+                            <div class="agent-label">Rules of Law</div>
+                            <div class="agent-status" id="status-rules_of_law">idle</div>
+                        </div>
+                        <div class="agent-node" data-agent="issuespotter">
+                            <div class="agent-icon">🔍</div>
+                            <div class="agent-label">Issuespotter</div>
+                            <div class="agent-status" id="status-issuespotter">idle</div>
+                        </div>
+                        <div class="agent-node" data-agent="citation_formatter">
+                            <div class="agent-icon">📚</div>
+                            <div class="agent-label">Citation Formatter</div>
+                            <div class="agent-status" id="status-citation_formatter">idle</div>
+                        </div>
+                        <div class="agent-node" data-agent="civil_procedure">
+                            <div class="agent-icon">⚠️</div>
+                            <div class="agent-label">Civil Procedure</div>
+                            <div class="agent-status" id="status-civil_procedure">idle</div>
+                        </div>
+                        <div class="agent-node" data-agent="fact_objectivity">
+                            <div class="agent-icon">🎯</div>
+                            <div class="agent-label">Fact Objectivity</div>
+                            <div class="agent-status" id="status-fact_objectivity">idle</div>
+                        </div>
+                        <div class="agent-node" data-agent="claim_validator">
+                            <div class="agent-icon">✅</div>
+                            <div class="agent-label">Claim Validator</div>
+                            <div class="agent-status" id="status-claim_validator">idle</div>
+                        </div>
+                        <div class="agent-node" data-agent="caselaw_researcher">
+                            <div class="agent-icon">🔎</div>
+                            <div class="agent-label">Caselaw Researcher</div>
+                            <div class="agent-status" id="status-caselaw_researcher">idle</div>
+                        </div>
+                    </div>
+
+                    <div class="network-connections">
+                        <!-- Connection lines will be drawn by JavaScript -->
+                    </div>
+                </div>
+
+                <div class="mechanical-effects">
+                    <div class="steam-effect" id="steam-effect" style="display: none;">
+                        <div class="steam-particle"></div>
+                        <div class="steam-particle"></div>
+                        <div class="steam-particle"></div>
+                    </div>
+                    <div class="light-effect" id="light-effect" style="display: none;">
+                        <div class="warning-light"></div>
+                        <div class="warning-light"></div>
+                        <div class="warning-light"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Document Viewers -->
+            <div class="right-panel steampunk-panel">
+                <div class="panel-header">
+                    <h2>📄 DOCUMENT VIEWERS</h2>
+                </div>
+
+                <div class="document-tabs">
+                    <div class="tab-buttons">
+                        <button class="tab-button" data-tab="intake-form">Intake Form</button>
+                        <button class="tab-button active" data-tab="skeletal-outline">Skeletal Outline</button>
+                        <button class="tab-button" data-tab="claims-matrix">Claims Matrix</button>
+                        <button class="tab-button" data-tab="fact-matrix">Fact Matrix</button>
+                        <button class="tab-button" data-tab="generated-document">Generated Document</button>
+                    </div>
+
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="skeletal-outline-content">
+                            <div class="document-viewer">
+                                <div class="document-header">
+                                    <h3>📋 SKELETAL OUTLINE</h3>
+                                    <div class="document-actions">
+                                        <button class="steampunk-button small" data-action="download-word">Download Word</button>
+                                        <button class="steampunk-button small" data-action="download-pdf">Download PDF</button>
+                                    </div>
+                                </div>
+                                <div class="document-content" id="skeletal-outline-text">
+                                    <div class="loading-placeholder">
+                                        <div class="gear-spinner"></div>
+                                        <p>Generating Skeletal Outline...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane" id="claims-matrix-content">
+                            <div class="document-viewer">
+                                <div class="document-header">
+                                    <h3>📊 CLAIMS MATRIX</h3>
+                                    <div class="document-actions">
+                                        <button class="steampunk-button small" data-action="download-word">Download Word</button>
+                                        <button class="steampunk-button small" data-action="download-pdf">Download PDF</button>
+                                    </div>
+                                </div>
+                                <div class="document-content" id="claims-matrix-text">
+                                    <div class="loading-placeholder">
+                                        <div class="gear-spinner"></div>
+                                        <p>Generating Claims Matrix...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane" id="fact-matrix-content">
+                            <div class="document-viewer">
+                                <div class="document-header">
+                                    <h3>📈 FACT MATRIX</h3>
+                                    <div class="document-actions">
+                                        <button class="steampunk-button small" data-action="download-word">Download Word</button>
+                                        <button class="steampunk-button small" data-action="download-pdf">Download PDF</button>
+                                    </div>
+                                </div>
+                                <div class="document-content" id="fact-matrix-text">
+                                    <div class="loading-placeholder">
+                                        <div class="gear-spinner"></div>
+                                        <p>Generating Fact Matrix...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane" id="generated-document-content">
+                            <div class="document-viewer">
+                                <div class="document-header">
+                                    <h3>📝 GENERATED DOCUMENT</h3>
+                                    <div class="document-actions">
+                                        <button class="steampunk-button small" data-action="download-word">Download Word</button>
+                                        <button class="steampunk-button small" data-action="download-pdf">Download PDF</button>
+                                    </div>
+                                </div>
+                                <div class="document-content" id="generated-document-text">
+                                    <div class="loading-placeholder">
+    <script src="/static/js/steampunk_animations.js"></script>
+    <script src="/static/js/llm_config.js"></script>
+    <script src="/static/js/orchestration_dashboard.js"></script>
+                                        <div class="gear-spinner"></div>
+                                        <p>Assembling Final Document...</p>
+                                    </div>
+                                </div>
+                        <div class="tab-pane" id="intake-form-content">
+                            <div class="document-viewer">
+                                <div class="document-header">
+                                    <h3>📝 CASE INTAKE FORM</h3>
+                                    <div class="document-actions">
+                                        <button class="steampunk-button small" data-action="new-intake">New Intake</button>
+                                        <button class="steampunk-button small" data-action="load-intake">Load Intake</button>
+                                    </div>
+                                </div>
+                                <div class="document-content" id="intake-form-text">
+                                    <div class="loading-placeholder">
+                                        <div class="gear-spinner"></div>
+                                        <p>Load intake form data...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="steampunk-footer">
+            <div class="footer-content">
+                <div class="system-status">
+                    <span class="status-indicator" id="system-status">All Systems Operational</span>
+                </div>
+                <div class="version-info">
+                    LawyerFactory AI Maestro v2.1 - Orchestration Phase
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/static/js/steampunk_animations.js"></script>
+    <script src="/static/js/orchestration_dashboard.js"></script>
+</body>
+</html>

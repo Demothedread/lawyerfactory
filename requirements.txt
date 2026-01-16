@@ -1,5 +1,6 @@
 # Core Flask dependencies
 Flask==2.3.3
+Flask-CORS==4.0.0
 Flask-SocketIO==5.3.6
 eventlet==0.33.3
 werkzeug==2.3.7
@@ -8,20 +9,44 @@ werkzeug==2.3.7
 asyncio
 
 # Optional dependencies for enhanced features
-sentence-transformers==2.2.2
-numpy==1.24.3
-spacy==3.7.2
+sentence-transformers
+numpy>=1.26.0
+spacy
 
 # File processing
+python-docx
+pypdf
 PyPDF2==3.0.1
-PyMuPDF==1.23.8
+reportlab==4.0.4
+pycryptodome==3.23.0
+
 python-docx==0.8.11
 pytesseract==0.3.10
-Pillow==10.0.1
+pillow==9.4.0
+pymupdf==1.26.3
+
 
 # Encryption support (optional)
-pysqlcipher3==1.2.0
+sqlcipher3-wheels
+
+
 
 # Development and testing
 pytest==7.4.2
 pytest-asyncio==0.21.1
+requests
+
+#fastmcp server
+fastmcp
+uvicorn
+fastapi
+aiohttp
+
+# Legal Research and Web Search
+tavily-python==0.7.6
+langchain-tavily==0.2.6
+weave
+
+#aws-fileservice
+boto3
+python-dotenv

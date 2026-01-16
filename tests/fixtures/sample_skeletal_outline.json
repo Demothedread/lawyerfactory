@@ -1,0 +1,151 @@
+{
+  "case_id": "TEST-001",
+  "document_type": "complaint",
+  "jurisdiction": "federal",
+  "rule12b6ComplianceScore": 85,
+  "sections": [
+    {
+      "id": "caption",
+      "title": "Caption",
+      "required": true,
+      "content_type": "header",
+      "order": 1,
+      "subsections": []
+    },
+    {
+      "id": "introduction",
+      "title": "Introduction",
+      "required": true,
+      "content_type": "narrative",
+      "order": 2,
+      "subsections": []
+    },
+    {
+      "id": "jurisdiction",
+      "title": "Jurisdiction and Venue",
+      "required": true,
+      "content_type": "legal",
+      "order": 3,
+      "subsections": [
+        {
+          "id": "subject_matter_jurisdiction",
+          "title": "Subject Matter Jurisdiction",
+          "basis": "28 U.S.C. § 1332 (Diversity Jurisdiction)"
+        },
+        {
+          "id": "personal_jurisdiction",
+          "title": "Personal Jurisdiction",
+          "basis": "Defendant's minimum contacts with forum state"
+        },
+        {
+          "id": "venue",
+          "title": "Venue",
+          "basis": "28 U.S.C. § 1391(b)"
+        }
+      ]
+    },
+    {
+      "id": "parties",
+      "title": "Parties",
+      "required": true,
+      "content_type": "factual",
+      "order": 4,
+      "subsections": [
+        {
+          "id": "plaintiff",
+          "title": "Plaintiff",
+          "party_type": "natural_person"
+        },
+        {
+          "id": "defendant",
+          "title": "Defendant",
+          "party_type": "corporation"
+        }
+      ]
+    },
+    {
+      "id": "statement_of_facts",
+      "title": "Statement of Facts",
+      "required": true,
+      "content_type": "narrative",
+      "order": 5,
+      "cause_of_action": "breach_of_contract",
+      "subsections": [
+        {
+          "id": "background",
+          "title": "Background",
+          "timeframe": "2024-01-15 to 2024-01-16"
+        },
+        {
+          "id": "the_breach",
+          "title": "The Breach",
+          "timeframe": "2024-01-20 to 2024-02-10"
+        },
+        {
+          "id": "damages_incurred",
+          "title": "Damages Incurred",
+          "timeframe": "2024-02-01 to 2024-03-10"
+        }
+      ]
+    },
+    {
+      "id": "count_one_breach_of_contract",
+      "title": "Count I: Breach of Contract",
+      "required": false,
+      "content_type": "legal",
+      "order": 6,
+      "cause_of_action": "breach_of_contract",
+      "subsections": [
+        {
+          "id": "valid_contract_element",
+          "title": "Valid Contract",
+          "element_type": "formation"
+        },
+        {
+          "id": "material_breach_element",
+          "title": "Material Breach",
+          "element_type": "breach"
+        },
+        {
+          "id": "causation_element",
+          "title": "Causation",
+          "element_type": "causation"
+        },
+        {
+          "id": "damages_element",
+          "title": "Damages",
+          "element_type": "damages"
+        }
+      ]
+    },
+    {
+      "id": "prayer_for_relief",
+      "title": "Prayer for Relief",
+      "required": true,
+      "content_type": "demand",
+      "order": 7,
+      "relief_types": [
+        "compensatory_damages",
+        "consequential_damages",
+        "costs_and_fees",
+        "interest"
+      ]
+    },
+    {
+      "id": "demand_for_jury_trial",
+      "title": "Demand for Jury Trial",
+      "required": false,
+      "content_type": "procedural",
+      "order": 8
+    }
+  ],
+  "total_sections": 8,
+  "required_sections_count": 5,
+  "compliance_notes": [
+    "All required sections present",
+    "Rule 12(b)(6) compliance score: 85%",
+    "Factual allegations sufficiently plausible",
+    "Legal elements properly identified",
+    "Relief demands specific and appropriate"
+  ]
+}

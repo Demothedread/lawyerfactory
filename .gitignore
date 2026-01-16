@@ -1,5 +1,272 @@
-.env.production
+# Python Virtual Environments
+env312/*
 lawenv/*
+law_venv/
+venv/
+env/
+ENV/
+.venv/
+.Python
+.env
+.env.development
+.env.production
+.env.*
+
+
+
+# Python Cache & Compiled Files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*$py.class
+*.so
+.Python
+
+# Distribution / Packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+tests/*.json
+.hypothesis/
+
+# Logs
 *.log
-*.json
-Tesla/
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment & Configuration
+.env
+.env.production
+.env.local
+.env.*.local
+.roo
+.roo/*
+.roo/mcp.json
+.roo/mcp_local.json
+.roo/settings.json
+.roo/settings_local.json
+.roo/credentials.json
+.roo/credentials_local.json
+law_venv/*
+law_venv/
+law_venv
+data/
+data
+.data
+data/*
+
+# Security-Sensitive Files
+.vault_pass
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.*
+config/secrets.*
+*.secret
+.aws/
+credentials
+config
+api_keys.json
+.api_keys
+*_credentials.json
+.credentials
+
+# API Keys & Tokens
+openai_key.txt
+anthropic_key.txt
+groq_key.txt
+google_api_key.txt
+*_api_key.*
+*_token.*
+bearer_token.*
+
+# Node modules
+node_modules/
+
+# Local Storage & Databases
+qdrant_storage/
+vector_clusters/
+enhanced_vector_stores/
+_trash_staging/
+uploads/
+output/
+maestro/bots/
+scripts/logs/
+scripts/redundancy_report.json
+
+# Large generated docs
+docs/components/current_tree.md
+
+# Court files (keep local only)
+docs/Court_files/
+
+# Test artifacts
+tests/screenshots/
+
+# System
+.DS_Store
+Thumbs.db
+
+# Database Files
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Terraform
+*.tfstate
+*.tfstate.backup
+.terraform/
+
+# IDE & Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+
+# Node.js / Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
+.yarn/
+
+# LawyerFactory Specific
+workflow_storage/
+uploads/
+PAN/*
+misc/
+.github/
+output/
+generated/
+temp/
+tmp/
+cache/
+.cache/
+
+# Large Data Files
+*.csv
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.joblib
+
+# ML Models & Weights
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.keras
+*.pb
+*.onnx
+models/
+checkpoints/
+weights/
+
+# Document Processing
+*.pdf
+*.docx
+*.doc
+*.rtf
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Pytype static type analyzer
+.pytype/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# Poetry
+poetry.lock
+
+# Pipenv
+Pipfile.lock
+
+# uv
+uv.lock
+
+# Database & Storage
+qdrant_storage/
+_trash_staging/
+enhanced_vector_stores/
+vector_clusters/
+backups/
+
+
+# Root Data Files
+evidence_table.json
+knowledge_graph.json
+local_vectors.jsonl
+vector_backup.json
+dep_graph.json
+inventory.json
+

@@ -1,0 +1,501 @@
+/* GridContainer - Self-Optimizing Layout Engine Styles */
+/* Soviet Industrial Brutalism Design with Zero Vertical Scroll Architecture */
+
+/* ========================================
+   CORE GRID CONTAINER SYSTEM
+   ======================================== */
+
+.grid-container {
+  display: grid;
+  grid-template-columns: var(--grid-template, repeat(4, 1fr));
+  gap: var(--grid-gap, 16px);
+  width: 100%;
+  height: var(--container-height, 100%);
+  padding: var(--space-md);
+  position: relative;
+  background: 
+    radial-gradient(ellipse at center top, 
+      rgba(184, 134, 11, 0.03) 0%,
+      transparent 50%),
+    var(--terminal-bg);
+  overflow-x: hidden;
+  overflow-y: hidden; /* Zero vertical scroll by default */
+  box-sizing: border-box;
+}
+
+/* Layout Mode Variants */
+.grid-container--grid {
+  grid-auto-flow: dense; /* Optimized packing algorithm */
+}
+
+.grid-container--masonry {
+  grid-auto-rows: minmax(min-content, max-content);
+  grid-auto-flow: dense;
+}
+
+.grid-container--flow {
+  grid-auto-flow: row;
+  grid-auto-rows: auto;
+}
+
+/* Allow vertical scroll when explicitly needed */
+.grid-container.allow-scroll {
+  overflow-y: auto;
+}
+
+/* Density Variants - Golden Ratio Based Spacing */
+.grid-container--compact {
+  --grid-gap: 8px;
+  padding: 12px;
+}
+
+.grid-container--comfortable {
+  --grid-gap: 16px;
+  padding: 16px;
+}
+
+.grid-container--spacious {
+  --grid-gap: 24px;
+  padding: 24px;
+}
+
+/* Zero Vertical Scroll Architecture */
+.grid-container--no-scroll {
+  overflow-y: hidden;
+  max-height: var(--container-height);
+  display: grid;
+  grid-template-rows: minmax(0, 1fr); /* Prevent overflow */
+}
+
+/* ========================================
+   GRID ITEM COMPONENTS
+   ======================================== */
+
+.grid-item {
+  background: 
+    linear-gradient(135deg, 
+      var(--gunmetal-highlight) 0%,
+      var(--gunmetal-base) 50%,
+      var(--gunmetal-dark) 100%);
+  border: 2px solid var(--oxidized-copper);
+  border-radius: 8px;
+  padding: var(--space-md);
+  position: relative;
+  box-shadow: 
+    inset 0 1px 0 var(--metal-shine),
+    inset 0 -1px 0 var(--rivet-shadow),
+    0 4px 8px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Important for nested scrolling */
+}
+
+/* Grid Item Hover Effects */
+.grid-item:hover {
+  border-color: var(--worn-brass);
+  box-shadow: 
+    inset 0 2px 0 var(--metal-shine),
+    inset 0 -2px 0 var(--rivet-shadow),
+    0 6px 12px rgba(0, 0, 0, 0.5),
+    0 0 15px rgba(184, 134, 11, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Sticky Grid Items */
+.grid-item--sticky {
+  position: sticky;
+  top: var(--space-md);
+  z-index: var(--z-controls);
+}
+
+/* Grid Item Rivet Decoration */
+.grid-item::before,
+.grid-item::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 30% 30%, 
+      var(--metal-shine) 0%, 
+      var(--worn-brass) 50%,
+      var(--rivet-shadow) 100%);
+  box-shadow: 
+    0 0 0 1px var(--gunmetal-dark),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.grid-item::before {
+  top: 10px;
+  left: 10px;
+  box-shadow: 
+    0 0 0 1px var(--gunmetal-dark),
+    calc(100% - 20px) 0 0 0 var(--worn-brass);
+}
+
+.grid-item::after {
+  bottom: 10px;
+  right: 10px;
+  box-shadow: 
+    0 0 0 1px var(--gunmetal-dark),
+    calc(-100% + 20px) 0 0 0 var(--worn-brass);
+}
+
+/* ========================================
+   GRID SECTION COMPONENTS
+   ======================================== */
+
+.grid-section {
+  display: flex;
+  flex-direction: column;
+  background: 
+    linear-gradient(135deg, 
+      var(--gunmetal-base) 0%,
+      var(--gunmetal-dark) 100%);
+  border: 3px solid var(--oxidized-copper);
+  border-radius: 8px;
+  box-shadow: 
+    inset 0 2px 0 var(--metal-shine),
+    0 4px 12px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Section Header */
+.grid-section__header {
+  background: 
+    linear-gradient(135deg, 
+      var(--worn-brass) 0%,
+      var(--oxidized-copper) 50%,
+      var(--soviet-bronze) 100%);
+  border-bottom: 3px solid var(--rivet-shadow);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  cursor: default;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.grid-section--collapsible .grid-section__header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.grid-section__header:hover {
+  background: 
+    linear-gradient(135deg, 
+      #c9ab6f 0%,
+      var(--oxidized-copper) 50%,
+      var(--soviet-bronze) 100%);
+}
+
+/* Section Header Rivets */
+.grid-section__header::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: 
+    radial-gradient(circle at 30% 30%, var(--metal-shine) 0%, var(--rivet-shadow) 100%);
+  box-shadow: 
+    0 0 0 1px var(--gunmetal-dark),
+    16px 0 0 0 var(--rivet-shadow);
+}
+
+/* Section Icon */
+.grid-section__icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--soviet-charcoal);
+  font-size: 18px;
+}
+
+/* Section Title */
+.grid-section__title {
+  flex: 1;
+  font-family: 'strelka', 'BAUHHL', 'Orbitron', monospace;
+  font-weight: 800;
+  font-size: 17px;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.4), 0 0 5px rgba(255, 255, 255, 0.3);
+}
+
+/* Section Toggle Indicator */
+.grid-section__toggle {
+  min-width: 20px;
+  min-height: 20px;
+  background: var(--gunmetal-base);
+  border: 2px solid var(--rivet-shadow);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'novel-mono-pro-condensed', 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 900;
+  color: #ffffff;
+  transition: all 0.3s ease;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.grid-section--collapsed .grid-section__toggle {
+  transform: rotate(0deg);
+}
+
+.grid-section:not(.grid-section--collapsed) .grid-section__toggle {
+  transform: rotate(90deg);
+  background: var(--oxidized-copper);
+  color: var(--soviet-charcoal);
+}
+
+/* Section Actions */
+.grid-section__actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Section Content */
+.grid-section__content {
+  padding: 18px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: 
+    radial-gradient(ellipse at center, 
+      rgba(184, 134, 11, 0.05) 0%,
+      transparent 60%);
+  max-height: calc(var(--container-height, 100vh) - 60px); /* Reserve space for header */
+}
+
+/* Collapsed State */
+.grid-section--collapsed .grid-section__content {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: 
+    max-height 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+    padding 0.3s ease,
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.grid-section:not(.grid-section--collapsed) .grid-section__content {
+  max-height: calc(var(--container-height, 100vh) - 60px);
+  opacity: 1;
+  transform: translateY(0);
+  transition: 
+    max-height 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    padding 0.3s ease,
+    opacity 0.4s ease 0.1s,
+    transform 0.4s ease 0.1s;
+}
+
+/* ========================================
+   RESPONSIVE GRID BREAKPOINTS
+   ======================================== */
+
+/* Mobile (320px - 767px) */
+@media (max-width: 767px) {
+  .grid-container {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .grid-container--compact {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .grid-item {
+    padding: 12px;
+  }
+
+  .grid-section__header {
+    padding: 12px 14px;
+  }
+
+  .grid-section__title {
+    font-size: 14px;
+  }
+}
+
+/* Tablet (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .grid-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-container[data-columns="3"] {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Desktop (1024px - 1439px) */
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .grid-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .grid-container[data-columns="6"] {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* Wide Desktop (1440px - 1919px) */
+@media (min-width: 1440px) and (max-width: 1919px) {
+  .grid-container {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .grid-container[data-columns="8"] {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+/* Ultra Wide (1920px+) */
+@media (min-width: 1920px) {
+  .grid-container {
+    grid-template-columns: repeat(8, 1fr);
+  }
+
+  .grid-container--spacious {
+    gap: 32px;
+    padding: 32px;
+  }
+}
+
+/* ========================================
+   GOLDEN RATIO PROPORTIONS
+   ======================================== */
+
+/* Apply golden ratio to specific layouts */
+.grid-container[data-layout="golden"] {
+  grid-template-columns: 1.618fr 1fr 1.618fr 1fr;
+}
+
+.grid-container[data-layout="golden"][data-columns="6"] {
+  grid-template-columns: 1.618fr 1fr 1.618fr 1fr 1.618fr 1fr;
+}
+
+.grid-container[data-layout="golden"][data-columns="8"] {
+  grid-template-columns: 1.618fr 1fr 1.618fr 1fr 1.618fr 1fr 1.618fr 1fr;
+}
+
+/* ========================================
+   SCROLLBAR STYLING FOR SECTIONS
+   ======================================== */
+
+.grid-section__content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.grid-section__content::-webkit-scrollbar-track {
+  background: var(--gunmetal-dark);
+  border: 1px solid var(--rivet-shadow);
+  border-radius: 4px;
+}
+
+.grid-section__content::-webkit-scrollbar-thumb {
+  background: var(--worn-brass);
+  border-radius: 4px;
+  border: 1px solid var(--oxidized-copper);
+}
+
+.grid-section__content::-webkit-scrollbar-thumb:hover {
+  background: var(--weathered-brass);
+}
+
+/* ========================================
+   PERFORMANCE OPTIMIZATIONS
+   ======================================== */
+
+/* GPU acceleration for smoother animations */
+.grid-container,
+.grid-item,
+.grid-section {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Reduce paint on scroll */
+.grid-section__content {
+  contain: layout style paint;
+}
+
+/* Optimize rendering */
+.grid-item {
+  contain: layout paint;
+}
+
+/* ========================================
+   ACCESSIBILITY ENHANCEMENTS
+   ======================================== */
+
+/* Focus states for keyboard navigation */
+.grid-item:focus,
+.grid-section:focus {
+  outline: 3px solid var(--soviet-amber);
+  outline-offset: 2px;
+}
+
+.grid-section__header:focus {
+  outline: 2px solid var(--soviet-amber);
+  outline-offset: -2px;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .grid-container,
+  .grid-item,
+  .grid-section,
+  .grid-section__content,
+  .grid-section__toggle {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ========================================
+   PRINT STYLES
+   ======================================== */
+
+@media print {
+  .grid-container {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+
+  .grid-item,
+  .grid-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .grid-section--collapsed .grid-section__content {
+    display: block;
+    max-height: none;
+    opacity: 1;
+  }
+}
