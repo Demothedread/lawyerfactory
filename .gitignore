@@ -64,6 +64,13 @@ yarn-error.log*
 .env.local
 .env.*.local
 .roo
+.roo/*
+.roo/mcp.json
+.roo/mcp_local.json
+.roo/settings.json
+.roo/settings_local.json
+.roo/credentials.json
+.roo/credentials_local.json
 law_venv/*
 law_venv/
 law_venv

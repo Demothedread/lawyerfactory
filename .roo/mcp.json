@@ -45,10 +45,7 @@
     },
     "@magicuidesign/mcp": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@magicuidesign/mcp@latest"
-      ],
+      "args": ["-y", "@magicuidesign/mcp@latest"],
       "alwaysAllow": [
         "getAnimations",
         "getTextAnimations",
@@ -62,9 +59,7 @@
     },
     "qdrant": {
       "command": "uvx",
-      "args": [
-        "mcp-server-qdrant"
-      ],
+      "args": ["mcp-server-qdrant"],
       "env": {
         "QDRANT_URL": "https://4ce95fca-f9f6-4152-ad39-b059a7f4dfdd.us-west-1-0.aws.cloud.qdrant.io",
         "QDRANT_API_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.UztDGYZw9x6i627D08kXMq4bsMhxmSf3C4XeEP4B-z8",
@@ -89,7 +84,7 @@
         "ghcr.io/github/github-mcp-server"
       ],
       "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "\<REMOVED>",
+        "GITHUB_PERSONAL_ACCESS_TOKEN":"REDACTED",
         "GITHUB_TOOLSETS": "",
         "GITHUB_READ_ONLY": ""
       }
