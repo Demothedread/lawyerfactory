@@ -1116,6 +1116,9 @@ pytest tests/unit/ -v
 # Integration tests (critical)
 pytest tests/integration/ -v
 
+# Lawsuit workflow end-to-end tests
+pytest tests/e2e/test_lawsuit_workflow_e2e.py -v
+
 # Full integration flow validation
 python test_integration_flow.py
 
