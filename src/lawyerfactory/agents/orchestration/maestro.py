@@ -67,7 +67,7 @@ class Maestro:
             # Initialize workflow state
             workflow_state = {
                 "id": workflow_id,
-                "current_phase": "A01_intake",
+                "current_phase": self.phase_sequence[0],
                 "case_data": case_data,
                 "phase_results": {},
                 "status": "active",
