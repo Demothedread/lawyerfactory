@@ -1,6 +1,51 @@
 {
   "entities": [
     {
+      "id": "workflow_phases",
+      "type": "workflow",
+      "name": "Sequential Lawsuit Workflow",
+      "attributes": {
+        "phases": [
+          "intake",
+          "planning",
+          "research",
+          "outline",
+          "drafting",
+          "editing",
+          "criticism",
+          "final_drafting",
+          "post_production"
+        ]
+      }
+    },
+    {
+      "id": "post_production_protocol",
+      "type": "protocol",
+      "name": "Court Packet Protocol",
+      "attributes": {
+        "default_court": "Superior Court of California",
+        "deliverables": [
+          "cover_sheet",
+          "table_of_authorities",
+          "supplemental_evidence_index",
+          "manifest",
+          "court_packet_zip"
+        ]
+      }
+    },
+    {
+      "id": "court_packet_zip",
+      "type": "artifact",
+      "name": "Court Packet ZIP",
+      "attributes": {
+        "formats": [
+          "pdf",
+          "docx",
+          "txt",
+          "json"
+        ],
+        "location": "output/post_production/"
+      }
       "id": "workflow.maestro_agent",
       "type": "component",
       "name": "Maestro orchestration agent",
@@ -23,6 +68,12 @@
   ],
   "features": [
     {
+      "id": "phase_chain_manifest",
+      "description": "Tracks upstream phase outputs and ties them to final deliverables."
+    },
+    {
+      "id": "jurisdiction_defaulting",
+      "description": "Defaults to Superior Court of California when jurisdiction is missing."
       "id": "tests.lawsuit_workflow_e2e",
       "type": "test",
       "name": "Lawsuit workflow E2E tests",
@@ -34,6 +85,15 @@
   ],
   "relations": [
     {
+      "from": "workflow_phases",
+      "to": "post_production_protocol",
+      "type": "culminates_in",
+      "notes": "Post-production consumes outputs from all prior phases."
+    },
+    {
+      "from": "post_production_protocol",
+      "to": "court_packet_zip",
+      "type": "produces"
       "source": "tests.lawsuit_workflow_e2e",
       "type": "validates",
       "target": "workflow.lawsuit_phase_sequence"

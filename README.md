@@ -8,7 +8,11 @@ LawyerFactory is a comprehensive legal document automation platform that orchest
 
 ## 🔗 Internal Navigation
 
+- [Synopsis](#synopsis)
 - [Quick Start - Complete System Launch](#quick-start---complete-system-launch)
+- [Prerequisites](#prerequisites)
+- [Start](#start)
+- [Deploy](#deploy)
 - [Getting Started](#getting-started)
 - [Agent Swarm Architecture](#agent-swarm-architecture)
 - [System Components](#system-components)
@@ -19,9 +23,20 @@ LawyerFactory is a comprehensive legal document automation platform that orchest
 - [Advanced Features & Specializations](#advanced-features--specializations)
 - [System Specifications & Performance](#system-specifications--performance)
 - [Quick Reference](#quick-reference)
+- [Use Cases](#use-cases)
+- [FAQ](#faq)
+- [E2E Tests](#e2e-tests)
 - [License & Legal](#license--legal)
 
 ---
+
+## Synopsis
+
+LawyerFactory is an AI-powered, multi-phase long-form content generator for litigation-ready
+documents—most notably court complaints. It orchestrates a sequential workflow from intake through
+planning, research, outlining, drafting, editing, criticism, final drafting, and post-production
+finalization (including cover sheet creation, evidence collation, and table of authorities). The
+default court profile is **Superior Court of California** when a jurisdiction is not provided.
 
 ## 🚀 Quick Start - Complete System Launch
 
@@ -83,6 +98,25 @@ cd apps/api && python simple_server.py
 
 # Production with custom ports
 ./launch-prod.sh --frontend-port 443 --backend-port 8000
+```
+
+## Prerequisites
+
+- **Python** 3.9+ (3.11+ recommended)
+- **Node.js** 18+ for frontend development
+- **LLM API Keys** (OpenAI, Anthropic, Groq, etc.)
+- **Court rules** configured per jurisdiction (defaults to Superior Court of California)
+
+## Start
+
+```bash
+./launch-dev.sh
+```
+
+## Deploy
+
+```bash
+./launch-prod.sh --frontend-port 80 --backend-port 5000
 ```
 
 ---
@@ -1460,6 +1494,33 @@ tail -f logs/lawyerfactory.log
 - 💬 **Discussions**: GitHub Discussions
 - 📧 **Professional Support**: Available for enterprise deployments
 - 🎓 **Training**: Professional training programs available
+
+---
+
+## Use Cases
+
+- **Civil Complaint Drafting**: Generate court-ready complaints with a full evidentiary packet.
+- **Multi-Phase Litigation Planning**: Track intake → research → outline → draft → edit → finalize.
+- **Authority-Driven Pleadings**: Build tables of authorities directly from research outputs.
+- **Jurisdictional Defaulting**: Default to Superior Court of California when no court is provided.
+
+## FAQ
+
+**Q: What court rules are used by default?**  
+A: Superior Court of California is the default jurisdiction when no court is specified.
+
+**Q: Are cover sheets and TOAs generated automatically?**  
+A: Yes, the post-production protocol builds a cover sheet, table of authorities, and evidence index.
+
+**Q: Can I override jurisdiction or court formatting?**  
+A: Yes, intake metadata can override default court profile and formatting rules.
+
+## E2E Tests
+
+```bash
+# Run end-to-end orchestration tests
+pytest tests -k "integration" -v
+```
 
 ---
 
