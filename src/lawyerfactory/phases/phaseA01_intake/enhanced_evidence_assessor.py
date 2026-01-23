@@ -15,18 +15,20 @@ This enhanced version integrates the CourtAuthorityHelper to provide:
 - Enhanced evidence table with authority metadata
 """
 
-from dataclasses import dataclass, field
 import json
 import logging
-from pathlib import Path
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
-from ...agents.research.court_authority_helper import (
+from lawyerfactory.agents.research.court_authority_helper import (
     CourtAuthorityHelper,
     JurisdictionContext,
 )
-from .enhanced_intake_processor import EnhancedIntakeContext, EnhancedIntakeProcessor
+from lawyerfactory.phases.phaseA01_intake.intake_processor import (
+    EnhancedIntakeProcessor,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,13 +36,20 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AuthorityRatedEvidence:
     """Evidence entry with authority rating"""
-    original_evidence: Dict[str, Any]
-    authority_assessment: Optional[Dict[str, Any]] = None
+    original_evidence: dict[str, Any]
+    authority_assessment: dict[str, Any] | None = None
     star_rating: int = 0
     is_binding: bool = False
     reasoning: str = ""
     color_code: str = "gray"
     enhanced_relevance: float = 0.0
+
+
+@dataclass
+class EnhancedIntakeContext:
+    """Minimal intake context wrapper for authority assessment."""
+
+    jurisdiction_context: JurisdictionContext
 
 
 class EnhancedEvidenceAssessor:
@@ -57,7 +66,7 @@ class EnhancedEvidenceAssessor:
 
     def __init__(self):
         self.authority_helper = CourtAuthorityHelper()
-        self.jurisdiction_context: Optional[JurisdictionContext] = None
+        self.jurisdiction_context: JurisdictionContext | None = None
 
     def set_jurisdiction_context(self, context: JurisdictionContext):
         """
@@ -72,8 +81,8 @@ class EnhancedEvidenceAssessor:
     def process_evidence_table_with_authority(
         self,
         evidence_table_path: str,
-        intake_context: Optional[EnhancedIntakeContext] = None
-    ) -> Dict[str, Any]:
+        intake_context: EnhancedIntakeContext | None = None
+    ) -> dict[str, Any]:
         """
         Process evidence table and add authority ratings to all entries.
 
@@ -87,7 +96,7 @@ class EnhancedEvidenceAssessor:
 
         try:
             # Load evidence table
-            with open(evidence_table_path, 'r', encoding='utf-8') as f:
+            with open(evidence_table_path, encoding='utf-8') as f:
                 evidence_data = json.load(f)
 
             evidence_entries = evidence_data.get('evidence_entries', [])
@@ -161,7 +170,7 @@ class EnhancedEvidenceAssessor:
                 'authority_ratings_added': 0
             }
 
-    def _process_evidence_entry(self, entry: Dict[str, Any]) -> AuthorityRatedEvidence:
+    def _process_evidence_entry(self, entry: dict[str, Any]) -> AuthorityRatedEvidence:
         """
         Process a single evidence entry and assess its authority level.
 
@@ -226,7 +235,7 @@ class EnhancedEvidenceAssessor:
 
         return enhanced_entry
 
-    def _extract_caselaw_info(self, entry: Dict[str, Any]) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    def _extract_caselaw_info(self, entry: dict[str, Any]) -> tuple[str | None, str | None, str | None]:
         """
         Extract caselaw information from evidence entry.
 
@@ -257,7 +266,7 @@ class EnhancedEvidenceAssessor:
 
         return None, None, None
 
-    def _parse_citation(self, citation: str) -> Tuple[Optional[str], Optional[str]]:
+    def _parse_citation(self, citation: str) -> tuple[str | None, str | None]:
         """
         Parse citation to extract court and jurisdiction.
 
@@ -310,7 +319,7 @@ class EnhancedEvidenceAssessor:
 
         return None, None
 
-    def _find_citation_in_text(self, text: str) -> Optional[str]:
+    def _find_citation_in_text(self, text: str) -> str | None:
         """
         Find legal citation patterns in text.
 
@@ -337,7 +346,7 @@ class EnhancedEvidenceAssessor:
 
         return None
 
-    def _find_court_in_text(self, text: str) -> Optional[str]:
+    def _find_court_in_text(self, text: str) -> str | None:
         """
         Find court names in text.
 
@@ -426,7 +435,7 @@ class EnhancedEvidenceAssessor:
 
     def _generate_authority_summary(
         self,
-        processed_entries: List[AuthorityRatedEvidence],
+        processed_entries: list[AuthorityRatedEvidence],
         binding_count: int,
         persuasive_count: int,
         no_authority_count: int
@@ -480,8 +489,8 @@ class EnhancedEvidenceAssessor:
 # Integration function for the intake phase
 def assess_evidence_with_authority_enhancement(
     evidence_table_path: str,
-    intake_context_path: Optional[str] = None
-) -> Dict[str, Any]:
+    intake_context_path: str | None = None
+) -> dict[str, Any]:
     """
     Assess evidence table with court authority enhancement.
 
@@ -499,9 +508,6 @@ def assess_evidence_with_authority_enhancement(
     intake_context = None
     if intake_context_path and Path(intake_context_path).exists():
         try:
-            from ...phases.intake.enhanced_intake_processor import (
-                EnhancedIntakeProcessor,
-            )
             processor = EnhancedIntakeProcessor()
             intake_context = processor.load_enhanced_context(intake_context_path)
         except Exception as e:
@@ -550,7 +556,7 @@ if __name__ == "__main__":
         json.dump(sample_evidence_table, f, indent=2)
 
     # Create sample jurisdiction context
-    from ...agents.research.court_authority_helper import (
+    from lawyerfactory.agents.research.court_authority_helper import (
         JurisdictionContext,
         LegalQuestionType,
     )
@@ -576,12 +582,11 @@ if __name__ == "__main__":
     print(f"Persuasive Authority: {results['persuasive_authority_count']}")
     print(f"No Authority: {results['no_authority_count']}")
 
-    print("
-=== AUTHORITY SUMMARY ===")
+    print("\n=== AUTHORITY SUMMARY ===")
     print(results['authority_summary'])
 
     # Load and display updated evidence table
-    with open(sample_path, 'r') as f:
+    with open(sample_path) as f:
         updated_table = json.load(f)
 
     print("\n=== UPDATED EVIDENCE TABLE ===")

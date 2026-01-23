@@ -46,6 +46,8 @@
         ],
         "location": "output/post_production/"
       }
+    },
+    {
       "id": "workflow.maestro_agent",
       "type": "component",
       "name": "Maestro orchestration agent",
@@ -74,6 +76,8 @@
     {
       "id": "jurisdiction_defaulting",
       "description": "Defaults to Superior Court of California when jurisdiction is missing."
+    },
+    {
       "id": "tests.lawsuit_workflow_e2e",
       "type": "test",
       "name": "Lawsuit workflow E2E tests",
@@ -81,6 +85,12 @@
       "files": [
         "tests/e2e/test_lawsuit_workflow_e2e.py"
       ]
+    },
+    {
+      "id": "evidence.tiered_classification",
+      "type": "feature",
+      "name": "Tiered evidence ingestion",
+      "notes": "Adds primary/secondary/tertiary evidence tiers with tagging for source indexing."
     }
   ],
   "relations": [
@@ -94,6 +104,8 @@
       "from": "post_production_protocol",
       "to": "court_packet_zip",
       "type": "produces"
+    },
+    {
       "source": "tests.lawsuit_workflow_e2e",
       "type": "validates",
       "target": "workflow.lawsuit_phase_sequence"
@@ -131,6 +143,10 @@
     {
       "timestamp": "2025-02-14T01:00:00Z",
       "summary": "Documented lint backlog note and current test coverage scope."
+    },
+    {
+      "timestamp": "2025-02-14T02:00:00Z",
+      "summary": "Captured tiered evidence ingestion for primary, secondary, and tertiary evidence tagging."
     }
   ]
 }
