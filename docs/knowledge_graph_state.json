@@ -1,0 +1,80 @@
+{
+  "entities": [
+    {
+      "id": "workflow_phases",
+      "type": "workflow",
+      "name": "Sequential Lawsuit Workflow",
+      "attributes": {
+        "phases": [
+          "intake",
+          "planning",
+          "research",
+          "outline",
+          "drafting",
+          "editing",
+          "criticism",
+          "final_drafting",
+          "post_production"
+        ]
+      }
+    },
+    {
+      "id": "post_production_protocol",
+      "type": "protocol",
+      "name": "Court Packet Protocol",
+      "attributes": {
+        "default_court": "Superior Court of California",
+        "deliverables": [
+          "cover_sheet",
+          "table_of_authorities",
+          "supplemental_evidence_index",
+          "manifest",
+          "court_packet_zip"
+        ]
+      }
+    },
+    {
+      "id": "court_packet_zip",
+      "type": "artifact",
+      "name": "Court Packet ZIP",
+      "attributes": {
+        "formats": [
+          "pdf",
+          "docx",
+          "txt",
+          "json"
+        ],
+        "location": "output/post_production/"
+      }
+    }
+  ],
+  "features": [
+    {
+      "id": "phase_chain_manifest",
+      "description": "Tracks upstream phase outputs and ties them to final deliverables."
+    },
+    {
+      "id": "jurisdiction_defaulting",
+      "description": "Defaults to Superior Court of California when jurisdiction is missing."
+    }
+  ],
+  "relations": [
+    {
+      "from": "workflow_phases",
+      "to": "post_production_protocol",
+      "type": "culminates_in",
+      "notes": "Post-production consumes outputs from all prior phases."
+    },
+    {
+      "from": "post_production_protocol",
+      "to": "court_packet_zip",
+      "type": "produces"
+    }
+  ],
+  "notes": [
+    {
+      "timestamp": "2024-01-01T00:00:00Z",
+      "text": "Initialized knowledge graph for post-production protocol and court packet deliverables."
+    }
+  ]
+}
