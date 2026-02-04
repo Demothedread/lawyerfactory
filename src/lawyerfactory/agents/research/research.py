@@ -793,7 +793,7 @@ class ResearchBot:
                         evidence_entry = EvidenceEntry(
                             source_document=source.get("title", "Unknown"),
                             content=source.get("content", ""),
-                            evidence_type="documentary",
+                            evidence_type=EvidenceType.DOCUMENTARY,
                             evidence_source=evidence_source,
                             relevance_score=source.get("relevance_score", 0.0),
                             bluebook_citation=source.get("citation", ""),
