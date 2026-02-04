@@ -10,24 +10,25 @@ Integrates with CourtListener API, Google Scholar, Tavily Search, and other lega
 """
 
 import asyncio
-from dataclasses import dataclass
-from datetime import datetime
-import hashlib
 import json
 import logging
 import os
 import re
 import time
-from typing import Any, Dict, List, Optional, Tuple
 import urllib.error
 import urllib.parse
 import urllib.request
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Any
 
 # Import Tavily integration for comprehensive research
 try:
     from ...research.tavily_integration import (
-        TavilyResearchIntegration,
         ResearchQuery as TavilyResearchQuery,
+    )
+    from ...research.tavily_integration import (
+        TavilyResearchIntegration,
     )
     TAVILY_AVAILABLE = True
 except ImportError:
@@ -63,20 +64,9 @@ except ImportError:
 # from ..agent_registry import AgentCapability, AgentConfig, AgentInterface
 # from ..bot_interface import Bot
 # from ..workflow_models import WorkflowTask
-from lawyerfactory.compose.agent_registry import AgentConfig, AgentInterface
-from lawyerfactory.compose.maestro.base import Bot
-from lawyerfactory.compose.maestro.workflow import WorkflowTask
 
 logger = logging.getLogger(__name__)
 try:
-    from .llm_research_integration import (
-        llm_analyze_case_law,
-        llm_extract_legal_issues,
-        llm_extract_legal_principles,
-        llm_generate_research_recommendations,
-        llm_identify_research_gaps,
-        llm_score_citation_relevance,
-    )
 
     LLM_RESEARCH_AVAILABLE = True
 except Exception:
@@ -85,7 +75,6 @@ except Exception:
 
 # try to import new LLM service
 try:
-    from ...lf_core.llm import LLMService
 
     LLM_SERVICE_AVAILABLE = True
 except Exception:
@@ -114,13 +103,13 @@ class ResearchQuery:
     """Structured research query with context"""
 
     query_text: str
-    legal_issues: List[str]
-    jurisdiction: Optional[str] = None  # e.g. 'federal', 'state'
-    venue: Optional[str] = None  # e.g. scotus, 'ca9', 'cal'
-    parties: Optional[List[str]] = None
-    date_range: Optional[Tuple[str, str]] = None
-    citation_types: Optional[List[str]] = None
-    entity_ids: Optional[List[str]] = None
+    legal_issues: list[str]
+    jurisdiction: str | None = None  # e.g. 'federal', 'state'
+    venue: str | None = None  # e.g. scotus, 'ca9', 'cal'
+    parties: list[str] | None = None
+    date_range: tuple[str, str] | None = None
+    citation_types: list[str] | None = None
+    entity_ids: list[str] | None = None
 
     def __post_init__(self):
         if self.parties is None:
@@ -137,15 +126,15 @@ class LegalCitation:
 
     citation: str
     title: str
-    court: Optional[str] = None
-    year: Optional[int] = None
-    jurisdiction: Optional[str] = None
+    court: str | None = None
+    year: int | None = None
+    jurisdiction: str | None = None
     citation_type: str = "case"  # case, statute, regulation
-    url: Optional[str] = None
+    url: str | None = None
     relevance_score: float = 0.0
     authority_level: int = 1  # 1=highest (Supreme Court), 5=lowest
-    excerpt: Optional[str] = None
-    full_text: Optional[str] = None
+    excerpt: str | None = None
+    full_text: str | None = None
 
 
 @dataclass
@@ -153,19 +142,19 @@ class ResearchResult:
     """Research result with analysis"""
 
     query_id: str
-    citations: List[LegalCitation]
-    legal_principles: List[str]
-    gaps_identified: List[str]
-    recommendations: List[str]
+    citations: list[LegalCitation]
+    legal_principles: list[str]
+    gaps_identified: list[str]
+    recommendations: list[str]
     confidence_score: float
-    search_metadata: Dict[str, Any]
+    search_metadata: dict[str, Any]
     created_at: datetime
 
 
 class CourtListenerClient:
     """Client for CourtListener API integration using urllib"""
 
-    def __init__(self, api_token: Optional[str] = None):
+    def __init__(self, api_token: str | None = None):
         self.base_url = "https://www.courtlistener.com/api/rest/v4/"
         self.api_token = api_token or os.environ.get("COURTLISTENER_API_KEY")
         self.rate_limit = {
@@ -196,10 +185,10 @@ class CourtListenerClient:
     async def search_opinions(
         self,
         query: str,
-        jurisdiction: Optional[str] = None,
-        court: Optional[str] = None,
+        jurisdiction: str | None = None,
+        court: str | None = None,
         limit: int = 20,
-    ) -> List[Dict]:
+    ) -> list[dict]:
         """Search for court opinions"""
         await self._rate_limit_check()
 
@@ -237,7 +226,7 @@ class CourtListenerClient:
             logger.error(f"CourtListener search failed: {e}")
             return self._mock_opinion_results(query, limit)
 
-    def _mock_opinion_results(self, query: str, limit: int) -> List[Dict]:
+    def _mock_opinion_results(self, query: str, limit: int) -> list[dict]:
         """Mock results when API is not available"""
         return [
             {
@@ -252,7 +241,7 @@ class CourtListenerClient:
             for i in range(min(limit, 5))
         ]
 
-    async def get_opinion_details(self, opinion_id: str) -> Dict:
+    async def get_opinion_details(self, opinion_id: str) -> dict:
         """Get detailed opinion information"""
         await self._rate_limit_check()
 
@@ -273,7 +262,7 @@ class CourtListenerClient:
             logger.error(f"Failed to get opinion details: {e}")
             return {"mock": True, "opinion_id": opinion_id}
 
-    async def get_opinion_cluster(self, cluster_id: str) -> Dict:
+    async def get_opinion_cluster(self, cluster_id: str) -> dict:
         """Fetch opinion-cluster (to enumerate sub-opinions like concurrences/dissents)"""
         await self._rate_limit_check()
         try:
@@ -288,8 +277,8 @@ class CourtListenerClient:
             return {"mock": True, "cluster_id": cluster_id}
 
     async def get_best_opinion_text(
-        self, opinion_id: Optional[str] = None, cluster_id: Optional[str] = None
-    ) -> Dict:
+        self, opinion_id: str | None = None, cluster_id: str | None = None
+    ) -> dict:
         """
         Retrieve the best available text for an opinion or cluster.
         Preference: html_with_citations -> html -> plain_text.
@@ -340,11 +329,11 @@ class CourtListenerClient:
 class OpenAlexClient:
     """Minimal OpenAlex client for academic law/secondary sources (no API key required)."""
 
-    def __init__(self, contact_email: Optional[str] = None):
+    def __init__(self, contact_email: str | None = None):
         self.base_url = "https://api.openalex.org/works"
         self.contact_email = contact_email or "mailto:researchbot@example.com"
 
-    async def search_legal(self, query: str, limit: int = 10) -> List[Dict]:
+    async def search_legal(self, query: str, limit: int = 10) -> list[dict]:
         """
         Search OpenAlex for relevant works. Filters to journal articles where possible.
         """
@@ -427,7 +416,7 @@ class GoogleScholarClient:
 
         self.rate_limit["last_request"] = time.time()
 
-    async def search_legal(self, query: str, limit: int = 10) -> List[Dict]:
+    async def search_legal(self, query: str, limit: int = 10) -> list[dict]:
         """Search Google Scholar for legal documents"""
         await self._rate_limit_check()
 
@@ -435,7 +424,7 @@ class GoogleScholarClient:
         # In production, you would use a proper web scraping library
         return self._mock_scholar_results(query, limit)
 
-    def _mock_scholar_results(self, query: str, limit: int) -> List[Dict]:
+    def _mock_scholar_results(self, query: str, limit: int) -> list[dict]:
         """Mock results for testing - replace with actual parsing in production"""
         return [
             {
@@ -454,7 +443,7 @@ class GoogleScholarClient:
 class ResearchBot:
     """Enhanced research bot for comprehensive legal research"""
 
-    def __init__(self, knowledge_graph=None, courtlistener_token: Optional[str] = None):
+    def __init__(self, knowledge_graph=None, courtlistener_token: str | None = None):
         # Initialize without Bot/AgentInterface since they don't exist
         self.knowledge_graph = knowledge_graph
         self.courtlistener_token = courtlistener_token
@@ -479,7 +468,7 @@ class ResearchBot:
 
         logger.info("ResearchBot initialized with legal research capabilities")
 
-    def research_case(self, case_id: str, research_query: str) -> Dict[str, Any]:
+    def research_case(self, case_id: str, research_query: str) -> dict[str, Any]:
         """Research a legal case - main entry point for server"""
         try:
             # Create research query from the input
@@ -553,7 +542,41 @@ class ResearchBot:
         # Cache for research results
         self.result_cache = {}
 
-    def research_case(self, case_id: str, research_query: str) -> Dict[str, Any]:
+    def _classify_research_evidence_source(self, source: dict[str, Any]) -> EvidenceSource:
+        """Classify research evidence as secondary or tertiary."""
+        source_type = str(source.get("source_type", "")).lower()
+        citation = str(source.get("citation", "")).lower()
+        url = str(source.get("url", "")).lower()
+        title = str(source.get("title", "")).lower()
+
+        if any(
+            marker in source_type
+            for marker in ["court", "case", "opinion", "legal", "caselaw"]
+        ):
+            return EvidenceSource.TERTIARY
+
+        if any(marker in text for text in [citation, url, title] for marker in [" v. ", "vs.", "court", "supreme"]):
+            return EvidenceSource.TERTIARY
+
+        return EvidenceSource.SECONDARY
+
+    def _build_research_evidence_tags(self, source: dict[str, Any]) -> list[str]:
+        """Build tags for research evidence entries."""
+        tags = set()
+        source_type = str(source.get("source_type", "")).lower()
+        if source_type:
+            tags.add(source_type)
+        if "news" in source_type:
+            tags.add("news")
+        if "academic" in source_type:
+            tags.add("academic")
+        if "court" in source_type or "case" in source_type:
+            tags.add("legal_case")
+        if source.get("citation"):
+            tags.add("citation")
+        return sorted(tags)
+
+    def research_case(self, case_id: str, research_query: str) -> dict[str, Any]:
         """Research a legal case and return findings"""
         try:
             # Create research query from the input
@@ -624,7 +647,7 @@ class ResearchBot:
 
         return result
 
-    def _extract_legal_issues(self, query_text: str) -> List[str]:
+    def _extract_legal_issues(self, query_text: str) -> list[str]:
         """Extract legal issues from query text"""
         # Simple extraction - could be enhanced with NLP
         issues = []
@@ -637,7 +660,7 @@ class ResearchBot:
 
         return issues if issues else ["general legal research"]
 
-    def _parse_courtlistener_result_simple(self, result: Dict) -> Optional[LegalCitation]:
+    def _parse_courtlistener_result_simple(self, result: dict) -> LegalCitation | None:
         """Simple parser for CourtListener results"""
         try:
             return LegalCitation(
@@ -655,7 +678,7 @@ class ResearchBot:
         except Exception:
             return None
 
-    def _parse_scholar_result_simple(self, result: Dict) -> Optional[LegalCitation]:
+    def _parse_scholar_result_simple(self, result: dict) -> LegalCitation | None:
         """Simple parser for Google Scholar results"""
         try:
             return LegalCitation(
@@ -671,7 +694,7 @@ class ResearchBot:
         except Exception:
             return None
 
-    async def extract_keywords_from_evidence(self, evidence_content: str, case_type: Optional[str] = None) -> List[str]:
+    async def extract_keywords_from_evidence(self, evidence_content: str, case_type: str | None = None) -> list[str]:
         """
         Extract research keywords from PRIMARY evidence using evidence_ingestion validation patterns.
         Returns list of keywords for Tavily searches.
@@ -716,9 +739,9 @@ class ResearchBot:
         self,
         case_id: str,
         evidence_id: str,
-        keywords: List[str],
+        keywords: list[str],
         max_results_per_source: int = 5,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Execute comprehensive research using Tavily based on keywords from PRIMARY evidence.
         Stores results as SECONDARY evidence in unified storage.
@@ -765,14 +788,17 @@ class ResearchBot:
                 for source in research_result.sources:
                     try:
                         # Create SECONDARY evidence entry
+                        evidence_source = self._classify_research_evidence_source(source)
+                        evidence_tags = self._build_research_evidence_tags(source)
                         evidence_entry = EvidenceEntry(
                             source_document=source.get("title", "Unknown"),
                             content=source.get("content", ""),
-                            evidence_type="documentary",
-                            evidence_source=EvidenceSource.SECONDARY,  # Mark as SECONDARY
+                            evidence_type=EvidenceType.DOCUMENTARY,
+                            evidence_source=evidence_source,
                             relevance_score=source.get("relevance_score", 0.0),
                             bluebook_citation=source.get("citation", ""),
                             key_terms=keywords,
+                            evidence_tags=evidence_tags,
                             notes=f"Found via Tavily research for case {case_id}",
                             research_query=query_text,
                             research_confidence=research_result.confidence_score,
@@ -789,6 +815,8 @@ class ResearchBot:
                                 "research_query": query_text,
                                 "source_url": source.get("url", ""),
                                 "confidence_score": source.get("relevance_score", 0.0),
+                                "evidence_source": evidence_source.value,
+                                "tags": evidence_tags,
                             },
                             source_phase="phaseA02_research",
                         )
@@ -828,7 +856,7 @@ class ResearchBot:
                 "error": str(e)
             }
 
-    def _format_research_results(self, result: ResearchResult) -> Dict[str, Any]:
+    def _format_research_results(self, result: ResearchResult) -> dict[str, Any]:
         """Format research results for API response"""
         return {
             "sources": [

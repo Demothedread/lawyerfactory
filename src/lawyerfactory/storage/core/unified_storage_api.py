@@ -6,15 +6,13 @@ Coordinates three storage tiers: S3 Raw Storage, Evidence Table, Vector Store wi
 Integrates with existing evidence ingestion pipeline and claims matrix system.
 """
 
-import asyncio
-from dataclasses import dataclass, field
-from datetime import datetime
 import json
 import logging
-import os
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
 import uuid
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +37,10 @@ class StorageResult:
 
     success: bool
     object_id: str
-    s3_url: Optional[str] = None
-    evidence_id: Optional[str] = None
-    vector_ids: List[str] = field(default_factory=list)
-    error: Optional[str] = None
+    s3_url: str | None = None
+    evidence_id: str | None = None
+    vector_ids: list[str] = field(default_factory=list)
+    error: str | None = None
     processing_time: float = 0.0
 
 
@@ -56,10 +54,10 @@ class EvidenceMetadata:
     file_size: int
     upload_timestamp: datetime
     source_phase: str
-    user_id: Optional[str] = None
-    case_id: Optional[str] = None
-    tags: List[str] = field(default_factory=list)
-    custom_metadata: Dict[str, Any] = field(default_factory=dict)
+    user_id: str | None = None
+    case_id: str | None = None
+    tags: list[str] = field(default_factory=list)
+    custom_metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class EnhancedUnifiedStorageAPI:
@@ -100,11 +98,11 @@ class EnhancedUnifiedStorageAPI:
 
         logger.info("Enhanced Unified Storage API initialized")
 
-    def _load_object_registry(self) -> Dict[str, Dict[str, Any]]:
+    def _load_object_registry(self) -> dict[str, dict[str, Any]]:
         """Load the object registry from disk"""
         if self.object_registry_path.exists():
             try:
-                with open(self.object_registry_path, "r", encoding="utf-8") as f:
+                with open(self.object_registry_path, encoding="utf-8") as f:
                     return json.load(f)
             except Exception as e:
                 logger.warning(f"Failed to load object registry: {e}")
@@ -128,7 +126,7 @@ class EnhancedUnifiedStorageAPI:
         self,
         file_content: bytes,
         filename: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
         source_phase: str = "intake",
     ) -> StorageResult:
         """
@@ -238,8 +236,8 @@ class EnhancedUnifiedStorageAPI:
             )
 
     async def get_evidence(
-        self, object_id: str, target_tier: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, object_id: str, target_tier: str | None = None
+    ) -> dict[str, Any]:
         """
         Retrieve evidence from the unified storage system
 
@@ -291,7 +289,7 @@ class EnhancedUnifiedStorageAPI:
 
     async def search_evidence(
         self, query: str, search_tier: str = "vector"
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Search for evidence across storage tiers
 
@@ -339,7 +337,7 @@ class EnhancedUnifiedStorageAPI:
 
     async def _store_in_vector_store(
         self, content: str, metadata: EvidenceMetadata
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Store content in vector store using existing EnhancedVectorStoreManager"""
         if not self.vector_store_manager:
             return {"error": "Vector store manager not available"}
@@ -380,7 +378,7 @@ class EnhancedUnifiedStorageAPI:
 
     async def _store_in_cloud_storage(
         self, file_content: bytes, metadata: EvidenceMetadata
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Store file in cloud storage using existing CloudStorageManager"""
         if not self.cloud_storage_manager:
             return {"error": "Cloud storage manager not available"}
@@ -412,29 +410,35 @@ class EnhancedUnifiedStorageAPI:
 
     async def _store_in_evidence_table(
         self, content: str, metadata: EvidenceMetadata
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Store structured data in evidence table using existing EnhancedEvidenceTable"""
         if not self.evidence_table:
             return {"error": "Evidence table not available"}
 
         try:
             # Create evidence entry using the enhanced evidence table
-            from .evidence.table import EvidenceEntry, EvidenceType, RelevanceLevel
+            from .evidence.table import (
+                EvidenceEntry,
+            )
 
-            # Determine evidence type and relevance
+            # Determine evidence type, source tier, and relevance
             evidence_type = self._determine_evidence_type(content, metadata.original_filename)
+            evidence_source = self._determine_evidence_source(content, metadata)
             relevance = self._determine_relevance(content)
 
             # Extract supporting facts (simplified)
             supporting_facts = self._extract_supporting_facts(content)
+            evidence_tags = self._build_evidence_tags(content, metadata)
 
             evidence_entry = EvidenceEntry(
                 source_document=metadata.original_filename,
                 page_section="Full Document",
                 evidence_type=evidence_type,
+                evidence_source=evidence_source,
                 relevance_level=relevance,
                 content=content[:1000] if len(content) > 1000 else content,  # Truncate for display
                 supporting_facts=supporting_facts,
+                evidence_tags=evidence_tags,
                 notes=f"Source: {metadata.source_phase} | ObjectID: {metadata.object_id}",
                 created_by="unified_storage_api",
             )
@@ -447,6 +451,11 @@ class EnhancedUnifiedStorageAPI:
                 "evidence_id": evidence_entry.evidence_id,
                 "evidence_type": (
                     evidence_type.value if hasattr(evidence_type, "value") else str(evidence_type)
+                ),
+                "evidence_source": (
+                    evidence_source.value
+                    if hasattr(evidence_source, "value")
+                    else str(evidence_source)
                 ),
                 "relevance_level": (
                     relevance.value if hasattr(relevance, "value") else str(relevance)
@@ -473,7 +482,71 @@ class EnhancedUnifiedStorageAPI:
         else:
             return VectorStoreType.GENERAL_RAG
 
-    def _classify_validation_types(self, content: str) -> List:
+    def _determine_evidence_source(self, content: str, metadata: EvidenceMetadata):
+        """Determine evidence source tier (primary/secondary/tertiary)."""
+        try:
+            from .evidence.table import EvidenceSource
+        except ImportError:
+            return "primary"
+
+        evidence_source = metadata.custom_metadata.get("evidence_source")
+        if isinstance(evidence_source, str):
+            evidence_source_lower = evidence_source.lower()
+            for source in EvidenceSource:
+                if source.value == evidence_source_lower:
+                    return source
+
+        tags = self._normalize_tags(metadata.tags, metadata.custom_metadata.get("tags"))
+        content_lower = content.lower()
+        source_phase = metadata.source_phase.lower()
+
+        if any(tag in {"tertiary", "caselaw", "case_law", "legal_case", "precedent"} for tag in tags):
+            return EvidenceSource.TERTIARY
+
+        if any(
+            marker in content_lower
+            for marker in [" v. ", "vs.", "supreme court", "court of appeals", "f. supp.", "u.s."]
+        ):
+            return EvidenceSource.TERTIARY
+
+        if source_phase in {"intake", "evidence"}:
+            return EvidenceSource.PRIMARY
+
+        if source_phase.startswith("phasea02") or "research" in source_phase:
+            return EvidenceSource.SECONDARY
+
+        return EvidenceSource.PRIMARY
+
+    def _build_evidence_tags(self, content: str, metadata: EvidenceMetadata) -> list[str]:
+        """Build evidence tags from metadata and content hints."""
+        tags = self._normalize_tags(metadata.tags, metadata.custom_metadata.get("tags"))
+        content_lower = content.lower()
+        source_phase = metadata.source_phase.lower()
+
+        if "news" in source_phase or "press" in content_lower:
+            tags.add("news")
+        if "report" in content_lower:
+            tags.add("report")
+        if "court" in content_lower or "opinion" in content_lower:
+            tags.add("legal_case")
+        if "contract" in content_lower:
+            tags.add("contract")
+
+        return sorted(tags)
+
+    def _normalize_tags(self, primary: list[str] | None, extra: Any) -> set:
+        """Normalize tags from metadata inputs."""
+        tags = set()
+        if primary:
+            tags.update(str(tag).strip().lower() for tag in primary if str(tag).strip())
+        if extra:
+            if isinstance(extra, list):
+                tags.update(str(tag).strip().lower() for tag in extra if str(tag).strip())
+            elif isinstance(extra, str):
+                tags.update(tag.strip().lower() for tag in extra.split(",") if tag.strip())
+        return tags
+
+    def _classify_validation_types(self, content: str) -> list:
         """Classify content for validation types"""
         if not STORAGE_COMPONENTS_AVAILABLE:
             return []
@@ -530,7 +603,7 @@ class EnhancedUnifiedStorageAPI:
         else:
             return RelevanceLevel.LOW
 
-    def _extract_supporting_facts(self, content: str) -> List[str]:
+    def _extract_supporting_facts(self, content: str) -> list[str]:
         """Extract supporting facts from content"""
         facts = []
 
@@ -547,8 +620,8 @@ class EnhancedUnifiedStorageAPI:
     # Retrieval methods for each storage tier
 
     async def _get_from_cloud_storage(
-        self, object_id: str, cloud_result: Dict[str, Any]
-    ) -> Optional[bytes]:
+        self, object_id: str, cloud_result: dict[str, Any]
+    ) -> bytes | None:
         """Retrieve file from cloud storage"""
         if not self.cloud_storage_manager:
             return None
@@ -563,8 +636,8 @@ class EnhancedUnifiedStorageAPI:
         return None
 
     async def _get_from_evidence_table(
-        self, evidence_result: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+        self, evidence_result: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """Retrieve data from evidence table"""
         if not self.evidence_table:
             return None
@@ -579,8 +652,8 @@ class EnhancedUnifiedStorageAPI:
         return None
 
     async def _get_from_vector_store(
-        self, vector_result: Dict[str, Any]
-    ) -> Optional[Dict[str, Any]]:
+        self, vector_result: dict[str, Any]
+    ) -> dict[str, Any] | None:
         """Retrieve data from vector store"""
         if not self.vector_store_manager:
             return None
@@ -607,7 +680,7 @@ class EnhancedUnifiedStorageAPI:
 
     # Search methods for each storage tier
 
-    async def _search_vector_store(self, query: str) -> List[Dict[str, Any]]:
+    async def _search_vector_store(self, query: str) -> list[dict[str, Any]]:
         """Search vector store and return results with ObjectIDs"""
         if not self.vector_store_manager:
             return []
@@ -650,7 +723,7 @@ class EnhancedUnifiedStorageAPI:
             logger.error(f"Vector store search error: {e}")
             return []
 
-    async def get_research_status(self, object_id: str) -> Dict[str, Any]:
+    async def get_research_status(self, object_id: str) -> dict[str, Any]:
         """Get the research status of a given ObjectID"""
         if object_id not in self.object_registry:
             return {"error": "ObjectID not found"}
@@ -693,7 +766,7 @@ class EnhancedUnifiedStorageAPI:
 
         return status
 
-    async def _search_evidence_table(self, query: str) -> List[Dict[str, Any]]:
+    async def _search_evidence_table(self, query: str) -> list[dict[str, Any]]:
         """Search evidence table and return results with ObjectIDs"""
         if not self.evidence_table:
             return []

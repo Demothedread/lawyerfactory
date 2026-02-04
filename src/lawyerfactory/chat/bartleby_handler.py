@@ -18,12 +18,12 @@ import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import anthropic
 import openai
 import requests
-from flask import jsonify, request, Response, stream_with_context
+from flask import jsonify, request
 
 logger = logging.getLogger(__name__)
 
@@ -52,18 +52,18 @@ class ChatMessage:
     role: str  # 'user', 'assistant', 'system'
     content: str
     timestamp: datetime = field(default_factory=datetime.now)
-    actions: List[Dict[str, Any]] = field(default_factory=list)
-    cost: Optional[float] = None
+    actions: list[dict[str, Any]] = field(default_factory=list)
+    cost: float | None = None
 
 
 @dataclass
 class ChatContext:
     """Context information for chat responses"""
-    case_id: Optional[str] = None
-    skeletal_outline: Optional[Dict] = None
-    evidence_data: Optional[List[Dict]] = None
-    phase_statuses: Optional[Dict] = None
-    attached_context: List[Dict] = field(default_factory=list)
+    case_id: str | None = None
+    skeletal_outline: dict | None = None
+    evidence_data: list[dict] | None = None
+    phase_statuses: dict | None = None
+    attached_context: list[dict] = field(default_factory=list)
 
 
 class BartlebyChatHandler:
@@ -229,9 +229,25 @@ Format your responses in Markdown for clarity.
 
         if context.evidence_data:
             evidence_count = len(context.evidence_data)
-            primary_count = sum(1 for e in context.evidence_data if e.get('evidence_source') == 'PRIMARY')
-            secondary_count = sum(1 for e in context.evidence_data if e.get('evidence_source') == 'SECONDARY')
-            context_parts.append(f"**Evidence Summary**: {evidence_count} total ({primary_count} PRIMARY, {secondary_count} SECONDARY)")
+            primary_count = sum(
+                1
+                for e in context.evidence_data
+                if str(e.get("evidence_source", "")).lower() == "primary"
+            )
+            secondary_count = sum(
+                1
+                for e in context.evidence_data
+                if str(e.get("evidence_source", "")).lower() == "secondary"
+            )
+            tertiary_count = sum(
+                1
+                for e in context.evidence_data
+                if str(e.get("evidence_source", "")).lower() == "tertiary"
+            )
+            context_parts.append(
+                f"**Evidence Summary**: {evidence_count} total ({primary_count} PRIMARY, "
+                f"{secondary_count} SECONDARY, {tertiary_count} TERTIARY)"
+            )
 
         if context.phase_statuses:
             active_phases = [k for k, v in context.phase_statuses.items() if v.get('status') in ['active', 'in_progress']]
@@ -243,7 +259,7 @@ Format your responses in Markdown for clarity.
 
         return "\n\n".join(context_parts)
 
-    async def send_message(self, message: str, context: ChatContext, settings: Dict) -> ChatMessage:
+    async def send_message(self, message: str, context: ChatContext, settings: dict) -> ChatMessage:
         """
         Process a chat message and generate response
 
@@ -343,7 +359,7 @@ Format your responses in Markdown for clarity.
                 cost=0.0
             )
 
-    def extract_actions(self, response_text: str) -> List[Dict[str, Any]]:
+    def extract_actions(self, response_text: str) -> list[dict[str, Any]]:
         """
         Extract structured actions from LLM response
 
@@ -375,7 +391,7 @@ Format your responses in Markdown for clarity.
 
         return actions
 
-    async def execute_action(self, action: Dict[str, Any], case_id: str) -> Dict[str, Any]:
+    async def execute_action(self, action: dict[str, Any], case_id: str) -> dict[str, Any]:
         """
         Execute a suggested action
 
@@ -415,25 +431,25 @@ Format your responses in Markdown for clarity.
             logger.error(f"Action execution error: {e}")
             return {"success": False, "error": str(e)}
 
-    async def _modify_outline(self, case_id: str, data: Dict) -> Dict:
+    async def _modify_outline(self, case_id: str, data: dict) -> dict:
         """Modify skeletal outline"""
         # Would integrate with SkeletalOutlineSystem
         logger.info(f"Modifying outline for case {case_id}: {data}")
         return {"success": True, "message": "Outline modified"}
 
-    async def _update_evidence(self, case_id: str, data: Dict) -> Dict:
+    async def _update_evidence(self, case_id: str, data: dict) -> dict:
         """Update evidence table"""
         # Would integrate with evidence table API
         logger.info(f"Updating evidence for case {case_id}: {data}")
         return {"success": True, "message": "Evidence updated"}
 
-    async def _adjust_research(self, case_id: str, data: Dict) -> Dict:
+    async def _adjust_research(self, case_id: str, data: dict) -> dict:
         """Adjust research parameters"""
         # Would integrate with PhaseA02Research
         logger.info(f"Adjusting research for case {case_id}: {data}")
         return {"success": True, "message": "Research parameters adjusted"}
 
-    async def _search_vectors(self, case_id: str, data: Dict) -> Dict:
+    async def _search_vectors(self, case_id: str, data: dict) -> dict:
         """Search vector store"""
         if not self.vector_store:
             return {"success": False, "error": "Vector store not available"}
@@ -458,7 +474,7 @@ Format your responses in Markdown for clarity.
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    def add_system_message(self, case_id: str, message: str, metadata: Dict[str, Any] = None):
+    def add_system_message(self, case_id: str, message: str, metadata: dict[str, Any] = None):
         """
         Add a system message to Bartleby's chat history.
         Used for phase narration and automated updates.
@@ -484,8 +500,8 @@ Format your responses in Markdown for clarity.
         phase: str,
         intervention_type: str,
         message: str,
-        context: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        context: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Handle user intervention during phase execution.
         Processes questions, modification requests, or additional guidance.

@@ -3,7 +3,6 @@ LLM Providers for LawyerFactory
 Individual provider implementations for different LLM services.
 """
 
-from abc import ABC, abstractmethod
 import asyncio
 import json
 import logging
@@ -11,7 +10,8 @@ import os
 import shutil
 import subprocess
 import time
-from typing import Any, Dict, List, Optional, cast
+from abc import ABC, abstractmethod
+from typing import Any, cast
 
 logger = logging.getLogger(__name__)
 
@@ -25,21 +25,21 @@ class LLMProvider(ABC):
         self._client = None
 
     @abstractmethod
-    async def generate_text(self, prompt: str, **kwargs) -> Dict[str, Any]:
+    async def generate_text(self, prompt: str, **kwargs) -> dict[str, Any]:
         """Generate text using the provider"""
         pass
 
     @abstractmethod
-    def test_connection(self) -> Dict[str, Any]:
+    def test_connection(self) -> dict[str, Any]:
         """Test connection to the provider"""
         pass
 
     @abstractmethod
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Perform health check"""
         pass
 
-    def get_config(self) -> Dict[str, Any]:
+    def get_config(self) -> dict[str, Any]:
         """Get provider configuration"""
         return self.config_manager.get_provider_config(self.provider_name)
 
@@ -68,7 +68,7 @@ class OpenAIProvider(LLMProvider):
         except Exception as e:
             logger.warning(f"Failed to initialize OpenAI client: {e}")
 
-    async def generate_text(self, prompt: str, **kwargs) -> Dict[str, Any]:
+    async def generate_text(self, prompt: str, **kwargs) -> dict[str, Any]:
         """Generate text using OpenAI"""
         if not self._client:
             return {"success": False, "error": "OpenAI client not initialized"}
@@ -103,7 +103,7 @@ class OpenAIProvider(LLMProvider):
                 except Exception as e2:
                     # as last resort try a generic completion() name if present
                     try:
-                        response = getattr(self._client, "completion")(
+                        response = self._client.completion(
                             prompt=prompt, **kwargs
                         )
                     except Exception:
@@ -174,11 +174,11 @@ class OpenAIProvider(LLMProvider):
             return {"success": False, "error": str(e)}
 
     async def classify_evidence(
-        self, content: str, filename: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, content: str, filename: str | None = None
+    ) -> dict[str, Any]:
         """Classify evidence using OpenAI"""
         prompt = f"""
-        Analyze the following document content and classify it as either PRIMARY or SECONDARY evidence.
+        Analyze the following document content and classify it as PRIMARY, SECONDARY, or TERTIARY evidence.
         Then provide a specific evidence type classification.
 
         PRIMARY evidence categories (first-hand):
@@ -206,12 +206,21 @@ class OpenAIProvider(LLMProvider):
         - Press Release
         - Other (specify)
 
+        TERTIARY evidence categories (legal precedent):
+        - Judicial Opinion
+        - Appellate Decision
+        - Trial Court Order
+        - Supreme Court Ruling
+        - Related Case Summary
+        - Similar Cause of Action Case
+        - Other (specify)
+
         Document content:
         {content[:4000]}
 
         Provide your response in JSON format:
         {{
-            "evidence_type": "PRIMARY or SECONDARY",
+            "evidence_type": "PRIMARY, SECONDARY, or TERTIARY",
             "specific_category": "specific category from above",
             "confidence_score": 0.0-1.0,
             "reasoning": "brief explanation",
@@ -234,8 +243,8 @@ class OpenAIProvider(LLMProvider):
             }
 
     async def extract_metadata(
-        self, content: str, doc_type: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, content: str, doc_type: str | None = None
+    ) -> dict[str, Any]:
         """Extract metadata using OpenAI"""
         prompt = f"""
         Extract metadata from the following document content.
@@ -269,7 +278,7 @@ class OpenAIProvider(LLMProvider):
 
     async def summarize_text(
         self, content: str, max_length: int = 200
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Summarize text using OpenAI"""
         prompt = f"""
         Summarize the following text in {max_length} words or less.
@@ -283,7 +292,7 @@ class OpenAIProvider(LLMProvider):
 
         return await self.generate_text(prompt, temperature=0.3, max_tokens=max_length)
 
-    def test_connection(self) -> Dict[str, Any]:
+    def test_connection(self) -> dict[str, Any]:
         """Test OpenAI connection"""
         config = self.get_config()
         if not config.get("api_key"):
@@ -302,7 +311,7 @@ class OpenAIProvider(LLMProvider):
         except Exception as e:
             return {"success": False, "error": str(e)}
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Perform health check for OpenAI"""
         try:
             # Try a minimal completion to test API connectivity
@@ -316,8 +325,8 @@ class OpenAIProvider(LLMProvider):
             return {"healthy": False, "error": str(e)}
 
     async def batch_process(
-        self, items: List[Dict[str, Any]], operation: str = "generate_text"
-    ) -> List[Dict[str, Any]]:
+        self, items: list[dict[str, Any]], operation: str = "generate_text"
+    ) -> list[dict[str, Any]]:
         """Process multiple items in batch"""
         results = []
         for item in items:
@@ -402,7 +411,7 @@ class OllamaProvider(LLMProvider):
                 "Ollama binary not found in PATH; ensure Ollama is installed and running"
             )
 
-    async def generate_text(self, prompt: str, **kwargs) -> Dict[str, Any]:
+    async def generate_text(self, prompt: str, **kwargs) -> dict[str, Any]:
         """Generate text using Ollama"""
         try:
             import aiohttp
@@ -443,8 +452,8 @@ class OllamaProvider(LLMProvider):
             return {"success": False, "error": str(e)}
 
     async def classify_evidence(
-        self, content: str, filename: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, content: str, filename: str | None = None
+    ) -> dict[str, Any]:
         """Classify evidence using Ollama"""
         # Use the same prompt structure as OpenAI
         prompt = f"""
@@ -503,8 +512,8 @@ class OllamaProvider(LLMProvider):
             }
 
     async def extract_metadata(
-        self, content: str, doc_type: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, content: str, doc_type: str | None = None
+    ) -> dict[str, Any]:
         """Extract metadata using Ollama"""
         prompt = f"""
         Extract metadata from the following document content.
@@ -538,7 +547,7 @@ class OllamaProvider(LLMProvider):
 
     async def summarize_text(
         self, content: str, max_length: int = 200
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Summarize text using Ollama"""
         prompt = f"""
         Summarize the following text in {max_length} words or less.
@@ -552,7 +561,7 @@ class OllamaProvider(LLMProvider):
 
         return await self.generate_text(prompt, temperature=0.3)
 
-    def test_connection(self) -> Dict[str, Any]:
+    def test_connection(self) -> dict[str, Any]:
         """Test Ollama connection"""
         config = self.get_config()
         if not config.get("base_url"):
@@ -563,7 +572,7 @@ class OllamaProvider(LLMProvider):
             "message": f"Ollama base URL configured: {config['base_url']}",
         }
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Perform health check for Ollama"""
         try:
             import aiohttp
@@ -579,8 +588,8 @@ class OllamaProvider(LLMProvider):
             return {"healthy": False, "error": str(e)}
 
     async def batch_process(
-        self, items: List[Dict[str, Any]], operation: str = "generate_text"
-    ) -> List[Dict[str, Any]]:
+        self, items: list[dict[str, Any]], operation: str = "generate_text"
+    ) -> list[dict[str, Any]]:
         """Process multiple items in batch"""
         results = []
         for item in items:
@@ -634,7 +643,7 @@ class GeminiProvider(LLMProvider):
             logger.warning(f"Failed to initialize Gemini client: {e}")
             self._client = None
 
-    async def generate_text(self, prompt: str, **kwargs) -> Dict[str, Any]:
+    async def generate_text(self, prompt: str, **kwargs) -> dict[str, Any]:
         """Generate text using Gemini"""
         if not self._client:
             return {"success": False, "error": "Gemini client not initialized"}
@@ -658,7 +667,7 @@ class GeminiProvider(LLMProvider):
                 )
             else:
                 # Use GenerativeModel path; build GenerationConfig from the client module (self._client)
-                model_obj = getattr(self._client, "GenerativeModel")(
+                model_obj = self._client.GenerativeModel(
                     config.get("model", "gemini-flash")
                 )
                 generation_config = self._client.types.GenerationConfig(
@@ -723,8 +732,8 @@ class GeminiProvider(LLMProvider):
             return {"success": False, "error": str(e)}
 
     async def classify_evidence(
-        self, content: str, filename: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, content: str, filename: str | None = None
+    ) -> dict[str, Any]:
         """Classify evidence using Gemini"""
         prompt = f"""
         Analyze the following document content and classify it as either PRIMARY or SECONDARY evidence.
@@ -782,8 +791,8 @@ class GeminiProvider(LLMProvider):
             }
 
     async def extract_metadata(
-        self, content: str, doc_type: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, content: str, doc_type: str | None = None
+    ) -> dict[str, Any]:
         """Extract metadata using Gemini"""
         prompt = f"""
         Extract metadata from the following document content.
@@ -817,7 +826,7 @@ class GeminiProvider(LLMProvider):
 
     async def summarize_text(
         self, content: str, max_length: int = 200
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Summarize text using Gemini"""
         prompt = f"""
         Summarize the following text in {max_length} words or less.
@@ -831,7 +840,7 @@ class GeminiProvider(LLMProvider):
 
         return await self.generate_text(prompt, temperature=0.3)
 
-    def test_connection(self) -> Dict[str, Any]:
+    def test_connection(self) -> dict[str, Any]:
         """Test Gemini connection"""
         config = self.get_config()
         if not config.get("api_key"):
@@ -842,7 +851,7 @@ class GeminiProvider(LLMProvider):
 
         return {"success": True, "message": "Gemini client initialized successfully"}
 
-    async def health_check(self) -> Dict[str, Any]:
+    async def health_check(self) -> dict[str, Any]:
         """Perform health check for Gemini"""
         try:
             result = await self.generate_text("Hello", max_tokens=10)
@@ -851,8 +860,8 @@ class GeminiProvider(LLMProvider):
             return {"healthy": False, "error": str(e)}
 
     async def batch_process(
-        self, items: List[Dict[str, Any]], operation: str = "generate_text"
-    ) -> List[Dict[str, Any]]:
+        self, items: list[dict[str, Any]], operation: str = "generate_text"
+    ) -> list[dict[str, Any]]:
         """Process multiple items in batch"""
         results = []
         for item in items:
