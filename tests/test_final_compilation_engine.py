@@ -32,6 +32,11 @@ async def test_final_compilation():
             phase_id="A01",
             status=PhaseStatus.COMPLETED,
             output_data={
+                "case_name": "Acme Corp. v. Widget Co.",
+                "case_number": "SC-2024-00123",
+                "court_name": "Superior Court of California, County of Alameda",
+                "jurisdiction": "California",
+                "parties": {"plaintiff": "Acme Corp.", "defendant": "Widget Co."},
                 "evidence_table": [
                     {"id": "ev1", "description": "Contract document", "source": "Client files"},
                     {"id": "ev2", "description": "Email correspondence", "source": "Discovery"},
@@ -61,6 +66,30 @@ async def test_final_compilation():
             execution_time=67.8,
             timestamp=datetime.now(),
             quality_score=0.89,
+        ),
+        "A03": PhaseResult(
+            phase_id="A03",
+            status=PhaseStatus.COMPLETED,
+            output_data={
+                "case_outline": {"sections": ["Jurisdiction", "Facts", "Claims", "Prayer"]},
+                "claims_matrix": [{"claim": "Breach of Contract", "elements": ["Duty", "Breach"]}],
+                "argument_structure": ["Liability", "Damages"],
+            },
+            execution_time=32.5,
+            timestamp=datetime.now(),
+            quality_score=0.91,
+        ),
+        "B01": PhaseResult(
+            phase_id="B01",
+            status=PhaseStatus.COMPLETED,
+            output_data={
+                "quality_assessment": {"score": 0.9},
+                "missing_elements": [],
+                "recommendations": ["Proceed to drafting."],
+            },
+            execution_time=21.0,
+            timestamp=datetime.now(),
+            quality_score=0.9,
         ),
         "B02": PhaseResult(
             phase_id="B02",
@@ -114,6 +143,11 @@ async def test_final_compilation():
         print(f"✓ Generated {len(result.deliverables)} deliverables")
         print(f"✓ Compilation time: {result.compilation_time:.2f}s")
         print(f"✓ Export paths: {len(result.export_paths)}")
+        deliverable_types = {deliverable["type"] for deliverable in result.deliverables}
+        print("✓ Deliverable types:", ", ".join(sorted(deliverable_types)))
+        assert "cover_sheet" in deliverable_types
+        assert "table_of_authorities" in deliverable_types
+        assert "evidence_appendix" in deliverable_types
 
         if result.validation_results:
             print(f"✓ Validation overall valid: {result.validation_results.get('overall_valid')}")

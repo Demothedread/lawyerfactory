@@ -109,8 +109,8 @@ class PhaseOrchestrator:
                 "estimated_duration": 600,  # 10 minutes
             },
             "A03": {
-                "name": "Case Outline",
-                "description": "Structure case claims and arguments",
+                "name": "Planning & Case Outline",
+                "description": "Plan and structure case claims, arguments, and narrative flow",
                 "type": "preproduction",
                 "dependencies": ["A01", "A02"],
                 "inputs": ["research_results", "evidence", "legal_theories"],
@@ -118,8 +118,8 @@ class PhaseOrchestrator:
                 "estimated_duration": 450,  # 7.5 minutes
             },
             "B01": {
-                "name": "Quality Review",
-                "description": "Validate research and outline quality",
+                "name": "Critique & Review",
+                "description": "Criticize and validate research and outline quality",
                 "type": "production",
                 "dependencies": ["A03"],
                 "inputs": ["case_outline", "research_quality", "evidence_strength"],
@@ -136,8 +136,8 @@ class PhaseOrchestrator:
                 "estimated_duration": 900,  # 15 minutes
             },
             "C01": {
-                "name": "Document Editing",
-                "description": "Refine formatting and citations",
+                "name": "Editing & Final Drafting",
+                "description": "Refine formatting, citations, and produce the final draft",
                 "type": "production",
                 "dependencies": ["B02"],
                 "inputs": ["draft_documents", "citation_rules", "format_standards"],
@@ -145,8 +145,8 @@ class PhaseOrchestrator:
                 "estimated_duration": 600,  # 10 minutes
             },
             "C02": {
-                "name": "Final Orchestration",
-                "description": "Coordinate and finalize all deliverables",
+                "name": "Finalization & Packaging",
+                "description": "Coordinate post-production deliverables and filing package",
                 "type": "production",
                 "dependencies": ["C01"],
                 "inputs": ["all_phase_outputs", "quality_checks", "client_review"],

@@ -1,0 +1,79 @@
+{
+  "entities": [
+    {
+      "name": "FinalCompilationEngine",
+      "type": "service",
+      "location": "src/lawyerfactory/phases/phaseC02_orchestration/final_compilation_engine.py",
+      "notes": "Coordinates aggregation, validation, and packaging for Phase C02."
+    },
+    {
+      "name": "FinalizationProtocol",
+      "type": "service",
+      "location": "src/lawyerfactory/post_production/finalization_protocol.py",
+      "notes": "Creates cover sheets, evidence appendices, and tables of authorities."
+    },
+    {
+      "name": "CoverSheetBuilder",
+      "type": "component",
+      "location": "src/lawyerfactory/post_production/finalization_protocol.py",
+      "notes": "Builds court cover sheet content using court defaults."
+    },
+    {
+      "name": "EvidenceCollator",
+      "type": "component",
+      "location": "src/lawyerfactory/post_production/finalization_protocol.py",
+      "notes": "Collates intake evidence into a supplemental appendix."
+    },
+    {
+      "name": "AuthorityTableBuilder",
+      "type": "component",
+      "location": "src/lawyerfactory/post_production/finalization_protocol.py",
+      "notes": "Builds a table of authorities from research outputs."
+    }
+  ],
+  "features": [
+    {
+      "name": "court_finalization_package",
+      "description": "Generates court-compliant cover sheets, evidence appendices, and tables of authorities.",
+      "status": "active"
+    },
+    {
+      "name": "deliverable_zip_packaging",
+      "description": "Exports Word/PDF outputs and bundles them into a final ZIP.",
+      "status": "active"
+    }
+  ],
+  "relations": [
+    {
+      "from": "FinalCompilationEngine",
+      "to": "FinalizationProtocol",
+      "type": "uses"
+    },
+    {
+      "from": "FinalCompilationEngine",
+      "to": "LegalDocumentGenerator",
+      "type": "uses"
+    },
+    {
+      "from": "FinalizationProtocol",
+      "to": "CoverSheetBuilder",
+      "type": "composes"
+    },
+    {
+      "from": "FinalizationProtocol",
+      "to": "EvidenceCollator",
+      "type": "composes"
+    },
+    {
+      "from": "FinalizationProtocol",
+      "to": "AuthorityTableBuilder",
+      "type": "composes"
+    }
+  ],
+  "notes": [
+    {
+      "timestamp": "2026-01-18T11:35:03Z",
+      "entry": "Initialized knowledge graph for Phase C02 post-production packaging."
+    }
+  ]
+}
