@@ -32,11 +32,55 @@ LawyerFactory is a comprehensive legal document automation platform that orchest
 
 ## Synopsis
 
-LawyerFactory is an AI-powered, multi-phase long-form content generator for litigation-ready
-documents—most notably court complaints. It orchestrates a sequential workflow from intake through
-planning, research, outlining, drafting, editing, criticism, final drafting, and post-production
-finalization (including cover sheet creation, evidence collation, and table of authorities). The
-default court profile is **Superior Court of California** when a jurisdiction is not provided.
+LawyerFactory is an AI-powered, multi-phase system that turns intake materials into
+court-ready complaints and supporting filings. The workflow progresses from intake,
+planning, research, outlining, drafting, critique, final drafting, and finalization,
+ending with court-specific packaging that includes a cover sheet, evidence appendix,
+and table of authorities by default for California Superior Court filings.
+
+## Prerequisites
+
+Before launch, ensure:
+
+- Python 3.10+
+- Node.js 18+ (for UI development)
+- LLM provider API key configured in `.env`
+
+## Start
+
+Use the standard launch scripts to start the system:
+
+```bash
+./launch.sh
+```
+
+## Deployment
+
+For production deployments, use:
+
+```bash
+./launch-prod.sh
+```
+
+## Use Cases
+
+- Generate civil complaints with court-ready packaging.
+- Draft long-form litigation documents with AI-assisted research.
+- Produce filing bundles that include cover sheets, evidence appendices, and tables of authorities.
+
+## FAQ
+
+**Does the workflow default to a specific court?**  
+Yes. If no court is supplied, the system defaults to the Superior Court of California.
+
+**What formats are produced?**  
+Final deliverables can be exported as Word and PDF files and packaged as a ZIP.
+
+## E2E Tests
+
+```bash
+pytest tests/e2e/test_sof_e2e.py
+```
 
 ## 🚀 Quick Start - Complete System Launch
 
@@ -72,7 +116,7 @@ chmod +x launch-prod.sh
 - ✅ Professional Briefcaser Control Terminal (Frontend)
 - ✅ Flask + Socket.IO Backend API Server
 - ✅ Real-time Agent Orchestration
-- ✅ 7-Phase Legal Workflow Processing
+- ✅ 8-Phase Legal Workflow Processing
 - ✅ Advanced Document Generation Pipeline
 - ✅ Unified Storage Integration with ObjectID tracking
 
@@ -840,10 +884,10 @@ Research + Facts → Outliner Agent Processing
 └── Comprehensive Outline → Workflow Storage
 ```
 
-#### **Phase B01: Quality Review**
+#### **Phase B01: Critique & Review**
 
 ```
-Outline → Editor Agent Review
+Outline → Editor Agent Review (Critique)
 ├── Legal Accuracy Validation
 ├── Completeness Assessment
 ├── Research Adequacy Check
@@ -864,7 +908,7 @@ Approved Outline → Writer Agent Composition
 └── Draft Document → Review Queue
 ```
 
-#### **Phase C01: Final Editing & Formatting**
+#### **Phase C01: Editing & Final Drafting**
 
 ```
 Draft Document → Legal Formatter Processing
@@ -876,15 +920,17 @@ Draft Document → Legal Formatter Processing
 └── Court-Ready Document → Final Output
 ```
 
-#### **Phase C02: Final Orchestration & Delivery**
+#### **Phase C02: Finalization & Delivery**
 
 ```
 All Components → Maestro Final Assembly
 ├── Document Package Assembly
-├── Cover Sheet Generation
+├── Cover Sheet Generation (default: California Superior Court)
+├── Supplemental Evidence Appendix
 ├── Filing Instruction Preparation
+├── Table of Authorities Compilation
 ├── Quality Certification
-├── Client Delivery Package
+├── Client Delivery Package (PDF/Word ZIP)
 └── Case Archive → Long-term Storage
 ```
 

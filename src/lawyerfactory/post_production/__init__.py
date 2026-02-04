@@ -41,6 +41,7 @@ from .verification import (
     verify_document_comprehensive,
     verify_document_quick,
 )
+from .finalization_protocol import CourtProfile, FinalizationProtocol
 from .deliverables import (
     CourtPacketArtifacts,
     CourtPacketInputs,
@@ -85,6 +86,9 @@ __all__ = [
     "generate_legal_pdf",
     "generate_complaint_pdf",
     "get_formatting_presets",
+    # Finalization protocol module
+    "CourtProfile",
+    "FinalizationProtocol",
 ]
 
 __version__ = "1.0.0"
