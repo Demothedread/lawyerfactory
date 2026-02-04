@@ -42,6 +42,14 @@ from .verification import (
     verify_document_quick,
 )
 from .finalization_protocol import CourtProfile, FinalizationProtocol
+from .deliverables import (
+    CourtPacketArtifacts,
+    CourtPacketInputs,
+    PostProductionProtocol,
+    build_cover_sheet_text,
+    build_supplemental_evidence_index,
+    build_table_of_authorities,
+)
 
 __all__ = [
     # Verification module
@@ -52,6 +60,13 @@ __all__ = [
     "VerificationReport",
     "verify_document_quick",
     "verify_document_comprehensive",
+    # Deliverables module
+    "CourtPacketArtifacts",
+    "CourtPacketInputs",
+    "PostProductionProtocol",
+    "build_cover_sheet_text",
+    "build_supplemental_evidence_index",
+    "build_table_of_authorities",
     # Citations module
     "BluebookValidator",
     "CitationType",

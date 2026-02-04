@@ -1,0 +1,136 @@
+{
+  "entities": [
+    {
+      "id": "workflow_phases",
+      "type": "workflow",
+      "name": "Sequential Lawsuit Workflow",
+      "attributes": {
+        "phases": [
+          "intake",
+          "planning",
+          "research",
+          "outline",
+          "drafting",
+          "editing",
+          "criticism",
+          "final_drafting",
+          "post_production"
+        ]
+      }
+    },
+    {
+      "id": "post_production_protocol",
+      "type": "protocol",
+      "name": "Court Packet Protocol",
+      "attributes": {
+        "default_court": "Superior Court of California",
+        "deliverables": [
+          "cover_sheet",
+          "table_of_authorities",
+          "supplemental_evidence_index",
+          "manifest",
+          "court_packet_zip"
+        ]
+      }
+    },
+    {
+      "id": "court_packet_zip",
+      "type": "artifact",
+      "name": "Court Packet ZIP",
+      "attributes": {
+        "formats": [
+          "pdf",
+          "docx",
+          "txt",
+          "json"
+        ],
+        "location": "output/post_production/"
+      }
+      "id": "workflow.maestro_agent",
+      "type": "component",
+      "name": "Maestro orchestration agent",
+      "path": "src/lawyerfactory/agents/orchestration/maestro.py",
+      "notes": "Coordinates lawsuit workflow phases and storage integration."
+    },
+    {
+      "id": "workflow.lawsuit_phase_sequence",
+      "type": "workflow",
+      "name": "Lawsuit phase sequence",
+      "notes": "phaseA01_intake → phaseA02_research → phaseA03_outline → phaseB01_review → phaseB02_drafting → phaseC01_editing → phaseC02_orchestration"
+    },
+    {
+      "id": "storage.enhanced_unified_storage_api",
+      "type": "component",
+      "name": "Enhanced unified storage API shim",
+      "path": "src/lawyerfactory/storage/enhanced_unified_storage_api.py",
+      "notes": "Compatibility re-export for unified storage API."
+    }
+  ],
+  "features": [
+    {
+      "id": "phase_chain_manifest",
+      "description": "Tracks upstream phase outputs and ties them to final deliverables."
+    },
+    {
+      "id": "jurisdiction_defaulting",
+      "description": "Defaults to Superior Court of California when jurisdiction is missing."
+      "id": "tests.lawsuit_workflow_e2e",
+      "type": "test",
+      "name": "Lawsuit workflow E2E tests",
+      "status": "added",
+      "files": [
+        "tests/e2e/test_lawsuit_workflow_e2e.py"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "from": "workflow_phases",
+      "to": "post_production_protocol",
+      "type": "culminates_in",
+      "notes": "Post-production consumes outputs from all prior phases."
+    },
+    {
+      "from": "post_production_protocol",
+      "to": "court_packet_zip",
+      "type": "produces"
+      "source": "tests.lawsuit_workflow_e2e",
+      "type": "validates",
+      "target": "workflow.lawsuit_phase_sequence"
+    },
+    {
+      "source": "workflow.maestro_agent",
+      "type": "implements",
+      "target": "workflow.lawsuit_phase_sequence"
+    },
+    {
+      "source": "workflow.maestro_agent",
+      "type": "depends_on",
+      "target": "storage.enhanced_unified_storage_api"
+    }
+  ],
+  "notes": [
+    {
+      "id": "issue.phase_id_mismatch",
+      "text": "Workflow start now aligns current_phase to phase_sequence[0] to avoid mismatched phase IDs."
+    },
+    {
+      "id": "issue.storage_shim_missing",
+      "text": "Added a storage shim to satisfy imports of storage.enhanced_unified_storage_api."
+    },
+    {
+      "id": "note.lint_backlog",
+      "text": "Repo-wide Ruff linting fails due to legacy violations; limiting lint scope or remediating existing files is required for a clean run."
+    }
+  ],
+  "updates": [
+    {
+      "timestamp": "2025-02-14T00:00:00Z",
+      "summary": "Added lawsuit workflow E2E tests, storage shim, and documented phase transition alignment."
+    },
+    {
+      "timestamp": "2025-02-14T01:00:00Z",
+      "summary": "Documented lint backlog note and current test coverage scope."
+    }
+  ]
+}

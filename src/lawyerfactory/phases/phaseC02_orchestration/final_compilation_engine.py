@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional
 from ...export.legal_document_generator import LegalDocumentGenerator
 from ...post_production.citations import BluebookValidator
 from ...post_production.finalization_protocol import FinalizationProtocol
+from ...post_production.deliverables import CourtPacketInputs, PostProductionProtocol
 from ...post_production.verification import FactChecker, VerificationLevel
 from ...storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
 from .workflow_models import PhaseResult
@@ -60,6 +61,7 @@ class FinalCompilationEngine:
         self.verification_service = FactChecker()
         self.citation_validator = BluebookValidator()
         self.finalization_protocol = FinalizationProtocol()
+        self.post_production_protocol = PostProductionProtocol()
 
         # Compilation state
         self.current_case_id: Optional[str] = None
@@ -181,6 +183,9 @@ class FinalCompilationEngine:
                 )
             else:
                 logger.warning("Phase %s not completed, status: %s", phase_id, result.status)
+
+        aggregated["case_metadata"] = self._build_case_metadata(phase_outputs)
+        aggregated["phase_chain"] = self._build_phase_chain(phase_outputs)
 
         # Extract key documents and data
         aggregated["documents"] = await self._extract_key_documents(phase_outputs)
@@ -360,8 +365,12 @@ class FinalCompilationEngine:
 
         # Generate filing instructions
         filing_instructions = await self._generate_filing_instructions(document_package)
+        
+        # Create post-production court packet
+        court_packet = self._build_court_packet(aggregated_data, documents)
 
-        deliverables = [
+        # Create main deliverables
+        deliverables.extend([
             {
                 "type": "document_package",
                 "title": "Final Legal Documents",
@@ -373,14 +382,34 @@ class FinalCompilationEngine:
                 },
             },
             {
-                "type": "filing_instructions",
-                "title": "Filing Instructions",
-                "content": filing_instructions,
-                "format": "text",
-                "metadata": {"description": "Step-by-step instructions for court filing"},
-            },
-        ]
+                'type': 'filing_instructions',
+                'title': 'Filing Instructions',
+                'content': filing_instructions,
+                'format': 'text',
+                'metadata': {
+                    'description': 'Step-by-step instructions for court filing'
+                }
+            }
+        ])
 
+        if court_packet:
+            deliverables.append({
+                'type': 'court_packet',
+                'title': 'Court-Ready Packet',
+                'content': {
+                    'cover_sheet_path': court_packet.cover_sheet_path,
+                    'table_of_authorities_path': court_packet.table_of_authorities_path,
+                    'supplemental_evidence_path': court_packet.supplemental_evidence_path,
+                    'manifest_path': court_packet.manifest_path,
+                    'package_zip_path': court_packet.package_zip_path,
+                    'warnings': court_packet.warnings,
+                },
+                'format': 'zip',
+                'metadata': {
+                    'description': 'Court-ready packet with cover sheet, authorities, evidence index, and ZIP bundle'
+                }
+            })
+        
         # Add individual documents as deliverables
         for doc in documents:
             deliverables.append(
@@ -429,6 +458,71 @@ class FinalCompilationEngine:
             documents,
             key=lambda doc: document_priority.get(doc.get("type", "other"), 999),
         )
+
+    def _build_court_packet(
+        self,
+        aggregated_data: Dict[str, Any],
+        documents: List[Dict[str, Any]],
+    ):
+        """Create court packet artifacts using post-production protocol."""
+        case_metadata = aggregated_data.get("case_metadata", {})
+        case_id = aggregated_data.get("case_id", "case")
+        inputs = CourtPacketInputs(
+            case_id=case_id,
+            case_name=case_metadata.get("case_name", "Unknown Case"),
+            case_number=case_metadata.get("case_number", "TBD"),
+            court=case_metadata.get("court", "Superior Court of California"),
+            jurisdiction=case_metadata.get("jurisdiction", "California"),
+            parties=case_metadata.get("parties", {}),
+        )
+        authorities = aggregated_data.get("research", {}).get("authorities", [])
+        evidence_items = aggregated_data.get("evidence", {}).get("items", [])
+        phase_chain = aggregated_data.get("phase_chain", [])
+        return self.post_production_protocol.build_court_packet(
+            inputs=inputs,
+            documents=documents,
+            authorities=authorities,
+            evidence_items=evidence_items,
+            phase_chain=phase_chain,
+        )
+
+    def _build_case_metadata(self, phase_outputs: Dict[str, PhaseResult]) -> Dict[str, Any]:
+        """Extract core case metadata for downstream packet generation."""
+        metadata: Dict[str, Any] = {}
+        intake = phase_outputs.get("A01")
+        if intake and intake.status.value == "completed":
+            intake_data = intake.output_data or {}
+            metadata = {
+                "case_name": intake_data.get("case_name")
+                or intake_data.get("case_title")
+                or metadata.get("case_name"),
+                "case_number": intake_data.get("case_number") or metadata.get("case_number"),
+                "court": intake_data.get("court") or metadata.get("court"),
+                "jurisdiction": intake_data.get("jurisdiction") or metadata.get("jurisdiction"),
+                "parties": intake_data.get("parties") or metadata.get("parties") or {},
+            }
+        return metadata
+
+    def _build_phase_chain(self, phase_outputs: Dict[str, PhaseResult]) -> List[Dict[str, Any]]:
+        """Track sequential phase outputs for downstream deliverables."""
+        ordered_phases = ["A01", "A02", "A03", "B01", "B02", "C01", "C02", "POST_PRODUCTION"]
+        chain = []
+        previous_phase = None
+        for phase_id in ordered_phases:
+            if phase_id not in phase_outputs:
+                continue
+            result = phase_outputs[phase_id]
+            output_keys = list((result.output_data or {}).keys())
+            chain.append(
+                {
+                    "phase": phase_id,
+                    "status": result.status.value,
+                    "output_keys": output_keys,
+                    "previous_phase": previous_phase,
+                }
+            )
+            previous_phase = phase_id
+        return chain
 
     async def _perform_quality_certification(self, documents: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Perform comprehensive quality certification."""
