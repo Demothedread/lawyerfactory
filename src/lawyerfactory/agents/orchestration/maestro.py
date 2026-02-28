@@ -102,10 +102,10 @@ class Maestro:
         )
         records = [
             EvidenceRecord(
-                evidence_id=item.get("evidence_id", f"evidence_{index}"),
-                summary=item.get("summary", ""),
-                source_type=item.get("source_type", "unknown"),
-                tier=item.get("tier", "secondary"),
+                evidence_id=str(item.get("evidence_id") or f"evidence_{index}"),
+                summary=str(item.get("summary") or ""),
+                source_type=str(item.get("source_type") or "unknown"),
+                tier=str(item.get("tier") or "secondary"),
             )
             for index, item in enumerate(evidence_items)
         ]
@@ -132,13 +132,13 @@ class Maestro:
         for index, section in enumerate(claim_sections):
             document_map.add_section(
                 SectionNode(
-                    section_id=section.get("section_id", f"section_{index:03d}"),
-                    claim_id=section.get("claim_id", "unscoped_claim"),
-                    theory_id=section.get("theory_id", "default_theory"),
-                    title=section.get("title", "Untitled Section"),
-                    body=section.get("body", ""),
-                    summary=section.get("summary", ""),
-                    tags=section.get("tags", []),
+                    section_id=section.get("section_id") or f"section_{index:03d}",
+                    claim_id=section.get("claim_id") or "unscoped_claim",
+                    theory_id=section.get("theory_id") or "default_theory",
+                    title=section.get("title") or "Untitled Section",
+                    body=section.get("body") or "",
+                    summary=section.get("summary") or "",
+                    tags=[str(t) for t in (section.get("tags") or [])],
                 )
             )
 
@@ -217,11 +217,16 @@ class Maestro:
 
         Args:
             workflow_id: The workflow to orchestrate
-            phase_id: Phase to execute (e.g., "A01_intake", "A02_research")
+            phase_id: Phase to execute (e.g., "phaseA01_intake", "phaseA02_research").
+                      Short-form IDs without the "phase" prefix (e.g. "A01_intake") are
+                      also accepted and will be normalized automatically.
 
         Returns:
             Phase execution results
         """
+        # Normalize phase_id to match phase_sequence keys (phaseXXX_ prefix required)
+        if not phase_id.startswith("phase"):
+            phase_id = f"phase{phase_id}"
         try:
             if workflow_id not in self.active_workflows:
                 raise ValueError(f"Workflow {workflow_id} not found")
