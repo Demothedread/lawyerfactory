@@ -5,14 +5,20 @@ Canonical agent location following copilot-instructions.md structure
 
 import asyncio
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
+
+from ...compose.maestro.document_object_map import DocumentObjectMap, SectionNode
+from ...compose.maestro.lawsuit_blueprint import (
+    EvidenceRecord,
+    build_evidence_cycle,
+    get_lawsuit_stage_blueprint,
+)
+from ...compose.maestro.prewriting_packets import to_user_review_packet
 
 try:
     from ...compose.maestro.maestro import Maestro as ComposeMaestro
 except ImportError:
     ComposeMaestro = None
-
-from ...storage.enhanced_unified_storage_api import get_enhanced_unified_storage_api
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +36,10 @@ class Maestro:
     """
 
     def __init__(self):
+        from ...storage.enhanced_unified_storage_api import (
+            get_enhanced_unified_storage_api,
+        )
+
         self.unified_storage = get_enhanced_unified_storage_api()
 
         # Initialize with existing ComposeMaestro if available
@@ -38,7 +48,7 @@ class Maestro:
         else:
             self.compose_maestro = None
 
-        self.active_workflows: Dict[str, Dict[str, Any]] = {}
+        self.active_workflows: dict[str, dict[str, Any]] = {}
         self.phase_sequence = [
             "phaseA01_intake",
             "phaseA02_research",
@@ -51,7 +61,108 @@ class Maestro:
 
         logger.info("Maestro agent initialized with unified storage integration")
 
-    async def start_workflow(self, case_data: Dict[str, Any]) -> str:
+
+    def get_stage_blueprint(self) -> list[dict[str, Any]]:
+        """Return discrete, combinable lawsuit-assembly phases for UI/API clients."""
+        blueprint = [
+            {
+                "phase_id": phase.phase_id,
+                "label": phase.label,
+                "objective": phase.objective,
+                "required_inputs": phase.required_inputs,
+                "outputs": phase.outputs,
+                "can_iterate": phase.can_iterate,
+                "agents": [
+                    {
+                        "role_id": agent.role_id,
+                        "title": agent.title,
+                        "responsibility": agent.responsibility,
+                    }
+                    for agent in phase.agents
+                ],
+            }
+            for phase in get_lawsuit_stage_blueprint()
+        ]
+        logger.info(
+            "Exposed stage blueprint",
+            extra={
+                "phase_count": len(blueprint),
+                "phase_ids": [phase["phase_id"] for phase in blueprint],
+            },
+        )
+        return blueprint
+
+    def build_evidence_cycle_payload(
+        self, evidence_items: list[dict[str, str]]
+    ) -> dict[str, Any]:
+        """Build tiered evidence cycle payload for repeated ingest/categorize passes."""
+        logger.debug(
+            "Building evidence cycle payload from raw evidence items",
+            extra={"input_count": len(evidence_items)},
+        )
+        records = [
+            EvidenceRecord(
+                evidence_id=item.get("evidence_id", f"evidence_{index}"),
+                summary=item.get("summary", ""),
+                source_type=item.get("source_type", "unknown"),
+                tier=item.get("tier", "secondary"),
+            )
+            for index, item in enumerate(evidence_items)
+        ]
+        payload = build_evidence_cycle(records)
+        logger.debug(
+            "Built evidence cycle payload in Maestro",
+            extra={
+                "counts": payload.get("counts", {}),
+                "total_items": payload.get("total_items", 0),
+            },
+        )
+        return payload
+
+
+    def build_document_object_map(
+        self, claim_sections: list[dict[str, Any]], token_budget: int = 900
+    ) -> dict[str, Any]:
+        """Build context-window-safe section map linked by underlying claim/theory."""
+        logger.debug(
+            "Building document object map packet",
+            extra={"input_sections": len(claim_sections), "token_budget": token_budget},
+        )
+        document_map = DocumentObjectMap()
+        for index, section in enumerate(claim_sections):
+            document_map.add_section(
+                SectionNode(
+                    section_id=section.get("section_id", f"section_{index:03d}"),
+                    claim_id=section.get("claim_id", "unscoped_claim"),
+                    theory_id=section.get("theory_id", "default_theory"),
+                    title=section.get("title", "Untitled Section"),
+                    body=section.get("body", ""),
+                    summary=section.get("summary", ""),
+                    tags=section.get("tags", []),
+                )
+            )
+
+        packet = document_map.build_context_packet(token_budget=token_budget)
+        logger.info(
+            "Built document object map packet",
+            extra={
+                "token_budget": token_budget,
+                "packed_sections": len(packet.get("sections", [])),
+                "has_overlap": packet.get("overlap_report", {}).get("has_overlap", False),
+            },
+        )
+        return packet
+
+    def get_prewriting_review_packet(self) -> dict[str, Any]:
+        """Return the three pre-writing deliverables for user review gating."""
+        packet = to_user_review_packet()
+        logger.info(
+            "Exposed pre-writing review packet",
+            extra={"deliverable_count": packet.get("deliverable_count", 0)},
+        )
+        return packet
+
+    async def start_workflow(self, case_data: dict[str, Any]) -> str:
         """
         Start a new 7-phase legal workflow
 
@@ -100,7 +211,7 @@ class Maestro:
             logger.error(f"Failed to start workflow: {e}")
             raise
 
-    async def orchestrate_phase(self, workflow_id: str, phase_id: str) -> Dict[str, Any]:
+    async def orchestrate_phase(self, workflow_id: str, phase_id: str) -> dict[str, Any]:
         """
         Orchestrate a specific phase of the workflow
 
@@ -164,7 +275,7 @@ class Maestro:
             logger.error(f"Failed to orchestrate phase {phase_id}: {e}")
             raise
 
-    async def get_workflow_status(self, workflow_id: str) -> Dict[str, Any]:
+    async def get_workflow_status(self, workflow_id: str) -> dict[str, Any]:
         """Get current status of a workflow"""
         if workflow_id not in self.active_workflows:
             return {"error": "Workflow not found"}
@@ -180,7 +291,7 @@ class Maestro:
             "progress_percentage": self._calculate_progress(workflow),
         }
 
-    def _get_next_phase(self, current_phase: str) -> Optional[str]:
+    def _get_next_phase(self, current_phase: str) -> str | None:
         """Get the next phase in the sequence"""
         if current_phase in self.phase_sequence:
             current_index = self.phase_sequence.index(current_phase)
@@ -188,13 +299,13 @@ class Maestro:
                 return self.phase_sequence[current_index + 1]
         return None
 
-    def _calculate_progress(self, workflow: Dict[str, Any]) -> float:
+    def _calculate_progress(self, workflow: dict[str, Any]) -> float:
         """Calculate workflow progress percentage"""
         completed_phases = len(workflow["phase_results"])
         total_phases = len(self.phase_sequence)
         return (completed_phases / total_phases) * 100 if total_phases > 0 else 0
 
-    async def search_workflow_evidence(self, workflow_id: str, query: str) -> List[Dict[str, Any]]:
+    async def search_workflow_evidence(self, workflow_id: str, query: str) -> list[dict[str, Any]]:
         """Search for evidence within a specific workflow"""
         try:
             # Search all evidence, then filter by workflow_id
@@ -212,7 +323,7 @@ class Maestro:
             logger.error(f"Failed to search workflow evidence: {e}")
             return []
 
-    async def generate_workflow_summary(self, workflow_id: str) -> Dict[str, Any]:
+    async def generate_workflow_summary(self, workflow_id: str) -> dict[str, Any]:
         """Generate a comprehensive summary of the workflow"""
         try:
             if workflow_id not in self.active_workflows:
