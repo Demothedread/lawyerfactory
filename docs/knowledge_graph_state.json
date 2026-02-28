@@ -58,7 +58,7 @@
       "id": "workflow.lawsuit_phase_sequence",
       "type": "workflow",
       "name": "Lawsuit phase sequence",
-      "notes": "phaseA01_intake → phaseA02_research → phaseA03_outline → phaseB01_review → phaseB02_drafting → phaseC01_editing → phaseC02_orchestration"
+      "notes": "phaseA01_intake \u2192 phaseA02_research \u2192 phaseA03_outline \u2192 phaseB01_review \u2192 phaseB02_drafting \u2192 phaseC01_editing \u2192 phaseC02_orchestration"
     },
     {
       "id": "storage.enhanced_unified_storage_api",
@@ -66,6 +66,27 @@
       "name": "Enhanced unified storage API shim",
       "path": "src/lawyerfactory/storage/enhanced_unified_storage_api.py",
       "notes": "Compatibility re-export for unified storage API."
+    },
+    {
+      "id": "workflow.stage_blueprint",
+      "type": "component",
+      "name": "Stage-based lawsuit blueprint",
+      "path": "src/lawyerfactory/compose/maestro/lawsuit_blueprint.py",
+      "notes": "Defines discrete combinable phases from evidence/RAG ingestion through final compilation with a Head Partner role."
+    },
+    {
+      "id": "workflow.document_object_map",
+      "type": "component",
+      "name": "Document object map",
+      "path": "src/lawyerfactory/compose/maestro/document_object_map.py",
+      "notes": "Tracks section-by-claim/theory links, overlap detection, and context-window compression packets."
+    },
+    {
+      "id": "workflow.prewriting_packets",
+      "type": "component",
+      "name": "Pre-writing review packet generator",
+      "path": "src/lawyerfactory/compose/maestro/prewriting_packets.py",
+      "notes": "Builds three mandatory pre-writing deliverables for user review gate."
     }
   ],
   "features": [
@@ -91,6 +112,30 @@
       "type": "feature",
       "name": "Tiered evidence ingestion",
       "notes": "Adds primary/secondary/tertiary evidence tiers with tagging for source indexing."
+    },
+    {
+      "id": "workflow.evidence_cycle_payload",
+      "type": "feature",
+      "name": "Evidence cycle payload builder",
+      "notes": "Builds iterative primary/secondary/tertiary evidence buckets for repeated ingest and categorization loops."
+    },
+    {
+      "id": "workflow.context_window_packet",
+      "type": "feature",
+      "name": "Context-window-safe document packet",
+      "notes": "Compresses section summaries under token budget and preserves section location metadata."
+    },
+    {
+      "id": "workflow.prewriting_user_gate",
+      "type": "feature",
+      "name": "Three deliverable pre-writing gate",
+      "notes": "Evidence reliability brief, issue-fact matrix, and claim-theory strategy sheet must be reviewed before drafting."
+    },
+    {
+      "id": "workflow.debug_observability",
+      "type": "feature",
+      "name": "Detailed orchestration debug logging",
+      "notes": "Adds structured logs for blueprint generation, evidence cycle construction, pre-writing packet serialization, and document-map overlap/context-packet builds."
     }
   ],
   "relations": [
@@ -119,6 +164,41 @@
       "source": "workflow.maestro_agent",
       "type": "depends_on",
       "target": "storage.enhanced_unified_storage_api"
+    },
+    {
+      "source": "workflow.maestro_agent",
+      "type": "exposes",
+      "target": "workflow.stage_blueprint"
+    },
+    {
+      "source": "workflow.stage_blueprint",
+      "type": "extends",
+      "target": "evidence.tiered_classification"
+    },
+    {
+      "source": "workflow.maestro_agent",
+      "type": "exposes",
+      "target": "workflow.document_object_map"
+    },
+    {
+      "source": "workflow.maestro_agent",
+      "type": "exposes",
+      "target": "workflow.prewriting_packets"
+    },
+    {
+      "source": "workflow.document_object_map",
+      "type": "supports",
+      "target": "workflow.context_window_packet"
+    },
+    {
+      "source": "workflow.prewriting_packets",
+      "type": "implements",
+      "target": "workflow.prewriting_user_gate"
+    },
+    {
+      "source": "workflow.maestro_agent",
+      "type": "observes",
+      "target": "workflow.debug_observability"
     }
   ],
   "notes": [
@@ -133,6 +213,18 @@
     {
       "id": "note.lint_backlog",
       "text": "Repo-wide Ruff linting fails due to legacy violations; limiting lint scope or remediating existing files is required for a clean run."
+    },
+    {
+      "id": "note.stage_blueprint_scope",
+      "text": "Blueprint enforces phase order: evidence+RAG -> issue spot -> analysis -> fact lists -> causes of action -> top sheet -> compile."
+    },
+    {
+      "id": "note.claim_section_linking",
+      "text": "Sections are now mapped by underlying claim_id and theory_id to prevent overlap/repetition and preserve modular assembly."
+    },
+    {
+      "id": "note.logging_scope_modular_workflow",
+      "text": "Logging now emits counts, IDs, token budget usage, and overlap indicators to accelerate troubleshooting of modular long-form workflow stages."
     }
   ],
   "updates": [
@@ -147,6 +239,18 @@
     {
       "timestamp": "2025-02-14T02:00:00Z",
       "summary": "Captured tiered evidence ingestion for primary, secondary, and tertiary evidence tagging."
+    },
+    {
+      "timestamp": "2026-02-27T00:00:00Z",
+      "summary": "Added modular lawsuit stage blueprint, maestro accessors, and unit tests for evidence cycling + phase order."
+    },
+    {
+      "timestamp": "2026-02-27T01:00:00Z",
+      "summary": "Added document object map compression/linking and three pre-writing deliverables with maestro accessors and unit tests."
+    },
+    {
+      "timestamp": "2026-02-27T02:00:00Z",
+      "summary": "Instrumented modular workflow components with structured debugging logs for stage blueprint, evidence cycles, pre-writing packets, and document object map packets."
     }
   ]
 }
