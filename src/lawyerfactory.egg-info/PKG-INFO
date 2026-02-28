@@ -21,7 +21,11 @@ LawyerFactory is a comprehensive legal document automation platform that orchest
 
 ## 🔗 Internal Navigation
 
+- [Synopsis](#synopsis)
 - [Quick Start - Complete System Launch](#quick-start---complete-system-launch)
+- [Prerequisites](#prerequisites)
+- [Start](#start)
+- [Deploy](#deploy)
 - [Getting Started](#getting-started)
 - [Agent Swarm Architecture](#agent-swarm-architecture)
 - [System Components](#system-components)
@@ -32,9 +36,64 @@ LawyerFactory is a comprehensive legal document automation platform that orchest
 - [Advanced Features & Specializations](#advanced-features--specializations)
 - [System Specifications & Performance](#system-specifications--performance)
 - [Quick Reference](#quick-reference)
+- [Use Cases](#use-cases)
+- [FAQ](#faq)
+- [E2E Tests](#e2e-tests)
 - [License & Legal](#license--legal)
 
 ---
+
+## Synopsis
+
+LawyerFactory is an AI-powered, multi-phase system that turns intake materials into
+court-ready complaints and supporting filings. The workflow progresses from intake,
+planning, research, outlining, drafting, critique, final drafting, and finalization,
+ending with court-specific packaging that includes a cover sheet, evidence appendix,
+and table of authorities by default for California Superior Court filings.
+
+## Prerequisites
+
+Before launch, ensure:
+
+- Python 3.10+
+- Node.js 18+ (for UI development)
+- LLM provider API key configured in `.env`
+
+## Start
+
+Use the standard launch scripts to start the system:
+
+```bash
+./launch.sh
+```
+
+## Deployment
+
+For production deployments, use:
+
+```bash
+./launch-prod.sh
+```
+
+## Use Cases
+
+- Generate civil complaints with court-ready packaging.
+- Draft long-form litigation documents with AI-assisted research.
+- Produce filing bundles that include cover sheets, evidence appendices, and tables of authorities.
+
+## FAQ
+
+**Does the workflow default to a specific court?**  
+Yes. If no court is supplied, the system defaults to the Superior Court of California.
+
+**What formats are produced?**  
+Final deliverables can be exported as Word and PDF files and packaged as a ZIP.
+
+## E2E Tests
+
+```bash
+pytest tests/e2e/test_sof_e2e.py
+```
 
 ## 🚀 Quick Start - Complete System Launch
 
@@ -70,7 +129,7 @@ chmod +x launch-prod.sh
 - ✅ Professional Briefcaser Control Terminal (Frontend)
 - ✅ Flask + Socket.IO Backend API Server
 - ✅ Real-time Agent Orchestration
-- ✅ 7-Phase Legal Workflow Processing
+- ✅ 8-Phase Legal Workflow Processing
 - ✅ Advanced Document Generation Pipeline
 - ✅ Unified Storage Integration with ObjectID tracking
 
@@ -96,6 +155,25 @@ cd apps/api && python simple_server.py
 
 # Production with custom ports
 ./launch-prod.sh --frontend-port 443 --backend-port 8000
+```
+
+## Prerequisites
+
+- **Python** 3.9+ (3.11+ recommended)
+- **Node.js** 18+ for frontend development
+- **LLM API Keys** (OpenAI, Anthropic, Groq, etc.)
+- **Court rules** configured per jurisdiction (defaults to Superior Court of California)
+
+## Start
+
+```bash
+./launch-dev.sh
+```
+
+## Deploy
+
+```bash
+./launch-prod.sh --frontend-port 80 --backend-port 5000
 ```
 
 ---
@@ -590,7 +668,62 @@ evidence = await storage.retrieve_evidence(result.object_id)
 
 ---
 
-## 🔗 Integration Status & Improvements
+## 🔗 Integration Status & Knowledge Base
+
+### 📚 Consolidated Knowledge Graph
+
+The following services, integrations, and components are fully documented and operational:
+
+#### **Core Services**
+
+**PrecisionCitationService** (Advanced Legal Research)
+- Academic/peer-reviewed source prioritization
+- Structured filtering (excludes Wikipedia/low-quality sources)
+- Citation count & Q-score weighting for quality assessment
+- Multiple workflows: background research, claim substantiation, fact verification
+
+**Integrations by Phase:**
+
+- **Phase A01 (Intake)**: BackgroundResearchIntegration
+  - Background research using intake form + evidence
+  - Limited to 3-4 most relevant sources per search
+  - Auto-stores results in evidence table with claims/facts linking
+
+- **Phase B01 (Review)**: ClaimSubstantiationIntegration
+  - Claim substantiation research against legal claims
+  - Academic sources for legal analysis + news for recent developments
+  - Substantiation strength calculation with recommendations
+
+- **Phase C01 (Editing)**: FactVerificationIntegration
+  - Fact verification for document editing phase
+  - Recent news + academic sources for fact corroboration
+  - Verification confidence scoring with editing recommendations
+
+**Quality Metrics System**
+- Authority score, citation count weighting, Q-score weighting, recency score
+- Combined into overall quality score (1.0-5.0 scale)
+- Used for filtering and ranking research sources
+
+#### **Advanced Features**
+
+**Precision Citation Quality Assessment**
+- Proprietary citation analysis algorithm
+- Recency scoring for currency of authority
+- Authority ranking (mandatory vs. persuasive)
+- Composite quality score with confidence intervals
+- Learning from attorney feedback
+
+**Error Recovery & Resilience**
+- Multi-strategy error handling (network, timeout, LLM, storage, rate limit)
+- Automatic retries with exponential backoff
+- Fallback provider switching for LLM services
+- Graceful degradation during partial failures
+
+**Workflow State Management**
+- Persistent workflow state with recovery
+- Local + backend state synchronization
+- Automatic recovery from crashes
+- Complete audit trail of state transitions
 
 ### ✅ Complete Integration Architecture
 
@@ -764,10 +897,10 @@ Research + Facts → Outliner Agent Processing
 └── Comprehensive Outline → Workflow Storage
 ```
 
-#### **Phase B01: Quality Review**
+#### **Phase B01: Critique & Review**
 
 ```
-Outline → Editor Agent Review
+Outline → Editor Agent Review (Critique)
 ├── Legal Accuracy Validation
 ├── Completeness Assessment
 ├── Research Adequacy Check
@@ -788,7 +921,7 @@ Approved Outline → Writer Agent Composition
 └── Draft Document → Review Queue
 ```
 
-#### **Phase C01: Final Editing & Formatting**
+#### **Phase C01: Editing & Final Drafting**
 
 ```
 Draft Document → Legal Formatter Processing
@@ -800,15 +933,17 @@ Draft Document → Legal Formatter Processing
 └── Court-Ready Document → Final Output
 ```
 
-#### **Phase C02: Final Orchestration & Delivery**
+#### **Phase C02: Finalization & Delivery**
 
 ```
 All Components → Maestro Final Assembly
 ├── Document Package Assembly
-├── Cover Sheet Generation
+├── Cover Sheet Generation (default: California Superior Court)
+├── Supplemental Evidence Appendix
 ├── Filing Instruction Preparation
+├── Table of Authorities Compilation
 ├── Quality Certification
-├── Client Delivery Package
+├── Client Delivery Package (PDF/Word ZIP)
 └── Case Archive → Long-term Storage
 ```
 
@@ -1002,6 +1137,51 @@ python -m bandit -r src/
 - **Modular Structure**: Short single-purpose modules in subdirectories
 - **Integration Testing**: Always validate against `test_integration_flow.py`
 
+#### **React Frontend Service Imports**
+
+**Canonical Service Layer** (`backendService.js`):
+```javascript
+// ✅ CORRECT: Import from canonical service
+import { backendService, fetchLLMConfig, startPhase } from '../../services/backendService';
+
+// Component usage
+const result = await backendService.startPhase(phaseId);
+const config = await fetchLLMConfig();
+```
+
+**Deprecated Pattern** (being phased out):
+```javascript
+// ❌ OLD: Import from deprecated apiService (still works via shim)
+import { apiService } from '../../services/apiService';
+// Deprecation warning logged once per session
+```
+
+**Migration Reference**:
+- Full migration guide: [`IMPORT_MIGRATION_GUIDE.md`](./IMPORT_MIGRATION_GUIDE.md)
+- Status report: [`SERVICE_CONSOLIDATION_STATUS_REPORT.md`](./SERVICE_CONSOLIDATION_STATUS_REPORT.md)
+- 10 component files are actively being migrated to use `backendService` directly
+
+**Key Functions Available**:
+```javascript
+// Socket Management
+import { initializeSocket, getSocket, closeSocket } from '../../services/backendService';
+
+// Phase Management
+import { startPhase, getPhaseStatus, cancelPhase } from '../../services/backendService';
+
+// Research & Analysis
+import { startResearch, getResearchStatus, getClaimsMatrix } from '../../services/backendService';
+
+// Document Operations
+import { uploadDocumentsUnified, downloadDeliverable } from '../../services/backendService';
+
+// Settings & Configuration
+import { fetchLLMConfig, updateLLMConfig } from '../../services/backendService';
+
+// Class-based access
+import { LawyerFactoryBackend, backendService } from '../../services/backendService';
+```
+
 ### Testing & Quality
 
 #### **Test Architecture**
@@ -1028,6 +1208,9 @@ pytest tests/unit/ -v
 
 # Integration tests (critical)
 pytest tests/integration/ -v
+
+# Lawsuit workflow end-to-end tests
+pytest tests/e2e/test_lawsuit_workflow_e2e.py -v
 
 # Full integration flow validation
 python test_integration_flow.py
@@ -1370,6 +1553,33 @@ tail -f logs/lawyerfactory.log
 - 💬 **Discussions**: GitHub Discussions
 - 📧 **Professional Support**: Available for enterprise deployments
 - 🎓 **Training**: Professional training programs available
+
+---
+
+## Use Cases
+
+- **Civil Complaint Drafting**: Generate court-ready complaints with a full evidentiary packet.
+- **Multi-Phase Litigation Planning**: Track intake → research → outline → draft → edit → finalize.
+- **Authority-Driven Pleadings**: Build tables of authorities directly from research outputs.
+- **Jurisdictional Defaulting**: Default to Superior Court of California when no court is provided.
+
+## FAQ
+
+**Q: What court rules are used by default?**  
+A: Superior Court of California is the default jurisdiction when no court is specified.
+
+**Q: Are cover sheets and TOAs generated automatically?**  
+A: Yes, the post-production protocol builds a cover sheet, table of authorities, and evidence index.
+
+**Q: Can I override jurisdiction or court formatting?**  
+A: Yes, intake metadata can override default court profile and formatting rules.
+
+## E2E Tests
+
+```bash
+# Run end-to-end orchestration tests
+pytest tests -k "integration" -v
+```
 
 ---
 

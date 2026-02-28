@@ -20,6 +20,9 @@ from lawyerfactory.export.renderers.legacy.modules.compliance_checker import (
 from lawyerfactory.compose.agent_registry import AgentConfig, AgentInterface
 from lawyerfactory.compose.maestro.base import Bot
 from lawyerfactory.compose.maestro.workflow import WorkflowTask
+from lawyerfactory.phases.phaseC01_editing.claim_research_tasks import (
+    EditorClaimIntelligence,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +35,9 @@ class LegalEditorBot(Bot, AgentInterface):
         Bot.__init__(self)
         # Initialize AgentInterface
         AgentInterface.__init__(self, config)
+
+        # Editor intelligence for claim substantiation assessment
+        self.claim_intelligence = EditorClaimIntelligence()
 
         logger.info(
             "LegalEditorBot initialized with professional compliance checking capabilities"
@@ -88,6 +94,8 @@ class LegalEditorBot(Bot, AgentInterface):
                 )
             elif review_type == "formatting":
                 result = await self._professional_format_review(content, context)
+            elif review_type == "claim_substantiation":
+                return await self._claim_substantiation_review(content, context)
             else:
                 result = await self._comprehensive_professional_review(
                     content, causes_of_action, research_findings, context
@@ -393,6 +401,87 @@ class LegalEditorBot(Bot, AgentInterface):
             )
             > 0,
         }
+
+    async def _claim_substantiation_review(
+        self, content: str, context: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Editor intelligence review that assesses each claim and argument for
+        substantiation, then creates research task items for unsubstantiated
+        claims that redirect to the Phase A02 research cycle.
+        """
+        try:
+            session_id = context.get("session_id", "editor_session")
+            case_context = {
+                "jurisdiction": context.get("jurisdiction", ""),
+                "case_type": context.get("case_type", ""),
+                "case_id": context.get("case_id", session_id),
+            }
+            execute_research = context.get("execute_research", False)
+            ingest_findings = context.get("ingest_findings", False)
+
+            analysis = await self.claim_intelligence.analyze_document(
+                document_content=content,
+                case_context=case_context,
+                session_id=session_id,
+                execute_research=execute_research,
+                ingest_findings=ingest_findings,
+            )
+
+            unsubstantiated = analysis["unsubstantiated_claims"]
+            total = analysis["total_claims_found"]
+            tasks_count = analysis["research_tasks_created"]
+
+            feedback_lines = [
+                "**CLAIM SUBSTANTIATION REVIEW**",
+                "",
+                f"Total claims / arguments analysed: {total}",
+                f"Substantiated: {analysis['substantiated_claims']}",
+                f"Partially substantiated: {analysis['partially_substantiated_claims']}",
+                f"Unsubstantiated: {unsubstantiated}",
+                f"Research tasks created for Phase A02: {tasks_count}",
+            ]
+
+            if unsubstantiated > 0:
+                feedback_lines.append(
+                    f"\n⚠️ {unsubstantiated} claim(s) lack supporting evidence. "
+                    "Research tasks have been queued for the Phase A02 research cycle."
+                )
+
+            if tasks_count > 0:
+                feedback_lines.append(
+                    "\n**RESEARCH TASKS (Phase A02):**"
+                )
+                for rt in analysis["research_tasks"][:5]:  # Show up to 5
+                    feedback_lines.append(f"  • {rt['description']}")
+
+            return {
+                "status": "completed",
+                "reviewed_content": content,
+                "feedback": "\n".join(feedback_lines),
+                "compliance_issues": [],
+                "citation_issues": [],
+                "review_type": "claim_substantiation",
+                "claim_analysis": analysis,
+                "research_tasks": analysis["research_tasks"],
+                "changes_made": tasks_count,
+                "ready_for_filing": unsubstantiated == 0,
+                "attorney_review_required": unsubstantiated > 0,
+            }
+
+        except Exception as e:
+            logger.error(f"Claim substantiation review failed: {e}")
+            return {
+                "status": "failed",
+                "reviewed_content": content,
+                "feedback": f"Claim substantiation review encountered an error: {str(e)}",
+                "compliance_issues": [f"Review system error: {str(e)}"],
+                "citation_issues": [],
+                "review_type": "claim_substantiation",
+                "changes_made": 0,
+                "ready_for_filing": False,
+                "attorney_review_required": True,
+            }
 
     def _check_document_structure(self, content: str) -> List[str]:
         """Check basic document structure requirements"""

@@ -1,8 +1,6 @@
-claims_matrix
 document_generator
 ingestion
 knowledge_graph
 lawyerfactory
-shared
 storage
 workflow
