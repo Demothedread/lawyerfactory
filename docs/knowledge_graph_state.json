@@ -58,7 +58,7 @@
       "id": "workflow.lawsuit_phase_sequence",
       "type": "workflow",
       "name": "Lawsuit phase sequence",
-      "notes": "phaseA01_intake → phaseA02_research → phaseA03_outline → phaseB01_review → phaseB02_drafting → phaseC01_editing → phaseC02_orchestration"
+      "notes": "phaseA01_intake \u2192 phaseA02_research \u2192 phaseA03_outline \u2192 phaseB01_review \u2192 phaseB02_drafting \u2192 phaseC01_editing \u2192 phaseC02_orchestration"
     },
     {
       "id": "storage.enhanced_unified_storage_api",
@@ -66,6 +66,12 @@
       "name": "Enhanced unified storage API shim",
       "path": "src/lawyerfactory/storage/enhanced_unified_storage_api.py",
       "notes": "Compatibility re-export for unified storage API."
+    },
+    {
+      "id": "cli_one_click_done_workflow",
+      "type": "feature",
+      "name": "CLI One-Click Done Case Packaging",
+      "description": "Interactive CLI intake wizard that indexes an evidence folder and builds a ready-to-file PDF with cover sheet, statement of facts, table of authorities, and statement of claims."
     }
   ],
   "features": [
@@ -91,6 +97,16 @@
       "type": "feature",
       "name": "Tiered evidence ingestion",
       "notes": "Adds primary/secondary/tertiary evidence tiers with tagging for source indexing."
+    },
+    {
+      "id": "cli_one_click_done",
+      "module": "apps.cli.one_click_case_builder",
+      "capabilities": [
+        "evidence_folder_selection",
+        "intake_qna",
+        "intake_file_or_direct",
+        "pdf_case_package_output"
+      ]
     }
   ],
   "relations": [
@@ -119,6 +135,11 @@
       "source": "workflow.maestro_agent",
       "type": "depends_on",
       "target": "storage.enhanced_unified_storage_api"
+    },
+    {
+      "from": "cli_one_click_done_workflow",
+      "to": "post_production_pdf_generator",
+      "type": "uses"
     }
   ],
   "notes": [
@@ -133,6 +154,10 @@
     {
       "id": "note.lint_backlog",
       "text": "Repo-wide Ruff linting fails due to legacy violations; limiting lint scope or remediating existing files is required for a clean run."
+    },
+    {
+      "id": "note.cli_one_click_done",
+      "text": "One-click CLI flow supports direct intake statements or file-based intake narratives for plaintiff/defendant venue-jurisdiction guided prompts."
     }
   ],
   "updates": [
@@ -147,6 +172,10 @@
     {
       "timestamp": "2025-02-14T02:00:00Z",
       "summary": "Captured tiered evidence ingestion for primary, secondary, and tertiary evidence tagging."
+    },
+    {
+      "timestamp": "2026-02-28T03:16:34Z",
+      "summary": "Added CLI one-click done workflow for evidence-folder-driven intake and ready-to-file PDF package generation."
     }
   ]
 }
