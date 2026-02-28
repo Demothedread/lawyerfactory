@@ -82,7 +82,7 @@ class DocumentObjectMap:
                 duplicates.append(
                     {
                         "section_id": section.section_id,
-                        "duplicates_section_id": seen[fingerprint],
+                        "duplicate_of_section_id": seen[fingerprint],
                     }
                 )
             else:
