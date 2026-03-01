@@ -138,7 +138,7 @@
     },
     {
       "from": "cli_one_click_done_workflow",
-      "to": "post_production_pdf_generator",
+      "to": "post_production_protocol",
       "type": "uses"
     }
   ],

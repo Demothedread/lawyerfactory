@@ -36,7 +36,7 @@ async def _run_one_click(output_dir: str) -> int:
     print("\n✅ One-click package complete")
     print(f"Case ID: {result.case_id}")
     print(f"Evidence files indexed: {result.evidence_count}")
-    print(f"Output PDF: {result.output_path}")
+    print(f"Output file: {result.output_path}")
     return 0
 
 

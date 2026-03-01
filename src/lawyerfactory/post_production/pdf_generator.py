@@ -473,6 +473,9 @@ class LegalPDFGenerator:
                 ).rstrip()
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 output_filename = f"{safe_title}_{timestamp}.txt"
+            elif output_filename.lower().endswith(".pdf"):
+                stem, _ext = os.path.splitext(output_filename)
+                output_filename = stem + ".txt"
 
             file_path = os.path.join(self.output_directory, output_filename)
 
