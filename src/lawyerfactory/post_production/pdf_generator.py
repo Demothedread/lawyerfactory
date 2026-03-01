@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 # Script Name: pdf_generator.py
 # Description: Post-Production PDF Generation Module  This module provides professional PDF generation capabilities for legal documents with proper formatting, headers, footers, and legal document structure.
@@ -11,13 +13,12 @@ This module provides professional PDF generation capabilities for legal document
 with proper formatting, headers, footers, and legal document structure.
 """
 
-from dataclasses import dataclass
-from datetime import datetime
-from enum import Enum
 import logging
 import os
 import tempfile
-from typing import Any, Dict, List, Optional, Union
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
 
 logger = logging.getLogger(__name__)
 
@@ -68,14 +69,14 @@ class DocumentMetadata:
     """Metadata for legal document"""
 
     title: str
-    case_name: Optional[str] = None
-    case_number: Optional[str] = None
-    court: Optional[str] = None
-    attorney_name: Optional[str] = None
-    attorney_bar_number: Optional[str] = None
-    law_firm: Optional[str] = None
-    party_represented: Optional[str] = None
-    date_created: Optional[str] = None
+    case_name: str | None = None
+    case_number: str | None = None
+    court: str | None = None
+    attorney_name: str | None = None
+    attorney_bar_number: str | None = None
+    law_firm: str | None = None
+    party_represented: str | None = None
+    date_created: str | None = None
     document_type: DocumentFormat = DocumentFormat.GENERAL
 
 
@@ -102,11 +103,11 @@ class PDFGenerationResult:
     """Result of PDF generation"""
 
     success: bool
-    file_path: Optional[str]
-    file_size: Optional[int]
-    page_count: Optional[int]
-    error_message: Optional[str]
-    warnings: List[str]
+    file_path: str | None
+    file_size: int | None
+    page_count: int | None
+    error_message: str | None
+    warnings: list[str]
     generation_time: float
     metadata: DocumentMetadata
 
@@ -119,7 +120,7 @@ class LegalPDFGenerator:
     appropriate spacing, headers, footers, and court formatting requirements.
     """
 
-    def __init__(self, output_directory: Optional[str] = None):
+    def __init__(self, output_directory: str | None = None):
         """Initialize the PDF generator"""
         self.output_directory = output_directory or tempfile.gettempdir()
         self.style_cache = {}
@@ -193,8 +194,8 @@ class LegalPDFGenerator:
         self,
         content: str,
         metadata: DocumentMetadata,
-        formatting: Optional[FormattingOptions] = None,
-        output_filename: Optional[str] = None,
+        formatting: FormattingOptions | None = None,
+        output_filename: str | None = None,
     ) -> PDFGenerationResult:
         """
         Generate a PDF from document content.
@@ -318,7 +319,7 @@ class LegalPDFGenerator:
 
     def _build_header(
         self, metadata: DocumentMetadata, formatting: FormattingOptions
-    ) -> List:
+    ) -> list:
         """Build document header section"""
         story = []
 
@@ -362,7 +363,7 @@ class LegalPDFGenerator:
 
         return story
 
-    def _build_body(self, content: str, formatting: FormattingOptions) -> List:
+    def _build_body(self, content: str, formatting: FormattingOptions) -> list:
         """Build document body content"""
         story = []
 
@@ -391,7 +392,7 @@ class LegalPDFGenerator:
 
         return story
 
-    def _build_signature_block(self, metadata: DocumentMetadata) -> List:
+    def _build_signature_block(self, metadata: DocumentMetadata) -> list:
         """Build signature block"""
         story = []
 
@@ -400,11 +401,11 @@ class LegalPDFGenerator:
 
             if metadata.attorney_name:
                 story.append(
-                    Paragraph(f"Respectfully submitted,", self.styles["Signature"])
+                    Paragraph("Respectfully submitted,", self.styles["Signature"])
                 )
                 story.append(Spacer(1, 36))  # Space for signature
                 story.append(
-                    Paragraph(f"____________________________", self.styles["Signature"])
+                    Paragraph("____________________________", self.styles["Signature"])
                 )
                 story.append(
                     Paragraph(metadata.attorney_name, self.styles["Signature"])
@@ -459,7 +460,7 @@ class LegalPDFGenerator:
         self,
         content: str,
         metadata: DocumentMetadata,
-        output_filename: Optional[str] = None,
+        output_filename: str | None = None,
     ) -> PDFGenerationResult:
         """Fallback PDF generation when ReportLab is not available"""
         start_time = datetime.now()
@@ -562,7 +563,7 @@ class LegalPDFGenerator:
 
 # Utility functions for external use
 async def generate_legal_pdf(
-    content: str, title: str, output_dir: Optional[str] = None, **metadata_kwargs
+    content: str, title: str, output_dir: str | None = None, **metadata_kwargs
 ) -> PDFGenerationResult:
     """Quick PDF generation for legal documents"""
     metadata = DocumentMetadata(title=title, **metadata_kwargs)
@@ -576,7 +577,7 @@ async def generate_complaint_pdf(
     case_number: str,
     court: str,
     attorney_name: str,
-    output_dir: Optional[str] = None,
+    output_dir: str | None = None,
 ) -> PDFGenerationResult:
     """Generate a formatted complaint PDF"""
     metadata = DocumentMetadata(
@@ -596,7 +597,7 @@ async def generate_complaint_pdf(
     return await generator.generate_pdf(content, metadata, formatting)
 
 
-def get_formatting_presets() -> Dict[str, FormattingOptions]:
+def get_formatting_presets() -> dict[str, FormattingOptions]:
     """Get predefined formatting presets for common document types"""
     return {
         "complaint": FormattingOptions(
