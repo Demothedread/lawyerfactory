@@ -18,7 +18,7 @@ import logging
 from typing import Any, Dict, List, Optional
 import uuid
 
-from knowledge_graph import KnowledgeGraph
+from lawyerfactory.knowledge_graph.api.graph_api import KnowledgeGraph
 
 logger = logging.getLogger(__name__)
 

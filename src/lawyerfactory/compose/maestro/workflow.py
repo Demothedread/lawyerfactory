@@ -8,5 +8,12 @@
 Compatibility wrapper - imports from new location
 This file maintains backward compatibility during refactoring
 """
+import warnings as _w
 
-from src.workflow.api.enhanced_workflow import *
+_w.warn(
+    "Module workflow.py is deprecated; import lawyerfactory.compose.maestro.workflow_enhanced instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+from lawyerfactory.compose.maestro.workflow_enhanced import *  # noqa: F401,F403
+from lawyerfactory.compose.maestro.workflow_models import WorkflowTask  # noqa: F401

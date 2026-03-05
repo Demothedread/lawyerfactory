@@ -298,10 +298,8 @@ class LawyerFactoryDeployment:
 
         try:
             # Initialize knowledge graph
-            from knowledge_graph import KnowledgeGraph
-            from src.knowledge_graph.api.knowledge_graph_extensions import (
-                extend_knowledge_graph,
-            )
+            from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph as KnowledgeGraph
+            from lawyerfactory.phases.phaseA01_intake.kg_extensions import extend_knowledge_graph
 
             kg_config = self.config.get("database", {}).get("knowledge_graph", {})
             kg_path = kg_config.get("path", "knowledge_graphs/main.db")

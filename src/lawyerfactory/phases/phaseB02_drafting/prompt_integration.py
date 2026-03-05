@@ -13,8 +13,8 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, Optional
 
-from maestro.enhanced_maestro import EnhancedMaestro
-from maestro.workflow_models import WorkflowPhase
+from lawyerfactory.compose.maestro.enhanced_maestro import EnhancedMaestro
+from lawyerfactory.compose.maestro.workflow_models import WorkflowPhase
 
 from .prompt_deconstruction import PromptDeconstructionService
 

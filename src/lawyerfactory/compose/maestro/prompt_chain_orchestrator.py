@@ -16,8 +16,9 @@ from datetime import datetime
 import logging
 from typing import Dict, List
 
-from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 from skeletal_outline_generator import SectionType, SkeletalOutline, SkeletalSection
+
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 
 logger = logging.getLogger(__name__)
 
@@ -585,13 +586,10 @@ Respectfully submitted,
 async def test_prompt_chain_orchestrator():
     """Test the prompt chain orchestrator"""
     try:
+        from lawyerfactory.claims.matrix import ComprehensiveClaimsMatrixIntegration
         from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
-        from maestro.evidence_api import EvidenceAPI
-        from skeletal_outline_generator import SkeletalOutlineGenerator
-
-        from src.claims_matrix.comprehensive_claims_matrix_integration import (
-            ComprehensiveClaimsMatrixIntegration,
-        )
+        from lawyerfactory.outline.generator import SkeletalOutlineGenerator
+        from lawyerfactory.phases.phaseA01_intake.evidence_routes import EvidenceAPI
 
         # Initialize components
         kg = EnhancedKnowledgeGraph()

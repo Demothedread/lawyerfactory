@@ -15,10 +15,9 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
-from legal_authority_validator import LegalAuthorityValidator
-from legal_research_integration import LegalResearchAPIIntegration
-
 from lawyerfactory.kg.jurisdiction import JurisdictionManager
+from lawyerfactory.research.retrievers.integration import LegalResearchAPIIntegration
+from lawyerfactory.research.validate import LegalAuthorityValidator
 
 logger = logging.getLogger(__name__)
 
@@ -1123,10 +1122,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
-
-    from src.lawyerfactory.knowledge_graph.core.jurisdiction_manager import (
-        JurisdictionManager,
-    )
+    from lawyerfactory.kg.jurisdiction import JurisdictionManager
 
     try:
         kg = EnhancedKnowledgeGraph("test_definition_engine.db")

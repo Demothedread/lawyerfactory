@@ -159,7 +159,10 @@ except Exception:
 
 # Enhanced Evidence API import
 try:
-    from maestro.evidence_api import EvidenceAPI, setup_evidence_routes
+    from lawyerfactory.phases.phaseA01_intake.evidence_routes import (
+        EvidenceAPI,
+        setup_evidence_routes,
+    )
 
     EVIDENCE_API_AVAILABLE = True
 except Exception:

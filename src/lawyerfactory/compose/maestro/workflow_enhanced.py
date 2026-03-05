@@ -17,17 +17,10 @@ import sys
 from typing import Any, Dict, List, Optional
 import uuid  # <-- added import
 
-# Ensure src root is on sys.path so imports from src.* resolve when this module is executed from different CWDs.
-project_root = Path(__file__).resolve().parents[2]
-src_root = project_root
-# Ensure src root is first on sys.path so imports like `from knowledge_graph import ...` resolve
-if str(src_root) not in sys.path:
-    sys.path.insert(0, str(src_root))
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph as KnowledgeGraph
 
-from maestro.enhanced_maestro import EnhancedMaestro
-from maestro.workflow_models import PhaseStatus, WorkflowPhase
-
-from knowledge_graph import KnowledgeGraph
+from .enhanced_maestro import EnhancedMaestro
+from .workflow_models import PhaseStatus, WorkflowPhase
 
 logger = logging.getLogger(__name__)
 

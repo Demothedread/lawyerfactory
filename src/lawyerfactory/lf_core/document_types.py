@@ -9,4 +9,4 @@ Compatibility wrapper - imports from new location
 This file maintains backward compatibility during refactoring
 """
 
-from src.shared.document_type_framework import *
+from lawyerfactory.lf_core.document_types_shared import *

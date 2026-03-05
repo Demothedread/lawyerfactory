@@ -19,9 +19,7 @@ import logging
 import time
 from typing import Any, Dict, List, Optional
 
-from lawyerfactory.phases.phaseA01_intake.cause_of_action_detector import CauseOfActionDetector
-from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
-from maestro.bots.research_bot import (
+from lawyerfactory.compose.bots.research import (
     CourtListenerClient,
     GoogleScholarClient,
     LegalCitation,
@@ -29,8 +27,9 @@ from maestro.bots.research_bot import (
     ResearchQuery,
     ResearchResult,
 )
-
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
 from lawyerfactory.kg.jurisdiction import JurisdictionManager
+from lawyerfactory.phases.phaseA01_intake.cause_of_action_detector import CauseOfActionDetector
 
 logger = logging.getLogger(__name__)
 

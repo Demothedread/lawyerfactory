@@ -20,12 +20,31 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-import anthropic
-import openai
+try:
+    import anthropic
+except Exception as exc:  # pragma: no cover - optional dependency
+    anthropic = None
+    ANTHROPIC_IMPORT_ERROR = exc
+else:
+    ANTHROPIC_IMPORT_ERROR = None
+
+try:
+    import openai
+except Exception as exc:  # pragma: no cover - optional dependency
+    openai = None
+    OPENAI_IMPORT_ERROR = exc
+else:
+    OPENAI_IMPORT_ERROR = None
+
 import requests
 from flask import jsonify, request
 
 logger = logging.getLogger(__name__)
+
+if ANTHROPIC_IMPORT_ERROR:
+    logger.warning("Anthropic SDK import failed: %s", ANTHROPIC_IMPORT_ERROR)
+if OPENAI_IMPORT_ERROR:
+    logger.warning("OpenAI SDK import failed: %s", OPENAI_IMPORT_ERROR)
 
 
 class LLMProvider(Enum):
@@ -89,12 +108,16 @@ class BartlebyChatHandler:
 
         # Load API keys
         openai_key = os.getenv("OPENAI_API_KEY")
-        if openai_key:
+        if openai_key and openai:
             self.openai_client = openai.OpenAI(api_key=openai_key)
+        elif openai_key:
+            logger.warning("OPENAI_API_KEY set but OpenAI SDK unavailable")
 
         anthropic_key = os.getenv("ANTHROPIC_API_KEY")
-        if anthropic_key:
+        if anthropic_key and anthropic:
             self.anthropic_client = anthropic.Anthropic(api_key=anthropic_key)
+        elif anthropic_key:
+            logger.warning("ANTHROPIC_API_KEY set but Anthropic SDK unavailable")
 
         # System prompt for Bartleby
         self.system_prompt = """You are Bartleby, an AI legal clerk assistant for LawyerFactory.
@@ -617,7 +640,7 @@ def register_chat_routes(app, chat_handler: BartlebyChatHandler):
         chat_handler: BartlebyChatHandler instance
     """
 
-    @app.route('/api/chat/message', methods=['POST'])
+    @app.route('/api/chat/message', methods=['POST'], endpoint="bartleby_chat_message")
     async def chat_message():
         """Handle chat message"""
         data = request.json
@@ -646,7 +669,7 @@ def register_chat_routes(app, chat_handler: BartlebyChatHandler):
             "timestamp": response_message.timestamp.isoformat()
         })
 
-    @app.route('/api/chat/modify-outline', methods=['POST'])
+    @app.route('/api/chat/modify-outline', methods=['POST'], endpoint="bartleby_modify_outline")
     async def modify_outline():
         """Modify skeletal outline via chat"""
         data = request.json
@@ -660,7 +683,7 @@ def register_chat_routes(app, chat_handler: BartlebyChatHandler):
 
         return jsonify(result)
 
-    @app.route('/api/chat/update-evidence', methods=['POST'])
+    @app.route('/api/chat/update-evidence', methods=['POST'], endpoint="bartleby_update_evidence")
     async def update_evidence():
         """Update evidence via chat"""
         data = request.json
@@ -674,7 +697,7 @@ def register_chat_routes(app, chat_handler: BartlebyChatHandler):
 
         return jsonify(result)
 
-    @app.route('/api/chat/adjust-research', methods=['POST'])
+    @app.route('/api/chat/adjust-research', methods=['POST'], endpoint="bartleby_adjust_research")
     async def adjust_research():
         """Adjust research parameters via chat"""
         data = request.json
@@ -688,7 +711,7 @@ def register_chat_routes(app, chat_handler: BartlebyChatHandler):
 
         return jsonify(result)
 
-    @app.route('/api/chat/vector-search', methods=['POST'])
+    @app.route('/api/chat/vector-search', methods=['POST'], endpoint="bartleby_vector_search")
     async def vector_search():
         """Search vector store via chat"""
         data = request.json

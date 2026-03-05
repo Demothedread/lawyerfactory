@@ -21,8 +21,14 @@ Consolidated from:
 ✓ Enhanced: Added missing backend routes for frontend integration
 """
 
+import asyncio
+import csv
+import json
 import os
 from pathlib import Path
+import time
+from typing import Any, Dict, List, Optional
+import uuid
 
 from dotenv import load_dotenv
 
@@ -34,20 +40,27 @@ import argparse
 import logging
 import sys
 
-# Attempt to import and configure eventlet
-try:
-    import eventlet
+# Attempt to import and configure eventlet (allow opt-out for restricted environments)
+EVENTLET_AVAILABLE = False
+DISABLE_EVENTLET = os.getenv("LF_DISABLE_EVENTLET", "0") == "1"
 
-    # Monkey patch must be first for eventlet
-    eventlet.monkey_patch()
-    EVENTLET_AVAILABLE = True
-except ImportError:
-    EVENTLET_AVAILABLE = False
+if DISABLE_EVENTLET:
     logger_temp = logging.getLogger(__name__)
-    logger_temp.warning(
-        "eventlet not installed. Install with: pip install eventlet\n"
-        "Falling back to threaded mode. For production, install eventlet for better async performance."
-    )
+    logger_temp.info("LF_DISABLE_EVENTLET=1 set - forcing threading mode")
+else:
+    try:
+        import eventlet
+
+        # Monkey patch must be first for eventlet
+        eventlet.monkey_patch()
+        EVENTLET_AVAILABLE = True
+    except ImportError:
+        EVENTLET_AVAILABLE = False
+        logger_temp = logging.getLogger(__name__)
+        logger_temp.warning(
+            "eventlet not installed. Install with: pip install eventlet\n"
+            "Falling back to threaded mode. For production, install eventlet for better async performance."
+        )
 
 from flask import Flask, jsonify, render_template, request, send_file
 from flask_cors import CORS
@@ -143,7 +156,7 @@ research_bot = None
 bartleby_handler = None
 
 try:
-    from lawyerfactory.agents.research.researcher import ResearchBot
+    from lawyerfactory.agents.research.research import ResearchBot
     from lawyerfactory.chat.bartleby_handler import BartlebyChatHandler, register_chat_routes
     from lawyerfactory.storage.core.unified_storage_api import get_enhanced_unified_storage_api
     from lawyerfactory.storage.vectors.enhanced_vector_store import EnhancedVectorStoreManager
@@ -963,9 +976,6 @@ def extract_facts_from_evidence(
     Uses LLM to identify facts answering: who, what, when, where, why.
     """
     try:
-        import os
-        from typing import Optional
-
         # Try to use LLM for intelligent fact extraction
         provider = llm_config.get("provider", "openai")
         api_key = llm_config.get("api_key")
@@ -1336,7 +1346,7 @@ async def handle_drafting_phase_async(case_id: str, data: Dict[str, Any]) -> Dic
                 "phase": "phaseB02_drafting",
                 "case_id": case_id,
                 "progress": 10,
-                "message": "📂 Loading skeletal outline, claims matrix, evidence table, and shotlist...",
+                "message": "📂 Loading skeletal outline, claims matrix, evidence table, and shot                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               .xvz,...",
             },
         )
 
@@ -2031,7 +2041,14 @@ def main():
     logger.info(f"🤖 LawyerFactory available: {LAWYERFACTORY_AVAILABLE}")
     logger.info(f"💾 Storage available: {unified_storage is not None}")
 
-    socketio.run(app, host=args.host, port=args.port, debug=args.debug)
+    allow_unsafe = not EVENTLET_AVAILABLE
+    socketio.run(
+        app,
+        host=args.host,
+        port=args.port,
+        debug=args.debug,
+        allow_unsafe_werkzeug=allow_unsafe,
+    )
 
 
 if __name__ == "__main__":

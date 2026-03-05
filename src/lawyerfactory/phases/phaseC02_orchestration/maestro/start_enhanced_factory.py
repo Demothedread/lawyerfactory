@@ -39,17 +39,17 @@ def check_dependencies():
         missing_deps.append(f"Flask dependencies: {e}")
 
     try:
-        from knowledge_graph import KnowledgeGraph
+        from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph as KnowledgeGraph
     except ImportError as e:
         missing_deps.append(f"Knowledge Graph: {e}")
 
     try:
-        from maestro.enhanced_maestro import EnhancedMaestro
+        from lawyerfactory.compose.maestro.enhanced_maestro import EnhancedMaestro
     except ImportError as e:
         missing_deps.append(f"Enhanced Maestro: {e}")
 
     try:
-        from lawyerfactory.enhanced_workflow import EnhancedWorkflowManager
+        from lawyerfactory.compose.maestro.workflow_enhanced import EnhancedWorkflowManager
     except ImportError as e:
         missing_deps.append(f"Enhanced Workflow Manager: {e}")
 
@@ -85,9 +85,8 @@ def patch_app_imports():
     """Patch the app.py imports to include our extensions"""
     try:
         # Import and patch knowledge graph
-        from knowledge_graph_extensions import extend_knowledge_graph
-
-        from knowledge_graph import KnowledgeGraph
+        from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph as KnowledgeGraph
+        from lawyerfactory.phases.phaseA01_intake.kg_extensions import extend_knowledge_graph
 
         # Monkey patch the KnowledgeGraph class
         original_init = KnowledgeGraph.__init__

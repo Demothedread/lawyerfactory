@@ -40,7 +40,7 @@ except Exception as e:
 
 # Import the enhanced evidence table functionality
 try:
-    from maestro.evidence_table import (
+    from lawyerfactory.storage.evidence.table import (
         EnhancedEvidenceTable,
         EvidenceEntry,
         EvidenceType,

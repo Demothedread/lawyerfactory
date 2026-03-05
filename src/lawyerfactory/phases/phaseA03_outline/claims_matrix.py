@@ -14,42 +14,21 @@ from datetime import datetime
 import logging
 from typing import Any, Dict, List, Optional
 
-from src.ingestion.api.cause_of_action_definition_engine import (
+from lawyerfactory.claims.research_api import ClaimsMatrixResearchAPI
+from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
+from lawyerfactory.kg.jurisdiction import JurisdictionManager
+from lawyerfactory.phases.phaseA03_outline.claims.cause_of_action_definition_engine import (
     CauseOfActionDefinitionEngine,
     ElementBreakdown,
     LegalDefinition,
     ProvableQuestion,
 )
-from lawyerfactory.kg.graph_api import EnhancedKnowledgeGraph
-from lawyerfactory.kg.jurisdiction import JurisdictionManager
-
-# cascading_decision_tree_engine may live in claims_matrix or src; try src first and fall back
-try:
-    from src.claims_matrix.cascading_decision_tree_engine import (
-        CascadingDecisionTreeEngine,
-        ClickableTerm,
-        DecisionOutcome,
-        DecisionPathResult,
-    )
-except Exception:
-    from cascading_decision_tree_engine import (
-        CascadingDecisionTreeEngine,
-        ClickableTerm,
-        DecisionOutcome,
-        DecisionPathResult,
-    )
-
-try:
-    pass
-except Exception:
-    pass
-
-try:
-    pass
-except Exception:
-    pass
-
-from claims_matrix.claims_matrix_research_api import ClaimsMatrixResearchAPI
+from lawyerfactory.phases.phaseC01_editing.validators.cascading_decision_tree_engine import (
+    CascadingDecisionTreeEngine,
+    ClickableTerm,
+    DecisionOutcome,
+    DecisionPathResult,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -130,8 +109,10 @@ class ComprehensiveClaimsMatrixIntegration:
         # Initialize research integration if tokens provided
         if courtlistener_token or scholar_contact_email:
             try:
-                from legal_authority_validator import LegalAuthorityValidator
-                from legal_research_integration import LegalResearchAPIIntegration
+                from lawyerfactory.research.retrievers.integration import (
+                    LegalResearchAPIIntegration,
+                )
+                from lawyerfactory.research.validate import LegalAuthorityValidator
 
                 self.authority_validator = LegalAuthorityValidator(
                     enhanced_kg, self.jurisdiction_manager
@@ -379,7 +360,7 @@ class ComprehensiveClaimsMatrixIntegration:
                 return {"error": "Session not found"}
 
             # Create research request
-            from claims_matrix.claims_matrix_research_api import (
+            from lawyerfactory.claims.research_api import (
                 ClaimsMatrixResearchRequest,
                 ResearchPriority,
             )

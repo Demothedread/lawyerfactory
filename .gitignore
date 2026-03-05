@@ -270,3 +270,4 @@ vector_backup.json
 dep_graph.json
 inventory.json
 
+*.DS_Store
