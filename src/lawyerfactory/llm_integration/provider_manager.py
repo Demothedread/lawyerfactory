@@ -26,6 +26,7 @@ class LLMProvider(Enum):
     GROQ = "groq"
     AZURE = "azure"
     LOCAL = "local"
+    GITHUB_COPILOT = "github_copilot"
 
 
 @dataclass
@@ -429,6 +430,104 @@ class LocalProvider(LLMProviderBase):
             return False
 
 
+# GitHub Models inference endpoint
+_GITHUB_MODELS_BASE_URL = "https://models.inference.ai.azure.com"
+
+# Well-known models available through the GitHub Models / Copilot API
+GITHUB_COPILOT_MODELS = [
+    "gpt-4o",
+    "gpt-4o-mini",
+    "o1",
+    "o1-mini",
+    "o3-mini",
+    "claude-3-5-sonnet",
+    "claude-3-7-sonnet",
+    "mistral-large-2411",
+    "llama-3.3-70b-instruct",
+    "phi-4",
+    "deepseek-v3",
+]
+
+
+class GitHubCopilotProvider(LLMProviderBase):
+    """GitHub Copilot / GitHub Models LLM provider.
+
+    Uses the OpenAI-compatible GitHub Models inference endpoint
+    (https://models.inference.ai.azure.com) authenticated with a GitHub
+    Personal Access Token (PAT) or a GitHub Copilot subscription token.
+
+    Set ``GITHUB_TOKEN`` (or ``GH_TOKEN``) in the environment, or pass the
+    token via ``LLMConfig.api_key``.
+    """
+
+    MODELS = {model: {} for model in GITHUB_COPILOT_MODELS}
+
+    def _initialize_client(self):
+        """Initialize OpenAI client pointed at the GitHub Models endpoint."""
+        token = self.config.api_key or os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN")
+        if not token:
+            raise ValueError(
+                "GitHub token is required for GitHub Copilot provider; "
+                "set GITHUB_TOKEN environment variable"
+            )
+
+        base_url = self.config.custom_endpoint or _GITHUB_MODELS_BASE_URL
+
+        self.client = openai.AsyncOpenAI(
+            api_key=token,
+            base_url=base_url,
+            timeout=self.config.timeout,
+        )
+
+    async def generate_response(
+        self, messages: List[Dict[str, str]], **kwargs
+    ) -> LLMResponse:
+        """Generate response using the GitHub Models API."""
+        request_params = {
+            "model": self.config.model,
+            "messages": messages,
+            "temperature": self.config.temperature,
+            "max_tokens": self.config.max_tokens,
+            **kwargs,
+        }
+
+        for attempt in range(self.config.retry_attempts):
+            try:
+                response = await self.client.chat.completions.create(**request_params)
+
+                usage = response.usage
+                return LLMResponse(
+                    content=response.choices[0].message.content or "",
+                    provider=LLMProvider.GITHUB_COPILOT,
+                    model=self.config.model,
+                    usage=usage.model_dump() if usage else None,
+                    cost_estimate=0.0,  # Covered by GitHub subscription
+                    metadata={
+                        "finish_reason": response.choices[0].finish_reason,
+                        "response_id": response.id,
+                    },
+                )
+
+            except Exception as e:
+                if attempt == self.config.retry_attempts - 1:
+                    logger.error(f"GitHub Copilot API call failed: {e}")
+                    raise
+                logger.warning(f"GitHub Copilot API attempt {attempt + 1} failed: {e}")
+                await asyncio.sleep(2**attempt)
+
+    async def test_connection(self) -> bool:
+        """Test GitHub Models API connection."""
+        try:
+            test_messages = [{"role": "user", "content": "Hello"}]
+            response = await self.client.chat.completions.create(
+                model=self.config.model, messages=test_messages, max_tokens=5
+            )
+            return bool(response.choices)
+        except Exception as e:
+            logger.error(f"GitHub Copilot connection test failed: {e}")
+            return False
+
+
 class LLMManager:
     """Unified LLM provider management"""
 
@@ -437,6 +536,7 @@ class LLMManager:
         LLMProvider.ANTHROPIC: AnthropicProvider,
         LLMProvider.GROQ: GroqProvider,
         LLMProvider.LOCAL: LocalProvider,
+        LLMProvider.GITHUB_COPILOT: GitHubCopilotProvider,
     }
 
     def __init__(self):
@@ -449,7 +549,9 @@ class LLMManager:
         # Determine default provider based on available API keys
         default_provider = LLMProvider.OPENAI
 
-        if os.getenv("ANTHROPIC_API_KEY"):
+        if os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN"):
+            default_provider = LLMProvider.GITHUB_COPILOT
+        elif os.getenv("ANTHROPIC_API_KEY"):
             default_provider = LLMProvider.ANTHROPIC
         elif os.getenv("GROQ_API_KEY"):
             default_provider = LLMProvider.GROQ
@@ -471,6 +573,7 @@ class LLMManager:
             LLMProvider.ANTHROPIC: "claude-3-sonnet-20240229",
             LLMProvider.GROQ: "llama3-8b-8192",
             LLMProvider.LOCAL: "llama2",
+            LLMProvider.GITHUB_COPILOT: "gpt-4o-mini",
         }
         return defaults.get(provider, "gpt-4o")
 
@@ -528,6 +631,7 @@ class LLMManager:
             LLMProvider.ANTHROPIC: list(AnthropicProvider.MODELS.keys()),
             LLMProvider.GROQ: list(GroqProvider.MODELS.keys()),
             LLMProvider.LOCAL: ["llama2", "codellama", "mistral", "phi"],
+            LLMProvider.GITHUB_COPILOT: GITHUB_COPILOT_MODELS,
         }
         return model_maps.get(provider, [])
 
@@ -590,6 +694,8 @@ __all__ = [
     "LLMConfig",
     "LLMResponse",
     "LLMManager",
+    "GitHubCopilotProvider",
+    "GITHUB_COPILOT_MODELS",
     "llm_manager",
     "generate_llm_response",
     "test_llm_providers",
