@@ -877,11 +877,12 @@ export const updateLLMConfig = async (config) => {
       provider: config.provider,
       model: config.model,
       api_key: config.apiKey,
+      base_url: config.baseUrl,
       temperature: config.temperature,
       max_tokens: config.maxTokens,
     };
 
-    const response = await apiClient.post('/api/settings/llm', payload);
+    const response = await apiClient.put('/api/settings/llm', payload);
     return response.data;
   } catch (error) {
     console.error('Failed to update LLM config:', error);

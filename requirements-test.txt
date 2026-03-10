@@ -1,0 +1,54 @@
+# Testing Dependencies - Comprehensive test suite requirements
+
+# Pytest and plugins
+pytest>=7.4.2
+pytest-asyncio>=0.21.1
+pytest-cov>=4.1.0  # Code coverage
+pytest-timeout>=2.1.0  # Timeout handling
+pytest-xdist>=3.3.1  # Parallel test execution
+pytest-mock>=3.11.1  # Enhanced mocking
+
+# Frontend/UI Testing
+jest>=29.0.0
+@testing-library/react>=14.0.0
+@testing-library/jest-dom>=6.0.0
+puppeteer>=20.0.0  # Headless browser testing
+@puppeteer/browsers>=18.0.0
+
+# Code quality
+coverage>=7.3.2
+pylint>=2.17.5
+black>=23.9.1
+
+# HTTP Testing
+requests>=2.31.0
+requests-mock>=1.11.0
+
+# OpenAI/LLM testing support
+openai>=1.0.0
+anthropic>=0.7.0
+groq>=0.4.0
+
+# Environment and mocking
+python-dotenv>=1.0.0
+unittest-mock>=1.5.0
+
+# Data validation
+jsonschema>=4.19.0
+
+# Async testing 
+pytest-trio>=0.8.0
+
+# Performance testing
+pytest-benchmark>=4.0.0
+
+# JSON and HTML assertion
+pytest-json-report>=1.5.0
+
+# Fixtures and factories
+factory-boy>=3.3.0
+faker>=19.2.0
+
+# Test database
+pytest-postgresql>=4.0.0
+mongomock>=4.1.2

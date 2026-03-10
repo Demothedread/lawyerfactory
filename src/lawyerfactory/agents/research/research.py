@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 # Script Name: research.py
 # Description: Enhanced Research Bot with Tavily integration for automated legal research capabilities. Integrates PRIMARY evidence keywords → Tavily academic/news search → SECONDARY evidence generation.
@@ -20,6 +22,7 @@ import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from typing import Any
 
 # Import Tavily integration for comprehensive research
@@ -59,6 +62,14 @@ except ImportError:
     UNIFIED_STORAGE_AVAILABLE = False
     logger = logging.getLogger(__name__)
     logger.warning("Unified storage not available - SECONDARY evidence storage disabled")
+
+    class EvidenceSource(Enum):
+        """Fallback evidence source enum when storage models are unavailable."""
+
+        SECONDARY = "secondary"
+        TERTIARY = "tertiary"
+
+    EvidenceEntry = dict[str, Any]
 
 # Removed failing imports - these modules don't exist yet
 # from ..agent_registry import AgentCapability, AgentConfig, AgentInterface

@@ -16,10 +16,22 @@ const SettingsPanel = ({
     provider: 'openai',
     model: 'gpt-5-mini',
     apiKey: '',
+    baseUrl: '',
     temperature: 0.1,
     maxTokens: 2000,
   });    
   const [availableModels, setAvailableModels] = useState({});
+  const [providerOptions, setProviderOptions] = useState([
+    { value: 'openai', label: 'OpenAI', api_key_env_vars: ['OPENAI_API_KEY'] },
+    { value: 'anthropic', label: 'Anthropic', api_key_env_vars: ['ANTHROPIC_API_KEY'] },
+    { value: 'groq', label: 'Groq', api_key_env_vars: ['GROQ_API_KEY'] },
+    {
+      value: 'github-copilot',
+      label: 'GitHub Copilot / GitHub Models',
+      api_key_env_vars: ['GITHUB_MODELS_API_KEY', 'GITHUB_TOKEN'],
+      base_url_env_var: 'GITHUB_MODELS_BASE_URL',
+    },
+  ]);
   const [loading, setLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
 
@@ -47,10 +59,12 @@ const SettingsPanel = ({
           provider: response.config.provider || 'openai',
           model: response.config.model || 'gpt-5-mini',
           apiKey: response.config.api_key || '',
+          baseUrl: response.config.base_url || '',
           temperature: response.config.temperature || 0.1,
           maxTokens: response.config.max_tokens || 20000,
         });
         setAvailableModels(response.available_models || {});
+        setProviderOptions(response.provider_options || providerOptions);
       }
     } catch (error) {
       console.error('Failed to load LLM config:', error);
@@ -70,6 +84,9 @@ const SettingsPanel = ({
       onSettingsChange({ ...settings, [key]: value });
     }
   };
+
+  const selectedProvider = providerOptions.find((option) => option.value === llmConfig.provider);
+  const apiKeyHint = selectedProvider?.api_key_env_vars?.join(' or ') || `${llmConfig.provider.toUpperCase()}_API_KEY`;
 
   const saveLLMConfig = async () => {
     try {
@@ -148,10 +165,9 @@ const SettingsPanel = ({
                     onChange={(e) => handleLLMConfigChange('provider', e.target.value)}
                     className="industrial-select"
                   >
-                    <option value="openai">OpenAI (GPT-5-mini, GPT-5, GPT-4.1, GPT-3.5)</option>
-                    <option value="anthropic">Anthropic (Claude-sonnet-4, claude-sonnet-4.5, claud-opus-1)</option>
-                    <option value="groq">Groq (Mixtral, Llama)</option>
-                    <option value="gemini">Google Gemini</option>
+                    {providerOptions.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -167,7 +183,7 @@ const SettingsPanel = ({
                     onChange={(e) => handleLLMConfigChange('model', e.target.value)}
                     className="industrial-select"
                   >
-                    {(availableModels[llmConfig.provider] || ['gpt-4']).map(model => (
+                    {(availableModels[llmConfig.provider] || [llmConfig.model || 'gpt-4']).map(model => (
                       <option key={model} value={model}>{model}</option>
                     ))}
                   </select>
@@ -189,9 +205,30 @@ const SettingsPanel = ({
                   />
                 </div>
                 <small className="control-hint">
-                  Leave empty to use environment variable ({llmConfig.provider.toUpperCase()}_API_KEY)
+                  Leave empty to use environment variable ({apiKeyHint})
                 </small>
               </div>
+
+              {selectedProvider?.base_url_env_var && (
+                <div className="control-group">
+                  <label className="control-label">
+                    <span className="label-indicator"></span>
+                    BASE URL:
+                  </label>
+                  <div className="control-frame">
+                    <input
+                      type="text"
+                      value={llmConfig.baseUrl || ''}
+                      onChange={(e) => handleLLMConfigChange('baseUrl', e.target.value)}
+                      placeholder="Leave empty to use environment default"
+                      className="industrial-input"
+                    />
+                  </div>
+                  <small className="control-hint">
+                    Leave empty to use {selectedProvider.base_url_env_var}
+                  </small>
+                </div>
+              )}
 
               <div className="control-group">
                 <label className="control-label">

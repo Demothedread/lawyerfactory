@@ -14,10 +14,22 @@ const EnhancedSettingsPanel = ({
     provider: 'openai',
     model: 'gpt-5-nano',
     apiKey: '',
+    baseUrl: '',
     temperature: 0.1,
     maxTokens: 2000,
   });
   const [availableModels, setAvailableModels] = useState({});
+  const [providerOptions, setProviderOptions] = useState([
+    { value: 'openai', label: 'OpenAI', api_key_env_vars: ['OPENAI_API_KEY'] },
+    { value: 'anthropic', label: 'Anthropic', api_key_env_vars: ['ANTHROPIC_API_KEY'] },
+    { value: 'groq', label: 'Groq', api_key_env_vars: ['GROQ_API_KEY'] },
+    {
+      value: 'github-copilot',
+      label: 'GitHub Copilot / GitHub Models',
+      api_key_env_vars: ['GITHUB_MODELS_API_KEY', 'GITHUB_TOKEN'],
+      base_url_env_var: 'GITHUB_MODELS_BASE_URL',
+    },
+  ]);
   const [loading, setLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
 
@@ -45,10 +57,12 @@ const EnhancedSettingsPanel = ({
           provider: response.config.provider || 'openai',
           model: response.config.model || 'gpt-4',
           apiKey: response.config.api_key || '',
+          baseUrl: response.config.base_url || '',
           temperature: response.config.temperature || 0.1,
           maxTokens: response.config.max_tokens || 2000,
         });
         setAvailableModels(response.available_models || {});
+        setProviderOptions(response.provider_options || providerOptions);
       }
     } catch (error) {
       console.error('Failed to load LLM config:', error);
@@ -68,6 +82,9 @@ const EnhancedSettingsPanel = ({
       onSettingsChange({ ...settings, [key]: value });
     }
   };
+
+  const selectedProvider = providerOptions.find((option) => option.value === llmConfig.provider);
+  const apiKeyHint = selectedProvider?.api_key_env_vars?.join(' or ') || `${llmConfig.provider.toUpperCase()}_API_KEY`;
 
   const saveLLMConfig = async () => {
     try {
@@ -138,10 +155,9 @@ const EnhancedSettingsPanel = ({
                     className="settings-select"
                     style={{ width: '100%', padding: '8px', fontSize: '14px' }}
                   >
-                    <option value="openai">OpenAI (GPT-4, GPT-3.5)</option>
-                    <option value="anthropic">Anthropic (Claude)</option>
-                    <option value="groq">Groq (Mixtral, Llama)</option>
-                    <option value="gemini">Google Gemini</option>
+                    {providerOptions.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -155,7 +171,7 @@ const EnhancedSettingsPanel = ({
                     className="settings-select"
                     style={{ width: '100%', padding: '8px', fontSize: '14px' }}
                   >
-                    {(availableModels[llmConfig.provider] || ['gpt-4']).map(model => (
+                    {(availableModels[llmConfig.provider] || [llmConfig.model || 'gpt-4']).map(model => (
                       <option key={model} value={model}>{model}</option>
                     ))}
                   </select>
@@ -174,9 +190,28 @@ const EnhancedSettingsPanel = ({
                     style={{ width: '100%', padding: '8px', fontSize: '14px' }}
                   />
                   <small style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
-                    Leave empty to use environment variable ({llmConfig.provider.toUpperCase()}_API_KEY)
+                    Leave empty to use environment variable ({apiKeyHint})
                   </small>
                 </div>
+
+                {selectedProvider?.base_url_env_var && (
+                  <div style={{ marginBottom: 'var(--space-md)' }}>
+                    <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 'bold' }}>
+                      Base URL:
+                    </label>
+                    <input
+                      type="text"
+                      value={llmConfig.baseUrl || ''}
+                      onChange={(e) => handleLLMConfigChange('baseUrl', e.target.value)}
+                      placeholder="Leave empty to use environment default"
+                      className="settings-input"
+                      style={{ width: '100%', padding: '8px', fontSize: '14px' }}
+                    />
+                    <small style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
+                      Leave empty to use {selectedProvider.base_url_env_var}
+                    </small>
+                  </div>
+                )}
 
                 <div style={{ marginBottom: 'var(--space-md)' }}>
                   <label style={{ display: 'block', marginBottom: 'var(--space-xs)', fontWeight: 'bold' }}>

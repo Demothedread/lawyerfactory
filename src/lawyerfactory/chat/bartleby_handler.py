@@ -104,7 +104,11 @@ class BartlebyChatHandler:
         # Initialize LLM clients
         self.openai_client = None
         self.anthropic_client = None
+        self.github_copilot_client = None
         self.ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        self.github_models_base_url = os.getenv(
+            "GITHUB_MODELS_BASE_URL", "https://models.inference.ai.azure.com"
+        )
 
         # Load API keys
         openai_key = os.getenv("OPENAI_API_KEY")
@@ -118,6 +122,15 @@ class BartlebyChatHandler:
             self.anthropic_client = anthropic.Anthropic(api_key=anthropic_key)
         elif anthropic_key:
             logger.warning("ANTHROPIC_API_KEY set but Anthropic SDK unavailable")
+
+        github_models_key = os.getenv("GITHUB_MODELS_API_KEY") or os.getenv("GITHUB_TOKEN")
+        if github_models_key and openai:
+            self.github_copilot_client = openai.OpenAI(
+                api_key=github_models_key,
+                base_url=self.github_models_base_url,
+            )
+        elif github_models_key:
+            logger.warning("GitHub Models token set but OpenAI SDK unavailable")
 
         # System prompt for Bartleby
         self.system_prompt = """You are Bartleby, an AI legal clerk assistant for LawyerFactory.
@@ -174,12 +187,11 @@ Format your responses in Markdown for clarity.
             return (self.anthropic_client, model)
 
         elif provider_enum == LLMProvider.GITHUB_COPILOT:
-            # GitHub Copilot uses OpenAI client with special endpoint
-            github_token = os.getenv("GITHUB_TOKEN")
-            if not github_token:
-                raise ValueError("GitHub token not configured")
-            # Simplified - would need actual GitHub Copilot API integration
-            return (self.openai_client, model)
+            if not self.github_copilot_client:
+                raise ValueError(
+                    "GitHub Models token not configured. Set GITHUB_MODELS_API_KEY or GITHUB_TOKEN."
+                )
+            return (self.github_copilot_client, model)
 
         elif provider_enum == LLMProvider.OLLAMA:
             # Ollama uses local HTTP endpoint
@@ -294,10 +306,10 @@ Format your responses in Markdown for clarity.
         Returns:
             ChatMessage with response and actions
         """
-        provider = settings.get("provider", "openai")
-        model = settings.get("model", "gpt-5")
+        provider = settings.get("provider") or settings.get("llmProvider", "openai")
+        model = settings.get("model") or settings.get("aiModel", "gpt-5")
         temperature = settings.get("temperature", 0.7)
-        max_tokens = settings.get("maxTokens", 4096)
+        max_tokens = settings.get("maxTokens") or settings.get("max_tokens", 4096)
 
         # Build full prompt with context
         context_prompt = self.build_context_prompt(context)
@@ -306,7 +318,7 @@ Format your responses in Markdown for clarity.
         try:
             client, model_name = self.get_llm_client(provider, model)
 
-            if provider == "openai":
+            if provider in {"openai", "github-copilot"}:
                 response = client.chat.completions.create(
                     model=model_name,
                     messages=[
@@ -597,10 +609,10 @@ Provide helpful guidance."""
             # Get LLM response
             # Use default settings for interventions
             settings = {
-                "llmProvider": os.getenv("LLM_PROVIDER", "openai"),
-                "aiModel": os.getenv("LLM_MODEL", "gpt-4"),
+                "provider": os.getenv("LLM_PROVIDER", "openai"),
+                "model": os.getenv("LLM_MODEL", "gpt-4"),
                 "temperature": 0.3,  # Lower temperature for intervention responses
-                "maxTokens": 1500
+                "maxTokens": 1500,
             }
             
             # Use synchronous version for simplicity in intervention handling

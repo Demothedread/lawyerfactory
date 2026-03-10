@@ -8,7 +8,7 @@ Architecture:
 - Unified phase orchestration (A01-A03, B01-B02, C01-C02)
 - Real-time Socket.IO communication for progress updates
 - Evidence management with PRIMARY/SECONDARY classification
-- LLM provider integration with OpenAI/Anthropic/Groq fallbacks
+- LLM provider integration with OpenAI/Anthropic/Groq/GitHub Models fallbacks
 - Unified storage API integration with ObjectID tracking
 - RAG-enhanced drafting with sequential IRAC methodology
 - Multi-agent orchestration (WriterBot, EditorBot, Maestro)
@@ -134,12 +134,166 @@ logger.info(
 llm_config = {
     "provider": os.getenv("LLM_PROVIDER", "openai"),
     "model": os.getenv("LLM_MODEL", "gpt-4"),
-    "api_key": os.getenv("OPENAI_API_KEY")
-    or os.getenv("ANTHROPIC_API_KEY")
-    or os.getenv("GROQ_API_KEY"),
+    "api_key": None,
+    "base_url": None,
     "temperature": float(os.getenv("LLM_TEMPERATURE", "0.1")),
     "max_tokens": int(os.getenv("LLM_MAX_TOKENS", "2000")),
 }
+
+LLM_PROVIDER_METADATA = {
+    "openai": {
+        "label": "OpenAI",
+        "default_model": "gpt-4o",
+        "api_key_env_vars": ["OPENAI_API_KEY"],
+        "models": ["gpt-5", "gpt-5-mini", "gpt-5-nano", "gpt-4o", "gpt-4.1"],
+    },
+    "anthropic": {
+        "label": "Anthropic",
+        "default_model": "claude-3-5-sonnet-20241022",
+        "api_key_env_vars": ["ANTHROPIC_API_KEY"],
+        "models": [
+            "claude-3-5-sonnet-20241022",
+            "claude-3-opus-20240229",
+            "claude-3-haiku-20240307",
+        ],
+    },
+    "groq": {
+        "label": "Groq",
+        "default_model": "llama3-8b-8192",
+        "api_key_env_vars": ["GROQ_API_KEY"],
+        "models": ["llama3-8b-8192", "llama3-70b-8192", "mixtral-8x7b-32768"],
+    },
+    "github-copilot": {
+        "label": "GitHub Copilot / GitHub Models",
+        "default_model": "openai/gpt-4.1-mini",
+        "api_key_env_vars": ["GITHUB_MODELS_API_KEY", "GITHUB_TOKEN"],
+        "base_url_env_var": "GITHUB_MODELS_BASE_URL",
+        "default_base_url": "https://models.inference.ai.azure.com",
+        "models": [
+            "openai/gpt-4.1",
+            "openai/gpt-4.1-mini",
+            "openai/o4-mini",
+            "anthropic/claude-3.7-sonnet",
+            "meta/Llama-3.3-70B-Instruct",
+        ],
+    },
+}
+
+
+def get_llm_provider_metadata(provider: str) -> Dict[str, Any]:
+    """Return metadata for a configured provider."""
+    return LLM_PROVIDER_METADATA.get(provider, LLM_PROVIDER_METADATA["openai"])
+
+
+def get_provider_api_key(provider: str, override_key: Optional[str] = None) -> Optional[str]:
+    """Resolve provider API key from an explicit override or environment variables."""
+    if override_key:
+        return override_key
+
+    for env_var in get_llm_provider_metadata(provider).get("api_key_env_vars", []):
+        value = os.getenv(env_var)
+        if value:
+            return value
+
+    return None
+
+
+def get_provider_base_url(provider: str, override_base_url: Optional[str] = None) -> Optional[str]:
+    """Resolve provider base URL from an explicit override or environment variables."""
+    if override_base_url:
+        return override_base_url
+
+    metadata = get_llm_provider_metadata(provider)
+    base_url_env_var = metadata.get("base_url_env_var")
+    if base_url_env_var:
+        return os.getenv(base_url_env_var, metadata.get("default_base_url"))
+
+    return metadata.get("default_base_url")
+
+
+def get_default_llm_provider() -> str:
+    """Select the configured provider or fall back to the first provider with credentials."""
+    configured_provider = os.getenv("LLM_PROVIDER")
+    if configured_provider in LLM_PROVIDER_METADATA:
+        return configured_provider
+
+    for provider in ["github-copilot", "openai", "anthropic", "groq"]:
+        if get_provider_api_key(provider):
+            return provider
+
+    return "openai"
+
+
+def get_default_llm_model(provider: str) -> str:
+    """Resolve the default model for a provider, honoring the top-level LLM_MODEL env var."""
+    configured_model = os.getenv("LLM_MODEL")
+    if configured_model:
+        return configured_model
+
+    return get_llm_provider_metadata(provider).get("default_model", "gpt-4o")
+
+
+def build_llm_config(overrides: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Build normalized LLM configuration from environment and runtime overrides."""
+    overrides = overrides or {}
+    provider = overrides.get("provider") or get_default_llm_provider()
+    if provider not in LLM_PROVIDER_METADATA:
+        provider = "openai"
+
+    model = overrides.get("model") or get_default_llm_model(provider)
+    api_key = get_provider_api_key(provider, overrides.get("api_key"))
+    base_url = get_provider_base_url(provider, overrides.get("base_url"))
+
+    return {
+        "provider": provider,
+        "model": model,
+        "api_key": api_key,
+        "base_url": base_url,
+        "temperature": float(overrides.get("temperature", os.getenv("LLM_TEMPERATURE", "0.1"))),
+        "max_tokens": int(overrides.get("max_tokens", os.getenv("LLM_MAX_TOKENS", "2000"))),
+    }
+
+
+def serialize_llm_config() -> Dict[str, Any]:
+    """Serialize runtime LLM configuration for API responses."""
+    provider = llm_config.get("provider", "openai")
+    metadata = get_llm_provider_metadata(provider)
+    config_payload = {
+        "provider": provider,
+        "model": llm_config.get("model", metadata.get("default_model")),
+        "api_key": llm_config.get("api_key") or "",
+        "api_key_configured": bool(llm_config.get("api_key")),
+        "api_key_env_vars": metadata.get("api_key_env_vars", []),
+        "base_url": llm_config.get("base_url") or "",
+        "base_url_env_var": metadata.get("base_url_env_var"),
+        "temperature": llm_config.get("temperature", 0.1),
+        "max_tokens": llm_config.get("max_tokens", 2000),
+    }
+
+    return {
+        "success": True,
+        "config": config_payload,
+        "provider": config_payload["provider"],
+        "model": config_payload["model"],
+        "temperature": config_payload["temperature"],
+        "max_tokens": config_payload["max_tokens"],
+        "available_models": {
+            name: provider_metadata.get("models", [])
+            for name, provider_metadata in LLM_PROVIDER_METADATA.items()
+        },
+        "provider_options": [
+            {
+                "value": name,
+                "label": provider_metadata.get("label", name),
+                "api_key_env_vars": provider_metadata.get("api_key_env_vars", []),
+                "base_url_env_var": provider_metadata.get("base_url_env_var"),
+            }
+            for name, provider_metadata in LLM_PROVIDER_METADATA.items()
+        ],
+    }
+
+
+llm_config.update(build_llm_config())
 
 # In-memory stores (replace with database for production)
 research_status_store = {}
@@ -261,13 +415,15 @@ def create_evidence():
         evidence_store[evidence_id] = evidence_entry
         logger.info(f"✓ Created evidence entry: {evidence_id}")
 
-        return jsonify(
-            {
-                "success": True,
-                "evidence_id": evidence_id,
-                "object_id": evidence_entry["object_id"],
-                "evidence": evidence_entry,
-            },
+        return (
+            jsonify(
+                {
+                    "success": True,
+                    "evidence_id": evidence_id,
+                    "object_id": evidence_entry["object_id"],
+                    "evidence": evidence_entry,
+                }
+            ),
             201,
         )
 
@@ -1018,20 +1174,25 @@ Extract facts as a JSON array with this structure:
 
 Return ONLY the JSON array, no other text. Facts should be objective but emphasize facts favorable to the client."""
 
-        if provider == "openai":
+        if provider in {"openai", "github-copilot"}:
             try:
                 import openai
 
-                openai.api_key = api_key
-                response = openai.ChatCompletion.create(
-                    model=llm_config.get("model", "gpt-4"),
+                client_kwargs = {"api_key": api_key}
+                base_url = get_provider_base_url(provider, llm_config.get("base_url"))
+                if base_url:
+                    client_kwargs["base_url"] = base_url
+
+                client = openai.OpenAI(**client_kwargs)
+                response = client.chat.completions.create(
+                    model=llm_config.get("model", get_default_llm_model(provider)),
                     messages=[{"role": "user", "content": extraction_prompt}],
                     temperature=0.1,
                     max_tokens=3000,
                 )
-                facts_json = response.choices[0].message.content
+                facts_json = response.choices[0].message.content or "[]"
             except Exception as e:
-                logger.warning(f"OpenAI extraction failed: {e}; using heuristic")
+                logger.warning(f"{provider} extraction failed: {e}; using heuristic")
                 return extract_facts_heuristic(user_narrative, evidence_items)
         else:
             logger.warning(f"Provider {provider} not yet integrated; using heuristic extraction")
@@ -1772,34 +1933,51 @@ if bartleby_handler and LAWYERFACTORY_AVAILABLE:
 def get_llm_config():
     """Get LLM configuration"""
     try:
-        return (
-            jsonify(
-                {
-                    "success": True,
-                    "provider": llm_config.get("provider"),
-                    "model": llm_config.get("model"),
-                    "temperature": llm_config.get("temperature"),
-                    "max_tokens": llm_config.get("max_tokens"),
-                }
-            ),
-            200,
-        )
+        return jsonify(serialize_llm_config()), 200
 
     except Exception as e:
         logger.error(f"Error getting LLM config: {e}")
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/settings/llm", methods=["PUT"])
+@app.route("/api/settings/llm", methods=["PUT", "POST"])
 def update_llm_config():
     """Update LLM configuration"""
     try:
-        data = request.get_json()
-        llm_config.update(data)
+        data = request.get_json() or {}
+        requested_provider = data.get("provider", llm_config.get("provider", "openai"))
+        if requested_provider not in LLM_PROVIDER_METADATA:
+            return (
+                jsonify(
+                    {
+                        "error": f"Unsupported provider '{requested_provider}'",
+                        "supported_providers": list(LLM_PROVIDER_METADATA.keys()),
+                    }
+                ),
+                400,
+            )
 
-        logger.info(f"✓ Updated LLM config: {data.get('provider')}/{data.get('model')}")
+        normalized_config = build_llm_config(
+            {
+                "provider": requested_provider,
+                "model": data.get("model") or get_default_llm_model(requested_provider),
+                "api_key": data.get("api_key") or data.get("apiKey"),
+                "base_url": data.get("base_url") or data.get("baseUrl"),
+                "temperature": data.get("temperature", llm_config.get("temperature", 0.1)),
+                "max_tokens": data.get("max_tokens")
+                or data.get("maxTokens")
+                or llm_config.get("max_tokens", 2000),
+            }
+        )
+        llm_config.update(normalized_config)
 
-        return jsonify({"success": True, "config": llm_config}), 200
+        logger.info(
+            "✓ Updated LLM config: %s/%s",
+            llm_config.get("provider"),
+            llm_config.get("model"),
+        )
+
+        return jsonify(serialize_llm_config()), 200
 
     except Exception as e:
         logger.error(f"Error updating LLM config: {e}")

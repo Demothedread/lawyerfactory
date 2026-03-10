@@ -47,218 +47,132 @@ def test_server_creation():
     except Exception as e:
         print(f"❌ Server creation failed: {e}")
         return False
+#!/usr/bin/env python3
+"""Pytest smoke tests for the canonical LawyerFactory API server."""
 
-def test_health_endpoint():
-    """Test the health check endpoint"""
-    print("\n🧪 Testing health endpoint...")
+import importlib
 
-    try:
-        from server import app
+import pytest
+from flask.testing import FlaskClient
 
-        with app.test_client() as client:
-            response = client.get('/api/health')
-            if response.status_code == 200:
-                data = json.loads(response.data)
-                print("✅ Health endpoint successful")
-                print(f"   Status: {data.get('status')}")
-                print(f"   Version: {data.get('version')}")
-                print(f"   Features: {data.get('features', {})}")
-                return True
-            else:
-                print(f"❌ Health endpoint failed with status {response.status_code}")
-                return False
-    except Exception as e:
-        print(f"❌ Health endpoint test failed: {e}")
-        return False
 
-def test_evidence_api():
-    """Test the evidence API endpoints"""
-    print("\n🧪 Testing evidence API...")
+@pytest.fixture
+def server_module(monkeypatch):
+    """Import the canonical server with eventlet disabled for deterministic tests."""
+    monkeypatch.setenv("LF_DISABLE_EVENTLET", "1")
+    return importlib.import_module("server")
 
-    try:
-        from server import app
 
-        with app.test_client() as client:
-            # Type hint for the client
-            client: FlaskClient
+@pytest.fixture
+def client(server_module) -> FlaskClient:
+    """Return a Flask test client for the canonical server."""
+    return server_module.app.test_client()
 
-            # Test GET evidence table
-            response = client.get('/api/evidence')
-            if response.status_code == 200:
-                data = json.loads(response.data)
-                print("✅ GET evidence table successful")
-                print(f"   Total evidence: {data.get('total', 0)}")
-                print(f"   Primary count: {data.get('primary_count', 0)}")
-                print(f"   Secondary count: {data.get('secondary_count', 0)}")
-            else:
-                print(f"❌ GET evidence table failed with status {response.status_code}")
 
-            # Test POST evidence entry
-            evidence_data = {
-                "source_document": "test_contract.pdf",
-                "content": "This is a test contract document for testing purposes.",
-                "evidence_source": "primary",
-                "relevance_score": 0.85,
-                "key_terms": ["contract", "test"],
-                "created_by": "test_user"
-            }
+def test_imports():
+    """Core Flask dependencies should import successfully."""
+    from flask import Flask, jsonify
+    from flask_cors import CORS
+    from flask_socketio import SocketIO
 
-            response = client.post('/api/evidence',
-                                   data=json.dumps(evidence_data), 
-                                   content_type='application/json')
+    assert Flask is not None
+    assert jsonify is not None
+    assert CORS is not None
+    assert SocketIO is not None
 
-            if response.status_code == 200:
-                data = json.loads(response.data)
-                print("✅ POST evidence entry successful")
-                print(f"   Evidence ID: {data.get('evidence_id')}")
-            else:
-                print(f"❌ POST evidence entry failed with status {response.status_code}")
 
-            return True
-    except Exception as e:
-        print(f"❌ Evidence API test failed: {e}")
-        return False
+def test_server_creation(server_module):
+    """The server app and Socket.IO instance should initialize."""
+    assert server_module.app.name
+    assert server_module.socketio.async_mode == "threading"
 
-def test_research_api():
-    """Test the research API endpoints"""
-    print("\n🧪 Testing research API...")
 
-    try:
-        from server import app
+def test_health_endpoint(client: FlaskClient):
+    """Health endpoint should return the expected metadata."""
+    response = client.get("/api/health")
 
-        with app.test_client() as client:
-            # Test research execution
-            research_data = {
-                "case_id": "test_case_001",
-                "evidence_id": "evidence_001",
-                "keywords": ["contract", "employment", "termination"],
-                "max_results": 5
-            }
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["status"] == "healthy"
+    assert isinstance(data.get("features"), list)
+    assert "evidence_management" in data["features"]
 
-            response = client.post('/api/research/execute',
-                                 data=json.dumps(research_data),
-                                 content_type='application/json')
 
-            if response.status_code == 200:
-                data = json.loads(response.data)
-                print("✅ Research execution successful")
-                print(f"   Research ID: {data.get('research_id')}")
-                print(f"   Status: {data.get('status')}")
-                print(f"   Sources found: {data.get('result', {}).get('total_sources', 0)}")
-            else:
-                print(f"❌ Research execution failed with status {response.status_code}")
+def test_evidence_api(client: FlaskClient):
+    """Evidence listing and creation endpoints should work."""
+    list_response = client.get("/api/evidence")
+    assert list_response.status_code == 200
+    list_payload = list_response.get_json()
+    assert list_payload["success"] is True
+    assert "evidence" in list_payload
 
-            return True
-    except Exception as e:
-        print(f"❌ Research API test failed: {e}")
-        return False
+    create_response = client.post(
+        "/api/evidence",
+        json={
+            "source_document": "test_contract.pdf",
+            "content": "This is a test contract document for testing purposes.",
+            "evidence_type": "documentary",
+            "evidence_source": "primary",
+            "relevance_score": 0.85,
+            "key_terms": ["contract", "test"],
+            "created_by": "test_user",
+        },
+    )
 
-def test_phase_orchestration():
-    """Test the phase orchestration endpoints"""
-    print("\n🧪 Testing phase orchestration...")
+    assert create_response.status_code == 201
+    create_payload = create_response.get_json()
+    assert create_payload["success"] is True
+    assert create_payload["evidence_id"]
 
-    try:
-        from server import app
 
-        with app.test_client() as client:
-            # Test phase start
-            phase_data = {
-                "case_id": "test_case_001",
-                "llm_provider": "openai",
-                "llm_model": "gpt-4"
-            }
+def test_research_api(client: FlaskClient):
+    """Research execution should succeed when called with an existing evidence item."""
+    create_response = client.post(
+        "/api/evidence",
+        json={
+            "source_document": "research_seed.txt",
+            "content": "Seed evidence for research execution.",
+            "evidence_type": "documentary",
+            "evidence_source": "primary",
+        },
+    )
+    evidence_id = create_response.get_json()["evidence_id"]
 
-            response = client.post('/api/phases/phaseA01_intake/start',
-                                 data=json.dumps(phase_data),
-                                 content_type='application/json')
+    response = client.post(
+        "/api/research/execute",
+        json={
+            "case_id": "test_case_001",
+            "evidence_id": evidence_id,
+            "keywords": ["contract", "employment", "termination"],
+            "max_results": 5,
+        },
+    )
 
-            if response.status_code == 200:
-                data = json.loads(response.data)
-                print("✅ Phase orchestration successful")
-                print(f"   Phase: {data.get('phase')}")
-                print(f"   Case ID: {data.get('case_id')}")
-                print(f"   Status: {data.get('result', {}).get('status')}")
-            else:
-                print(f"❌ Phase orchestration failed with status {response.status_code}")
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["success"] is True
+    assert payload["evidence_id"] == evidence_id
+    assert len(payload["results"]) > 0
 
-            return True
-    except Exception as e:
-        print(f"❌ Phase orchestration test failed: {e}")
-        return False
 
-def test_socketio_events():
-    """Test SocketIO event handling"""
-    print("\n🧪 Testing SocketIO events...")
+def test_phase_orchestration(client: FlaskClient):
+    """Phase orchestration should create a task for the requested phase."""
+    response = client.post(
+        "/api/phases/phaseA01_intake/start",
+        json={"case_id": "test_case_001", "llm_provider": "openai", "llm_model": "gpt-4"},
+    )
 
-    try:
-        from server import socketio
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["success"] is True
+    assert payload["phase_id"] == "phaseA01_intake"
+    assert payload["case_id"] == "test_case_001"
+    assert payload["status"] == "started"
+    assert payload["task_id"]
 
-        # Test that socketio is properly configured
-        print("✅ SocketIO configuration:")
-        print(f"   Async mode: {socketio.async_mode}")
-        print(f"   CORS allowed origins: {socketio.cors_allowed_origins}")
 
-        # Note: Full SocketIO testing would require a running server
-        # This is a basic configuration test
-        return True
-    except Exception as e:
-        print(f"❌ SocketIO test failed: {e}")
-        return False
-
-def main():
-    """Run all tests"""
-    print("🚀 LawyerFactory Canonical Server Test Suite")
-    print("=" * 50)
-
-    tests = [
-        ("Import Tests", test_imports),
-        ("Server Creation Tests", test_server_creation),
-        ("Health Endpoint Tests", test_health_endpoint),
-        ("Evidence API Tests", test_evidence_api),
-        ("Research API Tests", test_research_api),
-        ("Phase Orchestration Tests", test_phase_orchestration),
-        ("SocketIO Tests", test_socketio_events),
-    ]
-
-    results = []
-    for test_name, test_func in tests:
-        print(f"\n{'='*20}")
-        print(f"Running: {test_name}")
-        print('='*20)
-
-        try:
-            result = test_func()
-            results.append((test_name, result))
-        except Exception as e:
-            print(f"❌ Test suite failed: {e}")
-            results.append((test_name, False))
-
-    # Summary
-    print("\n" + "=" * 50)
-    print("🧪 TEST SUMMARY")
-    print("=" * 50)
-
-    passed = 0
-    failed = 0
-
-    for test_name, result in results:
-        status = "✅ PASSED" if result else "❌ FAILED"
-        print(f"{status}: {test_name}")
-        if result:
-            passed += 1
-        else:
-            failed += 1
-
-    print("\n" + "=" * 50)
-    print(f"📊 RESULTS: {passed} passed, {failed} failed")
-
-    if failed == 0:
-        print("🎉 All tests passed! Canonical server is ready for use.")
-        return True
-    else:
-        print("⚠️ Some tests failed. Please review the issues above.")
-        return False
-
-if __name__ == "__main__":
-    success = main()
-    sys.exit(0 if success else 1)
+def test_socketio_events(server_module):
+    """Socket.IO should initialize with the expected backend manager."""
+    assert server_module.socketio.async_mode == "threading"
+    assert server_module.socketio.server is not None
+    assert type(server_module.socketio.server.manager).__name__ == "Manager"

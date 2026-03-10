@@ -65,14 +65,23 @@ class EnvironmentValidator:
 
     def check_api_keys(self) -> bool:
         """Validate required API keys are present"""
-        ai_keys = ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GROQ_API_KEY"]
+        ai_keys = [
+            "OPENAI_API_KEY",
+            "ANTHROPIC_API_KEY",
+            "GROQ_API_KEY",
+            "GITHUB_MODELS_API_KEY",
+            "GITHUB_TOKEN",
+        ]
         has_ai_key = any(os.getenv(key) for key in ai_keys)
 
         if has_ai_key:
             print("✓ AI service API key configured")
             self.checks_passed += 1
         else:
-            error = "✗ No AI service API key found (need OPENAI_API_KEY, ANTHROPIC_API_KEY, or GROQ_API_KEY)"
+            error = (
+                "✗ No AI service API key found (need OPENAI_API_KEY, ANTHROPIC_API_KEY, "
+                "GROQ_API_KEY, GITHUB_MODELS_API_KEY, or GITHUB_TOKEN)"
+            )
             print(error)
             self.errors.append(error)
             self.checks_failed += 1
