@@ -888,3 +888,288 @@ class GeminiProvider(LLMProvider):
             await asyncio.sleep(0.1)
 
         return results
+
+
+# ---------------------------------------------------------------------------
+# GitHub Copilot / GitHub Models provider
+# ---------------------------------------------------------------------------
+
+# GitHub Models inference endpoint (OpenAI-compatible)
+_GITHUB_MODELS_BASE_URL = "https://models.inference.ai.azure.com"
+
+
+class GitHubCopilotProvider(LLMProvider):
+    """GitHub Copilot / GitHub Models LLM provider.
+
+    Authenticates against ``https://models.inference.ai.azure.com`` using a
+    GitHub Personal Access Token (PAT) or a GitHub Copilot subscription token.
+    The endpoint is OpenAI-SDK compatible, so this provider reuses the same
+    call patterns as ``OpenAIProvider``.
+
+    Configuration keys (via ``LLMConfigManager`` / ``get_provider_config()``):
+    - ``token`` or ``api_key`` - GitHub PAT / Copilot token (also reads
+      ``GITHUB_TOKEN`` / ``GH_TOKEN`` env vars as fallback)
+    - ``model``   - model name (default ``gpt-4o-mini``)
+    - ``base_url`` - override API endpoint (default GitHub Models endpoint)
+    - ``temperature`` / ``max_tokens`` - generation parameters
+    - ``enabled`` - must be ``True`` to use this provider
+    """
+
+    def __init__(self, config_manager):
+        super().__init__(config_manager, "github_copilot")
+        self._initialize_client()
+
+    def _initialize_client(self):
+        """Initialize OpenAI client pointed at the GitHub Models endpoint."""
+        try:
+            import openai
+
+            config = self.get_config() or {}
+            token = (
+                config.get("token")
+                or config.get("api_key")
+                or os.getenv("GITHUB_TOKEN")
+                or os.getenv("GH_TOKEN")
+            )
+            if not token:
+                logger.warning(
+                    "GitHub token not found; set GITHUB_TOKEN environment variable "
+                    "to enable the GitHub Copilot provider"
+                )
+                return
+
+            base_url = config.get("base_url") or _GITHUB_MODELS_BASE_URL
+
+            try:
+                self._client = openai.OpenAI(
+                    api_key=token,
+                    base_url=base_url,
+                )
+            except Exception:
+                # Older SDK variant fallback
+                self._client = openai
+        except ImportError:
+            logger.warning(
+                "openai library not available; cannot use GitHub Copilot provider"
+            )
+        except Exception as e:
+            logger.warning(f"Failed to initialize GitHub Copilot client: {e}")
+
+    async def generate_text(self, prompt: str, **kwargs) -> dict[str, Any]:
+        """Generate text using the GitHub Models API."""
+        if not self._client:
+            return {"success": False, "error": "GitHub Copilot client not initialized"}
+
+        try:
+            config = self.get_config() or {}
+            messages = cast(Any, [{"role": "user", "content": prompt}])
+
+            response = self._client.chat.completions.create(
+                model=config.get("model", "gpt-4o-mini"),
+                messages=messages,
+                temperature=config.get("temperature", 0.7),
+                max_tokens=config.get("max_tokens", 1000),
+                **{k: v for k, v in kwargs.items() if k not in ("temperature", "max_tokens")},
+            )
+
+            # Extract text
+            text = ""
+            try:
+                text = (
+                    getattr(response, "choices", None)
+                    and getattr(response.choices[0], "message", None)
+                    and getattr(response.choices[0].message, "content", None)
+                ) or ""
+                if not text and isinstance(response, dict):
+                    text = (
+                        response.get("choices", [{}])[0]
+                        .get("message", {})
+                        .get("content", "")
+                    )
+            except Exception:
+                text = ""
+
+            # Extract usage
+            usage: dict[str, Any] = {}
+            try:
+                usage_obj = getattr(response, "usage", None) or (
+                    response.get("usage") if isinstance(response, dict) else None
+                )
+                if usage_obj:
+                    usage = {
+                        "prompt_tokens": getattr(usage_obj, "prompt_tokens", None),
+                        "completion_tokens": getattr(
+                            usage_obj, "completion_tokens", None
+                        ),
+                        "total_tokens": getattr(usage_obj, "total_tokens", None),
+                    }
+            except Exception:
+                usage = {}
+
+            return {"success": True, "text": text, "usage": usage}
+        except Exception as e:
+            logger.error(f"GitHub Copilot text generation failed: {e}")
+            return {"success": False, "error": str(e)}
+
+    async def classify_evidence(
+        self, content: str, filename: str | None = None
+    ) -> dict[str, Any]:
+        """Classify evidence using the GitHub Copilot provider."""
+        prompt = f"""
+        Analyze the following document content and classify it as PRIMARY, SECONDARY, or TERTIARY evidence.
+        Then provide a specific evidence type classification.
+
+        PRIMARY evidence categories (first-hand):
+        - Witness Statement, Original Document, Physical Evidence Photo,
+          Audio/Video Recording, Digital Communication (original),
+          Scene Photograph, Autopsy Report, Original Contract,
+          Police Report, Medical Record, Other (specify)
+
+        SECONDARY evidence categories (third-hand):
+        - News Article, Social Media Post, Journal Article,
+          Government Report, Court Filing, Legal Brief,
+          Academic Paper, Blog Post, Press Release, Other (specify)
+
+        TERTIARY evidence categories (legal precedent):
+        - Judicial Opinion, Appellate Decision, Trial Court Order,
+          Supreme Court Ruling, Related Case Summary,
+          Similar Cause of Action Case, Other (specify)
+
+        Document content:
+        {content[:4000]}
+
+        Provide your response in JSON format:
+        {{
+            "evidence_type": "PRIMARY, SECONDARY, or TERTIARY",
+            "specific_category": "specific category from above",
+            "confidence_score": 0.0-1.0,
+            "reasoning": "brief explanation",
+            "key_characteristics": ["characteristic1", "characteristic2"]
+        }}
+        """
+
+        result = await self.generate_text(prompt, temperature=0.3)
+        if not result["success"]:
+            return result
+
+        try:
+            response_data = json.loads(result["text"])
+            return {"success": True, "classification": response_data}
+        except json.JSONDecodeError:
+            return {
+                "success": False,
+                "error": "Failed to parse classification response",
+            }
+
+    async def extract_metadata(
+        self, content: str, doc_type: str | None = None
+    ) -> dict[str, Any]:
+        """Extract metadata using the GitHub Copilot provider."""
+        prompt = f"""
+        Extract metadata from the following document content.
+        Focus on legal relevance and provide structured information.
+
+        Document content:
+        {content[:3000]}
+
+        Provide metadata in JSON format:
+        {{
+            "title": "document title or subject",
+            "author": "author if identifiable",
+            "date": "date if mentioned",
+            "parties_involved": ["party1", "party2"],
+            "key_issues": ["issue1", "issue2"],
+            "summary": "brief summary",
+            "relevance_score": 0.0-1.0,
+            "legal_context": "relevant legal context"
+        }}
+        """
+
+        result = await self.generate_text(prompt, temperature=0.2)
+        if not result["success"]:
+            return result
+
+        try:
+            metadata = json.loads(result["text"])
+            return {"success": True, "metadata": metadata}
+        except json.JSONDecodeError:
+            return {"success": False, "error": "Failed to parse metadata response"}
+
+    async def summarize_text(
+        self, content: str, max_length: int = 200
+    ) -> dict[str, Any]:
+        """Summarize text using the GitHub Copilot provider."""
+        prompt = f"""
+        Summarize the following text in {max_length} words or less.
+        Focus on the key legal points and factual information.
+
+        Text to summarize:
+        {content[:4000]}
+
+        Provide a concise summary:
+        """
+
+        return await self.generate_text(prompt, temperature=0.3, max_tokens=max_length)
+
+    def test_connection(self) -> dict[str, Any]:
+        """Test GitHub Copilot provider connectivity."""
+        config = self.get_config() or {}
+        token = (
+            config.get("token")
+            or config.get("api_key")
+            or os.getenv("GITHUB_TOKEN")
+            or os.getenv("GH_TOKEN")
+        )
+        if not token:
+            return {
+                "success": False,
+                "error": "GitHub token not configured; set GITHUB_TOKEN",
+            }
+
+        if not self._client:
+            return {"success": False, "error": "Client not initialized"}
+
+        return {
+            "success": True,
+            "message": "GitHub Copilot client initialized successfully",
+        }
+
+    async def health_check(self) -> dict[str, Any]:
+        """Perform health check for the GitHub Copilot provider."""
+        try:
+            result = await self.generate_text("Hello", max_tokens=10)
+            return {
+                "healthy": result["success"],
+                "response_time": "N/A",
+                "error": result.get("error"),
+            }
+        except Exception as e:
+            return {"healthy": False, "error": str(e)}
+
+    async def batch_process(
+        self, items: list[dict[str, Any]], operation: str = "generate_text"
+    ) -> list[dict[str, Any]]:
+        """Process multiple items in batch using the GitHub Copilot provider."""
+        results = []
+        for item in items:
+            if operation == "generate_text":
+                result = await self.generate_text(item.get("prompt", ""))
+            elif operation == "classify_evidence":
+                result = await self.classify_evidence(
+                    item.get("content", ""), item.get("filename")
+                )
+            elif operation == "extract_metadata":
+                result = await self.extract_metadata(
+                    item.get("content", ""), item.get("doc_type")
+                )
+            elif operation == "summarize_text":
+                result = await self.summarize_text(
+                    item.get("content", ""), item.get("max_length", 200)
+                )
+            else:
+                result = {"success": False, "error": f"Unknown operation: {operation}"}
+
+            results.append(result)
+            await asyncio.sleep(0.1)
+
+        return results

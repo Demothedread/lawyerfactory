@@ -29,6 +29,7 @@ class LLMProvider(Enum):
     OPENAI = "openai"
     OLLAMA = "ollama"
     GOOGLE_GEMINI = "google_gemini"
+    GITHUB_COPILOT = "github_copilot"
 
 
 class ModelCapability(Enum):
@@ -63,15 +64,26 @@ class LLMConfig:
     openai_settings: Dict[str, Any] = field(default_factory=dict)
     ollama_settings: Dict[str, Any] = field(default_factory=dict)
     gemini_settings: Dict[str, Any] = field(default_factory=dict)
+    github_copilot_settings: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_environment(cls) -> "LLMConfig":
         """Create configuration from environment variables"""
+        provider_str = os.getenv("LAWYERFACTORY_LLM_PROVIDER", "openai")
+        # Map legacy short-form names to enum values
+        provider_map = {
+            "github_copilot": "github_copilot",
+            "github": "github_copilot",
+            "copilot": "github_copilot",
+        }
+        provider_str = provider_map.get(provider_str, provider_str)
         return cls(
-            provider=LLMProvider(os.getenv("LAWYERFACTORY_LLM_PROVIDER", "openai")),
+            provider=LLMProvider(provider_str),
             model_name=os.getenv("LAWYERFACTORY_LLM_MODEL", "gpt-4o-mini"),
             api_key=os.getenv("LAWYERFACTORY_LLM_API_KEY")
-            or os.getenv("OPENAI_API_KEY"),
+            or os.getenv("GITHUB_TOKEN")
+            if provider_str == "github_copilot"
+            else os.getenv("LAWYERFACTORY_LLM_API_KEY") or os.getenv("OPENAI_API_KEY"),
             base_url=os.getenv("LAWYERFACTORY_LLM_BASE_URL"),
             temperature=float(os.getenv("LAWYERFACTORY_LLM_TEMPERATURE", "0.7")),
             max_tokens=int(os.getenv("LAWYERFACTORY_LLM_MAX_TOKENS", "4000")),
@@ -98,6 +110,7 @@ class LLMConfig:
             "openai_settings": self.openai_settings,
             "ollama_settings": self.ollama_settings,
             "gemini_settings": self.gemini_settings,
+            "github_copilot_settings": self.github_copilot_settings,
         }
 
     @classmethod
@@ -118,6 +131,7 @@ class LLMConfig:
         config.openai_settings = data.get("openai_settings", {})
         config.ollama_settings = data.get("ollama_settings", {})
         config.gemini_settings = data.get("gemini_settings", {})
+        config.github_copilot_settings = data.get("github_copilot_settings", {})
         return config
 
 
@@ -335,6 +349,131 @@ class GoogleGeminiService(LLMServiceInterface):
         return [ModelCapability.TEXT_GENERATION, ModelCapability.VISION]
 
 
+# ===== GITHUB COPILOT SERVICE =====
+
+# GitHub Models API endpoint — OpenAI-compatible
+GITHUB_MODELS_BASE_URL = "https://models.inference.ai.azure.com"
+
+# Well-known models available through the GitHub Models / Copilot API
+GITHUB_COPILOT_MODELS = [
+    "gpt-4o",
+    "gpt-4o-mini",
+    "o1",
+    "o1-mini",
+    "o3-mini",
+    "claude-3-5-sonnet",
+    "claude-3-7-sonnet",
+    "mistral-large-2411",
+    "llama-3.3-70b-instruct",
+    "phi-4",
+    "deepseek-v3",
+]
+
+
+class GitHubCopilotService(LLMServiceInterface):
+    """GitHub Copilot / GitHub Models LLM service implementation.
+
+    Uses the OpenAI-compatible GitHub Models inference endpoint
+    (https://models.inference.ai.azure.com) authenticated with a GitHub
+    Personal Access Token (PAT) or a GitHub Copilot subscription token.
+
+    Set ``GITHUB_TOKEN`` (or ``LAWYERFACTORY_LLM_API_KEY``) in the
+    environment to enable this provider.  Set
+    ``LAWYERFACTORY_LLM_MODEL`` to choose a specific model; the default
+    is ``gpt-4o-mini``.
+    """
+
+    def __init__(self, config: LLMConfig):
+        self.config = config
+        self.client = None
+        self._initialize_client()
+
+    def _initialize_client(self):
+        """Initialize the OpenAI client pointed at the GitHub Models endpoint."""
+        try:
+            import openai
+
+            token = (
+                self.config.api_key
+                or os.getenv("GITHUB_TOKEN")
+                or os.getenv("GH_TOKEN")
+            )
+            if not token:
+                logger.warning(
+                    "GitHub token not found; set GITHUB_TOKEN environment variable"
+                )
+                return
+
+            base_url = (
+                self.config.base_url
+                or self.config.github_copilot_settings.get("base_url")
+                or GITHUB_MODELS_BASE_URL
+            )
+
+            self.client = openai.AsyncOpenAI(
+                api_key=token,
+                base_url=base_url,
+            )
+        except ImportError:
+            logger.warning("OpenAI library not available; cannot use GitHub Copilot provider")
+        except Exception as e:
+            logger.error(f"Failed to initialize GitHub Copilot client: {e}")
+
+    async def generate_text(self, prompt: str, **kwargs) -> str:
+        """Generate text via the GitHub Models API."""
+        if not self.client:
+            raise RuntimeError("GitHub Copilot client not initialized")
+
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.config.model_name,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=kwargs.get("temperature", self.config.temperature),
+                max_tokens=kwargs.get("max_tokens", self.config.max_tokens),
+            )
+            return response.choices[0].message.content or ""
+        except Exception as e:
+            logger.error(f"GitHub Copilot text generation failed: {e}")
+            raise
+
+    async def generate_embeddings(self, texts: List[str]) -> List[List[float]]:
+        """Generate embeddings via the GitHub Models API (falls back to zeros when unavailable)."""
+        if not self.client:
+            logger.warning("GitHub Copilot client not initialized; returning zero embeddings")
+            return [[0.0] * 1536 for _ in texts]
+
+        try:
+            embedding_model = (
+                self.config.embedding_model
+                or self.config.github_copilot_settings.get(
+                    "embedding_model", "text-embedding-3-small"
+                )
+            )
+            response = await self.client.embeddings.create(
+                model=embedding_model, input=texts
+            )
+            return [data.embedding for data in response.data]
+        except Exception as e:
+            logger.warning(
+                f"GitHub Copilot embeddings failed ({e}); returning zero embeddings"
+            )
+            return [[0.0] * 1536 for _ in texts]
+
+    async def is_available(self) -> bool:
+        """Check whether the GitHub Models endpoint is reachable."""
+        if not self.client:
+            return False
+        try:
+            await self.client.models.list()
+            return True
+        except Exception:
+            return False
+
+    async def get_capabilities(self) -> List[ModelCapability]:
+        """Return capabilities supported by the GitHub Copilot provider."""
+        return [ModelCapability.TEXT_GENERATION, ModelCapability.EMBEDDINGS]
+
+
 # ===== LLM SERVICE FACTORY =====
 
 
@@ -350,6 +489,8 @@ class LLMServiceFactory:
             return OllamaService(config)
         elif config.provider == LLMProvider.GOOGLE_GEMINI:
             return GoogleGeminiService(config)
+        elif config.provider == LLMProvider.GITHUB_COPILOT:
+            return GitHubCopilotService(config)
         else:
             raise ValueError(f"Unsupported LLM provider: {config.provider}")
 
@@ -418,9 +559,23 @@ class LLMConfigurationManager:
 
             if (
                 not self.current_config.api_key
-                and self.current_config.provider != LLMProvider.OLLAMA
+                and self.current_config.provider
+                not in (LLMProvider.OLLAMA, LLMProvider.GITHUB_COPILOT)
             ):
                 results["errors"].append("API key required for this provider")
+
+            if (
+                self.current_config.provider == LLMProvider.GITHUB_COPILOT
+                and not (
+                    self.current_config.api_key
+                    or os.getenv("GITHUB_TOKEN")
+                    or os.getenv("GH_TOKEN")
+                )
+            ):
+                results["errors"].append(
+                    "GitHub token required for GitHub Copilot provider; "
+                    "set GITHUB_TOKEN environment variable"
+                )
 
         except Exception as e:
             results["errors"].append(f"Configuration validation failed: {e}")

@@ -25,12 +25,18 @@ class LLMService:
     def _initialize_providers(self):
         """Initialize provider instances"""
         try:
-            from .providers import GeminiProvider, OllamaProvider, OpenAIProvider
+            from .providers import (
+                GeminiProvider,
+                GitHubCopilotProvider,
+                OllamaProvider,
+                OpenAIProvider,
+            )
 
             self._providers = {
                 "openai": OpenAIProvider(self.config_manager),
                 "ollama": OllamaProvider(self.config_manager),
                 "gemini": GeminiProvider(self.config_manager),
+                "github_copilot": GitHubCopilotProvider(self.config_manager),
             }
         except ImportError as e:
             logger.error(f"Failed to import providers: {e}")

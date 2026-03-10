@@ -78,6 +78,14 @@ class LLMConfigManager:
                     "max_tokens": 4000,
                     "enabled": False,
                 },
+                "github_copilot": {
+                    "token": os.getenv("GITHUB_TOKEN", "") or os.getenv("GH_TOKEN", ""),
+                    "model": "gpt-4o-mini",
+                    "base_url": "https://models.inference.ai.azure.com",
+                    "temperature": 0.7,
+                    "max_tokens": 4000,
+                    "enabled": False,
+                },
             },
         }
 
@@ -167,6 +175,17 @@ class LLMConfigManager:
         elif provider == "ollama":
             if not config.get("base_url"):
                 issues.append("Base URL is required")
+        elif provider == "github_copilot":
+            token = (
+                config.get("token")
+                or config.get("api_key")
+                or os.getenv("GITHUB_TOKEN")
+                or os.getenv("GH_TOKEN")
+            )
+            if not token:
+                issues.append(
+                    "GitHub token is required; set GITHUB_TOKEN environment variable"
+                )
 
         return {"valid": len(issues) == 0, "issues": issues}
 
